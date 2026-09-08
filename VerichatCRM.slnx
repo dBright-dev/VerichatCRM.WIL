@@ -1,6 +1,10 @@
 <Solution>
-  <Project Path="VerichatCRM.API/VerichatCRM.API.csproj" />
-  <Project Path="VerichatCRM.Infrastructure/VerichatCRM.Infrastructure.csproj" />
-  <Project Path="VerichatCRM.Web/VerichatCRM.Web.csproj" />
-  <Project Path="VerichatCRMs.Core/VerichatCRMs.Core.csproj" Id="a613d5dc-f095-4238-b5ea-2a1fd8a5d4b5" />
+  <Project Path="../../../../../Documents/GitHub/VerichatCRM.WIL/VerichatCRM.API/VerichatCRM.API.csproj" />
+  <Project Path="../../../../../Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Core/VerichatCRM.Core.csproj" Id="683542a9-8d54-4b76-b546-f499ba602e61" />
+  <Project Path="../../../../../Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Infrastructure/VerichatCRM.Infrastructure.csproj" />
+  <Project Path="../../../../../Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Web/VerichatCRM.Web.csproj" />
+  <Project Path="../../../../../Documents/GitHub/VerichatCRM.WIL/VerichatCRMs.Core/VerichatCRMs.Core.csproj" Id="a613d5dc-f095-4238-b5ea-2a1fd8a5d4b5" />
+  <Project Path="VerichatCRM.Mobile/VerichatCRM.Mobile.csproj" Id="95b1066a-27de-4d9e-845a-8ac89b280ba4">
+    <Deploy Solution="Debug|*" />
+  </Project>
 </Solution>

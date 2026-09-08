@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "ClUms3rLFNY=",
+  "dgSpecHash": "cSgFjt2Cu98=",
   "success": true,
-  "projectFilePath": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\VerichatCRM.API.csproj",
+  "projectFilePath": "C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\dorca\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.11\\microsoft.aspnetcore.openapi.10.0.11.nupkg.sha512",
-    "C:\\Users\\dorca\\.nuget\\packages\\microsoft.openapi\\2.7.5\\microsoft.openapi.2.7.5.nupkg.sha512"
+    "C:\\Users\\emeris\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.11\\microsoft.aspnetcore.openapi.10.0.11.nupkg.sha512",
+    "C:\\Users\\emeris\\.nuget\\packages\\microsoft.openapi\\2.7.5\\microsoft.openapi.2.7.5.nupkg.sha512"
   ],
   "logs": []
 }
