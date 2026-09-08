@@ -1,0 +1,108 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{DA923831-8E45-45F4-96A7-9FAA25E4FE6E}|VerichatCRM.Web\\VerichatCRM.Web.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.web\\verichatcrm.web.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{DA923831-8E45-45F4-96A7-9FAA25E4FE6E}|VerichatCRM.Web\\VerichatCRM.Web.csproj|solutionrelative:verichatcrm.web\\verichatcrm.web.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B944BFB-2BAD-4B05-87D7-C0E3B100D863}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.infrastructure\\verichatcrm.infrastructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{9B944BFB-2BAD-4B05-87D7-C0E3B100D863}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|solutionrelative:verichatcrm.infrastructure\\verichatcrm.infrastructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C50EA81A-879C-43BC-BF93-8CB435DFCF22}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\verichatcrm.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{C50EA81A-879C-43BC-BF93-8CB435DFCF22}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\verichatcrm.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B944BFB-2BAD-4B05-87D7-C0E3B100D863}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.infrastructure\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9B944BFB-2BAD-4B05-87D7-C0E3B100D863}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|solutionrelative:verichatcrm.infrastructure\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 42,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "VerichatCRM.Web",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\VerichatCRM.Web.csproj",
+              "RelativeDocumentMoniker": "VerichatCRM.Web\\VerichatCRM.Web.csproj",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\VerichatCRM.Web.csproj",
+              "RelativeToolTip": "VerichatCRM.Web\\VerichatCRM.Web.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-09-08T17:47:35.748Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "VerichatCRM.Infrastructure",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
+              "RelativeDocumentMoniker": "VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
+              "RelativeToolTip": "VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-09-08T17:47:33.475Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "VerichatCRM.API",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\VerichatCRM.API.csproj",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\VerichatCRM.API.csproj",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\VerichatCRM.API.csproj",
+              "RelativeToolTip": "VerichatCRM.API\\VerichatCRM.API.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-09-08T17:47:28.267Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:131:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:132:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:133:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Class1.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Class1.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Infrastructure\\Class1.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Class1.cs",
+              "RelativeToolTip": "VerichatCRM.Infrastructure\\Class1.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-08T17:44:47.324Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

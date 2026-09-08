@@ -1,0 +1,6 @@
+@VerichatCRM.API_HostAddress = http://localhost:5184
+
+GET {{VerichatCRM.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
