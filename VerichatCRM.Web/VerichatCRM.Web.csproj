@@ -21,4 +21,8 @@
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\VerichatCRM.Core\VerichatCRM.Core.csproj" />
+  </ItemGroup>
+
 </Project>
