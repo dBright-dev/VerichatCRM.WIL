@@ -16,7 +16,6 @@
     <Folder Include="Views\Account\" />
     <Folder Include="Views\Client\" />
     <Folder Include="Views\Quotation\" />
-    <Folder Include="Views\Pipeline\" />
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
