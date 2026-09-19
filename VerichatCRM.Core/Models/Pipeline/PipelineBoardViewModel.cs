@@ -4,7 +4,7 @@ using System.Text;
 
 namespace VerichatCRM.Core.Models.Pipeline
 {
-    internal class PipelineBoardViewModel
+    public class PipelineBoardViewModel
     {
         public Dictionary<string, List<DealViewModel>> DealsByStage { get; set; } = new();
         public decimal TotalPipelineValue { get; set; }
