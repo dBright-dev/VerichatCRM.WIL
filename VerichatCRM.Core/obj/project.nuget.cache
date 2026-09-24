@@ -1,8 +1,26 @@
 {
   "version": 2,
-  "dgSpecHash": "4ntqED5vOZ8=",
+  "dgSpecHash": "baSePX45Xsk=",
   "success": true,
-  "projectFilePath": "C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\VerichatCRM.Core.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\VerichatCRM.Core.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\dorca\\.nuget\\packages\\anglesharp\\1.7.2\\anglesharp.1.7.2.nupkg.sha512",
+    "C:\\Users\\dorca\\.nuget\\packages\\anglesharp.css\\1.0.2\\anglesharp.css.1.0.2.nupkg.sha512",
+    "C:\\Users\\dorca\\.nuget\\packages\\fluentvalidation\\11.11.0\\fluentvalidation.11.11.0.nupkg.sha512",
+    "C:\\Users\\dorca\\.nuget\\packages\\fluentvalidation.aspnetcore\\11.3.1\\fluentvalidation.aspnetcore.11.3.1.nupkg.sha512",
+    "C:\\Users\\dorca\\.nuget\\packages\\fluentvalidation.dependencyinjectionextensions\\11.11.0\\fluentvalidation.dependencyinjectionextensions.11.11.0.nupkg.sha512",
+    "C:\\Users\\dorca\\.nuget\\packages\\htmlsanitizer\\9.2.1039\\htmlsanitizer.9.2.1039.nupkg.sha512",
+    "C:\\Users\\dorca\\.nuget\\packages\\microsoft.entityframeworkcore\\10.0.12\\microsoft.entityframeworkcore.10.0.12.nupkg.sha512",
+    "C:\\Users\\dorca\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\10.0.12\\microsoft.entityframeworkcore.abstractions.10.0.12.nupkg.sha512",
+    "C:\\Users\\dorca\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\10.0.12\\microsoft.entityframeworkcore.analyzers.10.0.12.nupkg.sha512",
+    "C:\\Users\\dorca\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\10.0.12\\microsoft.extensions.caching.abstractions.10.0.12.nupkg.sha512",
+    "C:\\Users\\dorca\\.nuget\\packages\\microsoft.extensions.caching.memory\\10.0.12\\microsoft.extensions.caching.memory.10.0.12.nupkg.sha512",
+    "C:\\Users\\dorca\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\10.0.12\\microsoft.extensions.dependencyinjection.10.0.12.nupkg.sha512",
+    "C:\\Users\\dorca\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.12\\microsoft.extensions.dependencyinjection.abstractions.10.0.12.nupkg.sha512",
+    "C:\\Users\\dorca\\.nuget\\packages\\microsoft.extensions.logging\\10.0.12\\microsoft.extensions.logging.10.0.12.nupkg.sha512",
+    "C:\\Users\\dorca\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\10.0.12\\microsoft.extensions.logging.abstractions.10.0.12.nupkg.sha512",
+    "C:\\Users\\dorca\\.nuget\\packages\\microsoft.extensions.options\\10.0.12\\microsoft.extensions.options.10.0.12.nupkg.sha512",
+    "C:\\Users\\dorca\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.12\\microsoft.extensions.primitives.10.0.12.nupkg.sha512"
+  ],
   "logs": []
 }

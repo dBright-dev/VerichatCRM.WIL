@@ -1,29 +1,290 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\",
+  "WorkspaceRootPath": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:VerichatCRM.Core\\Class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.infrastructure\\data\\external\\pdfgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|solutionrelative:verichatcrm.infrastructure\\data\\external\\pdfgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRMs.Core\\Class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.infrastructure\\data\\external\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|solutionrelative:verichatcrm.infrastructure\\data\\external\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Web\\VerichatCRM.Web.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:VerichatCRM.Web\\VerichatCRM.Web.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+      "AbsoluteMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.infrastructure\\data\\repositories\\assetrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|solutionrelative:verichatcrm.infrastructure\\data\\repositories\\assetrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+      "AbsoluteMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.infrastructure\\data\\repositories\\ticketrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|solutionrelative:verichatcrm.infrastructure\\data\\repositories\\ticketrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:VerichatCRM.API\\VerichatCRM.API.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+      "AbsoluteMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.infrastructure\\data\\repositories\\dealrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|solutionrelative:verichatcrm.infrastructure\\data\\repositories\\dealrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\Class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:VerichatCRM.Infrastructure\\Class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.infrastructure\\data\\repositories\\clientrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|solutionrelative:verichatcrm.infrastructure\\data\\repositories\\clientrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.infrastructure\\data\\appdbcontext\\configurations\\clientconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|solutionrelative:verichatcrm.infrastructure\\data\\appdbcontext\\configurations\\clientconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.infrastructure\\data\\appdbcontext\\configurations\\userconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|solutionrelative:verichatcrm.infrastructure\\data\\appdbcontext\\configurations\\userconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.infrastructure\\verichatcrm.infrastructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|solutionrelative:verichatcrm.infrastructure\\verichatcrm.infrastructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.core\\interfaces\\irepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|solutionrelative:verichatcrm.core\\interfaces\\irepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.core\\verichatcrm.core.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|solutionrelative:verichatcrm.core\\verichatcrm.core.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.core\\enums\\orderstatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|solutionrelative:verichatcrm.core\\enums\\orderstatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.core\\enums\\ticketstatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|solutionrelative:verichatcrm.core\\enums\\ticketstatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.core\\enums\\dealstage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|solutionrelative:verichatcrm.core\\enums\\dealstage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.core\\enums\\userrole.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|solutionrelative:verichatcrm.core\\enums\\userrole.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.core\\entities\\asset.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|solutionrelative:verichatcrm.core\\entities\\asset.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.core\\entities\\ticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|solutionrelative:verichatcrm.core\\entities\\ticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.core\\entities\\order.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|solutionrelative:verichatcrm.core\\entities\\order.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.core\\entities\\deal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|solutionrelative:verichatcrm.core\\entities\\deal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.core\\entities\\product.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|solutionrelative:verichatcrm.core\\entities\\product.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.core\\entities\\client.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|solutionrelative:verichatcrm.core\\entities\\client.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.core\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|solutionrelative:verichatcrm.core\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\helpers\\passwordhasher.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\helpers\\passwordhasher.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\helpers\\jwthelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\helpers\\jwthelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\verichatcrm.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\verichatcrm.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\extensions\\applicationbuilderextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\extensions\\applicationbuilderextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\extensions\\servicecollectionextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\extensions\\servicecollectionextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\filters\\authorizeattribute.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\filters\\authorizeattribute.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\middleware\\jwtmiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\middleware\\jwtmiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\middleware\\exceptionhandlingmiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\middleware\\exceptionhandlingmiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\services\\ticketservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\services\\ticketservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\services\\orderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\services\\orderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\services\\productservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\services\\productservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\services\\pipelineservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\services\\pipelineservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\services\\clientservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\services\\clientservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\services\\interfaces\\iticketservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\services\\interfaces\\iticketservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\services\\interfaces\\iorderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\services\\interfaces\\iorderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\services\\interfaces\\iproductservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\services\\interfaces\\iproductservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\services\\interfaces\\ipipelineservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\services\\interfaces\\ipipelineservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\services\\interfaces\\iclientservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\services\\interfaces\\iclientservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\services\\interfaces\\iauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\services\\interfaces\\iauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\dtos\\responses\\pipelineresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\dtos\\responses\\pipelineresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\dtos\\responses\\clientresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\dtos\\responses\\clientresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\dtos\\responses\\authresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\dtos\\responses\\authresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\dtos\\requests\\updatepipelinerequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\dtos\\requests\\updatepipelinerequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\dtos\\requests\\createclientrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\dtos\\requests\\createclientrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\dtos\\requests\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\dtos\\requests\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\controllers\\assetcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\controllers\\assetcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\controllers\\supportticketcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\controllers\\supportticketcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\controllers\\ordercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\controllers\\ordercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\controllers\\pipelinecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\controllers\\pipelinecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\controllers\\clientcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\controllers\\clientcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A936AF-8D05-9D1E-E060-23EFA0FE66DE}|VerichatCRM.API\\VerichatCRM.API.csproj|solutionrelative:verichatcrm.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.web\\services\\clientservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|solutionrelative:verichatcrm.web\\services\\clientservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.web\\services\\interfaces\\iquotationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|solutionrelative:verichatcrm.web\\services\\interfaces\\iquotationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.web\\services\\interfaces\\ipipelineservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|solutionrelative:verichatcrm.web\\services\\interfaces\\ipipelineservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.web\\services\\interfaces\\iclientservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|solutionrelative:verichatcrm.web\\services\\interfaces\\iclientservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.web\\verichatcrm.web.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|solutionrelative:verichatcrm.web\\verichatcrm.web.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.web\\viewmodels\\quotationviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|solutionrelative:verichatcrm.web\\viewmodels\\quotationviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.web\\viewmodels\\clientprofileviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|solutionrelative:verichatcrm.web\\viewmodels\\clientprofileviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.web\\viewmodels\\dashboardviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|solutionrelative:verichatcrm.web\\viewmodels\\dashboardviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.web\\controllers\\quotationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|solutionrelative:verichatcrm.web\\controllers\\quotationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.web\\controllers\\pipelinecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|solutionrelative:verichatcrm.web\\controllers\\pipelinecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.web\\controllers\\clientcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|solutionrelative:verichatcrm.web\\controllers\\clientcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.web\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|solutionrelative:verichatcrm.web\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.web\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E608E95C-2CB2-16FF-55F1-BC0C14C2B995}|VerichatCRM.Web\\VerichatCRM.Web.csproj|solutionrelative:verichatcrm.web\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.core\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{14EBDD54-8371-4096-9871-C557ED37B1F8}|VerichatCRM.Core\\VerichatCRM.Core.csproj|solutionrelative:verichatcrm.core\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A613D5DC-F095-4238-B5EA-2A1FD8A5D4B5}|VerichatCRMs.Core\\VerichatCRMs.Core.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrms.core\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A613D5DC-F095-4238-B5EA-2A1FD8A5D4B5}|VerichatCRMs.Core\\VerichatCRMs.Core.csproj|solutionrelative:verichatcrms.core\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|c:\\users\\dorca\\source\\repos\\verichatcrm\\verichatcrm.infrastructure\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{66FAC7DC-3A75-7505-E333-447C1B4E1FD4}|VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|solutionrelative:verichatcrm.infrastructure\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -33,8 +294,294 @@
       "DocumentGroups": [
         {
           "DockedWidth": 42,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 0,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "PdfGenerator.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Data\\External\\PdfGenerator.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Infrastructure\\Data\\External\\PdfGenerator.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Data\\External\\PdfGenerator.cs",
+              "RelativeToolTip": "VerichatCRM.Infrastructure\\Data\\External\\PdfGenerator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:14:29.317Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "EmailService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Data\\External\\EmailService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Infrastructure\\Data\\External\\EmailService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Data\\External\\EmailService.cs",
+              "RelativeToolTip": "VerichatCRM.Infrastructure\\Data\\External\\EmailService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:14:20.73Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AssetRepository.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Data\\Repositories\\AssetRepository.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Infrastructure\\Data\\Repositories\\AssetRepository.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Data\\Repositories\\AssetRepository.cs",
+              "RelativeToolTip": "VerichatCRM.Infrastructure\\Data\\Repositories\\AssetRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:13:51.198Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "TicketRepository.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Data\\Repositories\\TicketRepository.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Infrastructure\\Data\\Repositories\\TicketRepository.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Data\\Repositories\\TicketRepository.cs",
+              "RelativeToolTip": "VerichatCRM.Infrastructure\\Data\\Repositories\\TicketRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:13:43.912Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "DealRepository.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Data\\Repositories\\DealRepository.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Infrastructure\\Data\\Repositories\\DealRepository.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Data\\Repositories\\DealRepository.cs",
+              "RelativeToolTip": "VerichatCRM.Infrastructure\\Data\\Repositories\\DealRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:13:37.408Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ClientRepository.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Data\\Repositories\\ClientRepository.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Infrastructure\\Data\\Repositories\\ClientRepository.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Data\\Repositories\\ClientRepository.cs",
+              "RelativeToolTip": "VerichatCRM.Infrastructure\\Data\\Repositories\\ClientRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:13:28.995Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ClientConfiguration.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Data\\AppDbContext\\Configurations\\ClientConfiguration.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Infrastructure\\Data\\AppDbContext\\Configurations\\ClientConfiguration.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Data\\AppDbContext\\Configurations\\ClientConfiguration.cs",
+              "RelativeToolTip": "VerichatCRM.Infrastructure\\Data\\AppDbContext\\Configurations\\ClientConfiguration.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:12:57.578Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "UserConfiguration.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Data\\AppDbContext\\Configurations\\UserConfiguration.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Infrastructure\\Data\\AppDbContext\\Configurations\\UserConfiguration.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Data\\AppDbContext\\Configurations\\UserConfiguration.cs",
+              "RelativeToolTip": "VerichatCRM.Infrastructure\\Data\\AppDbContext\\Configurations\\UserConfiguration.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:12:50.593Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "IRepository.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Interfaces\\IRepository.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Core\\Interfaces\\IRepository.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Interfaces\\IRepository.cs",
+              "RelativeToolTip": "VerichatCRM.Core\\Interfaces\\IRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:11:37.425Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "OrderStatus.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Enums\\OrderStatus.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Core\\Enums\\OrderStatus.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Enums\\OrderStatus.cs",
+              "RelativeToolTip": "VerichatCRM.Core\\Enums\\OrderStatus.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:11:12.931Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "VerichatCRM.Infrastructure.csproj",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
+              "RelativeDocumentMoniker": "VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
+              "RelativeToolTip": "VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-09-08T17:47:33.475Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "TicketStatus.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Enums\\TicketStatus.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Core\\Enums\\TicketStatus.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Enums\\TicketStatus.cs",
+              "RelativeToolTip": "VerichatCRM.Core\\Enums\\TicketStatus.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:11:00.138Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "VerichatCRM.Core",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\VerichatCRM.Core.csproj",
+              "RelativeDocumentMoniker": "VerichatCRM.Core\\VerichatCRM.Core.csproj",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\VerichatCRM.Core.csproj",
+              "RelativeToolTip": "VerichatCRM.Core\\VerichatCRM.Core.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-09-09T07:09:24.727Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "DealStage.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Enums\\DealStage.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Core\\Enums\\DealStage.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Enums\\DealStage.cs",
+              "RelativeToolTip": "VerichatCRM.Core\\Enums\\DealStage.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:10:52.874Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "UserRole.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Enums\\UserRole.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Core\\Enums\\UserRole.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Enums\\UserRole.cs",
+              "RelativeToolTip": "VerichatCRM.Core\\Enums\\UserRole.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:10:46.359Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "Asset.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Entities\\Asset.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Core\\Entities\\Asset.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Entities\\Asset.cs",
+              "RelativeToolTip": "VerichatCRM.Core\\Entities\\Asset.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:10:27.248Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "Ticket.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Entities\\Ticket.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Core\\Entities\\Ticket.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Entities\\Ticket.cs",
+              "RelativeToolTip": "VerichatCRM.Core\\Entities\\Ticket.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:10:16.811Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "Order.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Entities\\Order.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Core\\Entities\\Order.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Entities\\Order.cs",
+              "RelativeToolTip": "VerichatCRM.Core\\Entities\\Order.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:10:10.35Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "Product.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Entities\\Product.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Core\\Entities\\Product.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Entities\\Product.cs",
+              "RelativeToolTip": "VerichatCRM.Core\\Entities\\Product.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:10:03.583Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "Deal.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Entities\\Deal.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Core\\Entities\\Deal.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Entities\\Deal.cs",
+              "RelativeToolTip": "VerichatCRM.Core\\Entities\\Deal.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:09:56.44Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "Client.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Entities\\Client.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Core\\Entities\\Client.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Entities\\Client.cs",
+              "RelativeToolTip": "VerichatCRM.Core\\Entities\\Client.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:09:45.485Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Entities\\User.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Core\\Entities\\User.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Entities\\User.cs",
+              "RelativeToolTip": "VerichatCRM.Core\\Entities\\User.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:09:38.169Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Bookmark",
               "Name": "ST:130:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
@@ -56,76 +603,636 @@
               "Name": "ST:128:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{269a02dc-6af8-11d3-bdc4-00c04f688e50}"
-            },
-            {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Class1.cs",
-              "DocumentMoniker": "C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Class1.cs",
-              "RelativeDocumentMoniker": "VerichatCRM.Core\\Class1.cs",
-              "ToolTip": "C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Class1.cs",
-              "RelativeToolTip": "VerichatCRM.Core\\Class1.cs",
+              "DocumentIndex": 22,
+              "Title": "PasswordHasher.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Helpers\\PasswordHasher.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Helpers\\PasswordHasher.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Helpers\\PasswordHasher.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Helpers\\PasswordHasher.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-08T18:22:45.601Z",
+              "WhenOpened": "2026-09-09T07:07:46.61Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Class1.cs",
-              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRMs.Core\\Class1.cs",
-              "RelativeDocumentMoniker": "..\\..\\..\\..\\dorca\\source\\repos\\VerichatCRM\\VerichatCRMs.Core\\Class1.cs",
-              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRMs.Core\\Class1.cs",
-              "RelativeToolTip": "..\\..\\..\\..\\dorca\\source\\repos\\VerichatCRM\\VerichatCRMs.Core\\Class1.cs",
+              "DocumentIndex": 23,
+              "Title": "JwtHelper.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Helpers\\JwtHelper.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Helpers\\JwtHelper.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Helpers\\JwtHelper.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Helpers\\JwtHelper.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-08T17:49:59.124Z"
+              "WhenOpened": "2026-09-09T07:07:38.914Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "VerichatCRM.Web.csproj",
-              "DocumentMoniker": "C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Web\\VerichatCRM.Web.csproj",
-              "RelativeDocumentMoniker": "VerichatCRM.Web\\VerichatCRM.Web.csproj",
-              "ToolTip": "C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Web\\VerichatCRM.Web.csproj",
-              "RelativeToolTip": "VerichatCRM.Web\\VerichatCRM.Web.csproj",
+              "DocumentIndex": 25,
+              "Title": "ApplicationBuilderExtensions.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Extensions\\ApplicationBuilderExtensions.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Extensions\\ApplicationBuilderExtensions.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Extensions\\ApplicationBuilderExtensions.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Extensions\\ApplicationBuilderExtensions.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-09-08T17:47:35.748Z"
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:07:21.268Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "VerichatCRM.Infrastructure.csproj",
-              "DocumentMoniker": "C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
-              "RelativeDocumentMoniker": "VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
-              "ToolTip": "C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
-              "RelativeToolTip": "VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-09-08T17:47:33.475Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 24,
               "Title": "VerichatCRM.API.csproj",
-              "DocumentMoniker": "C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.csproj",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\VerichatCRM.API.csproj",
               "RelativeDocumentMoniker": "VerichatCRM.API\\VerichatCRM.API.csproj",
-              "ToolTip": "C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.csproj",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\VerichatCRM.API.csproj",
               "RelativeToolTip": "VerichatCRM.API\\VerichatCRM.API.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-09-08T17:47:28.267Z"
+              "WhenOpened": "2026-09-08T17:47:28.267Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 26,
+              "Title": "ServiceCollectionExtensions.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Extensions\\ServiceCollectionExtensions.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Extensions\\ServiceCollectionExtensions.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Extensions\\ServiceCollectionExtensions.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Extensions\\ServiceCollectionExtensions.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:07:15.04Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "AuthorizeAttribute.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Filters\\AuthorizeAttribute.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Filters\\AuthorizeAttribute.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Filters\\AuthorizeAttribute.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Filters\\AuthorizeAttribute.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:06:50.546Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "JwtMiddleware.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Middleware\\JwtMiddleware.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Middleware\\JwtMiddleware.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Middleware\\JwtMiddleware.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Middleware\\JwtMiddleware.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:06:31.006Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "ExceptionHandlingMiddleware.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Middleware\\ExceptionHandlingMiddleware.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Middleware\\ExceptionHandlingMiddleware.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Middleware\\ExceptionHandlingMiddleware.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Middleware\\ExceptionHandlingMiddleware.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:06:23.092Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "TicketService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\TicketService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Services\\TicketService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\TicketService.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Services\\TicketService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:05:46.543Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "OrderService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\OrderService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Services\\OrderService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\OrderService.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Services\\OrderService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:05:40.087Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "ProductService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\ProductService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Services\\ProductService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\ProductService.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Services\\ProductService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:05:31.38Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "PipelineService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\PipelineService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Services\\PipelineService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\PipelineService.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Services\\PipelineService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:05:15.656Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 34,
+              "Title": "ClientService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\ClientService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Services\\ClientService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\ClientService.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Services\\ClientService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:05:07.838Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 35,
+              "Title": "AuthService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\AuthService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Services\\AuthService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\AuthService.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Services\\AuthService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:05:00.644Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 36,
+              "Title": "ITicketService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\Interfaces\\ITicketService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Services\\Interfaces\\ITicketService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\Interfaces\\ITicketService.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Services\\Interfaces\\ITicketService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:04:52.72Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 37,
+              "Title": "IOrderService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\Interfaces\\IOrderService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Services\\Interfaces\\IOrderService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\Interfaces\\IOrderService.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Services\\Interfaces\\IOrderService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:04:43.735Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 38,
+              "Title": "IProductService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\Interfaces\\IProductService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Services\\Interfaces\\IProductService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\Interfaces\\IProductService.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Services\\Interfaces\\IProductService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:04:35.21Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 39,
+              "Title": "IPipelineService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\Interfaces\\IPipelineService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Services\\Interfaces\\IPipelineService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\Interfaces\\IPipelineService.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Services\\Interfaces\\IPipelineService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:04:27.977Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 40,
+              "Title": "IClientService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\Interfaces\\IClientService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Services\\Interfaces\\IClientService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\Interfaces\\IClientService.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Services\\Interfaces\\IClientService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:04:19.588Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 41,
+              "Title": "IAuthService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\Interfaces\\IAuthService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Services\\Interfaces\\IAuthService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Services\\Interfaces\\IAuthService.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Services\\Interfaces\\IAuthService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:04:13.99Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 42,
+              "Title": "PipelineResponse.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\DTOs\\Responses\\PipelineResponse.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\DTOs\\Responses\\PipelineResponse.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\DTOs\\Responses\\PipelineResponse.cs",
+              "RelativeToolTip": "VerichatCRM.API\\DTOs\\Responses\\PipelineResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:03:36.372Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 43,
+              "Title": "ClientResponse.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\DTOs\\Responses\\ClientResponse.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\DTOs\\Responses\\ClientResponse.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\DTOs\\Responses\\ClientResponse.cs",
+              "RelativeToolTip": "VerichatCRM.API\\DTOs\\Responses\\ClientResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:03:28.536Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 44,
+              "Title": "AuthResponse.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\DTOs\\Responses\\AuthResponse.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\DTOs\\Responses\\AuthResponse.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\DTOs\\Responses\\AuthResponse.cs",
+              "RelativeToolTip": "VerichatCRM.API\\DTOs\\Responses\\AuthResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:03:20.69Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 45,
+              "Title": "UpdatePipelineRequest.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\DTOs\\Requests\\UpdatePipelineRequest.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\DTOs\\Requests\\UpdatePipelineRequest.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\DTOs\\Requests\\UpdatePipelineRequest.cs",
+              "RelativeToolTip": "VerichatCRM.API\\DTOs\\Requests\\UpdatePipelineRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:03:00.347Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 46,
+              "Title": "CreateClientRequest.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\DTOs\\Requests\\CreateClientRequest.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\DTOs\\Requests\\CreateClientRequest.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\DTOs\\Requests\\CreateClientRequest.cs",
+              "RelativeToolTip": "VerichatCRM.API\\DTOs\\Requests\\CreateClientRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:02:52.96Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 47,
+              "Title": "LoginRequest.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\DTOs\\Requests\\LoginRequest.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\DTOs\\Requests\\LoginRequest.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\DTOs\\Requests\\LoginRequest.cs",
+              "RelativeToolTip": "VerichatCRM.API\\DTOs\\Requests\\LoginRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:02:46.361Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 48,
+              "Title": "AssetController.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Controllers\\AssetController.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Controllers\\AssetController.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Controllers\\AssetController.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Controllers\\AssetController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:02:10.118Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 49,
+              "Title": "SupportTicketController.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Controllers\\SupportTicketController.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Controllers\\SupportTicketController.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Controllers\\SupportTicketController.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Controllers\\SupportTicketController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:02:00.059Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 50,
+              "Title": "OrderController.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Controllers\\OrderController.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Controllers\\OrderController.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Controllers\\OrderController.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Controllers\\OrderController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:01:45.471Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 51,
+              "Title": "ProductController.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Controllers\\ProductController.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Controllers\\ProductController.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Controllers\\ProductController.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Controllers\\ProductController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:01:30.98Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 52,
+              "Title": "PipelineController.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Controllers\\PipelineController.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Controllers\\PipelineController.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Controllers\\PipelineController.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Controllers\\PipelineController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:01:20.605Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 53,
+              "Title": "ClientController.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Controllers\\ClientController.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Controllers\\ClientController.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Controllers\\ClientController.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Controllers\\ClientController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:01:09.293Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 54,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.API\\Controllers\\AuthController.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.API\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "VerichatCRM.API\\Controllers\\AuthController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T07:00:58.266Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 55,
+              "Title": "ClientService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Services\\ClientService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Web\\Services\\ClientService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Services\\ClientService.cs",
+              "RelativeToolTip": "VerichatCRM.Web\\Services\\ClientService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T06:59:22.179Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 56,
+              "Title": "IQuotationService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Services\\Interfaces\\IQuotationService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Web\\Services\\Interfaces\\IQuotationService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Services\\Interfaces\\IQuotationService.cs",
+              "RelativeToolTip": "VerichatCRM.Web\\Services\\Interfaces\\IQuotationService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T06:59:13.08Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 57,
+              "Title": "IPipelineService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Services\\Interfaces\\IPipelineService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Web\\Services\\Interfaces\\IPipelineService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Services\\Interfaces\\IPipelineService.cs",
+              "RelativeToolTip": "VerichatCRM.Web\\Services\\Interfaces\\IPipelineService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T06:59:03.463Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 58,
+              "Title": "IClientService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Services\\Interfaces\\IClientService.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Web\\Services\\Interfaces\\IClientService.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Services\\Interfaces\\IClientService.cs",
+              "RelativeToolTip": "VerichatCRM.Web\\Services\\Interfaces\\IClientService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T06:58:54.248Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 60,
+              "Title": "QuotationViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\ViewModels\\QuotationViewModel.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Web\\ViewModels\\QuotationViewModel.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\ViewModels\\QuotationViewModel.cs",
+              "RelativeToolTip": "VerichatCRM.Web\\ViewModels\\QuotationViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T06:58:03.987Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 59,
+              "Title": "VerichatCRM.Web.csproj",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\VerichatCRM.Web.csproj",
+              "RelativeDocumentMoniker": "VerichatCRM.Web\\VerichatCRM.Web.csproj",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\VerichatCRM.Web.csproj",
+              "RelativeToolTip": "VerichatCRM.Web\\VerichatCRM.Web.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-09-08T17:47:35.748Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 61,
+              "Title": "ClientProfileViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\ViewModels\\ClientProfileViewModel.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Web\\ViewModels\\ClientProfileViewModel.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\ViewModels\\ClientProfileViewModel.cs",
+              "RelativeToolTip": "VerichatCRM.Web\\ViewModels\\ClientProfileViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T06:57:49.113Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 62,
+              "Title": "DashboardViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\ViewModels\\DashboardViewModel.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Web\\ViewModels\\DashboardViewModel.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\ViewModels\\DashboardViewModel.cs",
+              "RelativeToolTip": "VerichatCRM.Web\\ViewModels\\DashboardViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T06:57:37.628Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 63,
+              "Title": "QuotationController.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Controllers\\QuotationController.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Web\\Controllers\\QuotationController.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Controllers\\QuotationController.cs",
+              "RelativeToolTip": "VerichatCRM.Web\\Controllers\\QuotationController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T06:55:25.137Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 64,
+              "Title": "PipelineController.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Controllers\\PipelineController.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Web\\Controllers\\PipelineController.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Controllers\\PipelineController.cs",
+              "RelativeToolTip": "VerichatCRM.Web\\Controllers\\PipelineController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T06:55:05.7Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 65,
+              "Title": "ClientController.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Controllers\\ClientController.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Web\\Controllers\\ClientController.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Controllers\\ClientController.cs",
+              "RelativeToolTip": "VerichatCRM.Web\\Controllers\\ClientController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T06:54:51.777Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 66,
+              "Title": "DashboardController.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Controllers\\DashboardController.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Web\\Controllers\\DashboardController.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Controllers\\DashboardController.cs",
+              "RelativeToolTip": "VerichatCRM.Web\\Controllers\\DashboardController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T06:54:37.293Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 67,
+              "Title": "AccountController.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Controllers\\AccountController.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Web\\Controllers\\AccountController.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\Controllers\\AccountController.cs",
+              "RelativeToolTip": "VerichatCRM.Web\\Controllers\\AccountController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T06:53:42.023Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 68,
               "Title": "Class1.cs",
-              "DocumentMoniker": "C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\Class1.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Class1.cs",
+              "RelativeDocumentMoniker": "VerichatCRM.Core\\Class1.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\Class1.cs",
+              "RelativeToolTip": "VerichatCRM.Core\\Class1.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-09T06:51:14.21Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 69,
+              "Title": "Class1.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRMs.Core\\Class1.cs",
+              "RelativeDocumentMoniker": "VerichatCRMs.Core\\Class1.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRMs.Core\\Class1.cs",
+              "RelativeToolTip": "VerichatCRMs.Core\\Class1.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-08T17:49:59.124Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 70,
+              "Title": "Class1.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Class1.cs",
               "RelativeDocumentMoniker": "VerichatCRM.Infrastructure\\Class1.cs",
-              "ToolTip": "C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\Class1.cs",
+              "ToolTip": "C:\\Users\\dorca\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\Class1.cs",
               "RelativeToolTip": "VerichatCRM.Infrastructure\\Class1.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
