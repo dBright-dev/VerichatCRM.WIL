@@ -10,7 +10,7 @@ namespace VerichatCRM.Core.Entities
         public string DisplayName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
-        public string Role { get; set; } = "Guest"; // stored as string for simplicity
+        public string Role { get; set; } = "Procurement Manager"; // stored as string for simplicity
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastLoginAt { get; set; }

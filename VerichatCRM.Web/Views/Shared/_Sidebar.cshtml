@@ -6,6 +6,9 @@
     <nav class="sidebar-nav">
         <div class="nav-section">
             <span class="nav-section-title">Overview</span>
+            <a href="/" class="nav-item">
+                <i class="nav-icon">🏠</i> Home
+            </a>
             <a href="/procurement/dashboard" class="nav-item">
                 <i class="nav-icon">▦</i> Dashboard
             </a>
@@ -69,16 +72,17 @@
         </div>
     </nav>
 
-    <div class="sidebar-footer">
-        <div class="user-info">
-            <div class="user-avatar">PM</div>
-            <div>
-                <div class="user-name">Procurement Manager</div>
-                <div class="user-role">Admin</div>
-            </div>
+    <div class="user-info">
+        <div class="user-avatar">@(Context.Session.GetString("UserName")?.Substring(0, 1) ?? "?")</div>
+        <div>
+            <div class="user-name">@Context.Session.GetString("UserName")</div>
+            <div class="user-role">@Context.Session.GetString("UserRole")</div>
         </div>
-        <a href="/account/logout" class="logout-link">
-            <i>→</i> Sign out
-        </a>
     </div>
+    <form asp-controller="Account" asp-action="Logout" method="post">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="logout-link" style="background:none;border:none;cursor:pointer;">
+            → Sign out
+        </button>
+    </form>
 </aside>

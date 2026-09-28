@@ -249,3 +249,4 @@ D:\Documents\source\repos\VerichatCRM\VerichatCRM.Web\obj\Debug\net10.0\compress
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.Web\obj\Debug\net10.0\compressed\24x8ho6mmr-{0}-meb0ujq1up-meb0ujq1up.gz
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.Web\obj\Debug\net10.0\compressed\0q1xdite5b-{0}-z072e08ybu-z072e08ybu.gz
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.Web\obj\Debug\net10.0\compressed\vjvy0nubs1-{0}-nu4w4bepot-nu4w4bepot.gz
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.Web\obj\Debug\net10.0\compressed\cxkgz4ktnl-{0}-si4uhaynso-si4uhaynso.gz
