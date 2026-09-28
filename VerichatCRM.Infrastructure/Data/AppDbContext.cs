@@ -20,7 +20,7 @@ namespace VerichatCRM.Infrastructure.Data
         //public DbSet<Deal> Deals => Set<Deal>();
         //public DbSet<Ticket> Tickets => Set<Ticket>();
         //public DbSet<Asset> Assets => Set<Asset>();
-        //public DbSet<User> Users => Set<User>();
+        public DbSet<User> Users => Set<User>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Product configuration
