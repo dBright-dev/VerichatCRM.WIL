@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using VerichatCRM.API.DTOs.Requests;
 using VerichatCRM.API.DTOs.Responses;
 using VerichatCRM.API.Services.Interfaces;
@@ -10,9 +9,9 @@ namespace VerichatCRM.API.Services
 {
     public class OrderService : IOrderService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
 
-        public OrderService(ApplicationDbContext context)
+        public OrderService(AppDbContext context)
         {
             _context = context;
         }
@@ -38,7 +37,7 @@ namespace VerichatCRM.API.Services
         {
             var order = new Order
             {
-                ClientId = request.ClientID,
+                ClientId = request.ClientId,
                 Status = "Pending",
                 OrderDate = DateTime.UtcNow,
                 LineItems = new List<OrderLineItem>()
@@ -46,7 +45,7 @@ namespace VerichatCRM.API.Services
 
             decimal total = 0;
 
-            foreach (var item in request.Items)
+            foreach (var item in request.LineItems)
             {
                 var product = await _context.Products.FindAsync(item.SKU);
                 if (product == null) continue;

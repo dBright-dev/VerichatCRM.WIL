@@ -2,8 +2,6 @@
   "version": 4,
   "targets": {
     "net10.0": {
-<<<<<<< Updated upstream
-=======
       "AngleSharp/1.7.2": {
         "type": "package",
         "compile": {
@@ -148,24 +146,10 @@
           }
         }
       },
-      "Microsoft.AspNetCore.Mvc.Abstractions/2.3.13": {
-        "type": "package",
-        "compile": {
-          "lib/netstandard2.0/_._": {
-            "related": ".pdb;.xml"
-          }
-        },
-        "runtime": {
-          "lib/netstandard2.0/_._": {
-            "related": ".pdb;.xml"
-          }
-        }
-      },
->>>>>>> Stashed changes
-      "Microsoft.AspNetCore.OpenApi/10.0.11": {
+      "Microsoft.AspNetCore.OpenApi/10.0.12": {
         "type": "package",
         "dependencies": {
-          "Microsoft.OpenApi": "[2.7.5, 3.0.0)"
+          "Microsoft.OpenApi": "[2.12.0, 3.0.0)"
         },
         "compile": {
           "lib/net10.0/Microsoft.AspNetCore.OpenApi.dll": {
@@ -184,8 +168,6 @@
           "build/Microsoft.AspNetCore.OpenApi.targets": {}
         }
       },
-<<<<<<< Updated upstream
-=======
       "Microsoft.Bcl.AsyncInterfaces/8.0.0": {
         "type": "package",
         "compile": {
@@ -715,6 +697,18 @@
           }
         }
       },
+      "Microsoft.EntityFrameworkCore.Tools/10.0.12": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Design": "10.0.12"
+        },
+        "compile": {
+          "lib/net10.0/_._": {}
+        },
+        "runtime": {
+          "lib/net10.0/_._": {}
+        }
+      },
       "Microsoft.Extensions.DependencyModel/10.0.12": {
         "type": "package",
         "compile": {
@@ -913,8 +907,7 @@
           }
         }
       },
->>>>>>> Stashed changes
-      "Microsoft.OpenApi/2.7.5": {
+      "Microsoft.OpenApi/2.12.0": {
         "type": "package",
         "compile": {
           "lib/net8.0/Microsoft.OpenApi.dll": {
@@ -926,8 +919,6 @@
             "related": ".pdb;.xml"
           }
         }
-<<<<<<< Updated upstream
-=======
       },
       "Microsoft.SqlServer.Server/1.0.0": {
         "type": "package",
@@ -1221,6 +1212,7 @@
         "dependencies": {
           "FluentValidation.AspNetCore": "11.3.1",
           "HtmlSanitizer": "9.2.1039",
+          "Microsoft.AspNetCore.OpenApi": "10.0.12",
           "Microsoft.EntityFrameworkCore": "10.0.12",
           "Microsoft.EntityFrameworkCore.SqlServer": "10.0.12"
         },
@@ -1237,7 +1229,10 @@
         "dependencies": {
           "FluentValidation.AspNetCore": "11.3.1",
           "HtmlSanitizer": "9.2.1039",
+          "Microsoft.AspNetCore.OpenApi": "10.0.12",
           "Microsoft.EntityFrameworkCore": "10.0.12",
+          "Microsoft.EntityFrameworkCore.Relational": "10.0.12",
+          "Microsoft.EntityFrameworkCore.SqlServer": "10.0.12",
           "VerichatCRM.Core": "1.0.0"
         },
         "compile": {
@@ -1246,13 +1241,10 @@
         "runtime": {
           "bin/placeholder/VerichatCRM.Infrastructure.dll": {}
         }
->>>>>>> Stashed changes
       }
     }
   },
   "libraries": {
-<<<<<<< Updated upstream
-=======
     "AngleSharp/1.7.2": {
       "sha512": "r1rb5Qo/0KPzmP0nbSiXPDVfh4Ctu0B+y1RyyUq73g4sgAmEW7q10RDyTq2ZsILwtO9O2LAvMrUles7eD4zz1g==",
       "type": "package",
@@ -1438,25 +1430,10 @@
         "logo.png"
       ]
     },
-    "Microsoft.AspNetCore.Mvc.Abstractions/2.3.13": {
-      "sha512": "jfboYyG4SBc0wOBYOrM1d4I3+oEegkvbB0mOPcX9KDi8mBoJeaXR6GoBF5VKDppsRcq1M0yM7OLjOWE5nwFnmg==",
+    "Microsoft.AspNetCore.OpenApi/10.0.12": {
+      "sha512": "7RnQ/UKn+kK3JDLmTpW+vVqNErWthGPAVAy1aIiBzv4ucQ6g9NFvOJUuT0PHcpvcJxGVxctMxj6t+NESWMrgHQ==",
       "type": "package",
-      "path": "microsoft.aspnetcore.mvc.abstractions/2.3.13",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "lib/netstandard2.0/Microsoft.AspNetCore.Mvc.Abstractions.dll",
-        "lib/netstandard2.0/Microsoft.AspNetCore.Mvc.Abstractions.pdb",
-        "lib/netstandard2.0/Microsoft.AspNetCore.Mvc.Abstractions.xml",
-        "microsoft.aspnetcore.mvc.abstractions.2.3.13.nupkg.sha512",
-        "microsoft.aspnetcore.mvc.abstractions.nuspec"
-      ]
-    },
->>>>>>> Stashed changes
-    "Microsoft.AspNetCore.OpenApi/10.0.11": {
-      "sha512": "R/1EATnPLU+gRfB6lwVkMcymmyAY5ppBBdRN/5lhNEiT3xP1sWccuSFkU/f1lQvN/WgRq5Vn8AhCdE3fqgsL/w==",
-      "type": "package",
-      "path": "microsoft.aspnetcore.openapi/10.0.11",
+      "path": "microsoft.aspnetcore.openapi/10.0.12",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1467,12 +1444,10 @@
         "build/Microsoft.AspNetCore.OpenApi.targets",
         "lib/net10.0/Microsoft.AspNetCore.OpenApi.dll",
         "lib/net10.0/Microsoft.AspNetCore.OpenApi.xml",
-        "microsoft.aspnetcore.openapi.10.0.11.nupkg.sha512",
+        "microsoft.aspnetcore.openapi.10.0.12.nupkg.sha512",
         "microsoft.aspnetcore.openapi.nuspec"
       ]
     },
-<<<<<<< Updated upstream
-=======
     "Microsoft.Bcl.AsyncInterfaces/8.0.0": {
       "sha512": "3WA9q9yVqJp222P3x1wYIGDAkpjAku0TMUaaQV22g6L67AI0LdOIrVS7Ht2vJfLHGSPVuqN94vIr15qn+HEkHw==",
       "type": "package",
@@ -2758,6 +2733,34 @@
         "microsoft.entityframeworkcore.sqlserver.nuspec"
       ]
     },
+    "Microsoft.EntityFrameworkCore.Tools/10.0.12": {
+      "sha512": "WuU3838sw/6wAADnwhYRPpPlXaDriq7QmrP+x4L+3plXoWI+QMFWHGhYviDjGkwEZ0b2ybOxMUy86vrb0AL9QQ==",
+      "type": "package",
+      "path": "microsoft.entityframeworkcore.tools/10.0.12",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "docs/PACKAGE.md",
+        "lib/net10.0/_._",
+        "lib/net8.0/_._",
+        "lib/net9.0/_._",
+        "microsoft.entityframeworkcore.tools.10.0.12.nupkg.sha512",
+        "microsoft.entityframeworkcore.tools.nuspec",
+        "tools/EntityFrameworkCore.PS2.psd1",
+        "tools/EntityFrameworkCore.PS2.psm1",
+        "tools/EntityFrameworkCore.psd1",
+        "tools/EntityFrameworkCore.psm1",
+        "tools/about_EntityFrameworkCore.help.txt",
+        "tools/init.ps1",
+        "tools/net472/any/ef.exe",
+        "tools/net472/win-arm64/ef.exe",
+        "tools/net472/win-x86/ef.exe",
+        "tools/net8.0/any/ef.dll",
+        "tools/net8.0/any/ef.runtimeconfig.json"
+      ]
+    },
     "Microsoft.Extensions.DependencyModel/10.0.12": {
       "sha512": "rDPQVTxh/zMTDF7wHlRqL/jjZbwjAP6315ydBxj51pZW7qkAwGwjoSiMutxYI91xmOE3ZXjAGHbYRqzyJV7Urw==",
       "type": "package",
@@ -3006,11 +3009,10 @@
         "microsoft.identitymodel.tokens.nuspec"
       ]
     },
->>>>>>> Stashed changes
-    "Microsoft.OpenApi/2.7.5": {
-      "sha512": "0FA67RSnRM4tcBKqiqVu/HPdZ9+QOKbmeRjxRUGTCjPU4C0bmUhd97Dso7Yild5P7nOV6GxJ2xrK0Kv/O9xp0w==",
+    "Microsoft.OpenApi/2.12.0": {
+      "sha512": "0xB/be+f6qYOhvQPUrVsLrau+fkowYv6gt9RIkajMhwT7sZnqtcA797yW3bS5kgSje+AQW4xZgyLnW641YFioQ==",
       "type": "package",
-      "path": "microsoft.openapi/2.7.5",
+      "path": "microsoft.openapi/2.12.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3021,11 +3023,9 @@
         "lib/netstandard2.0/Microsoft.OpenApi.dll",
         "lib/netstandard2.0/Microsoft.OpenApi.pdb",
         "lib/netstandard2.0/Microsoft.OpenApi.xml",
-        "microsoft.openapi.2.7.5.nupkg.sha512",
+        "microsoft.openapi.2.12.0.nupkg.sha512",
         "microsoft.openapi.nuspec"
       ]
-<<<<<<< Updated upstream
-=======
     },
     "Microsoft.SqlServer.Server/1.0.0": {
       "sha512": "N4KeF3cpcm1PUHym1RmakkzfkEv3GRMyofVv40uXsQhCQeglr2OHNcUk2WOG51AKpGO8ynGpo9M/kFXSzghwug==",
@@ -3474,51 +3474,39 @@
       "type": "project",
       "path": "../VerichatCRM.Infrastructure/VerichatCRM.Infrastructure.csproj",
       "msbuildProject": "../VerichatCRM.Infrastructure/VerichatCRM.Infrastructure.csproj"
->>>>>>> Stashed changes
     }
   },
   "projectFileDependencyGroups": {
     "net10.0": [
-<<<<<<< Updated upstream
-      "Microsoft.AspNetCore.OpenApi >= 10.0.11"
-=======
       "FluentValidation.AspNetCore >= 11.3.1",
       "HtmlSanitizer >= 9.2.1039",
-      "Microsoft.AspNetCore.Mvc.Abstractions >= 2.3.13",
-      "Microsoft.AspNetCore.OpenApi >= 10.0.11",
+      "Microsoft.AspNetCore.OpenApi >= 10.0.12",
       "Microsoft.EntityFrameworkCore >= 10.0.12",
       "Microsoft.EntityFrameworkCore.Design >= 10.0.12",
       "Microsoft.EntityFrameworkCore.SqlServer >= 10.0.12",
+      "Microsoft.EntityFrameworkCore.Tools >= 10.0.12",
+      "VerichatCRM.Core >= 1.0.0",
       "VerichatCRM.Infrastructure >= 1.0.0"
->>>>>>> Stashed changes
     ]
   },
   "packageFolders": {
-    "C:\\Users\\emeris\\.nuget\\packages\\": {},
+    "C:\\Users\\dorca\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-<<<<<<< Updated upstream
-      "projectUniqueName": "C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.csproj",
+      "projectUniqueName": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.API\\VerichatCRM.API.csproj",
       "projectName": "VerichatCRM.API",
-      "projectPath": "C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.csproj",
-      "packagesPath": "C:\\Users\\emeris\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\emeris\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\obj\\",
-=======
-      "projectUniqueName": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.csproj",
-      "projectName": "VerichatCRM.API",
-      "projectPath": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.csproj",
+      "projectPath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.API\\VerichatCRM.API.csproj",
       "packagesPath": "C:\\Users\\dorca\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\obj\\",
->>>>>>> Stashed changes
+      "outputPath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\emeris\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\dorca\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -3533,7 +3521,14 @@
         "net10.0": {
           "framework": "net10.0",
           "targetAlias": "net10.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\VerichatCRM.Core.csproj": {
+              "projectPath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\VerichatCRM.Core.csproj"
+            },
+            "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj": {
+              "projectPath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
@@ -3546,18 +3541,24 @@
         "auditLevel": "low",
         "auditMode": "all"
       },
-      "SdkAnalysisLevel": "10.0.300"
+      "SdkAnalysisLevel": "10.0.400"
     },
     "frameworks": {
       "net10.0": {
         "framework": "net10.0",
         "targetAlias": "net10.0",
         "dependencies": {
+          "FluentValidation.AspNetCore": {
+            "target": "Package",
+            "version": "[11.3.1, )"
+          },
+          "HtmlSanitizer": {
+            "target": "Package",
+            "version": "[9.2.1039, )"
+          },
           "Microsoft.AspNetCore.OpenApi": {
             "target": "Package",
-            "version": "[10.0.11, )"
-<<<<<<< Updated upstream
-=======
+            "version": "[10.0.12, )"
           },
           "Microsoft.EntityFrameworkCore": {
             "target": "Package",
@@ -3572,7 +3573,12 @@
           "Microsoft.EntityFrameworkCore.SqlServer": {
             "target": "Package",
             "version": "[10.0.12, )"
->>>>>>> Stashed changes
+          },
+          "Microsoft.EntityFrameworkCore.Tools": {
+            "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[10.0.12, )"
           }
         },
         "imports": [
@@ -3594,11 +3600,7 @@
             "privateAssets": "all"
           }
         },
-<<<<<<< Updated upstream
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json",
-=======
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.401/PortableRuntimeIdentifierGraph.json",
->>>>>>> Stashed changes
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",

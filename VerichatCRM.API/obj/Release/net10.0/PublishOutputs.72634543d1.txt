@@ -1,0 +1,9 @@
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\VerichatCRM.API.exe
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\appsettings.Development.json
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\appsettings.json
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\VerichatCRM.API.dll
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\VerichatCRM.API.deps.json
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\VerichatCRM.API.runtimeconfig.json
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\VerichatCRM.API.pdb
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\Microsoft.AspNetCore.OpenApi.dll
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\Microsoft.OpenApi.dll

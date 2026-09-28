@@ -14,11 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VerichatCRM.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-<<<<<<< Updated upstream
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bfc166351c1dbb3202c4e3f916ccf3413efaa1e3")]
-=======
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c1f661867ad59cf682968fa56b5b48e6da71f9b4")]
->>>>>>> Stashed changes
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c3e329dfe2c0ed1c35ecee67fbfc58dfd6583520")]
 [assembly: System.Reflection.AssemblyProductAttribute("VerichatCRM.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VerichatCRM.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

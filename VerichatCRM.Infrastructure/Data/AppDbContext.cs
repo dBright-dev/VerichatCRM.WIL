@@ -7,26 +7,23 @@ using VerichatCRM.Core.Entities;
 
 namespace VerichatCRM.Infrastructure.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class AppDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-        {
-        }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<Product> Products => Set<Product>();
         public DbSet<Inventory> Inventory => Set<Inventory>();
         public DbSet<Order> Orders => Set<Order>();
         public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
         public DbSet<WarehouseAlert> WarehouseAlerts => Set<WarehouseAlert>();
-        //public DbSet<Clcient> Clients => Set<Client>();
+        //public DbSet<Client> Clients => Set<Client>();
         //public DbSet<Deal> Deals => Set<Deal>();
         //public DbSet<Ticket> Tickets => Set<Ticket>();
         //public DbSet<Asset> Assets => Set<Asset>();
         //public DbSet<User> Users => Set<User>();
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Configure the Product entity
+            // Product configuration
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.HasKey(e => e.SKU);
@@ -36,18 +33,8 @@ namespace VerichatCRM.Infrastructure.Data
                 entity.HasIndex(e => e.Category);
                 entity.HasIndex(e => e.StockQty);
             });
-            // Configure the PurchaseOrder entity
-            modelBuilder.Entity<PurchaseOrder>(entity =>
-            {
-                entity.HasKey(e => e.PurchaseOrderId);
-                entity.Property(e => e.TotalCost).HasPrecision(18, 2);
-                entity.OwnsMany(e => e.LineItems, li =>
-                {
-                    // PurchaseOrderLineItem uses UnitPrice property
-                    li.Property(l => l.UnitPrice).HasPrecision(18, 2);
-                });
-            });
-            // Configure the Order entity
+
+            // Order configuration
             modelBuilder.Entity<Order>(entity =>
             {
                 entity.HasKey(e => e.OrderId);
@@ -59,13 +46,34 @@ namespace VerichatCRM.Infrastructure.Data
                 entity.HasIndex(e => e.ClientId);
                 entity.HasIndex(e => e.Status);
             });
-            // Configure the WarehouseAlert entity
+
+            // PurchaseOrder configuration
+            modelBuilder.Entity<PurchaseOrder>(entity =>
+            {
+                entity.HasKey(e => e.PurchaseOrderId);
+                entity.Property(e => e.TotalCost).HasPrecision(18, 2);
+                entity.OwnsMany(e => e.LineItems, li =>
+                {
+                    li.Property(l => l.UnitCost).HasPrecision(18, 2);
+                });
+            });
+
+            // WarehouseAlert configuration
             modelBuilder.Entity<WarehouseAlert>(entity =>
             {
                 entity.HasKey(e => e.AlertId);
                 entity.HasIndex(e => new { e.SKU, e.IsResolved });
             });
+
+            // Inventory configuration
+            modelBuilder.Entity<Inventory>(entity =>
+            {
+                entity.HasKey(e => e.InventoryId);
+                entity.HasOne(e => e.Product)
+                      .WithMany()
+                      .HasForeignKey(e => e.SKU)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
         }
     }
-
 }

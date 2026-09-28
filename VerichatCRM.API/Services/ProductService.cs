@@ -1,19 +1,19 @@
 ﻿using VerichatCRM.API.DTOs.Requests;
 using VerichatCRM.API.DTOs.Responses;
 using VerichatCRM.API.Services.Interfaces;
-using VerichatCRM.Infrastructure.Data;
 using VerichatCRM.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using VerichatCRM.Infrastructure.Data;
 
 namespace VerichatCRM.API.Services
 {
     public class ProductService : IProductService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
         private readonly IWarehouseAlertService _alertService;
 
-        public ProductService(ApplicationDbContext context, IWarehouseAlertService alertService)
+        public ProductService(AppDbContext context, IWarehouseAlertService alertService)
         {
             _context = context;
             _alertService = alertService;
@@ -36,11 +36,11 @@ namespace VerichatCRM.API.Services
                 Category = p.Category,
                 Price = p.Price,
                 StockQty = p.StockQty,
-                isLowStock = p.StockQty <= p.LowStockThreshold
+                IsLowStock = p.StockQty <= p.LowStockThreshold
             }).ToListAsync();
         }
 
-        public async Task<ProductResponse?> GetProductBySKUAsync(string sku)
+        public async Task<ProductResponse?> GetProductBySkuAsync(string sku)
         {
             var p = await _context.Products.FindAsync(sku);
             if (p == null) return null;
@@ -52,9 +52,8 @@ namespace VerichatCRM.API.Services
                 Category = p.Category,
                 Price = p.Price,
                 StockQty = p.StockQty,
-                isLowStock = p.StockQty <= p.LowStockThreshold
+                IsLowStock = p.StockQty <= p.LowStockThreshold
             };
-
         }
 
         public async Task<ProductResponse> CreateProductAsync(CreateProductRequest request)
@@ -69,12 +68,10 @@ namespace VerichatCRM.API.Services
                 LowStockThreshold = request.LowStockThreshold
             };
 
-
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
-            await _alertService.CheckAndCreateAlertAsync();
-
+            await _alertService.CheckAndCreateAlertsAsync();
 
             return new ProductResponse
             {
@@ -83,11 +80,11 @@ namespace VerichatCRM.API.Services
                 Category = product.Category,
                 Price = product.Price,
                 StockQty = product.StockQty,
-                isLowStock = product.StockQty <= product.LowStockThreshold
+                IsLowStock = product.StockQty <= product.LowStockThreshold
             };
         }
 
-        public async Task<ProductResponse?> UpdateProductStockAsync(string sku, UpdateStockRequest request)
+        public async Task<ProductResponse?> UpdateStockAsync(string sku, UpdateStockRequest request)
         {
             var product = await _context.Products.FindAsync(sku);
             if (product == null) return null;
@@ -96,7 +93,7 @@ namespace VerichatCRM.API.Services
             product.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
-            await _alertService.CheckAndCreateAlertAsync();
+            await _alertService.CheckAndCreateAlertsAsync();
 
             return new ProductResponse
             {
@@ -105,7 +102,7 @@ namespace VerichatCRM.API.Services
                 Category = product.Category,
                 Price = product.Price,
                 StockQty = product.StockQty,
-                isLowStock = product.StockQty <= product.LowStockThreshold
+                IsLowStock = product.StockQty <= product.LowStockThreshold
             };
         }
     }
