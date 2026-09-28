@@ -174,3 +174,9 @@ D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\bin\Debug\net10.0\runtimes
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\bin\Debug\net10.0\runtimes\win-arm64\native\msalruntime_arm64.dll
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\bin\Debug\net10.0\runtimes\win-x64\native\msalruntime.dll
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\bin\Debug\net10.0\runtimes\win-x86\native\msalruntime_x86.dll
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\bin\Debug\net10.0\Microsoft.Bcl.Cryptography.dll
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt

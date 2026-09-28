@@ -1,4 +1,5 @@
-﻿using VerichatCRM.API.DTOs.Responses;
+﻿using VerichatCRM.API.DTOs.Requests;
+using VerichatCRM.API.DTOs.Responses;
 
 namespace VerichatCRM.API.Services.Interfaces
 {
