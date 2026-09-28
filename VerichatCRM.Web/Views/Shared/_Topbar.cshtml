@@ -1,4 +1,13 @@
-﻿@page
-@model VerichatCRM.Web.Views.Shared._TopbarModel
-@{
-}
+﻿<header class="topbar">
+    <div class="topbar-left">
+        <h1 class="topbar-title">@ViewData["Title"]</h1>
+        <p class="topbar-subtitle">@ViewData["Subtitle"]</p>
+    </div>
+    <div class="topbar-right">
+        <button class="icon-btn" aria-label="Notifications">
+            <span class="notification-dot"></span>
+            🔔
+        </button>
+        <button class="icon-btn" aria-label="Settings">⚙</button>
+    </div>
+</header>

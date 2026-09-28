@@ -1,4 +1,84 @@
-﻿@page
-@model VerichatCRM.Web.Views.Shared._SidebarModel
-@{
-}
+﻿<aside class="sidebar">
+    <div class="sidebar-logo">
+        <img src="~/images/logo.png alt="Verichat" />
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <span class="nav-section-title">Overview</span>
+            <a href="/procurement/dashboard" class="nav-item">
+                <i class="nav-icon">▦</i> Dashboard
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <span class="nav-section-title">Clients</span>
+            <a href="/clients" class="nav-item">
+                <i class="nav-icon">👥</i> Client Directory
+            </a>
+            <a href="/clients/profile" class="nav-item">
+                <i class="nav-icon">👤</i> Client Profile
+            </a>
+            <a href="/assets" class="nav-item">
+                <i class="nav-icon">📦</i> Asset Tracking
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <span class="nav-section-title">Sales</span>
+            <a href="/inquiries" class="nav-item">
+                <i class="nav-icon">📊</i> Inquiry Queue
+            </a>
+            <a href="/pipeline" class="nav-item">
+                <i class="nav-icon">📈</i> Pipeline Board
+            </a>
+            <a href="/quotations" class="nav-item">
+                <i class="nav-icon">📄</i> Quotation Builder
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <span class="nav-section-title">Catalog</span>
+            <a href="/procurement/product-catalog" class="nav-item">
+                <i class="nav-icon">🛍</i> Product Catalog
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <span class="nav-section-title">Support</span>
+            <a href="/tickets" class="nav-item">
+                <i class="nav-icon">🎫</i> Ticket Hub
+            </a>
+            <a href="/procurement/logistics-tracker" class="nav-item">
+                <i class="nav-icon">🚚</i> Logistics Tracker
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <span class="nav-section-title">Operations</span>
+            <a href="/procurement/warehouse-alerts" class="nav-item">
+                <i class="nav-icon">⚠</i> Warehouse Alerts
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <span class="nav-section-title">Admin</span>
+            <a href="/admin/rules" class="nav-item">
+                <i class="nav-icon">⚙</i> Rules Engine
+            </a>
+        </div>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">PM</div>
+            <div>
+                <div class="user-name">Procurement Manager</div>
+                <div class="user-role">Admin</div>
+            </div>
+        </div>
+        <a href="/account/logout" class="logout-link">
+            <i>→</i> Sign out
+        </a>
+    </div>
+</aside>

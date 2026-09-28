@@ -1,8 +1,71 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Welcome";
+    Layout = "_Layout";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="hero">
+    <div class="hero-grid">
+        <div class="hero-left">
+            <div class="hero-brand">
+                <img src="~/images/logo.png" alt="Verichat" />
+            </div>
+            <h2 class="hero-tagline">MEDICAL PROCUREMENT</h2>
+            <div class="hero-divider"></div>
+            <p class="hero-subtext">
+                Precision procurement for the health sector. Manage clinical, mining, and rehab supply chains from a single intelligent platform.
+            </p>
+        </div>
+
+        <div class="hero-right">
+            <div class="auth-card">
+                <h1 class="auth-title">Welcome Back!</h1>
+                <p class="auth-subtitle">Enter your credentials to continue</p>
+
+                <form method="post" action="/account/login">
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" name="email" class="form-input" placeholder="Enter your email" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-input" placeholder="Enter your password" required />
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" id="remember" name="remember" />
+                        <label for="remember">Remember me</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+                </form>
+
+                <div class="roles-section">
+                    <span class="roles-label">Roles</span>
+                    <div class="roles-grid">
+                        <div class="role-item">
+                            <div class="role-icon admin">A</div>
+                            <span>Admin</span>
+                        </div>
+                        <div class="role-item">
+                            <div class="role-icon sales">S</div>
+                            <span>Sales Rep</span>
+                        </div>
+                        <div class="role-item">
+                            <div class="role-icon support">S</div>
+                            <span>Support</span>
+                        </div>
+                        <div class="role-item">
+                            <div class="role-icon procurement">P</div>
+                            <span>Procurement</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/landing.css" />
+}
