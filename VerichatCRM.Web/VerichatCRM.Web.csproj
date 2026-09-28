@@ -13,7 +13,6 @@
     <Folder Include="Areas\Sales\Controllers\" />
     <Folder Include="Areas\Sales\Models\" />
     <Folder Include="Areas\Sales\Views\" />
-    <Folder Include="Views\Account\" />
     <Folder Include="Views\Dashboard\" />
     <Folder Include="Views\Client\" />
     <Folder Include="Views\Quotation\" />
