@@ -1,0 +1,38 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using VerichatCRM.API.DTOs.Responses;
+using VerichatCRM.API.Services.Interfaces;
+
+namespace VerichatCRM.API.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize(Roles = "System Administrator,Procurement Manager,Sales Representative")]
+    public class WarehouseAlertController : Controller
+    {
+        private readonly IWarehouseAlertService _warehouseAlertService;
+
+        public WarehouseAlertController(IWarehouseAlertService warehouseAlertService)
+        {
+            _warehouseAlertService = warehouseAlertService;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<WarehouseAlertResponse>>> GetActiveAlerts()
+        {
+            var alerts = await _warehouseAlertService.GetActiveAlertsAsync();
+            return Ok(alerts);
+        }
+
+        [HttpPatch("{alertId}/resolve")]
+        public async Task<ActionResult<WarehouseAlertResponse>> ResolveAlert(string alertId)
+        {
+            var alert = await _warehouseAlertService.ResolveAlertAsync(alertId); ;
+            if (alert == null)
+            {
+                return NotFound();
+            }
+            return Ok(alert);
+        }
+    }
+}

@@ -1,0 +1,956 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{C402120C-2731-6C18-40D4-0E50692F3EAE}|..\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.infrastructure\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C402120C-2731-6C18-40D4-0E50692F3EAE}|..\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.infrastructure\\verichatcrm.infrastructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\services\\purchaseorderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:services\\purchaseorderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\controllers\\purchaseordercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:controllers\\purchaseordercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\services\\warehousealertservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:services\\warehousealertservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\services\\productservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:services\\productservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\services\\interfaces\\ipurchaseorderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:services\\interfaces\\ipurchaseorderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\controllers\\warehousealertcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:controllers\\warehousealertcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D392B8AC-A257-D44F-E632-3B182C607985}|..\\VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.core\\entities\\purchaseorderlineitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D392B8AC-A257-D44F-E632-3B182C607985}|..\\VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.core\\entities\\purchaseorder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\services\\orderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:services\\orderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\dtos\\responses\\orderresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:dtos\\responses\\orderresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\dtos\\responses\\productresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:dtos\\responses\\productresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\services\\interfaces\\iwarehousealertservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:services\\interfaces\\iwarehousealertservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\services\\interfaces\\iorderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:services\\interfaces\\iorderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\services\\interfaces\\iproductservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:services\\interfaces\\iproductservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\dtos\\responses\\purchaseorderlineitemresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:dtos\\responses\\purchaseorderlineitemresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\dtos\\responses\\purchaseorderresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:dtos\\responses\\purchaseorderresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\dtos\\responses\\warehousealertresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:dtos\\responses\\warehousealertresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\dtos\\responses\\orderlineitemresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:dtos\\responses\\orderlineitemresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\dtos\\requests\\purchaseorderlineitemrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:dtos\\requests\\purchaseorderlineitemrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\dtos\\requests\\createpurchaseorderrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:dtos\\requests\\createpurchaseorderrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\dtos\\requests\\createorderrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:dtos\\requests\\createorderrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\dtos\\requests\\orderlineitemrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:dtos\\requests\\orderlineitemrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\dtos\\requests\\createproductrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:dtos\\requests\\createproductrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C402120C-2731-6C18-40D4-0E50692F3EAE}|..\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.infrastructure\\data\\dbcontext\\configurations\\clientconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\dtos\\requests\\updatestockrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:dtos\\requests\\updatestockrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\verichatcrm.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:verichatcrm.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D392B8AC-A257-D44F-E632-3B182C607985}|..\\VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.core\\entities\\order.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D392B8AC-A257-D44F-E632-3B182C607985}|..\\VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.core\\entities\\warehousealert.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\dorca\\.copilot\\plans\\plan-fix-compilation-errors-across-solution.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|MarkdownSecurePreview"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\middleware\\xsssanitizationmiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:middleware\\xsssanitizationmiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\validators\\purchaseorderlineitemrequestvalidator .cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:validators\\purchaseorderlineitemrequestvalidator .cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\validators\\createproductrequestvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:validators\\createproductrequestvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\validators\\createpurchaseorderrequestvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:validators\\createpurchaseorderrequestvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\validators\\orderlineitemrequestvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:validators\\orderlineitemrequestvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\validators\\createorderrequestvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:validators\\createorderrequestvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\controllers\\ordercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:controllers\\ordercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\dtos\\responses\\clientresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:dtos\\responses\\clientresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D392B8AC-A257-D44F-E632-3B182C607985}|..\\VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.core\\entities\\product.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D392B8AC-A257-D44F-E632-3B182C607985}|..\\VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.core\\interfaces\\iorderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D392B8AC-A257-D44F-E632-3B182C607985}|..\\VerichatCRM.Core\\VerichatCRM.Core.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.core\\interfaces\\iproductservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\weatherforecast.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:weatherforecast.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.api\\verichatcrm.api.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
+      "RelativeMoniker": "D:0:0:{FAAB31A1-9D59-EAAB-4EDB-DF99D91CF756}|VerichatCRM.API.csproj|solutionrelative:verichatcrm.api.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.csproj.user||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:VerichatCRM.API.csproj.user||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\BEE30ECA72DEE246CAB56DA3C309700A||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\80C062FAC829180B6F5D4C4F27D38D12||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\73FBE8F05DA70AC3CFC186960CAC9BA6||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\84C75EF1724E2C7EAF718D57E0A924B5||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\9D9E5E0E5F9CBAF21D8577EA19B16B54||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\E4A98D620FE4C6DEA9F356FFF1C78267||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C402120C-2731-6C18-40D4-0E50692F3EAE}|..\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj|c:\\users\\dorca\\documents\\github\\verichatcrm.wil\\verichatcrm.infrastructure\\data\\dbcontext\\configurations\\userconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 42,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:131:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:132:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:133:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\Data\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "..\\VerichatCRM.Infrastructure\\Data\\AppDbContext.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\Data\\AppDbContext.cs",
+              "RelativeToolTip": "..\\VerichatCRM.Infrastructure\\Data\\AppDbContext.cs",
+              "ViewState": "AgIAAB4AAAAAAAAAAAAWwBgAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T11:31:05.576Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ProductController.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Controllers\\ProductController.cs",
+              "RelativeDocumentMoniker": "Controllers\\ProductController.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Controllers\\ProductController.cs",
+              "RelativeToolTip": "Controllers\\ProductController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADcAAABNAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T10:13:52.119Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "VerichatCRM.Infrastructure.csproj",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
+              "RelativeDocumentMoniker": "..\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
+              "RelativeToolTip": "..\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
+              "ViewState": "AgIAABcAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-09-24T13:18:18.598Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAACdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-09-28T12:45:39.726Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "PurchaseOrderService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Services\\PurchaseOrderService.cs",
+              "RelativeDocumentMoniker": "Services\\PurchaseOrderService.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Services\\PurchaseOrderService.cs",
+              "RelativeToolTip": "Services\\PurchaseOrderService.cs",
+              "ViewState": "AgIAAEwAAAAAAAAAAAAAAFcAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T19:26:06.028Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAC0AAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-24T13:03:33.661Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "PurchaseOrderController.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Controllers\\PurchaseOrderController.cs",
+              "RelativeDocumentMoniker": "Controllers\\PurchaseOrderController.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Controllers\\PurchaseOrderController.cs",
+              "RelativeToolTip": "Controllers\\PurchaseOrderController.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAA7wCIAAAA7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T09:16:25.839Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "WarehouseAlertService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Services\\WarehouseAlertService.cs",
+              "RelativeDocumentMoniker": "Services\\WarehouseAlertService.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Services\\WarehouseAlertService.cs",
+              "RelativeToolTip": "Services\\WarehouseAlertService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T19:26:20.879Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "ProductService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Services\\ProductService.cs",
+              "RelativeDocumentMoniker": "Services\\ProductService.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Services\\ProductService.cs",
+              "RelativeToolTip": "Services\\ProductService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACcAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T11:24:29.302Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "IPurchaseOrderService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Services\\Interfaces\\IPurchaseOrderService.cs",
+              "RelativeDocumentMoniker": "Services\\Interfaces\\IPurchaseOrderService.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Services\\Interfaces\\IPurchaseOrderService.cs",
+              "RelativeToolTip": "Services\\Interfaces\\IPurchaseOrderService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T10:39:40.791Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "WarehouseAlertController.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Controllers\\WarehouseAlertController.cs",
+              "RelativeDocumentMoniker": "Controllers\\WarehouseAlertController.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Controllers\\WarehouseAlertController.cs",
+              "RelativeToolTip": "Controllers\\WarehouseAlertController.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAgwBUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T09:16:48.579Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "PurchaseOrderLineItem.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Entities\\PurchaseOrderLineItem.cs",
+              "RelativeDocumentMoniker": "..\\VerichatCRM.Core\\Entities\\PurchaseOrderLineItem.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Entities\\PurchaseOrderLineItem.cs",
+              "RelativeToolTip": "..\\VerichatCRM.Core\\Entities\\PurchaseOrderLineItem.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T12:05:45.667Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "PurchaseOrder.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Entities\\PurchaseOrder.cs",
+              "RelativeDocumentMoniker": "..\\VerichatCRM.Core\\Entities\\PurchaseOrder.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Entities\\PurchaseOrder.cs",
+              "RelativeToolTip": "..\\VerichatCRM.Core\\Entities\\PurchaseOrder.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T11:17:07.067Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "OrderService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Services\\OrderService.cs",
+              "RelativeDocumentMoniker": "Services\\OrderService.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Services\\OrderService.cs",
+              "RelativeToolTip": "Services\\OrderService.cs",
+              "ViewState": "AgIAAFIAAAAAAAAAAAAmwGAAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T11:25:09.17Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "OrderResponse.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Responses\\OrderResponse.cs",
+              "RelativeDocumentMoniker": "DTOs\\Responses\\OrderResponse.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Responses\\OrderResponse.cs",
+              "RelativeToolTip": "DTOs\\Responses\\OrderResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAIAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T09:17:50.469Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "ProductResponse.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Responses\\ProductResponse.cs",
+              "RelativeDocumentMoniker": "DTOs\\Responses\\ProductResponse.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Responses\\ProductResponse.cs",
+              "RelativeToolTip": "DTOs\\Responses\\ProductResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAkAAAAUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T09:17:44.527Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "IWarehouseAlertService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Services\\Interfaces\\IWarehouseAlertService.cs",
+              "RelativeDocumentMoniker": "Services\\Interfaces\\IWarehouseAlertService.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Services\\Interfaces\\IWarehouseAlertService.cs",
+              "RelativeToolTip": "Services\\Interfaces\\IWarehouseAlertService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAABGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T11:12:15.45Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "IOrderService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Services\\Interfaces\\IOrderService.cs",
+              "RelativeDocumentMoniker": "Services\\Interfaces\\IOrderService.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Services\\Interfaces\\IOrderService.cs",
+              "RelativeToolTip": "Services\\Interfaces\\IOrderService.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAawAoAAABHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T10:37:21.877Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "IProductService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Services\\Interfaces\\IProductService.cs",
+              "RelativeDocumentMoniker": "Services\\Interfaces\\IProductService.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Services\\Interfaces\\IProductService.cs",
+              "RelativeToolTip": "Services\\Interfaces\\IProductService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAABVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T10:35:45.238Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "PurchaseOrderLineItemResponse.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Responses\\PurchaseOrderLineItemResponse.cs",
+              "RelativeDocumentMoniker": "DTOs\\Responses\\PurchaseOrderLineItemResponse.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Responses\\PurchaseOrderLineItemResponse.cs",
+              "RelativeToolTip": "DTOs\\Responses\\PurchaseOrderLineItemResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T11:37:27.735Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "PurchaseOrderResponse.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Responses\\PurchaseOrderResponse.cs",
+              "RelativeDocumentMoniker": "DTOs\\Responses\\PurchaseOrderResponse.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Responses\\PurchaseOrderResponse.cs",
+              "RelativeToolTip": "DTOs\\Responses\\PurchaseOrderResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T11:36:31.663Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "OrderLineItemResponse.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Responses\\OrderLineItemResponse.cs",
+              "RelativeDocumentMoniker": "DTOs\\Responses\\OrderLineItemResponse.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Responses\\OrderLineItemResponse.cs",
+              "RelativeToolTip": "DTOs\\Responses\\OrderLineItemResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T09:58:16.709Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "WarehouseAlertResponse.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Responses\\WarehouseAlertResponse.cs",
+              "RelativeDocumentMoniker": "DTOs\\Responses\\WarehouseAlertResponse.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Responses\\WarehouseAlertResponse.cs",
+              "RelativeToolTip": "DTOs\\Responses\\WarehouseAlertResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T09:17:56.511Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "PurchaseOrderLineItemRequest.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Requests\\PurchaseOrderLineItemRequest.cs",
+              "RelativeDocumentMoniker": "DTOs\\Requests\\PurchaseOrderLineItemRequest.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Requests\\PurchaseOrderLineItemRequest.cs",
+              "RelativeToolTip": "DTOs\\Requests\\PurchaseOrderLineItemRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T09:38:47.363Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "CreatePurchaseOrderRequest.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Requests\\CreatePurchaseOrderRequest.cs",
+              "RelativeDocumentMoniker": "DTOs\\Requests\\CreatePurchaseOrderRequest.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Requests\\CreatePurchaseOrderRequest.cs",
+              "RelativeToolTip": "DTOs\\Requests\\CreatePurchaseOrderRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T09:37:34.366Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "CreateOrderRequest.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Requests\\CreateOrderRequest.cs",
+              "RelativeDocumentMoniker": "DTOs\\Requests\\CreateOrderRequest.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Requests\\CreateOrderRequest.cs",
+              "RelativeToolTip": "DTOs\\Requests\\CreateOrderRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAYAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T09:17:37.529Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "OrderLineItemRequest.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Requests\\OrderLineItemRequest.cs",
+              "RelativeDocumentMoniker": "DTOs\\Requests\\OrderLineItemRequest.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Requests\\OrderLineItemRequest.cs",
+              "RelativeToolTip": "DTOs\\Requests\\OrderLineItemRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T09:32:53.688Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "CreateProductRequest.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Requests\\CreateProductRequest.cs",
+              "RelativeDocumentMoniker": "DTOs\\Requests\\CreateProductRequest.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Requests\\CreateProductRequest.cs",
+              "RelativeToolTip": "DTOs\\Requests\\CreateProductRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T09:17:24.482Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "ClientConfiguration.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\Data\\DbContext\\Configurations\\ClientConfiguration.cs",
+              "RelativeDocumentMoniker": "..\\VerichatCRM.Infrastructure\\Data\\DbContext\\Configurations\\ClientConfiguration.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\Data\\DbContext\\Configurations\\ClientConfiguration.cs",
+              "RelativeToolTip": "..\\VerichatCRM.Infrastructure\\Data\\DbContext\\Configurations\\ClientConfiguration.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T11:31:53.318Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 54,
+              "Title": "UserConfiguration.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\Data\\DbContext\\Configurations\\UserConfiguration.cs",
+              "RelativeDocumentMoniker": "..\\VerichatCRM.Infrastructure\\Data\\DbContext\\Configurations\\UserConfiguration.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\Data\\DbContext\\Configurations\\UserConfiguration.cs",
+              "RelativeToolTip": "..\\VerichatCRM.Infrastructure\\Data\\DbContext\\Configurations\\UserConfiguration.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAEBVwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T11:31:58.15Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "UpdateStockRequest.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Requests\\UpdateStockRequest.cs",
+              "RelativeDocumentMoniker": "DTOs\\Requests\\UpdateStockRequest.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Requests\\UpdateStockRequest.cs",
+              "RelativeToolTip": "DTOs\\Requests\\UpdateStockRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAzAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T09:17:30.848Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "VerichatCRM.API.csproj",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.csproj",
+              "RelativeDocumentMoniker": "VerichatCRM.API.csproj",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.csproj",
+              "RelativeToolTip": "VerichatCRM.API.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-09-24T08:41:51.126Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "Order.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Entities\\Order.cs",
+              "RelativeDocumentMoniker": "..\\VerichatCRM.Core\\Entities\\Order.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Entities\\Order.cs",
+              "RelativeToolTip": "..\\VerichatCRM.Core\\Entities\\Order.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T11:17:35.587Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "WarehouseAlert.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Entities\\WarehouseAlert.cs",
+              "RelativeDocumentMoniker": "..\\VerichatCRM.Core\\Entities\\WarehouseAlert.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Entities\\WarehouseAlert.cs",
+              "RelativeToolTip": "..\\VerichatCRM.Core\\Entities\\WarehouseAlert.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T11:17:53.661Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "plan-fix-compilation-errors-across-solution.md [Preview]",
+              "DocumentMoniker": "C:\\Users\\dorca\\.copilot\\plans\\plan-fix-compilation-errors-across-solution.md",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\.copilot\\plans\\plan-fix-compilation-errors-across-solution.md",
+              "ToolTip": "C:\\Users\\dorca\\.copilot\\plans\\plan-fix-compilation-errors-across-solution.md [Preview]",
+              "RelativeToolTip": "..\\..\\..\\..\\.copilot\\plans\\plan-fix-compilation-errors-across-solution.md [Preview]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-09-28T11:20:42.951Z",
+              "EditorCaption": " [Preview]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 49,
+              "Title": "80C062FAC829180B6F5D4C4F27D38D12",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\80C062FAC829180B6F5D4C4F27D38D12",
+              "RelativeDocumentMoniker": "..\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\80C062FAC829180B6F5D4C4F27D38D12",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\80C062FAC829180B6F5D4C4F27D38D12",
+              "RelativeToolTip": "..\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\80C062FAC829180B6F5D4C4F27D38D12",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-09-28T11:19:37.717Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 53,
+              "Title": "E4A98D620FE4C6DEA9F356FFF1C78267",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\E4A98D620FE4C6DEA9F356FFF1C78267",
+              "RelativeDocumentMoniker": "..\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\E4A98D620FE4C6DEA9F356FFF1C78267",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\E4A98D620FE4C6DEA9F356FFF1C78267",
+              "RelativeToolTip": "..\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\E4A98D620FE4C6DEA9F356FFF1C78267",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-09-28T11:20:27.191Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 52,
+              "Title": "9D9E5E0E5F9CBAF21D8577EA19B16B54",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\9D9E5E0E5F9CBAF21D8577EA19B16B54",
+              "RelativeDocumentMoniker": "..\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\9D9E5E0E5F9CBAF21D8577EA19B16B54",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\9D9E5E0E5F9CBAF21D8577EA19B16B54",
+              "RelativeToolTip": "..\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\9D9E5E0E5F9CBAF21D8577EA19B16B54",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-09-28T11:20:23.631Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 51,
+              "Title": "84C75EF1724E2C7EAF718D57E0A924B5",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\84C75EF1724E2C7EAF718D57E0A924B5",
+              "RelativeDocumentMoniker": "..\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\84C75EF1724E2C7EAF718D57E0A924B5",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\84C75EF1724E2C7EAF718D57E0A924B5",
+              "RelativeToolTip": "..\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\84C75EF1724E2C7EAF718D57E0A924B5",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-09-28T11:20:19.668Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 50,
+              "Title": "73FBE8F05DA70AC3CFC186960CAC9BA6",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\73FBE8F05DA70AC3CFC186960CAC9BA6",
+              "RelativeDocumentMoniker": "..\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\73FBE8F05DA70AC3CFC186960CAC9BA6",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\73FBE8F05DA70AC3CFC186960CAC9BA6",
+              "RelativeToolTip": "..\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\73FBE8F05DA70AC3CFC186960CAC9BA6",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-09-28T11:20:15.843Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 48,
+              "Title": "BEE30ECA72DEE246CAB56DA3C309700A",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\BEE30ECA72DEE246CAB56DA3C309700A",
+              "RelativeDocumentMoniker": "..\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\BEE30ECA72DEE246CAB56DA3C309700A",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\BEE30ECA72DEE246CAB56DA3C309700A",
+              "RelativeToolTip": "..\\.vs\\CopilotSnapshots\\C09A16B39F8BA64A8369BE95AE707E1E\\E58E548C7CC4BB49B542A1AD2F6704B0\\BEE30ECA72DEE246CAB56DA3C309700A",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-09-28T11:19:33.65Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 34,
+              "Title": "XssSanitizationMiddleware.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Middleware\\XssSanitizationMiddleware.cs",
+              "RelativeDocumentMoniker": "Middleware\\XssSanitizationMiddleware.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Middleware\\XssSanitizationMiddleware.cs",
+              "RelativeToolTip": "Middleware\\XssSanitizationMiddleware.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAAA1wBoAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-24T13:08:12.315Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 35,
+              "Title": "PurchaseOrderLineItemRequestValidator .cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Validators\\PurchaseOrderLineItemRequestValidator .cs",
+              "RelativeDocumentMoniker": "Validators\\PurchaseOrderLineItemRequestValidator .cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Validators\\PurchaseOrderLineItemRequestValidator .cs",
+              "RelativeToolTip": "Validators\\PurchaseOrderLineItemRequestValidator .cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAA4wBEAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-24T13:02:01.328Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 37,
+              "Title": "CreatePurchaseOrderRequestValidator.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Validators\\CreatePurchaseOrderRequestValidator.cs",
+              "RelativeDocumentMoniker": "Validators\\CreatePurchaseOrderRequestValidator.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Validators\\CreatePurchaseOrderRequestValidator.cs",
+              "RelativeToolTip": "Validators\\CreatePurchaseOrderRequestValidator.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAIBJwBIAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-24T13:00:50.327Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 38,
+              "Title": "OrderLineItemRequestValidator.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Validators\\OrderLineItemRequestValidator.cs",
+              "RelativeDocumentMoniker": "Validators\\OrderLineItemRequestValidator.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Validators\\OrderLineItemRequestValidator.cs",
+              "RelativeToolTip": "Validators\\OrderLineItemRequestValidator.cs",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAmwA8AAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-24T12:59:17.519Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 36,
+              "Title": "CreateProductRequestValidator.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Validators\\CreateProductRequestValidator.cs",
+              "RelativeDocumentMoniker": "Validators\\CreateProductRequestValidator.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Validators\\CreateProductRequestValidator.cs",
+              "RelativeToolTip": "Validators\\CreateProductRequestValidator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAABiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-24T08:42:12.556Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 39,
+              "Title": "CreateOrderRequestValidator.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Validators\\CreateOrderRequestValidator.cs",
+              "RelativeDocumentMoniker": "Validators\\CreateOrderRequestValidator.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Validators\\CreateOrderRequestValidator.cs",
+              "RelativeToolTip": "Validators\\CreateOrderRequestValidator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAABMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-24T08:46:38.327Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 40,
+              "Title": "OrderController.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Controllers\\OrderController.cs",
+              "RelativeDocumentMoniker": "Controllers\\OrderController.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\Controllers\\OrderController.cs",
+              "RelativeToolTip": "Controllers\\OrderController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-24T05:56:59.159Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 41,
+              "Title": "ClientResponse.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Responses\\ClientResponse.cs",
+              "RelativeDocumentMoniker": "DTOs\\Responses\\ClientResponse.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\DTOs\\Responses\\ClientResponse.cs",
+              "RelativeToolTip": "DTOs\\Responses\\ClientResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T14:45:28.313Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 42,
+              "Title": "Product.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Entities\\Product.cs",
+              "RelativeDocumentMoniker": "..\\VerichatCRM.Core\\Entities\\Product.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Entities\\Product.cs",
+              "RelativeToolTip": "..\\VerichatCRM.Core\\Entities\\Product.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T09:25:33.95Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 43,
+              "Title": "IOrderService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Interfaces\\IOrderService.cs",
+              "RelativeDocumentMoniker": "..\\VerichatCRM.Core\\Interfaces\\IOrderService.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Interfaces\\IOrderService.cs",
+              "RelativeToolTip": "..\\VerichatCRM.Core\\Interfaces\\IOrderService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T09:18:42.614Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 44,
+              "Title": "IProductService.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Interfaces\\IProductService.cs",
+              "RelativeDocumentMoniker": "..\\VerichatCRM.Core\\Interfaces\\IProductService.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\Interfaces\\IProductService.cs",
+              "RelativeToolTip": "..\\VerichatCRM.Core\\Interfaces\\IProductService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T09:18:36.948Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 45,
+              "Title": "WeatherForecast.cs",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\WeatherForecast.cs",
+              "RelativeDocumentMoniker": "WeatherForecast.cs",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\WeatherForecast.cs",
+              "RelativeToolTip": "WeatherForecast.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-23T09:06:45.116Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 46,
+              "Title": "VerichatCRM.API.http",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.http",
+              "RelativeDocumentMoniker": "VerichatCRM.API.http",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.http",
+              "RelativeToolTip": "VerichatCRM.API.http",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
+              "WhenOpened": "2026-09-23T09:06:44.733Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 47,
+              "Title": "VerichatCRM.API.csproj.user",
+              "DocumentMoniker": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.csproj.user",
+              "RelativeDocumentMoniker": "VerichatCRM.API.csproj.user",
+              "ToolTip": "C:\\Users\\dorca\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.csproj.user",
+              "RelativeToolTip": "VerichatCRM.API.csproj.user",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003464|",
+              "WhenOpened": "2026-09-23T09:06:44.515Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

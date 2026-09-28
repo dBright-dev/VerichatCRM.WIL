@@ -1,0 +1,13 @@
+C:\Users\dorca\Documents\GitHub\VerichatCRM.WIL\VerichatCRM.Core\bin\Debug\net10.0\VerichatCRM.Core.deps.json
+C:\Users\dorca\Documents\GitHub\VerichatCRM.WIL\VerichatCRM.Core\bin\Debug\net10.0\VerichatCRM.Core.dll
+C:\Users\dorca\Documents\GitHub\VerichatCRM.WIL\VerichatCRM.Core\bin\Debug\net10.0\VerichatCRM.Core.pdb
+C:\Users\dorca\Documents\GitHub\VerichatCRM.WIL\VerichatCRM.Core\obj\Debug\net10.0\VerichatCRM.Core.csproj.AssemblyReference.cache
+C:\Users\dorca\Documents\GitHub\VerichatCRM.WIL\VerichatCRM.Core\obj\Debug\net10.0\VerichatCRM.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\dorca\Documents\GitHub\VerichatCRM.WIL\VerichatCRM.Core\obj\Debug\net10.0\VerichatCRM.Core.AssemblyInfoInputs.cache
+C:\Users\dorca\Documents\GitHub\VerichatCRM.WIL\VerichatCRM.Core\obj\Debug\net10.0\VerichatCRM.Core.AssemblyInfo.cs
+C:\Users\dorca\Documents\GitHub\VerichatCRM.WIL\VerichatCRM.Core\obj\Debug\net10.0\VerichatCRM.Core.csproj.CoreCompileInputs.cache
+C:\Users\dorca\Documents\GitHub\VerichatCRM.WIL\VerichatCRM.Core\obj\Debug\net10.0\VerichatCRM.Core.sourcelink.json
+C:\Users\dorca\Documents\GitHub\VerichatCRM.WIL\VerichatCRM.Core\obj\Debug\net10.0\VerichatCRM.Core.dll
+C:\Users\dorca\Documents\GitHub\VerichatCRM.WIL\VerichatCRM.Core\obj\Debug\net10.0\refint\VerichatCRM.Core.dll
+C:\Users\dorca\Documents\GitHub\VerichatCRM.WIL\VerichatCRM.Core\obj\Debug\net10.0\VerichatCRM.Core.pdb
+C:\Users\dorca\Documents\GitHub\VerichatCRM.WIL\VerichatCRM.Core\obj\Debug\net10.0\ref\VerichatCRM.Core.dll

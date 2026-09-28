@@ -63,6 +63,13 @@
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[10.0.12, )"
+<<<<<<< Updated upstream
+=======
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[10.0.12, )"
+>>>>>>> Stashed changes
             }
           },
           "imports": [

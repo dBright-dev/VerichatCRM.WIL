@@ -2,11 +2,64 @@
 
 namespace VerichatCRM.API.Controllers
 {
+<<<<<<< Updated upstream
+=======
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
+>>>>>>> Stashed changes
     public class ProductController : Controller
     {
         public IActionResult Index()
         {
+<<<<<<< Updated upstream
             return View();
+=======
+            _productService = productService;
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "System Administrator,Sales Representative,Procurement Manager")]
+        public async Task<ActionResult<IEnumerable<ProductResponse>>> GetProducts(
+            [FromQuery] string? category = null,
+            [FromQuery] bool? lowStockOnly = null)
+        {
+            var products = await _productService.GetProductsAsync(category, lowStockOnly);
+            return Ok(products);
+        }
+
+        [HttpGet("{sku}")]
+        [Authorize(Roles = "System Administrator,Sales Representative,Procurement Manager")]
+        public async Task<ActionResult<ProductResponse>> GetProductBySKU(string sku)
+        {
+            var product = await _productService.GetProductBySKUAsync(sku);
+            if (product == null)
+            {
+                return NotFound(new { message = $"Product with SKU {sku} not found." });
+            }
+            return Ok(product);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "System Administrator")]
+        public async Task<ActionResult<ProductResponse>> CreateProduct([FromBody] CreateProductRequest request)
+        {
+            var product = await _productService.CreateProductAsync(request);
+            return CreatedAtAction(nameof(GetProductBySKU), new { sku = product.SKU }, product);
+        }
+
+
+        [HttpPatch("{sku}/stock")]
+        [Authorize(Roles = "System Administrator,Procurement Manager")]
+        public async Task<ActionResult<ProductResponse>> UpdateProductStock(string sku, [FromBody] UpdateStockRequest request)
+        {
+            var product = await _productService.UpdateProductStockAsync(sku, request);
+            if (product == null)
+            {
+                return NotFound(new { message = $"Product with SKU {sku} not found." });
+            }
+            return Ok(product);
+>>>>>>> Stashed changes
         }
     }
 }

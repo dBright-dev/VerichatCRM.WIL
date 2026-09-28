@@ -1,0 +1,12 @@
+﻿using VerichatCRM.API.DTOs.Requests;
+using VerichatCRM.Core.Entities;
+
+namespace VerichatCRM.API.Services.Interfaces
+{
+    public interface IPurchaseOrderService
+    {
+        Task<IEnumerable<PurchaseOrder>> GetAllAsync();
+        Task<PurchaseOrder> CreateAsync(CreatePurchaseOrderRequest request);
+        Task<PurchaseOrder?> ReceiveAsync(string id);
+    }
+}

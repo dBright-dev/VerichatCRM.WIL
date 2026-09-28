@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace VerichatCRM.Infrastructure.Data.AppDbContext.Configurations
+namespace VerichatCRM.Infrastructure.Data.Configurations
 {
     internal class ClientConfiguration
     {
