@@ -1,4 +1,69 @@
-﻿@page
-@model VerichatCRM.Web.Views.Procurement.DashboardModel
+﻿@model VerichatCRM.Web.ViewModels.Procurement.ProcurementDashboardViewModel
 @{
+    ViewData["Title"] = "Dashboard";
+    ViewData["Subtitle"] = $"Here's what's happening across your workspace — {Model.CurrentDate:dddd, d MMMM yyyy}";
+}
+
+<div class="welcome-banner">
+    <h2>Welcome back, @Model.ManagerName</h2>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-accent cyan"></div>
+        <div class="stat-label">Active Orders</div>
+        <div class="stat-value">@Model.ActiveOrders</div>
+        <div class="stat-meta">In transit</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-accent orange"></div>
+        <div class="stat-label">Pending Quotes</div>
+        <div class="stat-value">@Model.PendingQuotes</div>
+        <div class="stat-meta">awaiting approval</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-accent cyan"></div>
+        <div class="stat-label">Catalog Items</div>
+        <div class="stat-value">@Model.CatalogItems</div>
+        <div class="stat-meta">across 4 sections</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-accent red"></div>
+        <div class="stat-label">Low Stock Items</div>
+        <div class="stat-value">@Model.LowStockItems</div>
+        <div class="stat-meta">need reorder</div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-title">Revenue vs Target</div>
+        <p class="card-subtitle">Feb – Jul 2026</p>
+        <canvas id="revenueChart" height="120"></canvas>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Recent Activity</div>
+        <div class="activity-list">
+            @foreach (var item in Model.RecentActivity)
+            {
+                <div class="activity-item">
+                    <span class="activity-dot @item.Severity"></span>
+                    <div class="activity-body">
+                        <div class="activity-title">@item.Title</div>
+                        <div class="activity-subtitle">@item.Subtitle</div>
+                    </div>
+                    <span class="activity-time">@item.Timestamp</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="~/js/dashboard.js"></script>
+    <script>
+        window.revenueData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueVsTarget));
+    </script>
 }

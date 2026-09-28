@@ -1,4 +1,81 @@
-﻿@page
-@model VerichatCRM.Web.Views.Procurement.WarehouseAlertsModel
+﻿@model VerichatCRM.Web.ViewModels.Procurement.WarehouseAlertsViewModel
 @{
+    ViewData["Title"] = "Warehouse Alerts";
+    ViewData["Subtitle"] = "Low-stock safeguard and reorder management";
+}
+
+@if (Model.CriticalCount > 0)
+{
+    <div class="alert-banner">
+        <span class="alert-icon">⚠</span>
+        <span><strong>@Model.CriticalCount item at critical stock level:</strong> @Model.CriticalItemName</span>
+    </div>
+}
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>SKU</th>
+            <th>Product Name</th>
+            <th>Current Stock</th>
+            <th>Min Stock</th>
+            <th>Reorder Qty</th>
+            <th>Supplier</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var row in Model.Alerts)
+        {
+            <tr>
+                <td><strong>@row.SKU</strong></td>
+                <td>@row.ProductName</td>
+                <td class="@GetStockClass(row)">@row.CurrentStock.ToString("N0")</td>
+                <td>@row.MinStock.ToString("N0")</td>
+                <td>@row.ReorderQty.ToString("N0")</td>
+                <td>@row.Supplier</td>
+                <td><span class="@GetStatusClass(row.Status)">@row.Status</span></td>
+                <td>
+                    @if (row.Status != "OK")
+                    {
+                        <button class="btn btn-danger btn-xs" data-sku="@row.SKU">Reorder Now</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-outline btn-xs" disabled>Reorder Now</button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="card" style="margin-top: var(--space-xl);">
+    <div class="card-title">Stock Level vs Minimum Required</div>
+    <canvas id="stockLevelChart" height="80"></canvas>
+</div>
+
+@functions {
+    string GetStockClass(StockAlertRow row) => row.Status switch
+    {
+        "Critical" => "text-critical",
+        "Low" => "text-warning",
+        _ => "text-success"
+    };
+
+    string GetStatusClass(string status) => status switch
+    {
+        "Critical" => "status-critical",
+        "Low" => "status-warning",
+        _ => "status-ok"
+    };
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="~/js/warehouse-alerts.js"></script>
+    <script>
+        window.stockLevels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StockLevels));
+    </script>
 }
