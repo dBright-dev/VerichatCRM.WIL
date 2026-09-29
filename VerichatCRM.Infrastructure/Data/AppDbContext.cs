@@ -18,8 +18,9 @@ namespace VerichatCRM.Infrastructure.Data
         public DbSet<WarehouseAlert> WarehouseAlerts => Set<WarehouseAlert>();
         //public DbSet<Client> Clients => Set<Client>();
         //public DbSet<Deal> Deals => Set<Deal>();
-        //public DbSet<Ticket> Tickets => Set<Ticket>();
-        //public DbSet<Asset> Assets => Set<Asset>();
+        public DbSet<Ticket> Tickets => Set<Ticket>();
+        public DbSet<Asset> Assets => Set<Asset>();
+        public DbSet<DeliveryLog> DeliveryLogs => Set<DeliveryLog>();
         public DbSet<User> Users => Set<User>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
