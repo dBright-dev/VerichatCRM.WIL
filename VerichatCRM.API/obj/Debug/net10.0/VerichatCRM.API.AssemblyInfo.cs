@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VerichatCRM.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c3e329dfe2c0ed1c35ecee67fbfc58dfd6583520")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+84ae52727e45c9dbcaa98f3d1d9c9dd1b0915e65")]
 [assembly: System.Reflection.AssemblyProductAttribute("VerichatCRM.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VerichatCRM.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
