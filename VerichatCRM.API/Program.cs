@@ -19,6 +19,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Register services
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<IAssetRepository, AssetRepository>();
+builder.Services.AddScoped<IDeliveryLogRepository, DeliveryLogRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -27,6 +30,12 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
 builder.Services.AddScoped<IWarehouseAlertService, WarehouseAlertService>();
+builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<IAssetService, AssetService>();
+builder.Services.AddScoped<IDeliveryLogService, DeliveryLogService>();
+
+// Background service
+builder.Services.AddHostedService<SlaEscalationService>();
 
 // JWT Auth
 var jwtKey = builder.Configuration["Jwt:Key"]!;
