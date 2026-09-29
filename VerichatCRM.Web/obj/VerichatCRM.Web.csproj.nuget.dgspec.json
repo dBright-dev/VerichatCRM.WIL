@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Web\\VerichatCRM.Web.csproj": {}
+    "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\VerichatCRM.Web.csproj": {}
   },
   "projects": {
-    "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Web\\VerichatCRM.Web.csproj": {
+    "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\VerichatCRM.Web.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Web\\VerichatCRM.Web.csproj",
+        "projectUniqueName": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\VerichatCRM.Web.csproj",
         "projectName": "VerichatCRM.Web",
-        "projectPath": "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Web\\VerichatCRM.Web.csproj",
+        "projectPath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\VerichatCRM.Web.csproj",
         "packagesPath": "C:\\Users\\dorca\\.nuget\\packages\\",
-        "outputPath": "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Web\\obj\\",
+        "outputPath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Web\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

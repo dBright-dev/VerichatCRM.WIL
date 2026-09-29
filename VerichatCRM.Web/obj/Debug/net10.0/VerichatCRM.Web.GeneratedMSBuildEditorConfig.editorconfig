@@ -20,73 +20,73 @@ build_property.TargetFrameworkVersion = v10.0
 build_property.EntryPointFilePath = 
 build_property.RootNamespace = VerichatCRM.Web
 build_property.RootNamespace = VerichatCRM.Web
-build_property.ProjectDir = D:\Documents\GitHub\VerichatCRM.WIL\VerichatCRM.Web\
+build_property.ProjectDir = D:\Documents\source\repos\VerichatCRM\VerichatCRM.Web\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 10.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = D:\Documents\GitHub\VerichatCRM.WIL\VerichatCRM.Web
+build_property.MSBuildProjectDirectory = D:\Documents\source\repos\VerichatCRM\VerichatCRM.Web
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
-[D:/Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Web/Views/Account/Login.cshtml]
+[D:/Documents/source/repos/VerichatCRM/VerichatCRM.Web/Views/Account/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Web/Views/Account/Register.cshtml]
+[D:/Documents/source/repos/VerichatCRM/VerichatCRM.Web/Views/Account/Register.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZWdpc3Rlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Web/Views/Home/Index.cshtml]
+[D:/Documents/source/repos/VerichatCRM/VerichatCRM.Web/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Web/Views/Home/Privacy.cshtml]
+[D:/Documents/source/repos/VerichatCRM/VerichatCRM.Web/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Web/Views/Procurement/Dashboard.cshtml]
+[D:/Documents/source/repos/VerichatCRM/VerichatCRM.Web/Views/Procurement/Dashboard.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvY3VyZW1lbnRcRGFzaGJvYXJkLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Web/Views/Procurement/LogisticsTracker.cshtml]
+[D:/Documents/source/repos/VerichatCRM/VerichatCRM.Web/Views/Procurement/LogisticsTracker.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvY3VyZW1lbnRcTG9naXN0aWNzVHJhY2tlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Web/Views/Procurement/ProductCatalog.cshtml]
+[D:/Documents/source/repos/VerichatCRM/VerichatCRM.Web/Views/Procurement/ProductCatalog.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvY3VyZW1lbnRcUHJvZHVjdENhdGFsb2cuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Web/Views/Procurement/WarehouseAlerts.cshtml]
+[D:/Documents/source/repos/VerichatCRM/VerichatCRM.Web/Views/Procurement/WarehouseAlerts.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvY3VyZW1lbnRcV2FyZWhvdXNlQWxlcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Web/Views/Shared/Error.cshtml]
+[D:/Documents/source/repos/VerichatCRM/VerichatCRM.Web/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Web/Views/Shared/_Sidebar.cshtml]
+[D:/Documents/source/repos/VerichatCRM/VerichatCRM.Web/Views/Shared/_Sidebar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9TaWRlYmFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Web/Views/Shared/_Topbar.cshtml]
+[D:/Documents/source/repos/VerichatCRM/VerichatCRM.Web/Views/Shared/_Topbar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Ub3BiYXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Web/Views/Shared/_ValidationScriptsPartial.cshtml]
+[D:/Documents/source/repos/VerichatCRM/VerichatCRM.Web/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Web/Views/_ViewImports.cshtml]
+[D:/Documents/source/repos/VerichatCRM/VerichatCRM.Web/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Web/Views/_ViewStart.cshtml]
+[D:/Documents/source/repos/VerichatCRM/VerichatCRM.Web/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Documents/GitHub/VerichatCRM.WIL/VerichatCRM.Web/Views/Shared/_Layout.cshtml]
+[D:/Documents/source/repos/VerichatCRM/VerichatCRM.Web/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-3fz3l2xtc2
