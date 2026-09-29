@@ -1,4 +1,6 @@
-﻿namespace VerichatCRM.API.Services
+﻿using VerichatCRM.API.Services.Interfaces;
+
+namespace VerichatCRM.API.Services
 {
     public class SlaEscalationService : BackgroundService
     {

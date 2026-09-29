@@ -3994,11 +3994,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.csproj",
+      "projectUniqueName": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.API\\VerichatCRM.API.csproj",
       "projectName": "VerichatCRM.API",
-      "projectPath": "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\VerichatCRM.API.csproj",
+      "projectPath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.API\\VerichatCRM.API.csproj",
       "packagesPath": "C:\\Users\\dorca\\.nuget\\packages\\",
-      "outputPath": "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.API\\obj\\",
+      "outputPath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -4020,11 +4020,11 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\VerichatCRM.Core.csproj": {
-              "projectPath": "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\VerichatCRM.Core.csproj"
+            "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\VerichatCRM.Core.csproj": {
+              "projectPath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\VerichatCRM.Core.csproj"
             },
-            "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj": {
-              "projectPath": "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj"
+            "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj": {
+              "projectPath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj"
             }
           }
         }
