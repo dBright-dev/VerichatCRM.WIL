@@ -52,6 +52,9 @@ namespace VerichatCRM.Web.Services
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await _http.PostAsync(endpoint, content);
+
+            if (!response.IsSuccessStatusCode) return default;
+
             var respJson = await response.Content.ReadAsStringAsync();
 
             if (string.IsNullOrWhiteSpace(respJson)) return default;
