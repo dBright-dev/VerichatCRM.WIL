@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using VerichatCRM.Core.Entities;
 using VerichatCRM.Core.Interfaces;
 
@@ -17,7 +18,7 @@ namespace VerichatCRM.Infrastructure.Data.Repositories
 
         public async Task<User?> GetByEmailAsync(string email)
         {
-            return await _context.Users
+            return await ((System.Linq.IQueryable<User>)_context.Users)
                 .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
         }
 
@@ -28,7 +29,8 @@ namespace VerichatCRM.Infrastructure.Data.Repositories
 
         public async Task<bool> EmailExistsAsync(string email)
         {
-            return await _context.Users.AnyAsync(u => u.Email.ToLower() == email.ToLower());
+            return await ((System.Linq.IQueryable<User>)_context.Users)
+                .AnyAsync(u => u.Email.ToLower() == email.ToLower());
         }
 
         public async Task<User> AddAsync(User user)

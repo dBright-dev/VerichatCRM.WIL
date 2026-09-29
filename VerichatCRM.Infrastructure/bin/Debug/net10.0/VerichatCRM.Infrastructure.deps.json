@@ -884,7 +884,8 @@
           "FluentValidation.AspNetCore": "11.3.1",
           "HtmlSanitizer": "9.2.1039",
           "Microsoft.AspNetCore.OpenApi": "10.0.12",
-          "Microsoft.EntityFrameworkCore": "10.0.12"
+          "Microsoft.EntityFrameworkCore": "10.0.12",
+          "Microsoft.EntityFrameworkCore.SqlServer": "10.0.12"
         },
         "runtime": {
           "VerichatCRM.Core.dll": {
