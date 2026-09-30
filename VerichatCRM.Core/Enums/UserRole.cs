@@ -4,7 +4,11 @@ using System.Text;
 
 namespace VerichatCRM.Core.Enums
 {
-    internal class UserRole
+    public enum UserRole
     {
+        SystemAdministrator,
+        SalesRepresentative,
+        ProcurementManager,
+        SupportAndLogistics
     }
 }
