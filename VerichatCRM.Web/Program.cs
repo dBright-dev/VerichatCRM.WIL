@@ -1,4 +1,11 @@
+using System.Globalization;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Set the default culture to en-US for consistent currency
+var usCulture = new CultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentCulture = usCulture;
+CultureInfo.DefaultThreadCurrentUICulture = usCulture;
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

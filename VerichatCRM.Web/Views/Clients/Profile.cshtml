@@ -1,0 +1,63 @@
+﻿@model VerichatCRM.Core.Models.Clients.ClientViewModel
+
+<div class="mb-3">
+    <a asp-controller="Clients" asp-action="Index" class="text-decoration-none">
+        &larr; Back to Client Directory
+    </a>
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-8">
+        <div class="vc-card p-4 mb-3">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                <div>
+                    <h2 class="vc-heading h4 mb-1">@Model.Name</h2>
+                    <span class="vc-text-muted">@Model.Sector</span>
+                </div>
+                <span class="vc-badge vc-badge--@Model.StatusBadgeVariant">@Model.Status</span>
+            </div>
+
+            <dl class="row mb-0">
+                <dt class="col-sm-4 vc-text-muted fw-normal">Contact person</dt>
+                <dd class="col-sm-8">@Model.ContactPerson</dd>
+
+                <dt class="col-sm-4 vc-text-muted fw-normal">Email</dt>
+                <dd class="col-sm-8">
+                    <a href="mailto:@Model.ContactEmail">@Model.ContactEmail</a>
+                </dd>
+
+                <dt class="col-sm-4 vc-text-muted fw-normal">Phone</dt>
+                <dd class="col-sm-8">@Model.ContactPhone</dd>
+
+                <dt class="col-sm-4 vc-text-muted fw-normal">Assigned rep</dt>
+                <dd class="col-sm-8">@Model.AssignedRep</dd>
+
+                <dt class="col-sm-4 vc-text-muted fw-normal">Last contact</dt>
+                <dd class="col-sm-8">
+                    @(Model.LastContactDate?.ToString("dd MMM yyyy") ?? "No contact logged")
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="vc-card vc-kpi-card">
+            <div class="vc-kpi-card__label">Total Deals Value</div>
+            <div class="vc-kpi-card__value">@Model.TotalDealsValue.ToString("C0")</div>
+        </div>
+
+        <div class="vc-card p-3 mt-3">
+            <h3 class="vc-heading h6 mb-2">Quick actions</h3>
+            <div class="d-grid gap-2">
+                <a class="btn btn-primary btn-sm"
+                   asp-controller="Quotation" asp-action="Index" asp-route-clientId="@Model.Id">
+                    Start a Quotation
+                </a>
+                <a class="btn btn-outline-primary btn-sm"
+                   asp-controller="Pipeline" asp-action="Index">
+                    View in Pipeline
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

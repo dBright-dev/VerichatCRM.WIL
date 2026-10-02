@@ -1,0 +1,99 @@
+﻿@model VerichatCRM.Core.Models.Dashboard.DashboardViewModel
+
+<div class="row g-3 mb-4">
+    @foreach (var kpi in Model.Kpis)
+    {
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="vc-card vc-kpi-card h-100">
+                <div class="vc-kpi-card__label">@kpi.Label</div>
+                <div class="vc-kpi-card__value">@kpi.Value</div>
+                @if (!string.IsNullOrEmpty(kpi.DeltaLabel))
+                {
+                    <span class="vc-badge vc-badge--@kpi.BadgeVariant mt-2">@kpi.DeltaLabel</span>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-7">
+        <div class="vc-card p-3 h-100">
+            <h2 class="vc-heading h6 mb-3">Revenue Trend</h2>
+
+            <canvas id="revenueTrendChart"
+                    height="220"
+                    aria-label="Line chart of revenue trend from @Model.RevenueTrend.FirstOrDefault()?.Label to @Model.RevenueTrend.LastOrDefault()?.Label"
+                    role="img">
+            </canvas>
+
+            @* Screen-reader-friendly fallback for the same data as the chart *@
+            <table class="visually-hidden">
+                <caption>Revenue trend by month</caption>
+                <thead>
+                    <tr><th scope="col">Month</th><th scope="col">Revenue ($M)</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var point in Model.RevenueTrend)
+                    {
+                        <tr>
+                            <td>@point.Label</td>
+                            <td>@point.Value.ToString("0.00")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+        <div class="vc-card p-3 h-100">
+            <h2 class="vc-heading h6 mb-3">Recent Activity</h2>
+
+            <ul class="list-unstyled mb-0">
+                @foreach (var item in Model.RecentActivity)
+                {
+                    <li class="d-flex justify-content-between align-items-start py-2 border-bottom vc-divider">
+                        <div class="me-2">
+                            <span class="vc-badge vc-badge--@item.BadgeVariant mb-1" aria-hidden="true">&bull;</span>
+                            <span>@item.Title</span>
+                        </div>
+                        <span class="vc-text-muted small text-nowrap">@item.Timestamp</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+        const revenueLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueTrend.Select(p => p.Label)));
+        const revenueValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueTrend.Select(p => p.Value)));
+
+        const ctx = document.getElementById('revenueTrendChart');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: revenueLabels,
+                datasets: [{
+                    label: 'Revenue',
+                    data: revenueValues,
+                    borderColor: '#2F6FED',
+                    backgroundColor: 'rgba(47, 111, 237, 0.08)',
+                    tension: 0.35,
+                    fill: true,
+                    pointRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: false }
+                }
+            }
+        });
+    </script>
+}

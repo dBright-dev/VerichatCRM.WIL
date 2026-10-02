@@ -1,0 +1,110 @@
+﻿@model VerichatCRM.Core.Models.Pipeline.PipelineBoardViewModel
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+        <div class="vc-card vc-kpi-card">
+            <div class="vc-kpi-card__label">Total Pipeline</div>
+            <div class="vc-kpi-card__value">@Model.TotalPipelineValue.ToString("C0")</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="vc-card vc-kpi-card">
+            <div class="vc-kpi-card__label">Weighted Forecast</div>
+            <div class="vc-kpi-card__value">@Model.WeightedForecast.ToString("C0")</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="vc-card vc-kpi-card">
+            <div class="vc-kpi-card__label">Deals This Period</div>
+            <div class="vc-kpi-card__value">@Model.DealsThisPeriod</div>
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive pb-2">
+    <div class="d-flex gap-3" style="min-width: 1100px;" id="pipelineBoard">
+        @foreach (var stage in VerichatCRM.Core.Models.Pipeline.PipelineStages.All)
+        {
+            var deals = Model.DealsByStage.TryGetValue(stage, out var list) ? list : new();
+            var stageTotal = deals.Sum(d => d.Value);
+
+            <div class="flex-fill" style="min-width: 210px;">
+                <div class="vc-card p-2 h-100 pipeline-column"
+                     data-stage="@stage"
+                     ondrop="vcHandleDrop(event)" ondragover="vcAllowDrop(event)">
+
+                    <div class="px-2 py-1 mb-2">
+                        <div class="fw-semibold small">@stage</div>
+                        <div class="vc-text-muted small">@deals.Count deals &middot; @stageTotal.ToString("C0")</div>
+                    </div>
+
+                    <div class="d-flex flex-column gap-2" data-stage-list="@stage">
+                        @foreach (var deal in deals)
+                        {
+                            <div class="vc-card p-2 pipeline-card"
+                                 draggable="true"
+                                 ondragstart="vcHandleDragStart(event)"
+                                 data-deal-id="@deal.Id"
+                                 tabindex="0"
+                                 aria-label="@deal.ClientName, @deal.Value.ToString("C0"), assigned to @deal.AssignedRep, stage @stage">
+
+                                <div class="fw-semibold small">@deal.ClientName</div>
+                                <div class="vc-text-muted small mb-1">@deal.Value.ToString("C0")</div>
+                                <div class="vc-text-muted small mb-2">
+                                    @deal.AssignedRep
+                                    @if (deal.ExpectedCloseDate.HasValue)
+                                    {
+                                        <span> &middot; @deal.ExpectedCloseDate.Value.ToString("dd MMM")</span>
+                                    }
+                                </div>
+
+                                <label class="visually-hidden" for="move-@deal.Id">Move @deal.ClientName to stage</label>
+                                <select id="move-@deal.Id" class="form-select form-select-sm"
+                                        onchange="vcMoveCard(@deal.Id, this.value)">
+                                    @foreach (var s in VerichatCRM.Core.Models.Pipeline.PipelineStages.All)
+                                    {
+                                        <option value="@s" selected="@(s == stage)">@s</option>
+                                    }
+                                </select>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        let vcDraggedId = null;
+
+        function vcHandleDragStart(e) {
+            vcDraggedId = e.target.closest('.pipeline-card').dataset.dealId;
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function vcAllowDrop(e) {
+            e.preventDefault();
+        }
+
+        function vcHandleDrop(e) {
+            e.preventDefault();
+            const column = e.target.closest('.pipeline-column');
+            if (!column || vcDraggedId === null) return;
+            vcMoveCard(vcDraggedId, column.dataset.stage);
+        }
+
+        function vcMoveCard(dealId, targetStage) {
+            const card = document.querySelector(`.pipeline-card[data-deal-id="${dealId}"]`);
+            const targetList = document.querySelector(`[data-stage-list="${targetStage}"]`);
+            if (!card || !targetList) return;
+
+            const select = card.querySelector('select');
+            if (select) select.value = targetStage;
+
+            targetList.appendChild(card);
+        }
+    </script>
+}

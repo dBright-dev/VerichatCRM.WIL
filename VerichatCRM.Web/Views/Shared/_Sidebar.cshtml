@@ -1,0 +1,71 @@
+﻿@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+
+    bool IsActive(string controller, string action = null)
+    {
+        if (!string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        return action == null || string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+<nav class="vc-sidebar" aria-label="Main navigation">
+
+    <div class="vc-sidebar__brand">
+        <div class="vc-sidebar__brand-mark" aria-hidden="true">V</div>
+        <span class="vc-sidebar__brand-text">Verichat</span>
+    </div>
+
+    <div class="vc-sidebar__nav">
+
+        <div class="vc-sidebar__section-label">Overview</div>
+        <ul class="list-unstyled">
+            <li>
+                <a class="vc-sidebar__link"
+                   asp-controller="Dashboard" asp-action="Index"
+                   aria-current="@(IsActive("Dashboard") ? "page" : null)">
+                    <span aria-hidden="true">&#128202;</span>
+                    Dashboard
+                </a>
+            </li>
+        </ul>
+
+        <div class="vc-sidebar__section-label">Sales</div>
+        <ul class="list-unstyled">
+            <li>
+                <a class="vc-sidebar__link"
+                   asp-controller="Clients" asp-action="Index"
+                   aria-current="@(IsActive("Clients") ? "page" : null)">
+                    <span aria-hidden="true">&#128100;</span>
+                    Client Directory
+                </a>
+            </li>
+            <li>
+                <a class="vc-sidebar__link"
+                   asp-controller="Pipeline" asp-action="Index"
+                   aria-current="@(IsActive("Pipeline") ? "page" : null)">
+                    <span aria-hidden="true">&#128203;</span>
+                    Pipeline Board
+                </a>
+            </li>
+            <li>
+                <a class="vc-sidebar__link"
+                   asp-controller="Quotation" asp-action="Index"
+                   aria-current="@(IsActive("Quotation") ? "page" : null)">
+                    <span aria-hidden="true">&#128179;</span>
+                    Quotation Builder
+                </a>
+            </li>
+        </ul>
+
+        @* Other domains (Procurement, Support) add their own section here *@
+
+    </div>
+
+    <div class="vc-sidebar__footer">
+        Verichat CRM
+    </div>
+
+</nav>

@@ -14,11 +14,12 @@
     <Folder Include="Areas\Sales\Models\" />
     <Folder Include="Areas\Sales\Views\" />
     <Folder Include="Views\Account\" />
-    <Folder Include="Views\Dashboard\" />
     <Folder Include="Views\Client\" />
-    <Folder Include="Views\Quotation\" />
-    <Folder Include="Views\Pipeline\" />
     <Folder Include="wwwroot\images\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VerichatCRM.Core\VerichatCRM.Core.csproj" />
   </ItemGroup>
 
 </Project>

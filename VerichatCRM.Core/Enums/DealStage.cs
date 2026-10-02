@@ -4,7 +4,12 @@ using System.Text;
 
 namespace VerichatCRM.Core.Enums
 {
-    internal class DealStage
+    public enum DealStage
     {
+        InitialInquiry,
+        SiteAssessment,
+        ProposalReview,
+        QuotationSent,
+        ClosedWon
     }
 }
