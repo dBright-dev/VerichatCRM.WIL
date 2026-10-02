@@ -1,0 +1,45 @@
+﻿@model List<VerichatCRM.Web.Models.Support.DeliveryDto>
+@{
+    ViewData["Title"] = "Logistics Tracker";
+    ViewData["Subtitle"] = "Order dispatch, delivery tracking & route management";
+}
+
+<div class="shipment-grid">
+    @foreach (var d in Model)
+    {
+        <div class="shipment-card">
+            <div class="shipment-header">
+                <span class="shipment-ref">@d.TrackingNumber</span>
+                <span class="badge @GetStatusBadge(d.Status)">@d.Status</span>
+            </div>
+            <div class="shipment-route">
+                <div class="route-point">
+                    <span class="route-dot origin"></span>
+                    <span class="route-label">@d.Origin</span>
+                </div>
+                <div class="route-line"></div>
+                <div class="route-point">
+                    <span class="route-dot destination"></span>
+                    <span class="route-label">@d.Destination</span>
+                </div>
+            </div>
+            <div class="shipment-meta">
+                <div><span class="meta-label">ETA</span><span class="meta-value">@d.EstimatedArrival.ToString("yyyy-MM-dd")</span></div>
+                <div><span class="meta-label">Weight</span><span class="meta-value">@d.WeightKg kg</span></div>
+                <div><span class="meta-label">Order</span><span class="meta-value">@d.OrderId</span></div>
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    string GetStatusBadge(string s) => s switch
+    {
+        "Processing" => "badge-neutral",
+        "Dispatched" => "badge-warning",
+        "In Transit" => "badge-info",
+        "Delivered" => "badge-success",
+        "Failed" => "badge-critical",
+        _ => "badge-neutral"
+    };
+}

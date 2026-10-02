@@ -1,0 +1,69 @@
+﻿@model VerichatCRM.Web.ViewModels.Support.SupportDashboardViewModel
+@{
+    ViewData["Title"] = "Support Dashboard";
+    ViewData["Subtitle"] = "Monitor tickets, SLAs, and logistics health";
+}
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-accent cyan"></div>
+        <div class="stat-label">Open Tickets</div>
+        <div class="stat-value">@Model.OpenTickets</div>
+        <div class="stat-meta">currently active</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-accent orange"></div>
+        <div class="stat-label">Escalated</div>
+        <div class="stat-value">@Model.Escalated</div>
+        <div class="stat-meta">past SLA</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-accent red"></div>
+        <div class="stat-label">SLA Breaches</div>
+        <div class="stat-value">@Model.SlaBreaches</div>
+        <div class="stat-meta">auto-flagged</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-accent green"></div>
+        <div class="stat-label">Active Shipments</div>
+        <div class="stat-value">@Model.ActiveShipments</div>
+        <div class="stat-meta">in transit</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Recent Tickets</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Tracking #</th>
+                <th>Title</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var t in Model.RecentTickets)
+            {
+                <tr>
+                    <td><strong>@t.TrackingNumber</strong></td>
+                    <td>@t.Title</td>
+                    <td><span class="badge @GetPriorityBadge(t.Priority)">@t.Priority</span></td>
+                    <td>@t.Status</td>
+                    <td>@t.TimeAgo</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@functions {
+    string GetPriorityBadge(string p) => p switch
+    {
+        "Critical" => "badge-critical",
+        "High" => "badge-warning",
+        "Medium" => "badge-info",
+        _ => "badge-neutral"
+    };
+}

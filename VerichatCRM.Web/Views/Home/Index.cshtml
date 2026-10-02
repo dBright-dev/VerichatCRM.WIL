@@ -1,8 +1,207 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model VerichatCRM.Web.ViewModels.Home.HomeViewModel
+@{
+    ViewData["Title"] = "Home";
+    Layout = "_Layout";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- ============ HERO SECTION ============ -->
+<section class="home-hero">
+    <div class="home-hero-content">
+        <div class="home-hero-badge">Medical Logistics & CRM Platform</div>
+        <h1 class="home-hero-title">
+            Precision procurement for the <span class="accent">health sector</span>
+        </h1>
+        <p class="home-hero-subtitle">
+            Manage clinical, mining, education, and rehab supply chains from a single intelligent platform.
+            From ranked inquiries to delivered consumables — Verichat keeps every interaction tracked.
+        </p>
+
+        <div class="home-hero-actions">
+            @if (Model.IsAuthenticated)
+            {
+                <a href="/procurement/dashboard" class="btn btn-primary">
+                    Go to Dashboard →
+                </a>
+                <a href="/procurement/product-catalog" class="btn btn-outline">
+                    Browse Catalog
+                </a>
+            }
+            else
+            {
+                <a href="/account/login" class="btn btn-primary">
+                    Sign In →
+                </a>
+                <a href="/account/register" class="btn btn-outline">
+                    Create Account
+                </a>
+            }
+        </div>
+
+        <div class="home-hero-stats">
+            <div class="hero-stat">
+                <div class="hero-stat-value">15+</div>
+                <div class="hero-stat-label">Catalog Items</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-value">4</div>
+                <div class="hero-stat-label">Business Roles</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-value">99.9%</div>
+                <div class="hero-stat-label">Uptime Target</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-value">24/7</div>
+                <div class="hero-stat-label">Support SLA</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="home-hero-visual">
+        <div class="hero-card-stack">
+            <div class="floating-card card-1">
+                <span class="float-icon">📊</span>
+                <div>
+                    <div class="float-title">12 Active Deals</div>
+                    <div class="float-sub">+18% this month</div>
+                </div>
+            </div>
+            <div class="floating-card card-2">
+                <span class="float-icon">🚚</span>
+                <div>
+                    <div class="float-title">4 In Transit</div>
+                    <div class="float-sub">ETA tracked live</div>
+                </div>
+            </div>
+            <div class="floating-card card-3">
+                <span class="float-icon">⚠</span>
+                <div>
+                    <div class="float-title">1 Critical Alert</div>
+                    <div class="float-sub">Surgical Mask IIR</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ QUICK ACTIONS ============ -->
+<section class="home-section">
+    <div class="home-section-header">
+        <h2>Quick Actions</h2>
+        <p>Jump straight into the tasks you need most.</p>
+    </div>
+
+    <div class="quick-actions-grid">
+        @foreach (var action in Model.QuickActions)
+        {
+            <a href="@action.Url" class="quick-action-card" data-color="@action.Color">
+                <div class="quick-action-icon">@action.Icon</div>
+                <div class="quick-action-body">
+                    <div class="quick-action-title">@action.Title</div>
+                    <div class="quick-action-desc">@action.Description</div>
+                </div>
+                <div class="quick-action-arrow">→</div>
+            </a>
+        }
+    </div>
+</section>
+
+<!-- ============ ROLES UNDER THE CRM ============ -->
+<section class="home-section home-roles">
+    <div class="home-section-header">
+        <h2>Built for every role under the CRM</h2>
+        <p>One platform, tailored experiences. Each role sees exactly what they need — nothing more.</p>
+    </div>
+
+    <div class="roles-grid">
+        @foreach (var role in Model.Roles)
+        {
+            <div class="role-card @role.Color">
+                <div class="role-card-header">
+                    <div class="role-card-icon">@role.Icon</div>
+                    <div class="role-card-tagline">@role.Tagline</div>
+                </div>
+                <h3 class="role-card-name">@role.Name</h3>
+                <p class="role-card-desc">@role.Description</p>
+
+                <ul class="role-card-features">
+                    @foreach (var feature in role.Features)
+                    {
+                        <li>
+                            <span class="feature-check">✓</span>
+                            @feature
+                        </li>
+                    }
+                </ul>
+
+                <a href="@role.DashboardUrl" class="role-card-link">
+                    Open Dashboard →
+                </a>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- ============ FEATURE HIGHLIGHTS ============ -->
+<section class="home-section">
+    <div class="home-section-header">
+        <h2>Why teams choose Verichat</h2>
+        <p>Replacing fragmented spreadsheets with a single source of truth.</p>
+    </div>
+
+    <div class="feature-grid">
+        <div class="feature-block">
+            <div class="feature-icon-cyan">⚡</div>
+            <h4>One-Click Quotations</h4>
+            <p>Generate itemized, branded PDF quotes in seconds — pulling live pricing from your medical catalog.</p>
+        </div>
+        <div class="feature-block">
+            <div class="feature-icon-cyan">🔔</div>
+            <h4>Smart Stock Warnings</h4>
+            <p>Automated low-stock alerts fire the moment inventory dips below your configured thresholds.</p>
+        </div>
+        <div class="feature-block">
+            <div class="feature-icon-cyan">🎯</div>
+            <h4>Ranked Inquiry Scoring</h4>
+            <p>Every incoming lead is scored by urgency, deal size, and sector — so reps focus on what matters.</p>
+        </div>
+        <div class="feature-block">
+            <div class="feature-icon-cyan">🚚</div>
+            <h4>Live Logistics Tracking</h4>
+            <p>From dispatch to delivery, track every shipment in real time with client-visible status updates.</p>
+        </div>
+        <div class="feature-block">
+            <div class="feature-icon-cyan">🔒</div>
+            <h4>Role-Based Security</h4>
+            <p>JWT authentication and Firestore rules ensure users only ever see data relevant to their role.</p>
+        </div>
+        <div class="feature-block">
+            <div class="feature-icon-cyan">📱</div>
+            <h4>Mobile-Ready</h4>
+            <p>Engineers update jobs from site. Procurement managers reorder on the go. Responsive by default.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ============ CTA BANNER ============ -->
+<section class="home-cta">
+    <div class="home-cta-content">
+        <h2>Ready to streamline your supply chain?</h2>
+        <p>Join the organisations already using Verichat to manage medical procurement with precision.</p>
+        <div class="home-cta-actions">
+            @if (Model.IsAuthenticated)
+            {
+                <a href="/procurement/dashboard" class="btn btn-primary">Open Dashboard</a>
+            }
+            else
+            {
+                <a href="/account/register" class="btn btn-primary">Create Free Account</a>
+                <a href="/account/login" class="btn btn-outline">Sign In</a>
+            }
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/home.css" />
+}
