@@ -4,22 +4,23 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Verichat CRM</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="~/css/site.css" />
-    <link rel="stylesheet" href="~/css/brand.css" />
-    <link rel="stylesheet" href="~/css/layout.css" />
-    <link rel="stylesheet" href="~/css/components.css" />
-    <link rel="stylesheet" href="~/css/pages.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/verichat-theme.css" />
+    <link rel="stylesheet" href="~/pages/home.css" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
+    <a class="vc-skip-link" href="#mainContent">Skip to main content</a>
     @if (User.Identity?.IsAuthenticated == true)
     {
-        <div class="app-shell">
+        <div class="vc-shell">
             <partial name="_Sidebar" />
-            <div class="app-main">
+            <div class="vc-main">
                 <partial name="_Topbar" />
-                <main class="app-content">
+                <main class="vc-content" id="mainContent">
                     @RenderBody()
                 </main>
             </div>
@@ -27,12 +28,29 @@
     }
     else
     {
-        <main class="app-content-public">
-            @RenderBody()
-        </main>
+        <div class="vc-public">
+            <header class="vc-public-nav">
+                <a class="vc-public-brand" asp-controller="Home" asp-action="Index">
+                    <span class="vc-brand-mark">V</span>
+                    <span>Verichat CRM</span>
+                </a>
+                <nav class="vc-public-links">
+                    <a asp-controller="Account" asp-action="Login">Sign In</a>
+                    <a class="vc-btn vc-btn-primary vc-btn-sm" asp-controller="Account" asp-action="Register">Create Account</a>
+                </nav>
+            </header>
+            <main id="mainContent">
+                @RenderBody()
+            </main>
+            <footer class="vc-public-footer">
+                <span>&copy; 2026 Verichat CRM — Medical Logistics &amp; CRM Platform</span>
+            </footer>
+        </div>
     }
 
-    <script src="~/js/api.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

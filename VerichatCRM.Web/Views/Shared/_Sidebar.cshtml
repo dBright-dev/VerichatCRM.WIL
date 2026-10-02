@@ -1,88 +1,44 @@
-﻿<aside class="sidebar">
-    <div class="sidebar-logo">
-        <img src="~/images/logo.png alt="Verichat" />
-    </div>
+﻿<aside class="vc-sidebar">
+    <a class="vc-sidebar__brand" asp-controller="Home" asp-action="Index">
+        <span class="vc-brand-mark">V</span>
+        <span class="vc-brand-text">Verichat CRM</span>
+    </a>
 
-    <nav class="sidebar-nav">
-        <div class="nav-section">
-            <span class="nav-section-title">Overview</span>
-            <a href="/" class="nav-item">
-                <i class="nav-icon">🏠</i> Home
-            </a>
-            <a href="/procurement/dashboard" class="nav-item">
-                <i class="nav-icon">▦</i> Dashboard
-            </a>
-        </div>
+    <nav class="vc-sidebar__nav" aria-label="Primary">
+        <div class="vc-sidebar__section-label">Overview</div>
+        <a class="vc-sidebar__link" asp-controller="Home" asp-action="Index"><span class="vc-sidebar__icon">🏠</span> Home</a>
+        <a class="vc-sidebar__link" asp-controller="Procurement" asp-action="Dashboard"><span class="vc-sidebar__icon">▦</span> Dashboard</a>
 
-        <div class="nav-section">
-            <span class="nav-section-title">Clients</span>
-            <a href="/clients" class="nav-item">
-                <i class="nav-icon">👥</i> Client Directory
-            </a>
-            <a href="/clients/profile" class="nav-item">
-                <i class="nav-icon">👤</i> Client Profile
-            </a>
-            <a href="/assets" class="nav-item">
-                <i class="nav-icon">📦</i> Asset Tracking
-            </a>
-        </div>
+        <div class="vc-sidebar__section-label">Clients</div>
+        <a class="vc-sidebar__link" asp-controller="Clients" asp-action="Index"><span class="vc-sidebar__icon">👥</span> Client Directory</a>
+        <a class="vc-sidebar__link" asp-controller="Logistics" asp-action="Tracker"><span class="vc-sidebar__icon">📦</span> Asset Tracking</a>
 
-        <div class="nav-section">
-            <span class="nav-section-title">Sales</span>
-            <a href="/inquiries" class="nav-item">
-                <i class="nav-icon">📊</i> Inquiry Queue
-            </a>
-            <a href="/pipeline" class="nav-item">
-                <i class="nav-icon">📈</i> Pipeline Board
-            </a>
-            <a href="/quotations" class="nav-item">
-                <i class="nav-icon">📄</i> Quotation Builder
-            </a>
-        </div>
+        <div class="vc-sidebar__section-label">Sales</div>
+        <a class="vc-sidebar__link" asp-controller="Pipeline" asp-action="Index"><span class="vc-sidebar__icon">📈</span> Pipeline Board</a>
+        <a class="vc-sidebar__link" asp-controller="Quotation" asp-action="Index"><span class="vc-sidebar__icon">📄</span> Quotation Builder</a>
 
-        <div class="nav-section">
-            <span class="nav-section-title">Catalog</span>
-            <a href="/procurement/product-catalog" class="nav-item">
-                <i class="nav-icon">🛍</i> Product Catalog
-            </a>
-        </div>
+        <div class="vc-sidebar__section-label">Catalog</div>
+        <a class="vc-sidebar__link" asp-controller="Procurement" asp-action="ProductCatalog"><span class="vc-sidebar__icon">🛍</span> Product Catalog</a>
 
-        <div class="nav-section">
-            <span class="nav-section-title">Support</span>
-            <a href="/tickets" class="nav-item">
-                <i class="nav-icon">🎫</i> Ticket Hub
-            </a>
-            <a href="/procurement/logistics-tracker" class="nav-item">
-                <i class="nav-icon">🚚</i> Logistics Tracker
-            </a>
-        </div>
+        <div class="vc-sidebar__section-label">Support</div>
+        <a class="vc-sidebar__link" asp-controller="Support" asp-action="TicketHub"><span class="vc-sidebar__icon">🎫</span> Ticket Hub</a>
+        <a class="vc-sidebar__link" asp-controller="Procurement" asp-action="LogisticsTracker"><span class="vc-sidebar__icon">🚚</span> Logistics Tracker</a>
 
-        <div class="nav-section">
-            <span class="nav-section-title">Operations</span>
-            <a href="/procurement/warehouse-alerts" class="nav-item">
-                <i class="nav-icon">⚠</i> Warehouse Alerts
-            </a>
-        </div>
-
-        <div class="nav-section">
-            <span class="nav-section-title">Admin</span>
-            <a href="/admin/rules" class="nav-item">
-                <i class="nav-icon">⚙</i> Rules Engine
-            </a>
-        </div>
+        <div class="vc-sidebar__section-label">Operations</div>
+        <a class="vc-sidebar__link" asp-controller="Procurement" asp-action="WarehouseAlerts"><span class="vc-sidebar__icon">⚠</span> Warehouse Alerts</a>
     </nav>
 
-    <div class="user-info">
-        <div class="user-avatar">@(Context.Session.GetString("UserName")?.Substring(0, 1) ?? "?")</div>
-        <div>
-            <div class="user-name">@Context.Session.GetString("UserName")</div>
-            <div class="user-role">@Context.Session.GetString("UserRole")</div>
+    <div class="vc-sidebar__footer">
+        <div class="vc-user">
+            <div class="vc-avatar">@(Context.Session.GetString("UserName")?.Substring(0, 1) ?? "?")</div>
+            <div>
+                <div class="vc-user-name">@(Context.Session.GetString("UserName") ?? "Guest")</div>
+                <div class="vc-user-role">@(Context.Session.GetString("UserRole") ?? "Public")</div>
+            </div>
         </div>
+        <form asp-controller="Account" asp-action="Logout" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="vc-logout">→ Sign out</button>
+        </form>
     </div>
-    <form asp-controller="Account" asp-action="Logout" method="post">
-        @Html.AntiForgeryToken()
-        <button type="submit" class="logout-link" style="background:none;border:none;cursor:pointer;">
-            → Sign out
-        </button>
-    </form>
 </aside>

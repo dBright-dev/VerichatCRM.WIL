@@ -1,4 +1,14 @@
-﻿/* ============ HERO ============ */
+﻿/* Compat aliases: home.css uses legacy token names — map them to vc theme */
+:root {
+    --brand-navy: var(--vc-navy); --brand-cyan: var(--vc-accent-2);
+    --brand-gradient: linear-gradient(135deg,#2F6FED,#00B4D8);
+    --neutral-white: #fff; --neutral-bg: var(--vc-bg); --neutral-border: var(--vc-border);
+    --neutral-text: var(--vc-text); --neutral-muted: var(--vc-text-muted);
+    --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 32px; --space-2xl: 48px;
+    --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px;
+    --shadow-card: var(--vc-shadow); --shadow-hover: var(--vc-shadow-hover);
+}
+/* ============ HERO ============ */
 .home-hero {
     display: grid;
     grid-template-columns: 1.2fr 1fr;
