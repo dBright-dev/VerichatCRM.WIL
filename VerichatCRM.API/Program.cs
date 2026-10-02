@@ -29,6 +29,9 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
 builder.Services.AddScoped<IDeliveryLogRepository, DeliveryLogRepository>();
+builder.Services.AddScoped<IClientRepository, ClientRepository>();
+builder.Services.AddScoped<IDealRepository, DealRepository>();
+builder.Services.AddScoped<IQuotationRepository, QuotationRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -40,6 +43,9 @@ builder.Services.AddScoped<IWarehouseAlertService, WarehouseAlertService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IAssetService, AssetService>();
 builder.Services.AddScoped<IDeliveryLogService, DeliveryLogService>();
+builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IDealService, DealService>();
+builder.Services.AddScoped<IQuotationService, QuotationService>();
 
 // Infrastructure Services
 builder.Services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
