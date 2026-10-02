@@ -11,9 +11,10 @@ namespace VerichatCRM.Core.Models.Pipeline
         public const string ProposalReview = "Proposal Review";
         public const string QuotationSent = "Quotation Sent";
         public const string ClosedWon = "Closed Won";
+        public const string Lost = "Lost";
         public static readonly IReadOnlyList<string> All = new[]
         {
-        InitialInquiry, SiteAssessment, ProposalReview, QuotationSent, ClosedWon
+        InitialInquiry, SiteAssessment, ProposalReview, QuotationSent, ClosedWon, Lost
         };
     }
 }

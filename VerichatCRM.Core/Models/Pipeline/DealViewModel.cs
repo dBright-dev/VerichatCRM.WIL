@@ -14,5 +14,6 @@ namespace VerichatCRM.Core.Models.Pipeline
         public decimal Value { get; set; }
         public string AssignedRep { get; set; } = string.Empty;
         public DateTime? ExpectedCloseDate { get; set; }
+        public string Stage { get; set; } = string.Empty;
     }
 }

@@ -35,4 +35,9 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\VerichatCRM.Core\VerichatCRM.Core.csproj" />
+    <ProjectReference Include="..\VerichatCRM.Infrastructure\VerichatCRM.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>
