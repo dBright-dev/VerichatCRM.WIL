@@ -1,7 +1,10 @@
-﻿namespace VerichatCRM.Core.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace VerichatCRM.Core.Entities
 {
     public class TicketActivity
     {
+        [Key]
         public string ActivityId { get; set; } = Guid.NewGuid().ToString();
         public string TicketId { get; set; } = string.Empty;
         public string Action { get; set; } = string.Empty;   // Created, Assigned, StatusChanged, Escalated, Commented

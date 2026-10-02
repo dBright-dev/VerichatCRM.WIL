@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 using VerichatCRM.Core.Enums;
 
@@ -7,6 +8,7 @@ namespace VerichatCRM.Core.Entities
 {
     public class Ticket
     {
+        [Key]
         public string TicketId { get; set; } = Guid.NewGuid().ToString();
         public string TrackingNumber { get; set; } = string.Empty; // e.g. VC-TCK-10432
 

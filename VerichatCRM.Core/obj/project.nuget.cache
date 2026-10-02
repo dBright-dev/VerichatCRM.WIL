@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "dW7xu3tEw5Q=",
+  "dgSpecHash": "suAyj5M+ECk=",
   "success": true,
-  "projectFilePath": "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\VerichatCRM.Core.csproj",
+  "projectFilePath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\VerichatCRM.Core.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\dorca\\.nuget\\packages\\anglesharp\\1.7.2\\anglesharp.1.7.2.nupkg.sha512",
     "C:\\Users\\dorca\\.nuget\\packages\\anglesharp.css\\1.0.2\\anglesharp.css.1.0.2.nupkg.sha512",

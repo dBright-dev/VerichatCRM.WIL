@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace VerichatCRM.Core.Entities
 {
     public class User
     {
+        [Key]
         public string UserId { get; set; } = Guid.NewGuid().ToString();
         public string DisplayName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;

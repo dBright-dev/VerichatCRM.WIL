@@ -2,6 +2,7 @@ D:\Documents\source\repos\VerichatCRM\VerichatCRM.Core\bin\Debug\net10.0\Vericha
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.Core\bin\Debug\net10.0\VerichatCRM.Core.runtimeconfig.json
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.Core\bin\Debug\net10.0\VerichatCRM.Core.dll
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.Core\bin\Debug\net10.0\VerichatCRM.Core.pdb
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.Core\obj\Debug\net10.0\VerichatCRM.Core.csproj.AssemblyReference.cache
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.Core\obj\Debug\net10.0\VerichatCRM.Core.GeneratedMSBuildEditorConfig.editorconfig
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.Core\obj\Debug\net10.0\VerichatCRM.Core.AssemblyInfoInputs.cache
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.Core\obj\Debug\net10.0\VerichatCRM.Core.AssemblyInfo.cs
@@ -12,4 +13,3 @@ D:\Documents\source\repos\VerichatCRM\VerichatCRM.Core\obj\Debug\net10.0\refint\
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.Core\obj\Debug\net10.0\VerichatCRM.Core.pdb
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.Core\obj\Debug\net10.0\VerichatCRM.Core.genruntimeconfig.cache
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.Core\obj\Debug\net10.0\ref\VerichatCRM.Core.dll
-D:\Documents\source\repos\VerichatCRM\VerichatCRM.Core\obj\Debug\net10.0\VerichatCRM.Core.csproj.AssemblyReference.cache

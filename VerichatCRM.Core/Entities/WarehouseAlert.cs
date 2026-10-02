@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace VerichatCRM.Core.Entities
 {
     public class WarehouseAlert
     {
+        [Key]
         public string AlertId { get; set; } = Guid.NewGuid().ToString();
         public string SKU { get; set; } = string.Empty;
         public string ProductName { get; set; } = string.Empty;

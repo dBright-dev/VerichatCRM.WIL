@@ -1,7 +1,10 @@
-﻿namespace VerichatCRM.Core.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace VerichatCRM.Core.Entities
 {
     public class DeliveryStatusUpdate
     {
+        [Key]
         public string UpdateId { get; set; } = Guid.NewGuid().ToString();
         public string DeliveryId { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;

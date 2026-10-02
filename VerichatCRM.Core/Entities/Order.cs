@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace VerichatCRM.Core.Entities
 {
     public class Order
     {
+        [Key]
         public string OrderId { get; set; } = Guid.NewGuid().ToString();
         public string ClientId { get; set; } = string.Empty;
         public string? DealId { get; set; }

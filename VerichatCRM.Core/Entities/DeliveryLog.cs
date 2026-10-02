@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.ComponentModel.DataAnnotations;
 
 namespace VerichatCRM.Core.Entities
 {
     public class DeliveryLog
     {
+        [Key]
         public string DeliveryId { get; set; } = Guid.NewGuid().ToString();
         public string TrackingNumber { get; set; } = string.Empty;
 
