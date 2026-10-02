@@ -14,7 +14,7 @@
 </head>
 <body>
     <a class="vc-skip-link" href="#mainContent">Skip to main content</a>
-    @if (User.Identity?.IsAuthenticated == true)
+    @if (Context.Session.GetString("JwtToken") != null)
     {
         <div class="vc-shell">
             <partial name="_Sidebar" />
@@ -29,22 +29,9 @@
     else
     {
         <div class="vc-public">
-            <header class="vc-public-nav">
-                <a class="vc-public-brand" asp-controller="Home" asp-action="Index">
-                    <span class="vc-brand-mark">V</span>
-                    <span>Verichat CRM</span>
-                </a>
-                <nav class="vc-public-links">
-                    <a asp-controller="Account" asp-action="Login">Sign In</a>
-                    <a class="vc-btn vc-btn-primary vc-btn-sm" asp-controller="Account" asp-action="Register">Create Account</a>
-                </nav>
-            </header>
             <main id="mainContent">
                 @RenderBody()
             </main>
-            <footer class="vc-public-footer">
-                <span>&copy; 2026 Verichat CRM — Medical Logistics &amp; CRM Platform</span>
-            </footer>
         </div>
     }
 

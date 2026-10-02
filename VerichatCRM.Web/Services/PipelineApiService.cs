@@ -42,7 +42,7 @@ namespace VerichatCRM.Web.Services
 
         public async Task<bool> MoveDealAsync(string dealId, string newStage)
         {
-            var result = await _api.PostAsync<object, DealDto>(
+            var result = await _api.PatchAsync<object, DealDto>(
                 $"/api/pipeline/deals/{dealId}/stage",
                 new { NewStage = newStage });
             return result != null;

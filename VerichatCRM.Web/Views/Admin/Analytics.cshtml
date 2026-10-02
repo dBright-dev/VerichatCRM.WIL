@@ -1,0 +1,20 @@
+@{
+    ViewData["Title"] = "Analytics";
+}
+<div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">TOTAL REVENUE (YTD)</div><div class="stat-value vc-accent">R 13.24M</div><div class="stat-meta">+18% vs last year</div></div>
+    <div class="stat-card"><div class="stat-label">CONVERSION RATE</div><div class="stat-value vc-accent">34%</div><div class="stat-meta">Inquiries → Closed Won</div></div>
+    <div class="stat-card"><div class="stat-label">AVG RESOLUTION TIME</div><div class="stat-value vc-accent">14.8h</div><div class="stat-meta">SLA target: 24h</div></div>
+    <div class="stat-card"><div class="stat-label">ACTIVE CLIENTS</div><div class="stat-value vc-accent">8</div><div class="stat-meta">Across 4 sectors</div></div>
+</div>
+<div class="card"><div class="card-title">Monthly Revenue vs Target</div><canvas id="analyticsRevenue" height="120"></canvas></div>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function () {
+            var el = document.getElementById('analyticsRevenue');
+            if (!el || typeof Chart === 'undefined') return;
+            new Chart(el, { type: 'line', data: { labels: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'], datasets: [{ label: 'Revenue', data: [1800000, 2100000, 1950000, 2300000, 2600000, 2290000], borderColor: '#5B5BD6', fill: true }, { label: 'Target', data: [1800000, 2000000, 2100000, 2300000, 2500000, 2600000], borderColor: '#E8940C', borderDash: [5, 5], pointRadius: 0 }] }, options: { responsive: true } });
+        })();
+    </script>
+}

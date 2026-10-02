@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "User Management";
+}
+<div class="card">
+    <div class="card-title">Roles & Permissions</div>
+    <p class="vc-text-muted">Users are managed through the API identity service. Assign roles at registration.</p>
+    <table class="data-table">
+        <thead><tr><th>Role</th><th>Dashboards</th><th>Permissions</th></tr></thead>
+        <tbody>
+            <tr><td>System Administrator</td><td>Admin Dashboard, Analytics</td><td>Full access — users, catalog, pipeline, tickets</td></tr>
+            <tr><td>Sales Representative</td><td>Pipeline, Quotations</td><td>Deals, clients, quotations</td></tr>
+            <tr><td>Procurement Manager</td><td>Procurement Dashboard</td><td>Orders, catalog, stock updates</td></tr>
+            <tr><td>Field Support Engineer</td><td>Support Dashboard</td><td>Tickets, assets, deliveries</td></tr>
+        </tbody>
+    </table>
+</div>

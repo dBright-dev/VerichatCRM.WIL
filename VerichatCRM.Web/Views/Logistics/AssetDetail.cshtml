@@ -1,0 +1,34 @@
+@model VerichatCRM.Web.Models.Support.AssetDto
+@{
+    ViewData["Title"] = Model.Model;
+    ViewData["Subtitle"] = Model.SerialNumber;
+}
+<div class="mb-3"><a asp-action="Assets">&larr; Back to Asset Tracking</a></div>
+<div class="grid-2">
+    <div class="card">
+        <div class="card-title">Service History</div>
+        @if (!Model.ServiceLogs.Any())
+        {
+            <p class="vc-text-muted">No service logs yet.</p>
+        }
+        @foreach (var log in Model.ServiceLogs)
+        {
+            <div class="activity-item">
+                <span class="activity-dot info"></span>
+                <div class="activity-body">
+                    <div class="activity-title">@log.Description</div>
+                    <div class="activity-subtitle">@log.ServiceDate.ToString("yyyy-MM-dd")@(log.Outcome != null ? " · " + log.Outcome : "")</div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="card">
+        <div class="card-title">Asset Details</div>
+        <dl class="row">
+            <dt class="col-sm-5">Serial</dt><dd class="col-sm-7">@Model.SerialNumber</dd>
+            <dt class="col-sm-5">Client</dt><dd class="col-sm-7">@Model.ClientId</dd>
+            <dt class="col-sm-5">Status</dt><dd class="col-sm-7">@Model.Status</dd>
+            <dt class="col-sm-5">Warranty</dt><dd class="col-sm-7">@(Model.WarrantyExpiry?.ToString("yyyy-MM-dd") ?? "N/A")</dd>
+        </dl>
+    </div>
+</div>

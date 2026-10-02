@@ -1,0 +1,36 @@
+@model List<VerichatCRM.Web.Models.Support.AssetDto>
+@{
+    ViewData["Title"] = "Asset Tracking";
+    ViewData["Subtitle"] = "Equipment calibration history & service scheduling";
+    var overdue = Model.Count(a => a.Status == "Overdue");
+    var dueSoon = Model.Count(a => a.Status == "Due Soon");
+    var expired = Model.Count(a => a.Status == "Expired");
+}
+
+<div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">TOTAL ASSETS</div><div class="stat-value vc-accent">@Model.Count</div></div>
+    <div class="stat-card"><div class="stat-label">CALIBRATION OVERDUE</div><div class="stat-value text-critical">@overdue</div></div>
+    <div class="stat-card"><div class="stat-label">DUE THIS MONTH</div><div class="stat-value text-warning">@dueSoon</div></div>
+    <div class="stat-card"><div class="stat-label">WARRANTY EXPIRING</div><div class="stat-value text-warning">@expired</div></div>
+</div>
+
+<div class="vc-table-wrap">
+    <table class="data-table">
+        <thead><tr><th>SERIAL #</th><th>ASSET NAME</th><th>CLIENT</th><th>LAST SERVICE</th><th>NEXT DUE</th><th>WARRANTY</th><th>STATUS</th><th></th></tr></thead>
+        <tbody>
+            @foreach (var a in Model)
+            {
+                <tr class="@(a.Status == "Overdue" ? "vc-row-danger" : a.Status == "Due Soon" ? "vc-row-warn" : "")">
+                    <td><a asp-controller="Logistics" asp-action="AssetDetail" asp-route-id="@a.AssetId">@a.SerialNumber</a></td>
+                    <td class="fw-semibold">@a.Model</td>
+                    <td>@a.ClientId</td>
+                    <td>@(a.LastServiceDate?.ToString("yyyy-MM-dd") ?? "N/A")</td>
+                    <td>@(a.NextServiceDue?.ToString("yyyy-MM-dd") ?? "N/A")</td>
+                    <td>@(a.WarrantyExpiry?.ToString("yyyy-MM-dd") ?? "N/A")</td>
+                    <td><span class="badge @(a.Status == "Overdue" ? "badge-critical" : a.Status == "Due Soon" ? "badge-warning" : a.Status == "Expired" ? "badge-neutral" : "badge-success")">@a.Status</span></td>
+                    <td class="text-end"><a class="btn btn-sm btn-outline-primary" asp-controller="Support" asp-action="TicketHub">Schedule Service</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

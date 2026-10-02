@@ -20,7 +20,7 @@ namespace VerichatCRM.Web.Services
             await _api.PostAsync<CreateTicketDto, TicketDto>("/api/supportticket", dto);
 
         public async Task<TicketDto?> UpdateTicketStatusAsync(string ticketId, string newStatus, string? notes) =>
-            await _api.PostAsync<object, TicketDto>(
+            await _api.PatchAsync<object, TicketDto>(
                 $"/api/supportticket/{ticketId}/status",
                 new { NewStatus = newStatus, Notes = notes });
 

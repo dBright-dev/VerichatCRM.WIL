@@ -42,6 +42,9 @@ namespace VerichatCRM.Web.Controllers
             HttpContext.Session.SetString("UserName", result.User.DisplayName);
             HttpContext.Session.SetString("UserEmail", result.User.Email);
 
+            // System Administrator always lands on the Admin dashboard.
+            if (result.User.Role == "System Administrator")
+                return RedirectToAction("Dashboard", "Admin");
             return RedirectToRoleDashboard(result.User.Role);
         }
 
@@ -70,6 +73,8 @@ namespace VerichatCRM.Web.Controllers
             HttpContext.Session.SetString("UserName", result.User.DisplayName);
             HttpContext.Session.SetString("UserEmail", result.User.Email);
 
+            if (result.User.Role == "System Administrator")
+                return RedirectToAction("Dashboard", "Admin");
             return RedirectToRoleDashboard(result.User.Role);
         }
 

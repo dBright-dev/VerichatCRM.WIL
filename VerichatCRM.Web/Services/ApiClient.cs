@@ -52,13 +52,41 @@ namespace VerichatCRM.Web.Services
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await _http.PostAsync(endpoint, content);
+            return await ReadAsync<TResponse>(endpoint, response);
+        }
 
-            if (!response.IsSuccessStatusCode) return default;
+        public async Task<TResponse?> PatchAsync<TRequest, TResponse>(string endpoint, TRequest body)
+        {
+            EnsureToken();
+            var json = JsonSerializer.Serialize(body);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var respJson = await response.Content.ReadAsStringAsync();
+            var response = await _http.PatchAsync(endpoint, content);
+            return await ReadAsync<TResponse>(endpoint, response);
+        }
 
-            if (string.IsNullOrWhiteSpace(respJson)) return default;
-            return JsonSerializer.Deserialize<TResponse>(respJson, _jsonOpts);
+        public async Task<TResponse?> PutAsync<TRequest, TResponse>(string endpoint, TRequest body)
+        {
+            EnsureToken();
+            var json = JsonSerializer.Serialize(body);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _http.PutAsync(endpoint, content);
+            return await ReadAsync<TResponse>(endpoint, response);
+        }
+
+        private static async Task<TResponse?> ReadAsync<TResponse>(string endpoint, HttpResponseMessage response)
+        {
+            if (response.IsSuccessStatusCode)
+            {
+                var respJson = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(respJson)) return default;
+                return JsonSerializer.Deserialize<TResponse>(respJson, _jsonOpts);
+            }
+
+            var body = await response.Content.ReadAsStringAsync();
+            System.Diagnostics.Debug.WriteLine($"API {(int)response.StatusCode} {endpoint}: {body}");
+            return default;
         }
     }
 }

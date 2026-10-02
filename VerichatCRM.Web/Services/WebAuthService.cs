@@ -14,7 +14,9 @@ namespace VerichatCRM.Web.Services
 
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
-            return await _api.PostAsync<LoginRequest, AuthResponse>("/api/auth/login", request)
+            // API contract is { email, password } only — never forward the UI role picker.
+            var payload = new { email = request.Email, password = request.Password };
+            return await _api.PostAsync<object, AuthResponse>("/api/auth/login", payload)
                    ?? new AuthResponse { Success = false, Message = "No response from server." };
         }
 
