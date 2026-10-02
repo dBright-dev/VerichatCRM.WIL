@@ -24,7 +24,6 @@ public class Client
     // Navigation
     public List<KeyPersonnel> KeyPersonnel { get; set; } = new();
     public List<Deal> Deals { get; set; } = new();
-    public List<Inquiry> Inquiries { get; set; } = new();
     public List<Order> Orders { get; set; } = new();
     public List<Ticket> Tickets { get; set; } = new();
     public List<Asset> Assets { get; set; } = new();
