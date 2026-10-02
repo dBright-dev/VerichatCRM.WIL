@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj": {}
+    "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj": {}
   },
   "projects": {
-    "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\VerichatCRM.Core.csproj": {
+    "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\VerichatCRM.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\VerichatCRM.Core.csproj",
+        "projectUniqueName": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\VerichatCRM.Core.csproj",
         "projectName": "VerichatCRM.Core",
-        "projectPath": "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\VerichatCRM.Core.csproj",
+        "projectPath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\VerichatCRM.Core.csproj",
         "packagesPath": "C:\\Users\\dorca\\.nuget\\packages\\",
-        "outputPath": "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\obj\\",
+        "outputPath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -379,14 +379,14 @@
         }
       }
     },
-    "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj": {
+    "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
+        "projectUniqueName": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
         "projectName": "VerichatCRM.Infrastructure",
-        "projectPath": "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
+        "projectPath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\VerichatCRM.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\dorca\\.nuget\\packages\\",
-        "outputPath": "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Infrastructure\\obj\\",
+        "outputPath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -408,8 +408,8 @@
             "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {
-              "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\VerichatCRM.Core.csproj": {
-                "projectPath": "D:\\Documents\\GitHub\\VerichatCRM.WIL\\VerichatCRM.Core\\VerichatCRM.Core.csproj"
+              "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\VerichatCRM.Core.csproj": {
+                "projectPath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.Core\\VerichatCRM.Core.csproj"
               }
             }
           }
@@ -464,6 +464,10 @@
             "Microsoft.EntityFrameworkCore.Tools": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
+              "target": "Package",
+              "version": "[10.0.12, )"
+            },
+            "Microsoft.Extensions.Logging.Abstractions": {
               "target": "Package",
               "version": "[10.0.12, )"
             }

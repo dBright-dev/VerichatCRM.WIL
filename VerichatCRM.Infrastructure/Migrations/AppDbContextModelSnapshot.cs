@@ -22,6 +22,175 @@ namespace VerichatCRM.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("VerichatCRM.Core.Entities.Asset", b =>
+                {
+                    b.Property<string>("AssetId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastServiceDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Manufacturer")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("NextServiceDue")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SerialNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("WarrantyExpiry")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("AssetId");
+
+                    b.ToTable("Assets");
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.AssetServiceLog", b =>
+                {
+                    b.Property<string>("LogId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AssetId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Outcome")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PartsReplaced")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PerformedByUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ServiceDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("LogId");
+
+                    b.HasIndex("AssetId");
+
+                    b.ToTable("AssetServiceLog");
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.DeliveryLog", b =>
+                {
+                    b.Property<string>("DeliveryId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("ActualArrival")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Carrier")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Destination")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("EstimatedArrival")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Origin")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TrackingNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("WeightKg")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("DeliveryId");
+
+                    b.ToTable("DeliveryLogs");
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.DeliveryStatusUpdate", b =>
+                {
+                    b.Property<string>("UpdateId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("DeliveryId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DeliveryLogDeliveryId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UpdateId");
+
+                    b.HasIndex("DeliveryLogDeliveryId");
+
+                    b.ToTable("DeliveryStatusUpdate");
+                });
+
             modelBuilder.Entity("VerichatCRM.Core.Entities.Inventory", b =>
                 {
                     b.Property<string>("InventoryId")
@@ -163,6 +332,155 @@ namespace VerichatCRM.Infrastructure.Migrations
                     b.ToTable("PurchaseOrders");
                 });
 
+            modelBuilder.Entity("VerichatCRM.Core.Entities.Ticket", b =>
+                {
+                    b.Property<string>("TicketId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AssignedToUserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EquipmentId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("EscalatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EscalationLevel")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsSlaBreached")
+                        .HasColumnType("bit");
+
+                    b.PrimitiveCollection<string>("PhotoUrls")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResolutionNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("SlaDeadline")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TrackingNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("TicketId");
+
+                    b.HasIndex("EquipmentId");
+
+                    b.ToTable("Tickets");
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.TicketActivity", b =>
+                {
+                    b.Property<string>("ActivityId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FromValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("PerformedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PerformedByUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TicketId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ToValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ActivityId");
+
+                    b.HasIndex("TicketId");
+
+                    b.ToTable("TicketActivity");
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.User", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("Users");
+                });
+
             modelBuilder.Entity("VerichatCRM.Core.Entities.WarehouseAlert", b =>
                 {
                     b.Property<string>("AlertId")
@@ -203,6 +521,22 @@ namespace VerichatCRM.Infrastructure.Migrations
                     b.HasIndex("SKU", "IsResolved");
 
                     b.ToTable("WarehouseAlerts");
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.AssetServiceLog", b =>
+                {
+                    b.HasOne("VerichatCRM.Core.Entities.Asset", null)
+                        .WithMany("ServiceLogs")
+                        .HasForeignKey("AssetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.DeliveryStatusUpdate", b =>
+                {
+                    b.HasOne("VerichatCRM.Core.Entities.DeliveryLog", null)
+                        .WithMany("StatusHistory")
+                        .HasForeignKey("DeliveryLogDeliveryId");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.Inventory", b =>
@@ -288,6 +622,39 @@ namespace VerichatCRM.Infrastructure.Migrations
                         });
 
                     b.Navigation("LineItems");
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.Ticket", b =>
+                {
+                    b.HasOne("VerichatCRM.Core.Entities.Asset", "Equipment")
+                        .WithMany()
+                        .HasForeignKey("EquipmentId");
+
+                    b.Navigation("Equipment");
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.TicketActivity", b =>
+                {
+                    b.HasOne("VerichatCRM.Core.Entities.Ticket", null)
+                        .WithMany("Activities")
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.Asset", b =>
+                {
+                    b.Navigation("ServiceLogs");
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.DeliveryLog", b =>
+                {
+                    b.Navigation("StatusHistory");
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.Ticket", b =>
+                {
+                    b.Navigation("Activities");
                 });
 #pragma warning restore 612, 618
         }
