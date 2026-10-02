@@ -1,24 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
-using VerichatCRM.Core.Enums;
 
 namespace VerichatCRM.Core.Entities
 {
     public class User
     {
-        public int Id { get; set; }
-        public string Email { get; set; }
+        [Key]
+        public string UserId { get; set; } = Guid.NewGuid().ToString();
+        public string DisplayName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
-        public UserRole Role { get; set; }
+        public string Role { get; set; } = "Procurement Manager"; // stored as string for simplicity
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastLoginAt { get; set; }
-        public string? RefreshToken { get; set; }
-        public DateTime? RefreshTokenExpiresAt { get; set; }
-        public ICollection<Client> AssignedClients { get; set; } = new List<Client>();
-        public ICollection<Deal> AssignedDeals { get; set; } = new List<Deal>();
     }
 }
