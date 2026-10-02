@@ -181,11 +181,170 @@ namespace VerichatCRM.Infrastructure.Migrations
                 name: "IX_WarehouseAlerts_SKU_IsResolved",
                 table: "WarehouseAlerts",
                 columns: new[] { "SKU", "IsResolved" });
+
+            migrationBuilder.CreateTable(
+                name: "Assets",
+                columns: table => new
+                {
+                    AssetId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    SerialNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Model = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Manufacturer = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ClientId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Location = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    WarrantyExpiry = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastServiceDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    NextServiceDue = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Assets", x => x.AssetId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DeliveryLogs",
+                columns: table => new
+                {
+                    DeliveryId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TrackingNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OrderId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ClientId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Origin = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Destination = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    WeightKg = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Carrier = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    EstimatedArrival = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ActualArrival = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DeliveryLogs", x => x.DeliveryId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DisplayName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastLoginAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.UserId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AssetServiceLog",
+                columns: table => new
+                {
+                    LogId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AssetId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ServiceDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PerformedByUserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Outcome = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PartsReplaced = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AssetServiceLog", x => x.LogId);
+                    table.ForeignKey(
+                        name: "FK_AssetServiceLog_Assets_AssetId",
+                        column: x => x.AssetId,
+                        principalTable: "Assets",
+                        principalColumn: "AssetId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tickets",
+                columns: table => new
+                {
+                    TicketId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TrackingNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ClientId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    EquipmentId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    AssignedToUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedByUserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PhotoUrls = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Priority = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Category = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SlaDeadline = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tickets", x => x.TicketId);
+                    table.ForeignKey(
+                        name: "FK_Tickets_Assets_EquipmentId",
+                        column: x => x.EquipmentId,
+                        principalTable: "Assets",
+                        principalColumn: "AssetId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TicketComment",
+                columns: table => new
+                {
+                    CommentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TicketId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsInternal = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TicketComment", x => x.CommentId);
+                    table.ForeignKey(
+                        name: "FK_TicketComment_Tickets_TicketId",
+                        column: x => x.TicketId,
+                        principalTable: "Tickets",
+                        principalColumn: "TicketId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AssetServiceLog_AssetId",
+                table: "AssetServiceLog",
+                column: "AssetId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TicketComment_TicketId",
+                table: "TicketComment",
+                column: "TicketId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tickets_EquipmentId",
+                table: "Tickets",
+                column: "EquipmentId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AssetServiceLog");
+
+            migrationBuilder.DropTable(
+                name: "DeliveryLogs");
+
             migrationBuilder.DropTable(
                 name: "Inventory");
 
@@ -196,16 +355,28 @@ namespace VerichatCRM.Infrastructure.Migrations
                 name: "PurchaseOrderLineItem");
 
             migrationBuilder.DropTable(
+                name: "TicketComment");
+
+            migrationBuilder.DropTable(
                 name: "WarehouseAlerts");
 
             migrationBuilder.DropTable(
-                name: "Products");
+                name: "Assets");
 
             migrationBuilder.DropTable(
                 name: "Orders");
 
             migrationBuilder.DropTable(
+                name: "Products");
+
+            migrationBuilder.DropTable(
                 name: "PurchaseOrders");
+
+            migrationBuilder.DropTable(
+                name: "Tickets");
+
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }
