@@ -1,0 +1,74 @@
+﻿@model VerichatCRM.Web.ViewModels.Support.TicketHubViewModel
+@{
+    ViewData["Title"] = "Ticket Hub";
+    ViewData["Subtitle"] = $"{Model.TotalOpen} open • {Model.EscalatedCount} escalated • {Model.SlaBreaches} SLA breaches";
+}
+
+<div class="chip-row">
+    @foreach (var status in Model.StatusFilters)
+    {
+        <button class="chip @(status == Model.ActiveStatus ? "active" : "")" data-status="@status">@status</button>
+    }
+</div>
+
+<div id="ticketList">
+    @foreach (var ticket in Model.Tickets)
+    {
+        <div class="ticket-row" data-status="@ticket.Status">
+            <div class="ticket-header">
+                <div>
+                    <span class="ticket-ref">@ticket.TrackingNumber</span>
+                    <span class="badge @GetPriorityBadge(ticket.Priority)">@ticket.Priority</span>
+                    @if (ticket.EscalationLevel > 0)
+                    {
+                        <span class="badge badge-critical">Escalated L@(ticket.EscalationLevel)</span>
+                    }
+                </div>
+                <span class="status-text @GetStatusClass(ticket.Status)">@ticket.Status</span>
+            </div>
+            <div class="ticket-title">@ticket.Title</div>
+            <div class="ticket-meta">
+                <span>SLA: @ticket.SlaDeadline.ToString("u")</span>
+                @if (ticket.IsSlaBreached)
+                {
+                    <span class="text-critical">⚠ SLA breached</span>
+                }
+            </div>
+            <a href="/support/ticket-detail/@ticket.TicketId" class="btn btn-outline btn-xs">View Details</a>
+        </div>
+    }
+</div>
+
+@functions {
+    string GetPriorityBadge(string p) => p switch
+    {
+        "Critical" => "badge-critical",
+        "High" => "badge-warning",
+        "Medium" => "badge-info",
+        _ => "badge-neutral"
+    };
+
+    string GetStatusClass(string s) => s switch
+    {
+        "Resolved" => "status-ok",
+        "Escalated" => "status-critical",
+        "Under Review" => "status-warning",
+        _ => ""
+    };
+}
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+
+                const status = chip.dataset.status;
+                document.querySelectorAll('.ticket-row').forEach(row => {
+                    row.style.display = (status === 'All' || row.dataset.status === status) ? '' : 'none';
+                });
+            });
+        });
+    </script>
+}
