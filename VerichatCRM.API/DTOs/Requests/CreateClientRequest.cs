@@ -1,4 +1,6 @@
-﻿namespace VerichatCRM.API.DTOs.Requests
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace VerichatCRM.API.DTOs.Requests
 {
     public class CreateClientRequest
     {

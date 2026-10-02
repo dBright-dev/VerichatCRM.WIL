@@ -1,4 +1,6 @@
-﻿namespace VerichatCRM.Web.Services.Interfaces
+﻿using VerichatCRM.Core.Models.Clients;
+
+namespace VerichatCRM.Web.Services.Interfaces
 {
     public interface IClientApiService
     {

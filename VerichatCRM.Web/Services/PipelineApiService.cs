@@ -26,7 +26,7 @@ namespace VerichatCRM.Web.Services
             {
                 board.DealsByStage[stage] = dtos
                     .Where(d => d.Stage == stage)
-                    .Select(d => new DealCardViewModel
+                    .Select(d => new DealViewModel
                     {
                         Id = d.DealId,
                         ClientName = d.ClientName,

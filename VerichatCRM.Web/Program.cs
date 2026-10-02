@@ -25,6 +25,10 @@ builder.Services.AddHttpClient<IApiClient, ApiClient>(client =>
 });
 
 builder.Services.AddScoped<IWebAuthService, WebAuthService>();
+builder.Services.AddScoped<IClientApiService, ClientApiService>();
+builder.Services.AddScoped<IQuotationApiService, QuotationApiService>();
+builder.Services.AddScoped<IPipelineApiService, PipelineApiService>();
+builder.Services.AddScoped<ISupportApiService, SupportApiService>();
 
 var app = builder.Build();
 

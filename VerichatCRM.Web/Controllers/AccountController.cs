@@ -16,8 +16,9 @@ namespace VerichatCRM.Web.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            if (HttpContext.Session.GetString("JwtToken") != null)
-                return RedirectToAction("Dashboard", "Procurement");
+            var role = HttpContext.Session.GetString("UserRole");
+            if (HttpContext.Session.GetString("JwtToken") != null && role != null)
+                return RedirectToRoleDashboard(role);
 
             return View();
         }
@@ -41,7 +42,7 @@ namespace VerichatCRM.Web.Controllers
             HttpContext.Session.SetString("UserName", result.User.DisplayName);
             HttpContext.Session.SetString("UserEmail", result.User.Email);
 
-            return RedirectToAction("Dashboard", "Procurement");
+            return RedirectToRoleDashboard(result.User.Role);
         }
 
         [HttpGet]
@@ -69,7 +70,7 @@ namespace VerichatCRM.Web.Controllers
             HttpContext.Session.SetString("UserName", result.User.DisplayName);
             HttpContext.Session.SetString("UserEmail", result.User.Email);
 
-            return RedirectToAction("Dashboard", "Procurement");
+            return RedirectToRoleDashboard(result.User.Role);
         }
 
         [HttpPost]
@@ -78,6 +79,19 @@ namespace VerichatCRM.Web.Controllers
         {
             HttpContext.Session.Clear();
             return RedirectToAction("Login", "Account");
+        }
+
+        private IActionResult RedirectToRoleDashboard(string role)
+        {
+            return role switch
+            {
+                "System Administrator" => RedirectToAction("Dashboard", "Admin"),
+                "Sales Representative" => RedirectToAction("Index", "Pipeline"),
+                "Procurement Manager" => RedirectToAction("Dashboard", "Procurement"),
+                "Field Support Engineer" => RedirectToAction("Dashboard", "Support"),
+                "Medical Student" => RedirectToAction("Index", "Catalog"),
+                _ => RedirectToAction("Index", "Home")
+            };
         }
     }
 }

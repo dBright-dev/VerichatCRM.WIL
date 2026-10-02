@@ -6,7 +6,7 @@ namespace VerichatCRM.Core.Models.Pipeline
 {
     public class DealViewModel
     {
-        public int Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
         public string ClientName { get; set; } = string.Empty;
 

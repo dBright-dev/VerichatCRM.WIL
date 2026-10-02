@@ -6,7 +6,7 @@ namespace VerichatCRM.Core.Models.Clients
 {
     public class ClientViewModel
     {
-        public int Id { get; set; }
+        public string Id { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string Sector { get; set; } = string.Empty; // e.g. Mining, Clinical, Manufacturing
         public string ContactPerson { get; set; } = string.Empty;

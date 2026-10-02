@@ -6,7 +6,8 @@ namespace VerichatCRM.Core.Models.Quotation
 {
     public class QuotationViewModel
     {
-        public int ClientId { get; set; }
+        public string QuotationId { get; set; } = string.Empty;
+        public string ClientId { get; set; } = string.Empty;
         public string ClientName { get; set; } = string.Empty;
         public string ClientSector { get; set; } = string.Empty;
         public string QuoteReference { get; set; } = string.Empty;
