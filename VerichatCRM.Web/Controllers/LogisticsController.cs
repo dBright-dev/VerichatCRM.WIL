@@ -1,0 +1,28 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using VerichatCRM.Web.Services.Interfaces;
+
+namespace VerichatCRM.Web.Controllers
+{
+    public class LogisticsController : Controller
+    {
+        private readonly ISupportApiService _support;
+
+        public LogisticsController(ISupportApiService support) => _support = support;
+
+        private bool IsAuthenticated => HttpContext.Session.GetString("JwtToken") != null;
+
+        public async Task<IActionResult> Tracker()
+        {
+            if (!IsAuthenticated) return RedirectToAction("Login", "Account");
+            var deliveries = await _support.GetDeliveriesAsync();
+            return View(deliveries);
+        }
+
+        public async Task<IActionResult> Assets()
+        {
+            if (!IsAuthenticated) return RedirectToAction("Login", "Account");
+            var assets = await _support.GetAssetsAsync();
+            return View(assets);
+        }
+    }
+}
