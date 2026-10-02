@@ -77,7 +77,6 @@
 
 @section Scripts {
     <script>
-
         let vcDraggedId = null;
 
         function vcHandleDragStart(e) {
@@ -85,9 +84,7 @@
             e.dataTransfer.effectAllowed = 'move';
         }
 
-        function vcAllowDrop(e) {
-            e.preventDefault();
-        }
+        function vcAllowDrop(e) { e.preventDefault(); }
 
         function vcHandleDrop(e) {
             e.preventDefault();
@@ -96,15 +93,28 @@
             vcMoveCard(vcDraggedId, column.dataset.stage);
         }
 
-        function vcMoveCard(dealId, targetStage) {
+        async function vcMoveCard(dealId, targetStage) {
             const card = document.querySelector(`.pipeline-card[data-deal-id="${dealId}"]`);
             const targetList = document.querySelector(`[data-stage-list="${targetStage}"]`);
             if (!card || !targetList) return;
 
+            // Optimistic UI update
+            targetList.appendChild(card);
             const select = card.querySelector('select');
             if (select) select.value = targetStage;
 
-            targetList.appendChild(card);
+            // Persist to API via the web proxy
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                const res = await fetch('/pipeline/move-deal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token ?? '' },
+                    body: JSON.stringify({ dealId, newStage: targetStage })
+                });
+                if (!res.ok) console.warn('Failed to persist stage change');
+            } catch (err) {
+                console.error(err);
+            }
         }
     </script>
 }

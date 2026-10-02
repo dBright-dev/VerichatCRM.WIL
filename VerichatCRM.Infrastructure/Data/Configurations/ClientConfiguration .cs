@@ -1,11 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using VerichatCRM.Core.Entities;
 
-namespace VerichatCRM.Core
+namespace VerichatCRM.Infrastructure.Data.Configurations
 {
     public class ClientConfiguration : IEntityTypeConfiguration<Client>
     {
