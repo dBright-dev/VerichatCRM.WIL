@@ -744,6 +744,7 @@
           "lib/net10.0/_._": {}
         }
       },
+<<<<<<< Updated upstream
       "Microsoft.Extensions.ApiDescription.Server/6.0.5": {
         "type": "package",
         "build": {
@@ -755,6 +756,8 @@
           "buildMultiTargeting/Microsoft.Extensions.ApiDescription.Server.targets": {}
         }
       },
+=======
+>>>>>>> Stashed changes
       "Microsoft.Extensions.DependencyModel/10.0.12": {
         "type": "package",
         "compile": {
@@ -2921,6 +2924,7 @@
         "tools/net8.0/any/ef.runtimeconfig.json"
       ]
     },
+<<<<<<< Updated upstream
     "Microsoft.Extensions.ApiDescription.Server/6.0.5": {
       "sha512": "Ckb5EDBUNJdFWyajfXzUIMRkhf52fHZOQuuZg/oiu8y7zDCVwD0iHhew6MnThjHmevanpxL3f5ci2TtHQEN6bw==",
       "type": "package",
@@ -3152,6 +3156,8 @@
         "tools/netcoreapp2.1/System.Diagnostics.DiagnosticSource.dll"
       ]
     },
+=======
+>>>>>>> Stashed changes
     "Microsoft.Extensions.DependencyModel/10.0.12": {
       "sha512": "rDPQVTxh/zMTDF7wHlRqL/jjZbwjAP6315ydBxj51pZW7qkAwGwjoSiMutxYI91xmOE3ZXjAGHbYRqzyJV7Urw==",
       "type": "package",
@@ -3982,7 +3988,10 @@
       "Microsoft.EntityFrameworkCore.Design >= 10.0.12",
       "Microsoft.EntityFrameworkCore.SqlServer >= 10.0.12",
       "Microsoft.EntityFrameworkCore.Tools >= 10.0.12",
+<<<<<<< Updated upstream
       "Swashbuckle.AspNetCore >= 7.0.0",
+=======
+>>>>>>> Stashed changes
       "VerichatCRM.Core >= 1.0.0",
       "VerichatCRM.Infrastructure >= 1.0.0"
     ]
@@ -4081,10 +4090,13 @@
             "suppressParent": "All",
             "target": "Package",
             "version": "[10.0.12, )"
+<<<<<<< Updated upstream
           },
           "Swashbuckle.AspNetCore": {
             "target": "Package",
             "version": "[7.0.0, )"
+=======
+>>>>>>> Stashed changes
           }
         },
         "imports": [

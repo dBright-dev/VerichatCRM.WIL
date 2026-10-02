@@ -14,7 +14,10 @@
           "Microsoft.AspNetCore.OpenApi": "10.0.12",
           "Microsoft.EntityFrameworkCore": "10.0.12",
           "Microsoft.EntityFrameworkCore.SqlServer": "10.0.12",
+<<<<<<< Updated upstream
           "Swashbuckle.AspNetCore": "7.0.0",
+=======
+>>>>>>> Stashed changes
           "VerichatCRM.Core": "1.0.0",
           "VerichatCRM.Infrastructure": "1.0.0"
         },
@@ -440,6 +443,7 @@
           }
         }
       },
+<<<<<<< Updated upstream
       "Swashbuckle.AspNetCore/7.0.0": {
         "dependencies": {
           "Swashbuckle.AspNetCore.Swagger": "7.0.0",
@@ -477,6 +481,8 @@
           }
         }
       },
+=======
+>>>>>>> Stashed changes
       "System.ClientModel/1.8.0": {
         "dependencies": {
           "System.Memory.Data": "8.0.1"
@@ -777,6 +783,7 @@
       "path": "microsoft.sqlserver.server/1.0.0",
       "hashPath": "microsoft.sqlserver.server.1.0.0.nupkg.sha512"
     },
+<<<<<<< Updated upstream
     "Swashbuckle.AspNetCore/7.0.0": {
       "type": "package",
       "serviceable": true,
@@ -805,6 +812,8 @@
       "path": "swashbuckle.aspnetcore.swaggerui/7.0.0",
       "hashPath": "swashbuckle.aspnetcore.swaggerui.7.0.0.nupkg.sha512"
     },
+=======
+>>>>>>> Stashed changes
     "System.ClientModel/1.8.0": {
       "type": "package",
       "serviceable": true,

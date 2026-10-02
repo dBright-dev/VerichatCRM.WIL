@@ -7,7 +7,11 @@ by editing this MSBuild file. In order to learn more about this please visit htt
   <PropertyGroup>
     <TimeStampOfAssociatedLegacyPublishXmlFile />
     <EncryptedPassword>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAKlelpvw++EGvPhT04+qOggAAAAACAAAAAAAQZgAAAAEAACAAAADd/JT0D3D7ZgL9VFSZD2vPr/if3D9+GVL/ACjEoayCvQAAAAAOgAAAAAIAACAAAADgmNELR+iQui2Jhg4DudwOuQBcZi4nNKaedeaiuBGB1iAAAADVIdm27nUcdqjvYKirFnw3a054M7c5T6WMyMP87lyJV0AAAADmVU2IjG04IC1bKakO0Ir4lWUrrLyN2Ivr1Q3CgyWnQ0GoKU+izdnuSdXuh4ZMBa5frziCtB02kq5jOA5SIHDt</EncryptedPassword>
+<<<<<<< Updated upstream
     <History>True|2026-09-28T19:53:45.7329849Z||;True|2026-09-28T20:51:16.1703098+02:00||;True|2026-09-28T16:34:58.3605326+02:00||;</History>
+=======
+    <History>False|2026-10-02T09:35:21.1023009Z||;False|2026-10-02T11:35:01.6318770+02:00||;False|2026-10-02T11:33:36.2575585+02:00||;False|2026-09-29T15:38:40.8906022+02:00||;True|2026-09-28T21:53:45.7329849+02:00||;True|2026-09-28T20:51:16.1703098+02:00||;True|2026-09-28T16:34:58.3605326+02:00||;</History>
+>>>>>>> Stashed changes
     <LastFailureDetails />
   </PropertyGroup>
 </Project>

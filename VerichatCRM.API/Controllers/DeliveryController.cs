@@ -1,4 +1,14 @@
+<<<<<<< Updated upstream
 ﻿namespace VerichatCRM.API.Controllers
+=======
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using VerichatCRM.API.DTOs.Requests;
+using VerichatCRM.API.Services.Interfaces;
+
+namespace VerichatCRM.API.Controllers
+>>>>>>> Stashed changes
 {
     [ApiController]
     [Route("api/[controller]")]

@@ -9,12 +9,26 @@ using System.Text;
 using VerichatCRM.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using VerichatCRM.Infrastructure.Data.Repositories;
+<<<<<<< Updated upstream
+=======
+using VerichatCRM.Infrastructure.Services;
+using VerichatCRM.Infrastructure.Repositories;
+>>>>>>> Stashed changes
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>
+<<<<<<< Updated upstream
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+=======
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlServerOptions => sqlServerOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null)));
+>>>>>>> Stashed changes
 
 // Register services
 // Repositories
@@ -34,6 +48,12 @@ builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IAssetService, AssetService>();
 builder.Services.AddScoped<IDeliveryLogService, DeliveryLogService>();
 
+<<<<<<< Updated upstream
+=======
+// Infrastructure Services
+builder.Services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
+
+>>>>>>> Stashed changes
 // Background service
 builder.Services.AddHostedService<SlaEscalationService>();
 
@@ -57,7 +77,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+<<<<<<< Updated upstream
 builder.Services.AddSwaggerGen();
+
+// CORS for the Web app
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("VerichatWeb", policy =>
+        policy.WithOrigins("https://your-web.monsterasp.net", "https://localhost:5001")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials());
+});
+=======
+builder.Services.AddOpenApi();
+>>>>>>> Stashed changes
 
 // CORS for the Web app
 builder.Services.AddCors(options =>
@@ -71,6 +105,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+<<<<<<< Updated upstream
 // Apply pending migrations and create database on startup
 using (var scope = app.Services.CreateScope())
 {
@@ -89,6 +124,16 @@ using (var scope = app.Services.CreateScope())
 
 app.UseSwagger();
 app.UseSwaggerUI();
+=======
+// Initialize database migrations from Infrastructure layer
+using (var scope = app.Services.CreateScope())
+{
+    var databaseInitializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
+    await databaseInitializer.InitializeAsync();
+}
+
+app.MapOpenApi();
+>>>>>>> Stashed changes
 app.UseHttpsRedirection();
 app.UseCors("VerichatWeb");
 app.UseAuthentication();

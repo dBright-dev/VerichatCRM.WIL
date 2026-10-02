@@ -1,4 +1,14 @@
+<<<<<<< Updated upstream
 ﻿namespace VerichatCRM.API.Services
+=======
+﻿using VerichatCRM.API.DTOs.Responses;
+using VerichatCRM.API.Services.Interfaces;
+using VerichatCRM.Core.Entities;
+using VerichatCRM.API.DTOs.Requests;
+using VerichatCRM.Core.Interfaces;
+
+namespace VerichatCRM.API.Services
+>>>>>>> Stashed changes
 {
     public class AssetService : IAssetService
     {

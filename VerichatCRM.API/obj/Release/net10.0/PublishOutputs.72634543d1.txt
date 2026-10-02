@@ -1,6 +1,10 @@
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\VerichatCRM.API.exe
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\appsettings.Development.json
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\appsettings.json
+<<<<<<< Updated upstream
+=======
+D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\dotnet-tools.json
+>>>>>>> Stashed changes
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\VerichatCRM.API.dll
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\VerichatCRM.API.runtimeconfig.json
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\VerichatCRM.API.pdb
@@ -33,9 +37,12 @@ D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\Microsoft.IdentityModel.Tokens.dll
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\Microsoft.OpenApi.dll
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\Microsoft.SqlServer.Server.dll
+<<<<<<< Updated upstream
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\Swashbuckle.AspNetCore.Swagger.dll
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\Swashbuckle.AspNetCore.SwaggerGen.dll
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\Swashbuckle.AspNetCore.SwaggerUI.dll
+=======
+>>>>>>> Stashed changes
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\System.ClientModel.dll
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\System.Configuration.ConfigurationManager.dll
 D:\Documents\source\repos\VerichatCRM\VerichatCRM.API\obj\Release\net10.0\PubTmp\Out\System.IdentityModel.Tokens.Jwt.dll

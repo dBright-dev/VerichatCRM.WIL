@@ -15,7 +15,10 @@
           "Microsoft.EntityFrameworkCore": "10.0.12",
           "Microsoft.EntityFrameworkCore.Design": "10.0.12",
           "Microsoft.EntityFrameworkCore.SqlServer": "10.0.12",
+<<<<<<< Updated upstream
           "Swashbuckle.AspNetCore": "7.0.0",
+=======
+>>>>>>> Stashed changes
           "VerichatCRM.Core": "1.0.0",
           "VerichatCRM.Infrastructure": "1.0.0"
         },

@@ -1,6 +1,10 @@
 {
   "version": 2,
+<<<<<<< Updated upstream
   "dgSpecHash": "wKBNqyANydE=",
+=======
+  "dgSpecHash": "zWHyKxM30/4=",
+>>>>>>> Stashed changes
   "success": true,
   "projectFilePath": "D:\\Documents\\source\\repos\\VerichatCRM\\VerichatCRM.API\\VerichatCRM.API.csproj",
   "expectedPackageFiles": [
@@ -33,7 +37,10 @@
     "C:\\Users\\dorca\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\10.0.12\\microsoft.entityframeworkcore.relational.10.0.12.nupkg.sha512",
     "C:\\Users\\dorca\\.nuget\\packages\\microsoft.entityframeworkcore.sqlserver\\10.0.12\\microsoft.entityframeworkcore.sqlserver.10.0.12.nupkg.sha512",
     "C:\\Users\\dorca\\.nuget\\packages\\microsoft.entityframeworkcore.tools\\10.0.12\\microsoft.entityframeworkcore.tools.10.0.12.nupkg.sha512",
+<<<<<<< Updated upstream
     "C:\\Users\\dorca\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
+=======
+>>>>>>> Stashed changes
     "C:\\Users\\dorca\\.nuget\\packages\\microsoft.extensions.dependencymodel\\10.0.12\\microsoft.extensions.dependencymodel.10.0.12.nupkg.sha512",
     "C:\\Users\\dorca\\.nuget\\packages\\microsoft.identity.client\\4.84.2\\microsoft.identity.client.4.84.2.nupkg.sha512",
     "C:\\Users\\dorca\\.nuget\\packages\\microsoft.identity.client.broker\\4.84.2\\microsoft.identity.client.broker.4.84.2.nupkg.sha512",
