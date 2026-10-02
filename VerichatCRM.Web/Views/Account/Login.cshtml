@@ -1,0 +1,58 @@
+﻿@model VerichatCRM.Web.Models.Auth.LoginRequest
+@{
+    ViewData["Title"] = "Login";
+    Layout = "_Layout";
+}
+
+<section class="hero">
+    <div class="hero-grid">
+        <div class="hero-left">
+            <div class="hero-brand">
+                <img src="~/images/logo.png" alt="Verichat" />
+            </div>
+            <h2 class="hero-tagline">MEDICAL PROCUREMENT</h2>
+            <div class="hero-divider"></div>
+            <p class="hero-subtext">
+                Precision procurement for the health sector. Manage clinical, mining, and rehab supply chains from a single intelligent platform.
+            </p>
+        </div>
+
+        <div class="hero-right">
+            <div class="auth-card">
+                <h1 class="auth-title">Welcome Back!</h1>
+                <p class="auth-subtitle">Enter your credentials to continue</p>
+
+                <form asp-action="Login" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="ModelOnly" class="text-critical"></div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input asp-for="Email" type="email" class="form-input" placeholder="Enter your email" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input asp-for="Password" type="password" class="form-input" placeholder="Enter your password" />
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" id="remember" name="remember" />
+                        <label for="remember">Remember me</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+
+                    <p style="text-align:center; margin-top: var(--space-md); font-size: 13px;">
+                        No account? <a href="/account/register">Register here</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/landing.css" />
+}

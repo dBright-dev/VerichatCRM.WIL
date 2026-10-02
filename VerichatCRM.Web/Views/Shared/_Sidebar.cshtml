@@ -1,71 +1,88 @@
-﻿@{
-    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
-    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
-
-    bool IsActive(string controller, string action = null)
-    {
-        if (!string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase))
-            return false;
-
-        return action == null || string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
-    }
-}
-
-<nav class="vc-sidebar" aria-label="Main navigation">
-
-    <div class="vc-sidebar__brand">
-        <div class="vc-sidebar__brand-mark" aria-hidden="true">V</div>
-        <span class="vc-sidebar__brand-text">Verichat</span>
+﻿<aside class="sidebar">
+    <div class="sidebar-logo">
+        <img src="~/images/logo.png alt="Verichat" />
     </div>
 
-    <div class="vc-sidebar__nav">
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <span class="nav-section-title">Overview</span>
+            <a href="/" class="nav-item">
+                <i class="nav-icon">🏠</i> Home
+            </a>
+            <a href="/procurement/dashboard" class="nav-item">
+                <i class="nav-icon">▦</i> Dashboard
+            </a>
+        </div>
 
-        <div class="vc-sidebar__section-label">Overview</div>
-        <ul class="list-unstyled">
-            <li>
-                <a class="vc-sidebar__link"
-                   asp-controller="Dashboard" asp-action="Index"
-                   aria-current="@(IsActive("Dashboard") ? "page" : null)">
-                    <span aria-hidden="true">&#128202;</span>
-                    Dashboard
-                </a>
-            </li>
-        </ul>
+        <div class="nav-section">
+            <span class="nav-section-title">Clients</span>
+            <a href="/clients" class="nav-item">
+                <i class="nav-icon">👥</i> Client Directory
+            </a>
+            <a href="/clients/profile" class="nav-item">
+                <i class="nav-icon">👤</i> Client Profile
+            </a>
+            <a href="/assets" class="nav-item">
+                <i class="nav-icon">📦</i> Asset Tracking
+            </a>
+        </div>
 
-        <div class="vc-sidebar__section-label">Sales</div>
-        <ul class="list-unstyled">
-            <li>
-                <a class="vc-sidebar__link"
-                   asp-controller="Clients" asp-action="Index"
-                   aria-current="@(IsActive("Clients") ? "page" : null)">
-                    <span aria-hidden="true">&#128100;</span>
-                    Client Directory
-                </a>
-            </li>
-            <li>
-                <a class="vc-sidebar__link"
-                   asp-controller="Pipeline" asp-action="Index"
-                   aria-current="@(IsActive("Pipeline") ? "page" : null)">
-                    <span aria-hidden="true">&#128203;</span>
-                    Pipeline Board
-                </a>
-            </li>
-            <li>
-                <a class="vc-sidebar__link"
-                   asp-controller="Quotation" asp-action="Index"
-                   aria-current="@(IsActive("Quotation") ? "page" : null)">
-                    <span aria-hidden="true">&#128179;</span>
-                    Quotation Builder
-                </a>
-            </li>
-        </ul>
+        <div class="nav-section">
+            <span class="nav-section-title">Sales</span>
+            <a href="/inquiries" class="nav-item">
+                <i class="nav-icon">📊</i> Inquiry Queue
+            </a>
+            <a href="/pipeline" class="nav-item">
+                <i class="nav-icon">📈</i> Pipeline Board
+            </a>
+            <a href="/quotations" class="nav-item">
+                <i class="nav-icon">📄</i> Quotation Builder
+            </a>
+        </div>
 
-        @* Other domains (Procurement, Support) add their own section here *@
+        <div class="nav-section">
+            <span class="nav-section-title">Catalog</span>
+            <a href="/procurement/product-catalog" class="nav-item">
+                <i class="nav-icon">🛍</i> Product Catalog
+            </a>
+        </div>
 
+        <div class="nav-section">
+            <span class="nav-section-title">Support</span>
+            <a href="/tickets" class="nav-item">
+                <i class="nav-icon">🎫</i> Ticket Hub
+            </a>
+            <a href="/procurement/logistics-tracker" class="nav-item">
+                <i class="nav-icon">🚚</i> Logistics Tracker
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <span class="nav-section-title">Operations</span>
+            <a href="/procurement/warehouse-alerts" class="nav-item">
+                <i class="nav-icon">⚠</i> Warehouse Alerts
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <span class="nav-section-title">Admin</span>
+            <a href="/admin/rules" class="nav-item">
+                <i class="nav-icon">⚙</i> Rules Engine
+            </a>
+        </div>
+    </nav>
+
+    <div class="user-info">
+        <div class="user-avatar">@(Context.Session.GetString("UserName")?.Substring(0, 1) ?? "?")</div>
+        <div>
+            <div class="user-name">@Context.Session.GetString("UserName")</div>
+            <div class="user-role">@Context.Session.GetString("UserRole")</div>
+        </div>
     </div>
-
-    <div class="vc-sidebar__footer">
-        Verichat CRM
-    </div>
-
-</nav>
+    <form asp-controller="Account" asp-action="Logout" method="post">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="logout-link" style="background:none;border:none;cursor:pointer;">
+            → Sign out
+        </button>
+    </form>
+</aside>
