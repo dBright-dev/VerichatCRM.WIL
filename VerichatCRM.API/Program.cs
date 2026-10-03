@@ -50,6 +50,7 @@ builder.Services.AddScoped<IQuotationService, QuotationService>();
 // Infrastructure Services
 builder.Services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
 
+
 // Background service
 builder.Services.AddHostedService<SlaEscalationService>();
 
@@ -84,13 +85,20 @@ builder.Services.AddOpenApi();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("VerichatWeb", policy =>
-        policy.WithOrigins("https://your-web.monsterasp.net", "https://localhost:5001")
+        policy.WithOrigins("http://verichat-crm-api.runasp.net/", "https://localhost:5001")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials());
 });
 
 var app = builder.Build();
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DataSeeder.SeedAsync(context);
+}
 
 // Initialize database migrations from Infrastructure layer.
 // Never let a down/unreachable database kill app startup on the host

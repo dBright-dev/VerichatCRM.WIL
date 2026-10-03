@@ -27,6 +27,29 @@ namespace VerichatCRM.Web.Services
             return dto == null ? null : Map(dto);
         }
 
+        public async Task<ClientViewModel?> CreateAsync(CreateClientViewModel model)
+        {
+            var dto = await _api.PostAsync<CreateClientViewModel, ClientDto>("/api/client", model);
+            return dto == null ? null : Map(dto);
+        }
+
+        public async Task<bool> UpdateAsync(string clientId, CreateClientViewModel model)
+        {
+            var dto = await _api.PostAsync<CreateClientViewModel, ClientDto>($"/api/client/{clientId}", model);
+            return dto != null;
+        }
+
+        public async Task<bool> DeleteAsync(string clientId)
+        {
+            try
+            {
+                // If your ApiClient doesn't have a DeleteAsync helper, add one
+                await _api.PostAsync<object, object>($"/api/client/{clientId}/delete", new { });
+                return true;
+            }
+            catch { return false; }
+        }
+
         private static ClientViewModel Map(ClientDto d) => new()
         {
             Id = d.ClientId,

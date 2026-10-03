@@ -1,0 +1,86 @@
+﻿@model VerichatCRM.Web.Models.Clients.CreateClientViewModel
+
+<div class="mb-3">
+    <a asp-action="Index" class="text-decoration-none">← Back to Client Directory</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-8">
+        <div class="vc-card p-4">
+            <h2 class="h5 mb-1">Add New Client</h2>
+            <p class="vc-text-muted small mb-4">Register a new client account with the details below.</p>
+
+            <form asp-action="Create" method="post" novalidate>
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                <div class="row g-3">
+                    <div class="col-12 col-md-8">
+                        <label asp-for="ClientName" class="form-label small vc-text-muted"></label>
+                        <input asp-for="ClientName" class="form-control" placeholder="e.g. Anglo American" />
+                        <span asp-validation-for="ClientName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <label asp-for="Sector" class="form-label small vc-text-muted"></label>
+                        <select asp-for="Sector" class="form-select">
+                            <option value="">-- Select --</option>
+                            <option>Mining</option>
+                            <option>Clinical</option>
+                            <option>Education</option>
+                            <option>Rehab</option>
+                            <option>Manufacturing</option>
+                            <option>Waste Management</option>
+                        </select>
+                        <span asp-validation-for="Sector" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ContactPerson" class="form-label small vc-text-muted"></label>
+                        <input asp-for="ContactPerson" class="form-control" placeholder="e.g. Naledi Mokoena" />
+                        <span asp-validation-for="ContactPerson" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ContactPhone" class="form-label small vc-text-muted"></label>
+                        <input asp-for="ContactPhone" class="form-control" placeholder="+27 11 555 0142" />
+                        <span asp-validation-for="ContactPhone" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-8">
+                        <label asp-for="ContactEmail" class="form-label small vc-text-muted"></label>
+                        <input asp-for="ContactEmail" type="email" class="form-control" placeholder="contact@example.com" />
+                        <span asp-validation-for="ContactEmail" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Address" class="form-label small vc-text-muted"></label>
+                        <textarea asp-for="Address" class="form-control" rows="3" placeholder="Physical address"></textarea>
+                        <span asp-validation-for="Address" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">Create Client</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="vc-card p-3">
+            <h3 class="h6 mb-2">Tips</h3>
+            <ul class="vc-text-muted small mb-0 ps-3">
+                <li>The client will start with status <strong>Prospect</strong>.</li>
+                <li>You can assign a sales rep after creation.</li>
+                <li>Add Key Personnel from the client profile page.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
