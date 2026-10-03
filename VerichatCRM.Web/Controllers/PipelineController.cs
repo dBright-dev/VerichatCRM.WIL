@@ -12,6 +12,9 @@ namespace VerichatCRM.Web.Controllers
 
         public async Task<IActionResult> Index()
         {
+            if (HttpContext.Session.GetString("JwtToken") == null)
+                return RedirectToAction("Login", "Account");
+
             ViewData["Title"] = "Pipeline Board";
             ViewData["Subtitle"] = "Drag cards between stages to update deal progress.";
             ViewData["CurrentRole"] = HttpContext.Session.GetString("UserRole") ?? "Sales Representative";
@@ -23,6 +26,7 @@ namespace VerichatCRM.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> MoveDeal([FromBody] MoveDealRequest request)
         {
+            if (HttpContext.Session.GetString("JwtToken") == null) return Unauthorized();
             var ok = await _pipeline.MoveDealAsync(request.DealId, request.NewStage);
             return ok ? Ok() : BadRequest();
         }

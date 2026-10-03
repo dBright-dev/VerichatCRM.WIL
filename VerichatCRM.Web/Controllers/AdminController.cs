@@ -9,15 +9,18 @@ namespace VerichatCRM.Web.Controllers
         private readonly IClientApiService _clients;
         private readonly IPipelineApiService _pipeline;
         private readonly ISupportApiService _support;
+        private readonly IAdminApiService _admin;
 
         public AdminController(
             IClientApiService clients,
             IPipelineApiService pipeline,
-            ISupportApiService support)
+            ISupportApiService support,
+            IAdminApiService admin)
         {
             _clients = clients;
             _pipeline = pipeline;
             _support = support;
+            _admin = admin;
         }
 
         private bool IsAdmin()
@@ -113,12 +116,50 @@ namespace VerichatCRM.Web.Controllers
             return View();
         }
 
-        public IActionResult Users()
+        public async Task<IActionResult> Users()
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
-            ViewData["Title"] = "User Management";
-            ViewData["Subtitle"] = "Roles & permissions";
-            return View();
+            ViewData["Title"] = "Users & Roles";
+            ViewData["Subtitle"] = "View, create, edit, deactivate all users";
+            var users = await _admin.GetUsersAsync();
+            return View(users);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateUserRole(string userId, string role)
+        {
+            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+            await _admin.UpdateUserRoleAsync(userId, role);
+            return RedirectToAction(nameof(Users));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeactivateUser(string userId)
+        {
+            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+            await _admin.DeactivateUserAsync(userId);
+            return RedirectToAction(nameof(Users));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RunSlaCheck()
+        {
+            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+            await _admin.RunSlaCheckAsync();
+            TempData["SuccessMessage"] = "SLA escalation check triggered.";
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResolveAlert(string alertId)
+        {
+            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+            await _admin.ResolveAlertAsync(alertId);
+            return RedirectToAction("WarehouseAlerts", "Procurement");
         }
     }
 }

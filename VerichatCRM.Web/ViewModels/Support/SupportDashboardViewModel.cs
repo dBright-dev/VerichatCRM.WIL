@@ -7,6 +7,6 @@
         public int SlaBreaches { get; set; }
         public int AssetsUnderMaintence { get; set; }
         public int ActiveShipments { get; set; }
-        public List<RecentTicketItem> RecentTickets { get; set; }
+        public List<RecentTicketItem> RecentTickets { get; set; } = new();
     }
 }

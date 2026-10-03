@@ -29,6 +29,9 @@ builder.Services.AddScoped<IClientApiService, ClientApiService>();
 builder.Services.AddScoped<IQuotationApiService, QuotationApiService>();
 builder.Services.AddScoped<IPipelineApiService, PipelineApiService>();
 builder.Services.AddScoped<ISupportApiService, SupportApiService>();
+builder.Services.AddScoped<IProductApiService, ProductApiService>();
+builder.Services.AddScoped<IWarehouseAlertApiService, WarehouseAlertApiService>();
+builder.Services.AddScoped<IAdminApiService, AdminApiService>();
 
 var app = builder.Build();
 

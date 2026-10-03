@@ -1,44 +1,84 @@
 ﻿<aside class="vc-sidebar">
-    <a class="vc-sidebar__brand" asp-controller="Admin" asp-action="Dashboard">
+    <a class="vc-sidebar__brand" asp-controller="Home" asp-action="Index">
         <span class="vc-brand-mark">◈</span>
         <span><span class="vc-brand-text">Verichat</span><span class="vc-brand-sub">MEDICAL PROCUREMENT</span></span>
     </a>
 
     <div class="vc-sidebar__user">
-        <div class="vc-avatar">@(Context.Session.GetString("UserName")?.Substring(0, 1) ?? "S")</div>
+        <div class="vc-avatar">@(Context.Session.GetString("UserName")?.Substring(0, 1) ?? "V")</div>
         <div>
-            <div class="vc-user-name">@(Context.Session.GetString("UserName") ?? "System Administrator")</div>
-            <div class="vc-user-role">@((Context.Session.GetString("UserRole") ?? "ADMIN").ToUpper())</div>
+            <div class="vc-user-name">@(Context.Session.GetString("UserName") ?? "Verichat User")</div>
+            <div class="vc-user-role">@((Context.Session.GetString("UserRole") ?? "GUEST").ToUpper())</div>
         </div>
     </div>
 
+    @{
+        var role = Context.Session.GetString("UserRole") ?? "";
+        var isAdmin = role == "System Administrator";
+        var isSales = role == "Sales Representative" || isAdmin;
+        var isProcurement = role == "Procurement Manager" || isAdmin;
+        var isSupport = role == "Field Support Engineer" || isAdmin;
+    }
+
     <nav class="vc-sidebar__nav" aria-label="Primary">
         <div class="vc-sidebar__section-label">OVERVIEW</div>
-        <a class="vc-sidebar__link" asp-controller="Admin" asp-action="Dashboard"><span class="vc-sidebar__icon">▦</span> Dashboard</a>
+        @if (isAdmin)
+        {
+            <a class="vc-sidebar__link" asp-controller="Admin" asp-action="Dashboard"><span class="vc-sidebar__icon">▦</span> Admin Dashboard</a>
+        }
+        @if (isProcurement)
+        {
+            <a class="vc-sidebar__link" asp-controller="Procurement" asp-action="Dashboard"><span class="vc-sidebar__icon">▦</span> Dashboard</a>
+        }
+        @if (isSupport)
+        {
+            <a class="vc-sidebar__link" asp-controller="Support" asp-action="Dashboard"><span class="vc-sidebar__icon">▦</span> Dashboard</a>
+        }
+        @if (isSales && !isAdmin)
+        {
+            <a class="vc-sidebar__link" asp-controller="Pipeline" asp-action="Index"><span class="vc-sidebar__icon">▦</span> Dashboard</a>
+        }
 
         <div class="vc-sidebar__section-label">CLIENTS</div>
         <a class="vc-sidebar__link" asp-controller="Clients" asp-action="Index"><span class="vc-sidebar__icon">👥</span> Client Directory</a>
-        <a class="vc-sidebar__link" asp-controller="Clients" asp-action="Index"><span class="vc-sidebar__icon">👤</span> Client Profile</a>
-        <a class="vc-sidebar__link" asp-controller="Logistics" asp-action="Assets"><span class="vc-sidebar__icon">🔧</span> Asset Tracking</a>
+        @if (isSales)
+        {
+            <a class="vc-sidebar__link" asp-controller="Logistics" asp-action="Assets"><span class="vc-sidebar__icon">🔧</span> Asset Tracking</a>
+        }
 
-        <div class="vc-sidebar__section-label">SALES</div>
-        <a class="vc-sidebar__link" asp-controller="Pipeline" asp-action="Index"><span class="vc-sidebar__icon">☰</span> Inquiry Queue</a>
-        <a class="vc-sidebar__link" asp-controller="Pipeline" asp-action="Index"><span class="vc-sidebar__icon">📊</span> Pipeline Board</a>
-        <a class="vc-sidebar__link" asp-controller="Quotation" asp-action="Index"><span class="vc-sidebar__icon">📄</span> Quotation Builder</a>
+        @if (isSales)
+        {
+            <div class="vc-sidebar__section-label">SALES</div>
+            <a class="vc-sidebar__link" asp-controller="Pipeline" asp-action="Index"><span class="vc-sidebar__icon">📊</span> Pipeline Board</a>
+            <a class="vc-sidebar__link" asp-controller="Quotation" asp-action="Index"><span class="vc-sidebar__icon">📄</span> Quotation Builder</a>
+        }
 
-        <div class="vc-sidebar__section-label">CATALOG</div>
-        <a class="vc-sidebar__link" asp-controller="Procurement" asp-action="ProductCatalog"><span class="vc-sidebar__icon">📦</span> Product Catalog</a>
+        @if (isProcurement || isSales)
+        {
+            <div class="vc-sidebar__section-label">CATALOG</div>
+            <a class="vc-sidebar__link" asp-controller="Procurement" asp-action="ProductCatalog"><span class="vc-sidebar__icon">📦</span> Product Catalog</a>
+        }
 
-        <div class="vc-sidebar__section-label">SUPPORT</div>
-        <a class="vc-sidebar__link" asp-controller="Support" asp-action="TicketHub"><span class="vc-sidebar__icon">🎫</span> Ticket Hub</a>
-        <a class="vc-sidebar__link" asp-controller="Logistics" asp-action="Tracker"><span class="vc-sidebar__icon">🚚</span> Logistics Tracker</a>
+        @if (isSupport || isProcurement)
+        {
+            <div class="vc-sidebar__section-label">SUPPORT</div>
+            <a class="vc-sidebar__link" asp-controller="Support" asp-action="TicketHub"><span class="vc-sidebar__icon">🎫</span> Ticket Hub</a>
+            <a class="vc-sidebar__link" asp-controller="Logistics" asp-action="Tracker"><span class="vc-sidebar__icon">🚚</span> Logistics Tracker</a>
+        }
 
-        <div class="vc-sidebar__section-label">OPERATIONS</div>
-        <a class="vc-sidebar__link" asp-controller="Procurement" asp-action="WarehouseAlerts"><span class="vc-sidebar__icon">🏭</span> Warehouse Alerts</a>
-        <a class="vc-sidebar__link" asp-controller="Admin" asp-action="Analytics"><span class="vc-sidebar__icon">📈</span> Analytics</a>
+        @if (isProcurement)
+        {
+            <div class="vc-sidebar__section-label">OPERATIONS</div>
+            <a class="vc-sidebar__link" asp-controller="Procurement" asp-action="WarehouseAlerts"><span class="vc-sidebar__icon">🏭</span> Warehouse Alerts</a>
+        }
 
-        <div class="vc-sidebar__section-label">ADMIN</div>
-        <a class="vc-sidebar__link" asp-controller="Admin" asp-action="Rules"><span class="vc-sidebar__icon">⚙</span> Rules Engine</a>
+        @if (isAdmin)
+        {
+            <div class="vc-sidebar__section-label">ADMIN</div>
+            <a class="vc-sidebar__link" asp-controller="Admin" asp-action="Users"><span class="vc-sidebar__icon">👤</span> Users &amp; Roles</a>
+            <a class="vc-sidebar__link" asp-controller="Admin" asp-action="Analytics"><span class="vc-sidebar__icon">📈</span> Analytics</a>
+            <a class="vc-sidebar__link" asp-controller="Admin" asp-action="Rules"><span class="vc-sidebar__icon">⚙</span> Rules Engine</a>
+        }
     </nav>
 
     <div class="vc-sidebar__footer">

@@ -18,6 +18,9 @@ namespace VerichatCRM.Web.Controllers
 
         public async Task<IActionResult> Index(string? clientId)
         {
+            if (HttpContext.Session.GetString("JwtToken") == null)
+                return RedirectToAction("Login", "Account");
+
             ViewData["Title"] = "Quotation Builder";
             ViewData["Subtitle"] = "Add line items, review totals, then generate a branded PDF.";
             ViewData["CurrentRole"] = HttpContext.Session.GetString("UserRole") ?? "Sales Representative";

@@ -1,4 +1,5 @@
-﻿using VerichatCRM.Core.Models.Client;
+﻿using VerichatCRM.Core.Models.Clients;
+using VerichatCRM.Web.Models.Client;
 
 namespace VerichatCRM.Web.Services.Interfaces
 {

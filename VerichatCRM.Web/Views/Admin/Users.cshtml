@@ -1,16 +1,57 @@
+@model List<VerichatCRM.Web.Services.Interfaces.UserListItem>
 @{
-    ViewData["Title"] = "User Management";
+    ViewData["Title"] = "Users & Roles";
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert-banner"><span class="alert-icon">✓</span><span>@TempData["SuccessMessage"]</span></div>
 }
 <div class="card">
-    <div class="card-title">Roles & Permissions</div>
-    <p class="vc-text-muted">Users are managed through the API identity service. Assign roles at registration.</p>
+    <div class="card-title">All Users (@Model.Count)</div>
+    <p class="vc-text-muted">Only System Administrators can change roles or deactivate users.</p>
     <table class="data-table">
-        <thead><tr><th>Role</th><th>Dashboards</th><th>Permissions</th></tr></thead>
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Last login</th><th></th></tr></thead>
         <tbody>
-            <tr><td>System Administrator</td><td>Admin Dashboard, Analytics</td><td>Full access — users, catalog, pipeline, tickets</td></tr>
-            <tr><td>Sales Representative</td><td>Pipeline, Quotations</td><td>Deals, clients, quotations</td></tr>
-            <tr><td>Procurement Manager</td><td>Procurement Dashboard</td><td>Orders, catalog, stock updates</td></tr>
-            <tr><td>Field Support Engineer</td><td>Support Dashboard</td><td>Tickets, assets, deliveries</td></tr>
+            @foreach (var u in Model)
+            {
+                <tr>
+                    <td><strong>@u.DisplayName</strong></td>
+                    <td>@u.Email</td>
+                    <td>
+                        <form asp-action="UpdateUserRole" method="post" style="display:flex;gap:.4rem;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="userId" value="@u.UserId" />
+                            <select name="role" class="form-select form-select-sm">
+                                @foreach (var r in new[] { "System Administrator", "Sales Representative", "Procurement Manager", "Field Support Engineer" })
+                                {
+                                    <option value="@r" selected="@(r == u.Role)">@r</option>
+                                }
+                            </select>
+                            <button type="submit" class="btn btn-outline btn-xs">Save</button>
+                        </form>
+                    </td>
+                    <td><span class="badge @(u.IsActive ? "badge-success" : "badge-neutral")">@(u.IsActive ? "Active" : "Inactive")</span></td>
+                    <td>@(u.LastLoginAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
+                    <td>
+                        @if (u.IsActive)
+                        {
+                            <form asp-action="DeactivateUser" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="userId" value="@u.UserId" />
+                                <button type="submit" class="btn btn-danger btn-xs">Deactivate</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
+</div>
+<div class="card" style="margin-top:1rem;">
+    <div class="card-title">SLA Control</div>
+    <p class="vc-text-muted">Manually trigger the SLA escalation job (normally runs every 5 minutes).</p>
+    <form asp-action="RunSlaCheck" method="post">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-primary btn-sm">Run SLA check now</button>
+    </form>
 </div>
