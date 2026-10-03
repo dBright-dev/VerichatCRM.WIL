@@ -76,6 +76,35 @@ namespace VerichatCRM.Infrastructure.Data
                       .HasForeignKey(e => e.SKU)
                       .OnDelete(DeleteBehavior.Restrict);
             });
+
+            // Client -> Deals (one cascade path Client -> Deal is kept)
+            modelBuilder.Entity<Deal>(entity =>
+            {
+                entity.HasOne(e => e.Client)
+                      .WithMany(c => c.Deals)
+                      .HasForeignKey(e => e.ClientId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Quotation links to both Client and Deal. SQL Server forbids
+            // two cascade paths Client -> Quotations (direct + via Deals),
+            // so both are Restrict: deleting a Client/Deal with Quotations
+            // is blocked instead of cascading.
+            modelBuilder.Entity<Quotation>(entity =>
+            {
+                entity.HasOne(e => e.Client)
+                      .WithMany()
+                      .HasForeignKey(e => e.ClientId)
+                      .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.Deal)
+                      .WithMany(d => d.Quotations)
+                      .HasForeignKey(e => e.DealId)
+                      .OnDelete(DeleteBehavior.Restrict);
+                entity.HasMany(e => e.LineItems)
+                      .WithOne()
+                      .HasForeignKey(l => l.QuotationId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
         }
     }
 }

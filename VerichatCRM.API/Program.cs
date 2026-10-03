@@ -54,7 +54,12 @@ builder.Services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
 builder.Services.AddHostedService<SlaEscalationService>();
 
 // JWT Auth
-var jwtKey = builder.Configuration["Jwt:Key"]!;
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    throw new InvalidOperationException(
+        "Jwt:Key is missing. Set it in appsettings.json, appsettings.Production.json, or the Jwt__Key environment variable.");
+}
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -87,13 +92,26 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Initialize database migrations from Infrastructure layer
+// Initialize database migrations from Infrastructure layer.
+// Never let a down/unreachable database kill app startup on the host
+// (that is exactly what surfaces as HTTP 500.30). Log and continue;
+// /api/health will report Degraded until the DB is reachable.
 using (var scope = app.Services.CreateScope())
 {
-    var databaseInitializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
-    await databaseInitializer.InitializeAsync();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var databaseInitializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
+        await databaseInitializer.InitializeAsync();
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Database initialization failed at startup. App will run in degraded mode; check /api/health for details.");
+    }
 }
 
+app.MapGet("/", () => Results.Redirect("/api/health")).ExcludeFromDescription();
+app.MapGet("/health", () => Results.Ok(new { status = "Alive", service = "VerichatCRM.API", timestamp = DateTime.UtcNow })).ExcludeFromDescription();
 app.MapOpenApi();
 app.UseHttpsRedirection();
 app.UseCors("VerichatWeb");
