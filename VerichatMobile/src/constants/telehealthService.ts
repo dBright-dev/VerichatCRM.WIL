@@ -1,0 +1,80 @@
+export type AppointmentStatus = 'confirmed' | 'cancelled' | 'pending' | 'completed'
+
+export type Appointment = {
+  id: string
+  doctorName: string // e.g. "Dr Joseph Mushawatu"
+  specialty: string // e.g. "General Practitioner"
+  facility: string // e.g. "Parktown Hospital"
+  startsAt: string // ISO date-time, e.g. "2026-08-17T14:30:00"
+  status: AppointmentStatus
+}
+
+// Flip to false once the backend endpoint is ready.
+const USE_MOCK_DATA = true
+
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
+
+// Static data for the front-end build. 
+const MOCK_APPOINTMENTS: Appointment[] = [
+  {
+    id: '1',
+    doctorName: 'Dr Joseph Mushawatu',
+    specialty: 'General Practitioner',
+    facility: 'Parktown Hospital',
+    startsAt: '2026-08-17T14:30:00',
+    status: 'confirmed',
+  },
+  {
+    id: '2',
+    doctorName: 'Dr Fungisai Hove',
+    specialty: 'Gynaecologist',
+    facility: 'Medical Specialist Centre',
+    startsAt: '2026-08-18T15:00:00',
+    status: 'cancelled',
+  },
+  {
+    id: '3',
+    doctorName: 'Dr Nyasha Mukiwa',
+    specialty: 'Pharmacist',
+    facility: 'MedOrange Pharmacy',
+    startsAt: '2026-08-24T13:30:00',
+    status: 'pending',
+  },
+  {
+    id: '4',
+    doctorName: 'Dr Sarah Naidoo',
+    specialty: 'General Practitioner',
+    facility: 'Parirenyatwa Hospital',
+    startsAt: '2026-08-03T12:00:00',
+    status: 'completed',
+  },
+  {
+    id: '5',
+    doctorName: 'Dr Lindiwe Zulu',
+    specialty: 'Dermatologist',
+    facility: 'Sunninghill Medical Centre',
+    startsAt: '2026-08-01T09:30:00',
+    status: 'completed',
+  },
+]
+
+// TODO: confirm the endpoint path and response shape with your backend,
+// and attach the logged-in client's auth token to the request headers.
+export async function fetchAppointments(): Promise<Appointment[]> {
+  if (USE_MOCK_DATA) {
+    return MOCK_APPOINTMENTS
+  }
+
+  const response = await fetch(`${API_BASE_URL}/client/appointments`, {
+    headers: {
+      'Content-Type': 'application/json',
+      // Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Could not load your appointments (${response.status}).`)
+  }
+
+  return response.json()
+}
