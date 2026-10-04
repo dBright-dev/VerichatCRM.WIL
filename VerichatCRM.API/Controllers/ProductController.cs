@@ -22,7 +22,7 @@ namespace VerichatCRM.API.Controllers
         /// Get all products with optional filtering by category or low-stock status.
         /// </summary>
         [HttpGet]
-        [Authorize(Roles = "System Administrator,Sales Representative,Procurement Manager")]
+        [Authorize(Roles = "System Administrator,Sales Representative,Procurement Manager,Client User")]
         public async Task<ActionResult<IEnumerable<ProductResponse>>> GetProducts(
             [FromQuery] string? category = null,
             [FromQuery] bool? lowStockOnly = null)
@@ -35,7 +35,7 @@ namespace VerichatCRM.API.Controllers
         /// Get a single product by SKU.
         /// </summary>
         [HttpGet("{sku}")]
-        [Authorize(Roles = "System Administrator,Sales Representative,Procurement Manager")]
+        [Authorize(Roles = "System Administrator,Sales Representative,Procurement Manager,Client User")]
         public async Task<ActionResult<ProductResponse>> GetProduct(string sku)
         {
             var product = await _productService.GetProductBySkuAsync(sku);

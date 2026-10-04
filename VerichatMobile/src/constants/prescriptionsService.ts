@@ -1,3 +1,5 @@
+import { api } from './api'
+
 export type PrescriptionStatus = 'active' | 'dispensed' | 'expired'
 
 export type Prescription = {
@@ -11,8 +13,8 @@ export type Prescription = {
   qrPayload: string // the exact value the pharmacist's scanner expects (supplied by the backend)
 }
 
-// Flip to false once the backend endpoint is ready.
-const USE_MOCK_DATA = true
+// Flip to false to keep using the bundled mock data.
+const USE_MOCK_DATA = false
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
 
@@ -51,23 +53,11 @@ const MOCK_PRESCRIPTIONS: Prescription[] = [
   },
 ]
 
-// TODO: confirm the endpoint path and response shape with your backend,
-// and attach the logged-in client's auth token to the request headers.
+// Backend contract: GET /api/mobile/prescriptions (JWT).
 export async function fetchPrescriptions(): Promise<Prescription[]> {
   if (USE_MOCK_DATA) {
     return MOCK_PRESCRIPTIONS
   }
 
-  const response = await fetch(`${API_BASE_URL}/client/prescriptions`, {
-    headers: {
-      'Content-Type': 'application/json',
-      // Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`Could not load your prescriptions (${response.status}).`)
-  }
-
-  return response.json()
+  return api<Prescription[]>('/api/mobile/prescriptions')
 }

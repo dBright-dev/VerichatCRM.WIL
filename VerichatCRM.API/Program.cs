@@ -40,6 +40,7 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
 builder.Services.AddScoped<IWarehouseAlertService, WarehouseAlertService>();
+builder.Services.AddScoped<IMobileService, MobileService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IAssetService, AssetService>();
 builder.Services.AddScoped<IDeliveryLogService, DeliveryLogService>();
@@ -94,27 +95,41 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await DataSeeder.SeedAsync(context);
-}
-
-// Initialize database migrations from Infrastructure layer.
-// Never let a down/unreachable database kill app startup on the host
-// (that is exactly what surfaces as HTTP 500.30). Log and continue;
-// /api/health will report Degraded until the DB is reachable.
+// ---------------------------------------------------------------------------
+// Startup data bootstrap: MIGRATE first (this creates the database if it does
+// not exist), THEN seed. Order matters — seeding before migrating throws
+// "Cannot open database ... requested by the login" on a fresh machine.
+// Both steps are guarded so an unreachable database degrades the app instead
+// of killing the process (which surfaces as HTTP 500.30 on IIS).
+// ---------------------------------------------------------------------------
 using (var scope = app.Services.CreateScope())
 {
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
     try
     {
-        var databaseInitializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
-        await databaseInitializer.InitializeAsync();
+        logger.LogInformation("Applying database migrations...");
+        await context.Database.MigrateAsync();
+        logger.LogInformation("Database migrations applied.");
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "Database initialization failed at startup. App will run in degraded mode; check /api/health for details.");
+        logger.LogError(ex,
+            "Database migration failed at startup. Verify ConnectionStrings:DefaultConnection. " +
+            "App will run in degraded mode — check /api/health for details.");
+    }
+
+    try
+    {
+        logger.LogInformation("Seeding reference data...");
+        await DataSeeder.SeedAsync(context);
+        logger.LogInformation("Reference data ready.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex,
+            "Data seeding failed at startup. App will run in degraded mode — check /api/health for details.");
     }
 }
 

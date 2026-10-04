@@ -1,3 +1,5 @@
+import { api } from './api'
+
 export type Vitals = {
   heartRate: number | null // bpm
   temperature: number | null // °C
@@ -29,19 +31,20 @@ export type ClientDashboard = {
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
 
-// TODO: confirm the endpoint path and response shape with your backend,
-// and attach the logged-in client's auth token to the request headers.
+// Backend contract: GET /api/mobile/dashboard (JWT, token owner = client).
 export async function fetchClientDashboard(): Promise<ClientDashboard> {
-  const response = await fetch(`${API_BASE_URL}/client/dashboard`, {
-    headers: {
-      'Content-Type': 'application/json',
-      // Authorization: `Bearer ${token}`,
-    },
-  })
+  try {
+    return await api<ClientDashboard>('/api/mobile/dashboard')
+  } catch {
+    // Back-compat: the old frontend build called this host-relative path.
+    const response = await fetch(`${API_BASE_URL}/client/dashboard`, {
+      headers: { 'Content-Type': 'application/json' },
+    })
 
-  if (!response.ok) {
-    throw new Error(`Could not load your dashboard (${response.status}).`)
+    if (!response.ok) {
+      throw new Error(`Could not load your dashboard (${response.status}).`)
+    }
+
+    return response.json()
   }
-
-  return response.json()
 }

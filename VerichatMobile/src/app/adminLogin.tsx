@@ -1,28 +1,40 @@
+import { useRouter } from 'expo-router'
 import { useState } from 'react'
 import {
     Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native'
+import { login } from '../constants/authService'
 
 const AdminLoginScreen = () => {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email.trim() || !password || !role.trim()) {
       Alert.alert('Missing details', 'Enter your email address, password and role to log in.')
       return
     }
 
-    // TODO: call your admin authentication endpoint here,
-    // then navigate to the admin dashboard on success.
-    console.log('Admin login:', email.trim(), role.trim())
+    // The API authenticates on email + password only; the role field is
+    // display-only (the JWT returned carries the real role).
+    setBusy(true)
+    try {
+      await login(email.trim(), password)
+      router.replace('/clientHomescreen')
+    } catch (e) {
+      Alert.alert('Sign in failed', e instanceof Error ? e.message : 'Something went wrong.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   const handleSSOLogin = () => {
     // TODO: start your SSO flow here (e.g. expo-auth-session),
     // then navigate to the admin dashboard on success.
-    console.log('Admin SSO login')
+    Alert.alert('SSO', 'Single sign-on is not configured yet.')
   }
 
   return (

@@ -11,6 +11,7 @@ namespace VerichatCRM.Core.Entities
         public const string ProcurementManager = "Procurement Manager";
         public const string FieldSupportEngineer = "Field Support Engineer";
         public const string MedicalStudent = "Medical Student";
+        public const string ClientUser = "Client User";
 
         public static readonly string[] All =
         {
@@ -18,7 +19,8 @@ namespace VerichatCRM.Core.Entities
             SalesRepresentative,
             ProcurementManager,
             FieldSupportEngineer,
-            MedicalStudent
+            MedicalStudent,
+            ClientUser
         };
     }
 }

@@ -1,3 +1,5 @@
+import { api } from './api'
+
 export type Preferences = {
   pushNotifications: boolean
   biometricLogin: boolean
@@ -9,8 +11,8 @@ export type UserSettings = {
   preferences: Preferences
 }
 
-// Flip to false once the backend endpoints are ready.
-const USE_MOCK_DATA = true
+// Flip to false to keep using the bundled mock data.
+const USE_MOCK_DATA = false
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
 
@@ -24,25 +26,13 @@ const MOCK_SETTINGS: UserSettings = {
   },
 }
 
-const authHeaders = () => ({
-  'Content-Type': 'application/json',
-  // TODO: attach the logged-in user's token
-  // Authorization: `Bearer ${token}`,
-})
-
-// TODO: confirm the endpoint paths and response shapes with your backend.
+// Backend contracts: GET /api/mobile/settings, PATCH /api/mobile/settings (JWT).
 export async function fetchSettings(): Promise<UserSettings> {
   if (USE_MOCK_DATA) {
     return MOCK_SETTINGS
   }
 
-  const response = await fetch(`${API_BASE_URL}/user/settings`, { headers: authHeaders() })
-
-  if (!response.ok) {
-    throw new Error(`Could not load your settings (${response.status}).`)
-  }
-
-  return response.json()
+  return api<UserSettings>('/api/mobile/settings')
 }
 
 export async function updatePreferences(changes: Partial<Preferences>): Promise<void> {
@@ -50,13 +40,8 @@ export async function updatePreferences(changes: Partial<Preferences>): Promise<
     return
   }
 
-  const response = await fetch(`${API_BASE_URL}/user/preferences`, {
+  await api('/api/mobile/settings', {
     method: 'PATCH',
-    headers: authHeaders(),
     body: JSON.stringify(changes),
   })
-
-  if (!response.ok) {
-    throw new Error(`Could not save your preference (${response.status}).`)
-  }
 }

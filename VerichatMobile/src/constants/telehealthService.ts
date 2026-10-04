@@ -1,3 +1,5 @@
+import { api } from './api'
+
 export type AppointmentStatus = 'confirmed' | 'cancelled' | 'pending' | 'completed'
 
 export type Appointment = {
@@ -9,8 +11,8 @@ export type Appointment = {
   status: AppointmentStatus
 }
 
-// Flip to false once the backend endpoint is ready.
-const USE_MOCK_DATA = true
+// Flip to false to keep using the bundled mock data.
+const USE_MOCK_DATA = false
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
 
@@ -58,23 +60,29 @@ const MOCK_APPOINTMENTS: Appointment[] = [
   },
 ]
 
-// TODO: confirm the endpoint path and response shape with your backend,
-// and attach the logged-in client's auth token to the request headers.
+// Backend contracts: GET/POST /api/mobile/appointments (JWT).
 export async function fetchAppointments(): Promise<Appointment[]> {
   if (USE_MOCK_DATA) {
     return MOCK_APPOINTMENTS
   }
 
-  const response = await fetch(`${API_BASE_URL}/client/appointments`, {
-    headers: {
-      'Content-Type': 'application/json',
-      // Authorization: `Bearer ${token}`,
-    },
+  return api<Appointment[]>('/api/mobile/appointments')
+}
+
+/** Book a telemedicine visit ("Book Telemedicine" quick action). */
+export async function bookAppointment(input: {
+  doctorName: string
+  specialty?: string
+  facility?: string
+  startsAt: string
+}): Promise<Appointment> {
+  return api<Appointment>('/api/mobile/appointments', {
+    method: 'POST',
+    body: JSON.stringify({
+      doctorName: input.doctorName,
+      specialty: input.specialty ?? '',
+      facility: input.facility ?? '',
+      startsAt: input.startsAt,
+    }),
   })
-
-  if (!response.ok) {
-    throw new Error(`Could not load your appointments (${response.status}).`)
-  }
-
-  return response.json()
 }

@@ -1,3 +1,5 @@
+import { api } from './api'
+
 export type Address = {
   name: string // e.g. "Parirenyatwa Hospital"
   street: string // e.g. "15 Mazowe Street, Avondale"
@@ -16,8 +18,8 @@ export type Profile = {
   defaultAddress: Address | null
 }
 
-// Flip to false once the backend endpoint is ready.
-const USE_MOCK_DATA = true
+// Flip to false to keep using the bundled mock data.
+const USE_MOCK_DATA = false
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
 
@@ -38,23 +40,28 @@ const MOCK_PROFILE: Profile = {
   },
 }
 
-// TODO: confirm the endpoint path and response shape with your backend,
-// and attach the logged-in user's auth token to the request headers.
+// Backend contracts: GET/PATCH /api/mobile/profile (JWT).
 export async function fetchProfile(): Promise<Profile> {
   if (USE_MOCK_DATA) {
     return MOCK_PROFILE
   }
 
-  const response = await fetch(`${API_BASE_URL}/user/account`, {
-    headers: {
-      'Content-Type': 'application/json',
-      // Authorization: `Bearer ${token}`,
-    },
+  return api<Profile>('/api/mobile/profile')
+}
+
+/** Persists profile + address edits. */
+export async function updateProfile(changes: {
+  displayName?: string
+  phone?: string
+  company?: string
+  vatNumber?: string | null
+  addressName?: string
+  street?: string
+  city?: string
+  country?: string
+}): Promise<Profile> {
+  return api<Profile>('/api/mobile/profile', {
+    method: 'PATCH',
+    body: JSON.stringify(changes),
   })
-
-  if (!response.ok) {
-    throw new Error(`Could not load your profile (${response.status}).`)
-  }
-
-  return response.json()
 }

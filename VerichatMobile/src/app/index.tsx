@@ -1,6 +1,8 @@
+import { useRouter } from 'expo-router'
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 const HomeScreen = () => {
+  const router = useRouter()
   return (
     <View style={styles.container}>
 
@@ -11,13 +13,13 @@ const HomeScreen = () => {
       <View style={styles.login_section}>
 
         <Text style={styles.user_login}>Log in As:</Text>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={() => router.push('/clientLogin')}>
           <Text style={styles.button_text}>Client</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={() => router.push('/adminLogin')}>
           <Text style={styles.button_text}>Admin</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={() => router.push('/newUserAccount')}>
           <Text style={styles.button_text}>New User</Text>
         </TouchableOpacity>
 

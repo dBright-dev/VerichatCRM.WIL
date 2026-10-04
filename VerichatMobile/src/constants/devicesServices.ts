@@ -1,3 +1,5 @@
+import { api } from './api'
+
 export type DeviceType =
   | 'weightScale'
   | 'thermometer'
@@ -16,8 +18,8 @@ export type Device = {
   lastSyncAt: string | null // ISO date-time, null if it has never synced
 }
 
-// Flip to false once the backend endpoints are ready.
-const USE_MOCK_DATA = true
+// Flip to false to keep using the bundled mock data.
+const USE_MOCK_DATA = false
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
 
@@ -60,23 +62,7 @@ let mockDevices: Device[] = [
 
 /* ------------------------------- Real API ------------------------------- */
 
-// TODO: confirm the endpoint paths and response shapes with your backend,
-// and attach the logged-in client's auth token to the request headers.
-async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      // Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`Request failed (${response.status}).`)
-  }
-
-  return response.status === 204 ? (undefined as T) : response.json()
-}
+// Live endpoints: GET /api/mobile/devices (+ POST sync/reconnect/DELETE).
 
 /* ------------------------------ Public API ------------------------------ */
 
@@ -84,7 +70,7 @@ export async function fetchDevices(): Promise<Device[]> {
   if (USE_MOCK_DATA) {
     return [...mockDevices]
   }
-  return api<Device[]>('/client/devices')
+  return api<Device[]>('/api/mobile/devices')
 }
 
 // Pulls the latest readings from the device. Returns the updated device.
@@ -96,7 +82,7 @@ export async function syncDevice(id: string): Promise<Device> {
     updated.lastSyncAt = new Date().toISOString()
     return { ...updated }
   }
-  return api<Device>(`/client/devices/${id}/sync`, { method: 'POST' })
+  return api<Device>(`/api/mobile/devices/${id}/sync`, { method: 'POST' })
 }
 
 // Re-establishes the connection to a disconnected device. Returns the updated device.
@@ -109,7 +95,7 @@ export async function reconnectDevice(id: string): Promise<Device> {
     updated.lastSyncAt = new Date().toISOString()
     return { ...updated }
   }
-  return api<Device>(`/client/devices/${id}/reconnect`, { method: 'POST' })
+  return api<Device>(`/api/mobile/devices/${id}/reconnect`, { method: 'POST' })
 }
 
 export async function removeDevice(id: string): Promise<void> {
@@ -118,5 +104,5 @@ export async function removeDevice(id: string): Promise<void> {
     mockDevices = mockDevices.filter((d) => d.id !== id)
     return
   }
-  await api<void>(`/client/devices/${id}`, { method: 'DELETE' })
+  await api<void>(`/api/mobile/devices/${id}`, { method: 'DELETE' })
 }

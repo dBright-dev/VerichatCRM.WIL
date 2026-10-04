@@ -23,6 +23,15 @@ namespace VerichatCRM.Infrastructure.Data
         public DbSet<Asset> Assets => Set<Asset>();
         public DbSet<DeliveryLog> DeliveryLogs => Set<DeliveryLog>();
         public DbSet<User> Users => Set<User>();
+        public DbSet<MobileDevice> MobileDevices => Set<MobileDevice>();
+        public DbSet<VitalReading> VitalReadings => Set<VitalReading>();
+        public DbSet<WellnessGoal> WellnessGoals => Set<WellnessGoal>();
+        public DbSet<WeeklyExerciseLog> WeeklyExerciseLogs => Set<WeeklyExerciseLog>();
+        public DbSet<TelehealthAppointment> TelehealthAppointments => Set<TelehealthAppointment>();
+        public DbSet<LabResultRecord> LabResultRecords => Set<LabResultRecord>();
+        public DbSet<MobilePrescription> MobilePrescriptions => Set<MobilePrescription>();
+        public DbSet<MobileProfile> MobileProfiles => Set<MobileProfile>();
+        public DbSet<MobileSettings> MobileSettings => Set<MobileSettings>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Product configuration

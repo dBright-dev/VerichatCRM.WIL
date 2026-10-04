@@ -1,3 +1,5 @@
+import { api } from './api'
+
 export type MetricType =
   | 'bloodPressure'
   | 'heartRate'
@@ -20,8 +22,8 @@ export type WellnessSummary = {
   metrics: HealthMetric[]
 }
 
-// Flip to false once the backend endpoint is ready.
-const USE_MOCK_DATA = true
+// Flip to false to keep using the bundled mock data.
+const USE_MOCK_DATA = false
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
 
@@ -77,23 +79,33 @@ const MOCK_SUMMARY: WellnessSummary = {
   ],
 }
 
-// TODO: confirm the endpoint path and response shape with your backend,
-// and attach the logged-in client's auth token to the request headers.
+// Backend contracts: GET /api/mobile/vitals, POST /api/mobile/vitals (JWT).
 export async function fetchWellnessSummary(): Promise<WellnessSummary> {
   if (USE_MOCK_DATA) {
     return MOCK_SUMMARY
   }
 
-  const response = await fetch(`${API_BASE_URL}/client/vitals`, {
-    headers: {
-      'Content-Type': 'application/json',
-      // Authorization: `Bearer ${token}`,
-    },
+  return api<WellnessSummary>('/api/mobile/vitals')
+}
+
+/** Log a manual reading (or one parsed from a Bluetooth device value). */
+export async function logVitalReading(input: {
+  type: MetricType
+  value: string
+  unit?: string
+  statusLabel?: string
+  inRange?: boolean
+  recordedAt?: string
+}): Promise<void> {
+  await api('/api/mobile/vitals', {
+    method: 'POST',
+    body: JSON.stringify({
+      type: input.type,
+      value: input.value,
+      unit: input.unit ?? '',
+      statusLabel: input.statusLabel ?? 'Normal',
+      inRange: input.inRange ?? true,
+      recordedAt: input.recordedAt,
+    }),
   })
-
-  if (!response.ok) {
-    throw new Error(`Could not load your vitals (${response.status}).`)
-  }
-
-  return response.json()
 }

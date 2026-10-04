@@ -1,3 +1,5 @@
+import { api } from './api'
+
 export type GoalType = 'steps' | 'water' | 'sleep' | 'exercise'
 
 export type Goal = {
@@ -25,8 +27,8 @@ export type GoalsData = {
   weeklyExercise: WeeklyExercise | null
 }
 
-// Flip to false once the backend endpoint is ready.
-const USE_MOCK_DATA = true
+// Flip to false to keep using the bundled mock data.
+const USE_MOCK_DATA = false
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
 
@@ -53,25 +55,23 @@ const MOCK_GOALS: GoalsData = {
   },
 }
 
-// TODO: confirm the endpoint path and response shape with your backend,
-// and attach the logged-in client's auth token to the request headers.
+// Backend contract: GET /api/mobile/goals (JWT).
+
 export async function fetchGoals(): Promise<GoalsData> {
   if (USE_MOCK_DATA) {
     return MOCK_GOALS
   }
 
-  const response = await fetch(`${API_BASE_URL}/client/goals`, {
-    headers: {
-      'Content-Type': 'application/json',
-      // Authorization: `Bearer ${token}`,
-    },
+  return api<GoalsData>('/api/mobile/goals')
+}
+
+/** Log minutes of exercise for one day of the current week (0=Monday). */
+export async function logExercise(dayIndex: number, minutes: number): Promise<GoalsData['weeklyExercise']> {
+  const weekly = await api<GoalsData['weeklyExercise']>('/api/mobile/goals/exercise', {
+    method: 'POST',
+    body: JSON.stringify({ dayIndex, minutes }),
   })
-
-  if (!response.ok) {
-    throw new Error(`Could not load your goals (${response.status}).`)
-  }
-
-  return response.json()
+  return weekly
 }
 
 // TODO: add updateGoal(id, target) when the "edit goal" flow is designed.

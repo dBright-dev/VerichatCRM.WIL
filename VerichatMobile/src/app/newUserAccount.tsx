@@ -1,16 +1,20 @@
+import { useRouter } from 'expo-router'
 import { useState } from 'react'
 import {
     Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native'
+import { registerClient } from '../constants/authService'
 
 const CreateAccountScreen = () => {
+  const router = useRouter()
   const [fullName, setFullName] = useState('')
   const [companyName, setCompanyName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (
       !fullName.trim() ||
       !companyName.trim() ||
@@ -27,10 +31,22 @@ const CreateAccountScreen = () => {
       return
     }
 
-    // TODO: call your sign up endpoint here with
-    // { fullName, companyName, email, password },
-    // then navigate to the next screen on success.
-    console.log('Sign up:', fullName.trim(), companyName.trim(), email.trim())
+    // Registers a "Client User" account against the CRM API and stores the
+    // returned JWT so the rest of the app is authenticated.
+    setBusy(true)
+    try {
+      await registerClient({
+        displayName: fullName.trim(),
+        email: email.trim(),
+        password,
+        companyName: companyName.trim(),
+      })
+      router.replace('/clientHomescreen')
+    } catch (e) {
+      Alert.alert('Sign up failed', e instanceof Error ? e.message : 'Something went wrong.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (

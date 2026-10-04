@@ -1,3 +1,5 @@
+import { api } from './api'
+
 export type LabResultStatus = 'ready' | 'processing'
 
 export type LabResult = {
@@ -18,8 +20,8 @@ export type LabResultsData = {
   results: LabResult[]
 }
 
-// Flip to false once the backend endpoint is ready.
-const USE_MOCK_DATA = true
+// Flip to false to keep using the bundled mock data.
+const USE_MOCK_DATA = false
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
 
@@ -64,26 +66,22 @@ const MOCK_LAB_RESULTS: LabResultsData = {
   ],
 }
 
-// TODO: confirm the endpoint path and response shape with your backend,
-// and attach the logged-in client's auth token to the request headers.
+// Backend contract: GET /api/mobile/lab-results (JWT).
 export async function fetchLabResults(): Promise<LabResultsData> {
   if (USE_MOCK_DATA) {
     return MOCK_LAB_RESULTS
   }
 
-  const response = await fetch(`${API_BASE_URL}/client/lab-results`, {
-    headers: {
-      'Content-Type': 'application/json',
-      // Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`Could not load your lab results (${response.status}).`)
-  }
-
-  return response.json()
+  return api<LabResultsData>('/api/mobile/lab-results')
 }
 
-// TODO: call this when a result is opened so "NEW" is cleared on the server too.
-// export async function markLabResultViewed(id: string): Promise<void> { ... }
+// Clears "NEW" on the server when a result is opened.
+export async function markLabResultViewed(id: string): Promise<void> {
+  if (USE_MOCK_DATA) {
+    const found = MOCK_LAB_RESULTS.results.find((r) => r.id === id)
+    if (found) found.isNew = false
+    return
+  }
+
+  await api(`/api/mobile/lab-results/${id}/viewed`, { method: 'POST' })
+}
