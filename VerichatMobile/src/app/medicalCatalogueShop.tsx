@@ -2,16 +2,16 @@ import { MaterialCommunityIcons } from '@expo/vector-icons'; //insert animated i
 import { LinearGradient } from 'expo-linear-gradient';
 import { ComponentProps, useMemo, useState } from 'react';
 import {
-    FlatList,
-    Image,
-    ImageSourcePropType,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  FlatList,
+  Image,
+  ImageSourcePropType,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
