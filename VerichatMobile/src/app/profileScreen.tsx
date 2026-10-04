@@ -44,15 +44,20 @@ const ProfileScreen = () => {
 
   const load = useCallback(async () => {
     try {
+      const profile = await fetchProfile()
       setError(null)
-      setProfile(await fetchProfile())
+      setProfile(profile)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong.')
+    } finally {
+      setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    load().finally(() => setLoading(false))
+    // This effect starts an async fetch; its state updates run after the request settles.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load()
   }, [load])
 
   const onRefresh = async () => {

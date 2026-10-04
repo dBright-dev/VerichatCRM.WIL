@@ -82,15 +82,20 @@ const GoalsTab = () => {
 
   const load = useCallback(async () => {
     try {
+      const data = await fetchGoals()
       setError(null)
-      setData(await fetchGoals())
+      setData(data)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong.')
+    } finally {
+      setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    load().finally(() => setLoading(false))
+    // This effect starts an async fetch; its state updates run after the request settles.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load()
   }, [load])
 
   const onRefresh = async () => {

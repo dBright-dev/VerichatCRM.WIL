@@ -46,15 +46,20 @@ const ClientHomeScreen = () => {
 
   const load = useCallback(async () => {
     try {
+      const data = await fetchClientDashboard()
       setError(null)
-      setData(await fetchClientDashboard())
+      setData(data)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong.')
+    } finally {
+      setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    load().finally(() => setLoading(false))
+    // This effect starts an async fetch; its state updates run after the request settles.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load()
   }, [load])
 
   const onRefresh = async () => {

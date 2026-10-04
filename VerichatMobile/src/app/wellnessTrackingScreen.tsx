@@ -95,15 +95,20 @@ const WellnessTrackingScreen = () => {
 
   const load = useCallback(async () => {
     try {
+      const summary = await fetchWellnessSummary()
       setError(null)
-      setSummary(await fetchWellnessSummary())
+      setSummary(summary)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong.')
+    } finally {
+      setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    load().finally(() => setLoading(false))
+    // This effect starts an async fetch; its state updates run after the request settles.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load()
   }, [load])
 
   const onRefresh = async () => {
@@ -256,7 +261,7 @@ const styles = StyleSheet.create({
     height: RING_SIZE,
   },
   ring_center: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: 'center',
     alignItems: 'center',
   },

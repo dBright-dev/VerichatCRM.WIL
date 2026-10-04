@@ -54,15 +54,20 @@ const AppointmentsTab = () => {
 
   const load = useCallback(async () => {
     try {
+      const appointments = await fetchAppointments()
       setError(null)
-      setAppointments(await fetchAppointments())
+      setAppointments(appointments)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong.')
+    } finally {
+      setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    load().finally(() => setLoading(false))
+    // This effect starts an async fetch; its state updates run after the request settles.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load()
   }, [load])
 
   const onRefresh = async () => {
