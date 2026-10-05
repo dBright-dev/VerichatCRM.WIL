@@ -1,0 +1,79 @@
+﻿@model VerichatCRM.Web.Models.Auth.LoginRequest
+@{
+    ViewData["Title"] = "Sign in";
+    Layout = "_Layout";
+}
+
+<section class="vc-auth">
+    <aside class="vc-auth-side">
+        <div class="vc-auth-brand">
+            <span class="vc-auth-logo">★</span>
+            <div>
+                <div class="vc-auth-brand-name">Verichat</div>
+                <div class="vc-auth-brand-sub">MEDICAL PROCUREMENT</div>
+            </div>
+        </div>
+        <h2 class="vc-auth-headline">Precision procurement<br />for the health sector.</h2>
+        <p class="vc-auth-lede">Manage clinical, mining, and rehab supply chains from a single intelligent platform.</p>
+        <ul class="vc-auth-points">
+            <li><span class="vc-check">✓</span> AI-scored inquiry queue</li>
+            <li><span class="vc-check">✓</span> SLA-tracked ticket resolution</li>
+        </ul>
+    </aside>
+
+    <div class="vc-auth-main">
+        <div class="auth-card vc-auth-card">
+            <h1 class="auth-title">Sign in to your account</h1>
+            <p class="auth-subtitle">Enter your credentials to continue</p>
+
+            <form asp-action="Login" method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="text-critical"></div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="Email">Email address</label>
+                    <input asp-for="Email" type="email" class="form-input" placeholder="you@example.com" autocomplete="email" />
+                    <span asp-validation-for="Email" class="text-critical"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="Password">Password</label>
+                    <input asp-for="Password" type="password" class="form-input" placeholder="••••••••" autocomplete="current-password" />
+                    <span asp-validation-for="Password" class="text-critical"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+
+                <p style="text-align:center; margin-top: 1rem; font-size: 13px;">
+                    No account? <a asp-action="Register">Create one</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <style>
+        .vc-public-nav, .vc-public-footer { display: none; }
+        .vc-public main { padding: 0; }
+        .vc-auth { display: grid; grid-template-columns: 1fr 1.6fr; min-height: calc(100vh - 0px); }
+        .vc-auth-side { background: #101E33; color: #fff; padding: 3rem 2.5rem; display: flex; flex-direction: column; justify-content: center; }
+        .vc-auth-brand { display: flex; gap: .7rem; align-items: center; margin-bottom: 2.5rem; }
+        .vc-auth-logo { width: 38px; height: 38px; border-radius: 8px; background: #1A9BB8; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; }
+        .vc-auth-brand-name { font-family: var(--vc-font-heading); font-weight: 700; font-size: 1.05rem; }
+        .vc-auth-brand-sub { font-size: .65rem; letter-spacing: .12em; color: #8A97B0; }
+        .vc-auth-headline { font-size: 1.9rem; line-height: 1.25; color: #fff; margin-bottom: .8rem; }
+        .vc-auth-lede { color: #9AA6C0; font-size: .9rem; margin-bottom: 2rem; max-width: 320px; }
+        .vc-auth-points { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .6rem; font-size: .85rem; color: #C4CDDF; }
+        .vc-check { color: #1A9BB8; font-weight: 700; margin-right: .4rem; }
+        .vc-auth-main { background: #F4F3EF; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+        .vc-auth-card { width: 100%; max-width: 430px; border: none; box-shadow: none; background: transparent; padding: 0; }
+        .vc-auth-card .form-input, .vc-auth-card .form-select { background: #fff; }
+        @@media (max-width: 900px) { .vc-auth { grid-template-columns: 1fr; } .vc-auth-side { display: none; } }
+    </style>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,16 @@
+﻿<header class="vc-topbar">
+    <div>
+        <h1 class="vc-topbar__title">@ViewData["Title"]</h1>
+        @if (ViewData["Subtitle"] != null)
+        {
+            <p class="vc-topbar__subtitle">@ViewData["Subtitle"]</p>
+        }
+    </div>
+    <div class="vc-topbar__actions">
+        <button class="vc-icon-btn" aria-label="Notifications" type="button">
+            <span class="vc-dot" aria-hidden="true"></span>
+            🔔
+        </button>
+        <button class="vc-icon-btn" aria-label="Settings" type="button">⚙</button>
+    </div>
+</header>

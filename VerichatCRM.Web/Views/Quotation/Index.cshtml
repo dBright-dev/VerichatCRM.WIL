@@ -1,0 +1,218 @@
+﻿@model VerichatCRM.Core.Models.Quotation.QuotationViewModel
+
+<div class="row g-3">
+    <div class="col-12 col-lg-8">
+        <div class="vc-card p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="vc-heading h6 mb-0">Quotation Items</h2>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="vcAddRow()">
+                    + Add Row
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0" id="quoteTable">
+                    <caption class="visually-hidden">Quotation line items with quantity, unit price and line total</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Product</th>
+                            <th scope="col">SKU</th>
+                            <th scope="col" style="width: 90px;">Qty</th>
+                            <th scope="col" style="width: 130px;">Unit Price</th>
+                            <th scope="col" class="text-end" style="width: 130px;">Total</th>
+                            <th scope="col"><span class="visually-hidden">Remove</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="quoteTableBody">
+                        @foreach (var item in Model.LineItems)
+                        {
+                            <tr class="quote-row" data-row-id="@item.RowId">
+                                <td>
+                                    <label class="visually-hidden" for="product-@item.RowId">Product name</label>
+                                    <input type="text" id="product-@item.RowId" class="form-control form-control-sm"
+                                           value="@item.ProductName" oninput="vcRecalculate()" />
+                                </td>
+                                <td>
+                                    <label class="visually-hidden" for="sku-@item.RowId">SKU</label>
+                                    <input type="text" id="sku-@item.RowId" class="form-control form-control-sm"
+                                           value="@item.Sku" oninput="vcRecalculate()" />
+                                </td>
+                                <td>
+                                    <label class="visually-hidden" for="qty-@item.RowId">Quantity</label>
+                                    <input type="number" id="qty-@item.RowId" min="1" class="form-control form-control-sm quote-qty"
+                                           value="@item.Quantity" oninput="vcRecalculate()" />
+                                </td>
+                                <td>
+                                    <label class="visually-hidden" for="price-@item.RowId">Unit price</label>
+                                    <input type="number" id="price-@item.RowId" min="0" step="0.01" class="form-control form-control-sm quote-price"
+                                           value="@item.UnitPrice" oninput="vcRecalculate()" />
+                                </td>
+                                <td class="text-end quote-line-total" data-role="line-total">
+                                    @item.LineTotal.ToString("C2")
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="vcRemoveRow(this)"
+                                            aria-label="Remove this line item">
+                                        &times;
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="border-top vc-divider pt-3 mt-3 d-flex flex-column align-items-end gap-1">
+                <div class="d-flex justify-content-between" style="width: 240px;">
+                    <span class="vc-text-muted">Subtotal</span>
+                    <span id="quoteSubtotal" aria-live="polite">@Model.Subtotal.ToString("C2")</span>
+                </div>
+                <div class="d-flex justify-content-between" style="width: 240px;">
+                    <span class="vc-text-muted">VAT (@((Model.VatRate * 100).ToString("0"))%)</span>
+                    <span id="quoteVat" aria-live="polite">@Model.VatAmount.ToString("C2")</span>
+                </div>
+                <div class="d-flex justify-content-between fw-semibold fs-5" style="width: 240px;">
+                    <span>Grand Total</span>
+                    <span id="quoteGrandTotal" aria-live="polite">@Model.GrandTotal.ToString("C2")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="vc-card p-3">
+            <h2 class="vc-heading h6 mb-3">Client Summary</h2>
+
+            <dl class="mb-3">
+                <dt class="vc-text-muted small fw-normal">Client</dt>
+                <dd class="mb-2">
+                    @Model.ClientName
+                    @if (!string.IsNullOrEmpty(Model.ClientSector))
+                    {
+                        <span class="vc-badge vc-badge--accent ms-1">@Model.ClientSector</span>
+                    }
+                </dd>
+
+                <dt class="vc-text-muted small fw-normal">Quote reference</dt>
+                <dd class="mb-2">@Model.QuoteReference</dd>
+
+                <dt class="vc-text-muted small fw-normal">Valid until</dt>
+                <dd class="mb-2">@Model.ValidUntil.ToString("dd MMM yyyy")</dd>
+
+                <dt class="vc-text-muted small fw-normal">Terms</dt>
+                <dd class="mb-0">@Model.Terms</dd>
+            </dl>
+
+            <div class="d-grid gap-2">
+                <button type="button" class="btn btn-primary btn-sm" disabled title="Enabled once the backend workstream is wired up">
+                    Generate PDF Quote
+                </button>
+                <a class="btn btn-outline-secondary btn-sm" asp-controller="Pipeline" asp-action="Index">
+                    Back to Pipeline
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Client-side only for now — mirrors the C# computed properties on
+        // QuotationViewModel (Subtotal / VatAmount / GrandTotal) so the page
+        // matches on first load and after every edit.
+
+        
+        const VC_VAT_RATE = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VatRate));
+        let vcNextRowId = @(Model.LineItems.Count > 0 ? Model.LineItems.Max(i => i.RowId) + 1 : 1);
+
+        function vcRecalculate() {
+            let subtotal = 0;
+
+            document.querySelectorAll('#quoteTableBody .quote-row').forEach(row => {
+                const qty = parseFloat(row.querySelector('.quote-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.quote-price').value) || 0;
+                const lineTotal = qty * price;
+
+                row.querySelector('[data-role="line-total"]').textContent =
+                    lineTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+                subtotal += lineTotal;
+            });
+
+            const vat = subtotal * VC_VAT_RATE;
+            const grandTotal = subtotal + vat;
+
+            document.getElementById('quoteSubtotal').textContent =
+                subtotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            document.getElementById('quoteVat').textContent =
+                vat.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            document.getElementById('quoteGrandTotal').textContent =
+                grandTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+        }
+
+        
+        function vcAddRow() {
+            const tbody = document.getElementById('quoteTableBody');
+
+            if (!tbody) {
+                console.error('Quotation table body was not found.');
+                return;
+            }
+
+            const rowId = vcNextRowId++;
+
+            const row = document.createElement('tr');
+            row.className = 'quote-row';
+            row.dataset.rowId = rowId;
+
+            row.innerHTML = `
+                <td>
+                    <label class="visually-hidden" for="product-${rowId}">Product name</label>
+                    <input type="text" id="product-${rowId}"
+                           class="form-control form-control-sm"
+                           oninput="vcRecalculate()" />
+                </td>
+                <td>
+                    <label class="visually-hidden" for="sku-${rowId}">SKU</label>
+                    <input type="text" id="sku-${rowId}"
+                           class="form-control form-control-sm"
+                           oninput="vcRecalculate()" />
+                </td>
+                <td>
+                    <label class="visually-hidden" for="qty-${rowId}">Quantity</label>
+                    <input type="number" id="qty-${rowId}" min="1"
+                           class="form-control form-control-sm quote-qty"
+                           value="1" oninput="vcRecalculate()" />
+                </td>
+                <td>
+                    <label class="visually-hidden" for="price-${rowId}">Unit price</label>
+                    <input type="number" id="price-${rowId}" min="0" step="0.01"
+                           class="form-control form-control-sm quote-price"
+                           value="0" oninput="vcRecalculate()" />
+                </td>
+                <td class="text-end quote-line-total" data-role="line-total">
+                    $0.00
+                </td>
+                <td class="text-end">
+                    <button type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            onclick="vcRemoveRow(this)"
+                            aria-label="Remove this line item">
+                        &times;
+                    </button>
+                </td>
+            `;
+
+            tbody.appendChild(row);
+            vcRecalculate();
+
+            document.getElementById(`product-${rowId}`).focus();
+        }
+
+        function vcRemoveRow(button) {
+            const row = button.closest('.quote-row');
+            row.remove();
+            vcRecalculate();
+        }
+    </script>
+}

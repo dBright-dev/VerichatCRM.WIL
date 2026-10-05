@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "Rules Engine";
+}
+<div class="card">
+    <div class="card-title">Security Rules & Automation</div>
+    <p class="vc-text-muted">SLA escalation runs every 15 minutes via the API background service. Role-based access is enforced on every API endpoint.</p>
+    <table class="data-table">
+        <thead><tr><th>Rule</th><th>Scope</th><th>Status</th></tr></thead>
+        <tbody>
+            <tr><td>SLA breach auto-escalation</td><td>Support tickets</td><td><span class="badge badge-success">Active</span></td></tr>
+            <tr><td>Admin-only product creation</td><td>Catalog</td><td><span class="badge badge-success">Active</span></td></tr>
+            <tr><td>Role-based deal visibility</td><td>Pipeline</td><td><span class="badge badge-success">Active</span></td></tr>
+            <tr><td>Low-stock reorder alerts</td><td>Warehouse</td><td><span class="badge badge-warning">Monitored</span></td></tr>
+        </tbody>
+    </table>
+</div>

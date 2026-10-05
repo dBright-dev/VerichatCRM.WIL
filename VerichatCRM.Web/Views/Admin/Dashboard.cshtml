@@ -1,0 +1,75 @@
+﻿@model VerichatCRM.Web.ViewModels.Admin.AdminDashboardViewModel
+
+<div class="vc-admin-welcome">
+    <h2>Welcome back, @Model.UserName</h2>
+    <p class="vc-text-muted">Here's what's happening across your workspace — @Model.CurrentDate.ToString("dddd, d MMMM yyyy")</p>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-label">TOTAL REVENUE (JUL)</div>
+        <div class="stat-value vc-accent">R @((Model.TotalRevenue / 1000000m).ToString("0.00"))M</div>
+        <div class="stat-meta">vs R @((Model.RevenueTarget / 1000000m).ToString("0.0"))M target</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">ACTIVE CLIENTS</div>
+        <div class="stat-value vc-accent">@Model.ActiveClients</div>
+        <div class="stat-meta">@Model.RenewalsDue renewal due</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">OPEN TICKETS</div>
+        <div class="stat-value vc-accent">@Model.OpenTickets</div>
+        <div class="stat-meta">@Model.CriticalTickets critical</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">WAREHOUSE ALERTS</div>
+        <div class="stat-value vc-accent">@Model.LowStockItems</div>
+        <div class="stat-meta">items below min</div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-title">Revenue vs Target</div>
+        <p class="card-subtitle">Feb – Jul 2026</p>
+        <canvas id="adminRevenueChart" height="140"></canvas>
+    </div>
+    <div class="card">
+        <div class="card-title">Recent Activity</div>
+        <div class="activity-list">
+            @foreach (var item in Model.RecentActivity)
+            {
+                <div class="activity-item">
+                    <span class="activity-dot @item.Severity"></span>
+                    <div class="activity-body">
+                        <div class="activity-title">@item.Title</div>
+                        <div class="activity-subtitle">@item.Subtitle</div>
+                    </div>
+                    <span class="activity-time">@item.Timestamp</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        window.adminRevenue = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueVsTarget));
+        (function () {
+            var el = document.getElementById('adminRevenueChart');
+            if (!el || typeof Chart === 'undefined') return;
+            new Chart(el, {
+                type: 'line',
+                data: {
+                    labels: window.adminRevenue.map(function (p) { return p.Month; }),
+                    datasets: [
+                        { label: 'Revenue', data: window.adminRevenue.map(function (p) { return p.Revenue; }), borderColor: '#5B5BD6', fill: true },
+                        { label: 'Target', data: window.adminRevenue.map(function (p) { return p.Target; }), borderColor: '#C9CDD6', borderDash: [5, 5], pointRadius: 0 }
+                    ]
+                },
+                options: { responsive: true }
+            });
+        })();
+    </script>
+}

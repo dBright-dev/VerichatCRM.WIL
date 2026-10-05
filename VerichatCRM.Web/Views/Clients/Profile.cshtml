@@ -1,0 +1,38 @@
+@model VerichatCRM.Web.ViewModels.ClientProfileViewModel
+@{ var client = Model.Client; }
+
+<div class="mb-3"><a asp-controller="Clients" asp-action="Index" class="text-decoration-none">&larr; Back to Client Directory</a></div>
+<div class="row g-3">
+    <div class="col-12 col-lg-8"><div class="vc-card p-4 h-100">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3"><div><h2 class="vc-heading h4 mb-1">@client.Name</h2><span class="vc-text-muted">@client.Sector</span></div><span class="vc-badge vc-badge--@client.StatusBadgeVariant">@client.Status</span></div>
+        <dl class="row mb-0">
+            <dt class="col-sm-4 vc-text-muted fw-normal">Contact person</dt><dd class="col-sm-8">@client.ContactPerson</dd>
+            <dt class="col-sm-4 vc-text-muted fw-normal">Email</dt><dd class="col-sm-8"><a href="mailto:@client.ContactEmail">@client.ContactEmail</a></dd>
+            <dt class="col-sm-4 vc-text-muted fw-normal">Phone</dt><dd class="col-sm-8">@client.ContactPhone</dd>
+            <dt class="col-sm-4 vc-text-muted fw-normal">Assigned rep</dt><dd class="col-sm-8">@client.AssignedRep</dd>
+            <dt class="col-sm-4 vc-text-muted fw-normal">Last contact</dt><dd class="col-sm-8">@(client.LastContactDate?.ToString("dd MMM yyyy") ?? "No contact logged")</dd>
+        </dl>
+    </div></div>
+    <div class="col-12 col-lg-4"><div class="vc-card vc-kpi-card"><div class="vc-kpi-card__label">Total Deals Value</div><div class="vc-kpi-card__value">@client.TotalDealsValue.ToString("C0")</div></div>
+        <div class="vc-card p-3 mt-3"><h3 class="vc-heading h6 mb-2">Quick actions</h3><div class="d-grid gap-2">
+            <a class="btn btn-primary btn-sm" asp-controller="Quotation" asp-action="Index" asp-route-clientId="@client.Id">Start a Quotation</a>
+            <a class="btn btn-outline-primary btn-sm" asp-controller="Pipeline" asp-action="Index">View in Pipeline</a>
+        </div></div>
+    </div>
+</div>
+<div class="row g-3 mt-1">
+    <div class="col-12 col-xl-6"><div class="vc-card p-3 h-100"><h3 class="vc-heading h6">Mobile orders</h3>
+        @if (Model.Orders.Count == 0) { <p class="vc-text-muted mb-0">No orders for this client.</p> }
+        @foreach (var order in Model.Orders.OrderByDescending(o => o.OrderDate))
+        {
+            <div class="py-2 border-bottom"><div class="d-flex justify-content-between"><strong>@(order.TrackingNumber ?? order.OrderId)</strong><span>@order.Status</span></div><small class="vc-text-muted">@order.OrderDate.ToString("dd MMM yyyy") · R @order.TotalAmount.ToString("N2")</small><div>@string.Join(", ", order.LineItems.Select(i => $"{i.ProductName} × {i.Quantity}"))</div></div>
+        }
+    </div></div>
+    <div class="col-12 col-xl-6"><div class="vc-card p-3 h-100"><h3 class="vc-heading h6">Quotations</h3>
+        @if (Model.Quotations.Count == 0) { <p class="vc-text-muted mb-0">No quotations have been issued.</p> }
+        @foreach (var quote in Model.Quotations.OrderByDescending(q => q.ValidUntil))
+        {
+            <div class="py-2 border-bottom"><div class="d-flex justify-content-between"><strong>@quote.QuoteReference</strong><span>@quote.Status</span></div><small class="vc-text-muted">Valid until @quote.ValidUntil.ToString("dd MMM yyyy") · R @quote.GrandTotal.ToString("N2")</small><div>@string.Join(", ", quote.LineItems.Select(i => $"{i.ProductName} × {i.Quantity}"))</div></div>
+        }
+    </div></div>
+</div>

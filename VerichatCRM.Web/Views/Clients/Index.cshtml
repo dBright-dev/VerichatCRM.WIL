@@ -1,0 +1,101 @@
+﻿@model VerichatCRM.Core.Models.Clients.ClientDirectoryViewModel
+@{
+    var role = Context.Session.GetString("UserRole") ?? "";
+    var canCreate = role == "System Administrator" || role == "Sales Representative";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="vc-card p-3 flex-grow-1 me-3">
+        <form method="get" asp-controller="Clients" asp-action="Index" class="row g-2 align-items-end">
+            <div class="col-12 col-md-6">
+                <label for="search" class="form-label vc-text-muted small">Search clients</label>
+                <input type="search" id="search" name="search" class="form-control"
+                       placeholder="Client name or contact person"
+                       value="@Model.SearchTerm" />
+            </div>
+            <div class="col-8 col-md-4">
+                <label for="sector" class="form-label vc-text-muted small">Sector</label>
+                <select id="sector" name="sector" class="form-select">
+                    <option value="All">All sectors</option>
+                    @foreach (var sector in Model.AvailableSectors)
+                    {
+                        <option value="@sector" selected="@(Model.SectorFilter == sector)">@sector</option>
+                    }
+                </select>
+            </div>
+            <div class="col-4 col-md-2 d-grid">
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+        </form>
+    </div>
+
+    @if (canCreate)
+    {
+        <a asp-action="Create" class="btn btn-primary" style="white-space: nowrap;">
+            + Add Client
+        </a>
+    }
+</div>
+
+<div class="vc-card p-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <caption class="visually-hidden">List of client accounts</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Client</th>
+                    <th scope="col">Sector</th>
+                    <th scope="col">Contact</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Assigned Rep</th>
+                    <th scope="col" class="text-end">Total Deals Value</th>
+                    <th scope="col"><span class="visually-hidden">Actions</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Clients.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center vc-text-muted py-4">
+                            No clients yet.
+                            @if (canCreate)
+                            {
+                                <a asp-action="Create">Add the first client</a>
+                            }
+                        </td>
+                    </tr>
+                }
+                @foreach (var client in Model.Clients)
+                {
+                    <tr>
+                        <td class="fw-semibold">@client.Name</td>
+                        <td>@client.Sector</td>
+                        <td>
+                            <div>@client.ContactPerson</div>
+                            <div class="vc-text-muted small">@client.ContactEmail</div>
+                        </td>
+                        <td>
+                            <span class="vc-badge vc-badge--@client.StatusBadgeVariant">@client.Status</span>
+                        </td>
+                        <td>@client.AssignedRep</td>
+                        <td class="text-end">@client.TotalDealsValue.ToString("C0")</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary"
+                               asp-action="Profile" asp-route-id="@client.Id">
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

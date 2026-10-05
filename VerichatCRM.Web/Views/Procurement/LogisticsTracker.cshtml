@@ -1,0 +1,68 @@
+﻿@model VerichatCRM.Web.ViewModels.Procurement.LogisticsTrackerViewModel
+@{
+    ViewData["Title"] = "Logistics Tracker";
+    ViewData["Subtitle"] = "Order dispatch, delivery tracking & route management";
+}
+
+<div class="chip-row">
+    @foreach (var status in Model.Statuses)
+    {
+        <button class="chip @(status == Model.ActiveStatus ? "active" : "")" data-status="@status">@status</button>
+    }
+</div>
+
+<div class="shipment-grid">
+    @foreach (var s in Model.Shipments)
+    {
+        <div class="shipment-card" data-status="@s.Status">
+            <div class="shipment-header">
+                <span class="shipment-ref">@s.OrderRef</span>
+                <span class="badge @GetStatusBadge(s.Status)">@s.Status</span>
+            </div>
+            <div class="shipment-route">
+                <div class="route-point">
+                    <span class="route-dot origin"></span>
+                    <span class="route-label">@s.Origin</span>
+                </div>
+                <div class="route-line"></div>
+                <div class="route-point">
+                    <span class="route-dot destination"></span>
+                    <span class="route-label">@s.Destination</span>
+                </div>
+            </div>
+            <div class="shipment-meta">
+                <div><span class="meta-label">ETA</span><span class="meta-value">@s.Eta.ToString("yyyy-MM-dd")</span></div>
+                <div><span class="meta-label">Weight</span><span class="meta-value">@s.WeightKg kg</span></div>
+                <div><span class="meta-label">Client</span><span class="meta-value">@s.Client</span></div>
+            </div>
+            <div class="shipment-actions">
+                <button class="btn btn-primary btn-sm">Track</button>
+                <button class="btn btn-outline btn-sm">View Details</button>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="card" style="margin-top: var(--space-xl);">
+    <div class="card-title">Live Map View</div>
+    <div id="liveMap" class="map-placeholder">
+        <div class="map-pin pin-orange" style="top: 40%; left: 30%;"></div>
+        <div class="map-pin pin-blue" style="top: 60%; left: 55%;"></div>
+        <div class="map-pin pin-green" style="top: 50%; left: 75%;"></div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusBadge(string status) => status switch
+    {
+        "Processing" => "badge-neutral",
+        "Dispatched" => "badge-warning",
+        "In Transit" => "badge-info",
+        "Delivered" => "badge-success",
+        _ => "badge-neutral"
+    };
+}
+
+@section Scripts {
+    <script src="~/js/logistics-tracker.js"></script>
+}

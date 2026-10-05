@@ -1,0 +1,137 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using VerichatCRM.API.DTOs.Requests;
+using VerichatCRM.API.Services.Interfaces;
+
+namespace VerichatCRM.API.Controllers
+{
+    /// <summary>Mobile account: profile, settings, quick reorder (1-tap catalogue).</summary>
+    [ApiController]
+    [Route("api/mobile")]
+    [Authorize]
+    public class MobileAccountController : ControllerBase
+    {
+        private readonly IMobileService _mobile;
+        private readonly IAuthService _auth;
+
+        public MobileAccountController(IMobileService mobile, IAuthService auth)
+        {
+            _mobile = mobile;
+            _auth = auth;
+        }
+
+        private string UserId =>
+            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value
+            ?? throw new UnauthorizedAccessException("No user id claim.");
+
+        /// <summary>Client self-registration → "Client User" role, JWT included.</summary>
+        [HttpPost("register")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Register([FromBody] ClientRegisterRequest request)
+        {
+            var result = await _auth.RegisterAsync(new RegisterRequest
+            {
+                DisplayName = request.DisplayName,
+                Email = request.Email,
+                Password = request.Password,
+                Role = Core.Entities.UserRoles.ClientUser
+            });
+
+            if (!result.Success || result.User == null)
+                return BadRequest(result);
+
+            // Persist the company name captured on the sign-up form...
+            if (!string.IsNullOrWhiteSpace(request.CompanyName))
+            {
+                await _mobile.UpdateProfileAsync(
+                    result.User.UserId,
+                    _ => { },
+                    p => p.Company = request.CompanyName!.Trim());
+            }
+
+            // ...then create the CRM Client row (orders/quotations FK to
+            // Clients.ClientId) using that company name.
+            await _mobile.EnsureClientAccountAsync(result.User.UserId);
+
+            return Ok(result);
+        }
+
+        [HttpGet("profile")]
+        public async Task<IActionResult> Profile() =>
+            Ok(await _mobile.GetProfileAsync(UserId));
+
+        [HttpPatch("profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+        {
+            var profile = await _mobile.UpdateProfileAsync(UserId,
+                user =>
+                {
+                    if (!string.IsNullOrWhiteSpace(request.DisplayName))
+                        user.DisplayName = request.DisplayName.Trim();
+                },
+                p =>
+                {
+                    if (request.Phone != null) p.Phone = request.Phone;
+                    if (request.Company != null) p.Company = request.Company;
+                    if (request.VatNumber != null) p.VatNumber = request.VatNumber;
+                    if (request.AddressName != null) p.AddressName = request.AddressName;
+                    if (request.Street != null) p.Street = request.Street;
+                    if (request.City != null) p.City = request.City;
+                    if (request.Country != null) p.Country = request.Country;
+                });
+            return Ok(profile);
+        }
+
+        [HttpGet("settings")]
+        public async Task<IActionResult> Settings() =>
+            Ok(await _mobile.GetSettingsAsync(UserId));
+
+        [HttpPatch("settings")]
+        public async Task<IActionResult> UpdateSettings([FromBody] UpdateSettingsRequest request) =>
+            Ok(await _mobile.UpdateSettingsAsync(UserId,
+                request.PushNotifications, request.BiometricLogin, request.DarkMode));
+
+        /// <summary>1-tap reorder of a recurring consumable → pre-filled order.</summary>
+        [HttpPost("reorder/{sku}")]
+        public async Task<IActionResult> QuickReorder(string sku, [FromServices] IOrderService orders)
+        {
+            // Self-heal: older mobile accounts may pre-date the Client row.
+            await _mobile.EnsureClientAccountAsync(UserId);
+
+            try
+            {
+                var order = await orders.CreateOrderAsync(new CreateOrderRequest
+                {
+                    ClientId = UserId,
+                    LineItems = new List<OrderLineItemRequest> { new() { SKU = sku, Quantity = 1 } }
+                });
+                return Ok(new { orderId = order.OrderId, total = order.TotalAmount, status = order.Status });
+            }
+            catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        [HttpPost("orders")]
+        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request, [FromServices] IOrderService orders)
+        {
+            await _mobile.EnsureClientAccountAsync(UserId);
+            request.ClientId = UserId;
+            try { return Ok(await orders.CreateOrderAsync(request)); }
+            catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        [HttpGet("orders")]
+        public async Task<IActionResult> GetOrders([FromServices] IOrderService orders)
+        {
+            await _mobile.EnsureClientAccountAsync(UserId);
+            return Ok(await orders.GetOrdersByClientAsync(UserId));
+        }
+
+        [HttpGet("quotations")]
+        public async Task<IActionResult> GetQuotations([FromServices] IQuotationService quotations)
+        {
+            await _mobile.EnsureClientAccountAsync(UserId);
+            return Ok(await quotations.GetByClientAsync(UserId));
+        }
+    }
+}

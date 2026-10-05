@@ -1,7 +1,38 @@
+using VerichatCRM.Web.Services;
+using VerichatCRM.Web.Services.Interfaces;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Session
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(120);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+
+builder.Services.AddHttpContextAccessor();
+
+// HttpClient pointing to the API
+builder.Services.AddHttpClient<IApiClient, ApiClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]!);
+});
+
+builder.Services.AddScoped<IWebAuthService, WebAuthService>();
+builder.Services.AddScoped<IClientApiService, ClientApiService>();
+builder.Services.AddScoped<IQuotationApiService, QuotationApiService>();
+builder.Services.AddScoped<IPipelineApiService, PipelineApiService>();
+builder.Services.AddScoped<ISupportApiService, SupportApiService>();
+builder.Services.AddScoped<IProductApiService, ProductApiService>();
+    builder.Services.AddScoped<IInquiryApiService, InquiryApiService>();
+builder.Services.AddScoped<IWarehouseAlertApiService, WarehouseAlertApiService>();
+builder.Services.AddScoped<IAdminApiService, AdminApiService>();
 
 var app = builder.Build();
 
@@ -14,7 +45,9 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
+app.UseSession();
 
 app.UseAuthorization();
 

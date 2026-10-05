@@ -1,0 +1,1373 @@
+WIL - INFORMATION SYSTEMS 3E
+
+MEDICAL LOGISTICS &
+CRM SYSTEM
+IMPLEMENTATION
+
+Prepared by : NOVA Team (3)      Prepared For:
+                                 Verichat Quality Projects
+Mutsawashe Maredza - ST10456212
+Boluwatife Fayemi - ST10286220
+Raisibe Kwenaite - ST10248158
+
+INSY7315  EMERIS                 17 AUGUST 2026
+TABLE OF CONTENTS
+
+9.1.4 INTRODUCTION ............................................................................................................................ 3
+            Company Background & Problem Statement ......................................................................... 3
+            Document Purpose & System Introduction ............................................................................ 3
+            Project Scope Statement ........................................................................................................ 4
+            Stakeholder Analysis Matrix ................................................................................................... 5
+
+9.1.5 Requirements ................................................................................................................................ 7
+   9.1.6 User Roles .................................................................................................................................. 7
+   9.1.7 User Stories ............................................................................................................................... 7
+            User Experience (UX) Journey Maps....................................................................................... 9
+      Journey 1: Corporate Procurement Manager (Client) .................................................................... 9
+      Journey 2: Internal Sales Representative........................................................................................ 9
+      Journey 3: Internal Support/Logistics Team ................................................................................. 10
+      Journey 4: Medical Student .......................................................................................................... 11
+            Work Breakdown Structure (WBS) ....................................................................................... 13
+
+9.1.8 Non-Functional Requirements.................................................................................................... 31
+9.1.9. ANALYSIS ARTIFACTS ................................................................................................................. 32
+
+            Domain Modelling ................................................................................................................ 32
+            Design Artifacts .................................................................................................................... 33
+9.1.10 IMPLEMENTATION .................................................................................................................... 35
+   UML Sequence Diagrams .................................................................................................................. 35
+   UML State Machine Diagrams .......................................................................................................... 36
+   Deployment Plan Documentation .................................................................................................... 36
+9.1.11 DATA SCHEMA........................................................................................................................... 37
+   Entity Relationship Diagram (ERD/ JSON Schema) ......................................................................... 38
+9.1.12 ARCHITECTURE ARTIFACTS ....................................................................................................... 40
+            Design Patterns .................................................................................................................... 40
+            Architecture Patterns ........................................................................................................... 40
+            Cloud ..................................................................................................................................... 41
+9.1.13 SECURITY ................................................................................................................................... 42
+9.1.14 DEVOPS...................................................................................................................................... 44
+            GitHub Actions Pipeline ....................................................................................................... 44
+9.1.15 RUNNING COSTS & FINANCIAL PROJECTIONS.......................................................................... 46
+9.1.16 CHANGE MANAGEMENT ........................................................................................................... 49
+            How and why will the organization adopt your software? ................................................ 49
+            How and why will the users adopt your software? ............................................................ 50
+            Strategy to Gain Adoption (Organisation & Users) ............................................................. 52
+
+9.1.17 Appendices ................................................................................................................................ 54
+9.1.4 INTRODUCTION
+
+     Company Background & Problem Statement
+
+Founded in 2025, Verichat is a prominent organization operating within the
+specialized medical logistics and distribution sector. The company is dedicated to
+supplying healthcare facilities with critical resources, ranging from bulk personal
+protective equipment (PPE) to specialized medical hardware. As the organization has
+grown to meet regional healthcare demands, the complexity of its client
+relationships and supply chain has expanded proportionately.
+
+Despite this growth, the company's administrative infrastructure has not kept pace.
+Currently, the organization relies on a highly fragmented, legacy approach to manage
+its operations. Interaction records, purchasing preferences, and deal statuses are
+scattered across disjointed systems, disconnected spreadsheets, and manual logs.
+This lack of centralization creates a critical "visibility gap" across the organization.
+Management struggles to accurately forecast revenue, while sales and administrative
+staff waste valuable time cross-referencing multiple sources to generate a standard
+quote. Ultimately, these disjointed manual processes introduce significant
+operational friction, hindering overall efficiency and slowing down the sales cycle.
+
+     Document Purpose & System Introduction
+
+The Proposed Solution: Verichat CRM system. To resolve these systemic bottlenecks,
+we at Nova (tema) propose developing and implementing Verichat, a modern,
+specialized enterprise management and customer relationship management (CRM)
+system. The Verichat CRM system is engineered specifically to eliminate current
+operational friction points by centralizing disjointed data into actionable business
+intelligence.
+
+Verichat CRM system addresses the organization's visibility gap by shifting the
+workflow to a client-focused, single-screen view. Through the implementation of
+Unified Client Profiles, the system consolidates historical interaction records, key
+personnel directories, and purchasing preferences into one accessible directory. This
+ensures that every interaction--from initial contact to long-term partnership--is
+accurately tracked.
+
+Furthermore, the system delivers immediate business value by replacing manual
+administrative tasks with automated workflows. Key features include automated
+quotation tools that generate itemized, professional PDFs and dynamic executive
+dashboards that provide real-time revenue forecasting.
+Above all, Verichat CRM is designed with a core mandate of "User-Friendly Simplicity."
+It ensures that sales and administrative staff can operate at peak efficiency and
+leverage advanced data tools without requiring a technical background. The resulting
+architecture is both accessible for daily users and scalable enough to support
+Verichat's future expansion into broader regional medical distribution.
+
+     Project Scope Statement
+
+In-Scope (Functional Deliverables):
+ Smart Customer Management: Unified profiles and directories for key personnel
+like procurement officers and medical directors.
+ Ranked Inquiry Scoring: A lead capture system that dynamically ranks inquiries
+based on urgency, deal size, or sector using custom business rules.
+ Visual Sales Management: Interactive pipelines for tracking deals and automated
+Sales Revenue Forecasting dashboards.
+ Quotation Tools: A one-click generator for itemized, standardized PDF quotations.
+ E-Commerce & Specialized Portals: A secure Client Self-Service Portal for instant
+reordering of recurring consumables and a "Quick-Cart" interface for medical
+student essentials.
+ Complaint & Issue Hub: Automated ticket logging with tracking numbers, SLA-
+based routing to technical or logistics teams, and resolution roadmap tracking.
+Out-of-Scope:
+ Custom accounting software integrations (e.g., direct payroll or tax filing systems)
+are not included in this phase of development [Based on prompt requirements].
+ Back-end coding is excluded from the initial Task 1 Prototype, which focuses
+strictly on design, navigation, and info-flow using dummy dat.
+ Stakeholder Analysis Matrix
+
+Stakeholder              System    Expectations         Operational
+                        Influence                           Needs
+
+Business Owner          High       A professional,      Executive
+(Client/Management)                scalable solution    dashboards for
+                                   that contributes     revenue
+                                   to healthier         forecasting and
+                                   communities and      high-level
+                                   revenue growth.      pipeline visibility.
+
+Procurement             Medium     Seamless, one-       Access to the
+Managers (Client End-              click ordering and   Customer
+Users)                             transparent          Dashboard for
+                                   resolution of        reordering
+                                   technical issues.    consumables and
+                                                        tracking service
+                                                        tickets.
+
+Account Executives /    High       Reduction in         Use of Ranked
+Sales Reps (Internal)              manual               Inquiry
+                                   paperwork and a      Management and
+                                   clear priority list  the One-Click
+                                   for daily client     Quotation
+                                   interactions.        Generator.
+
+Field Engineers / Tech  Medium     Clear, automated     Automated
+Support (Internal)                 communication        routing of tickets
+                                   regarding            via the Issue
+                                   equipment            Resolution Hub
+                               failures or system and tracking of
+
+                               bugs.               SLA deadlines.
+
+Medical Directors  Low/Medium  Reliability in the  Oversight of
+(Client)                       supply of           purchasing
+                               specialized         preferences and
+                               hospital            facility-specific
+                               infrastructure      catalogs.
+                               and digital health
+                               systems.
+9.1.5 Requirements
+
+SYSTEM REQUIREMENTS AND USER EXPERIENCE
+ Client-Centric Profile & Account Management: Tracking unified profiles, contract
+statuses, and contact networks.
+ Omnichannel Online Sales & Self-Service E-Commerce: Enabling direct online
+transactions, secure checkout, and immediate digital invoicing.
+ Dynamic Ranked Inquiry Scoring: Automatically evaluating incoming web/email
+submissions against client priority benchmarks rather than simple flags.
+ Automated Issue Resolution & Complaint Management Hub: Tracking logged
+tickets cleanly from submission, routing, to resolution approval.
+ Specialized Equipment Lifecycle & SLA Automation: Generating system
+notifications 60 days out from service or warranty expirations.
+
+9.1.6 User Roles
+
+System Administrator: System configuration, security rules, global analytics.
+Sales Representative / Account Executive: Ranked inquiry management, deal
+pipelines, quote generation.
+Procurement Manager (Client): Self-service reordering, complaint logging, ticket
+tracking.
+Field Support Engineer / Technical Support: Ticket handling, SLA tracking,
+equipment service logs.
+Medical Student: Simplified Quick-Cart catalog ordering for training equipment.
+
+9.1.7 User Stories
+
+System Administrator
+ As a System Administrator, I want to configure role-based permissions for each
+user type so that Sales Reps, Support Engineers, and clients only see the data
+relevant to their role.
+ As a System Administrator, I want a global analytics dashboard showing usage,
+error rates, and system load so that I can spot problems before they affect users.
+ As a System Administrator, I want to update Firestore Security Rules from a
+controlled deployment process so that access-control changes are tested before
+they reach production.
+
+Sales Representative / Account Executive
+
+ As a Sales Rep, I want to view dynamic lead scores for incoming inquiries so that I
+can prioritise urgent, high-value medical deals.
+
+ As a Sales Rep, I want to move deals through pipeline stages on a visual board so
+that I always know the status of every account I manage.
+
+ As a Sales Rep, I want to generate a branded quotation PDF directly from a deal
+so that I can send pricing to a client without leaving the platform.
+
+Procurement Manager (Client)
+
+ As a Corporate Procurement Manager, I want to place single-click reorders for
+medical consumables so that facility stockouts are avoided.
+
+ As a Corporate Procurement Manager, I want to log a complaint with photo
+evidence and receive a ticket number so that I have proof of the issue and can track
+its resolution.
+
+ As a Corporate Procurement Manager, I want to see the delivery status of my last
+three orders so that I can plan around delays.
+
+Field Support Engineer / Technical Support
+
+ As a Support Engineer, I want issues automatically routed by SLA parameters so
+that critical equipment maintenance deadlines are met.
+
+ As a Support Engineer, I want to log service history against a specific piece of
+equipment so that repeat faults are visible to the next engineer who picks up the
+ticket.
+
+ As a Support Engineer, I want a mobile view of my assigned tickets so that I can
+update job status from a client site without a laptop.
+
+Medical Student
+
+ As a Medical Student, I want a Quick-Cart interface so that I can buy stethoscopes
+and lab coats without administrative delay.
+
+ As a Medical Student, I want to see student-discounted pricing automatically
+applied at checkout so that I don't need to apply a code manually.
+
+ As a Medical Student, I want order confirmation and tracking on my phone so that
+I know when training equipment will arrive before a practical session.
+     User Experience (UX) Journey Maps
+Journey 1: Corporate Procurement Manager (Client)
+
+Goal: Instant reordering of recurring medical consumables
+
+Journey 2: Internal Sales Representative
+Goal: Moving a ranked inquiry through to a generated PDF quotation
+Journey 3: Internal Support/Logistics Team
+Goal: Resolving a technical equipment complaint within SLA targets
+Journey 4: Medical Student
+Goal: Fast, small-volume purchase of essential training gear
+     Work Breakdown Structure (WBS)
+
+The Work Breakdown Structure below outlines the key deliverable areas of the VeriChat project, their estimated durations,
+responsible team members, and required resources. The team consists of three members: Mutsa, Rai, and Bolu.
+
+WBS Task Name      Description                         Duration Predecessor(s) Responsible  Resources Needed
+
+1.0  Project       Establish the project, understand
+                   requirements and organise the
+     Initiation &  team.
+
+     Planning
+
+1.1  Review        Review the INSY7315 manual,         1 day  --   All                      Assignment
+                                                                                            manual, PC,
+     Assignment    assessment criteria, deliverables                                        Internet
+
+     Requirements  and deadlines.
+
+1.2  Establish Team Allocate responsibilities between  1 day  1.1  All                      Project Canva,
+                                                                                            Teams
+     Roles         Rai, Bolu and Mutsa.
+
+1.3  Establish     Create GitHub repository and        1 day  1.2  Mutsa                    GitHub, PC,
+                   initial project structure.                                               Internet
+     Project
+
+     Repository
+1.4  Project        Create project schedule, WBS,       2 days  1.2   Rai  Canva
+
+     Schedule &     dependencies and resource                              Microsoft
+                                                                           Teams/Zoom,
+     WBS            allocation.                                            meeting records
+                                                                           INSY7315 manual,
+1.5  Weekly         Attend and document weekly          13 weeks 1.1  All  Internet
+
+     Collaboration  collaborative sessions and project                     Microsoft Word,
+                                                                           client information
+     Meetings       progress.
+
+1.6  Professional   Complete the Professional           3 days  1.1   All
+
+     Conduct        Conduct in the Workplace
+
+     Programme      Programme.
+
+2.0  Task 1 --      Produce the required analysis,
+
+     Requirements & design, architecture and planning
+
+     Documentation documentation.
+
+2.1  Cover Page     Prepare team details, team name,    1 day   1.4   Rai
+
+                    members, student numbers, client
+
+                    and logo.
+2.2  Table of       Establish document headings,             1 day   2.1  Rai        Microsoft Word
+                    numbering and figures/tables
+     Contents       structure.
+
+     Structure
+
+2.3  Introduction   Explain the business problem,            2 days  2.1  Rai        Word, project
+                    purpose of the system and
+                    justification to management.                                     information
+
+2.4  Requirements   Research the organisation, project 4 days        2.3  Rai, Bolu  Internet, research
+                                                                                     databases, Word
+     Research       and intended users and document
+
+                    requirements.
+
+2.5  Identify User  Identify and describe the different 2 days       2.4  Rai        Requirements
+
+     Roles          system user roles.                                               documentation,
+
+                                                                                     Word
+
+2.6  Develop User   Create user stories using the            3 days  2.5  Rai        Word,
+
+     Stories        required "As a... I want... so that..."                          requirements
+
+                    format.
+2.7  UX Journey        Map system screens and               3 days  2.6  Rai   Figma, diagrams
+                                                                         Rai   Canva, Word
+     Map               navigation flows for the identified               Bolu
+                                                                               Word,
+                       user roles.                                       Bolu  requirements
+
+2.8  Work              Document project tasks,              2 days  1.4        UML tool,
+                                                                               requirements
+     Breakdown         descriptions, durations,
+
+     Structure         predecessors, resources and team
+
+                       responsibilities.
+
+2.9  Non-Functional Identify and document                   2 days  2.4
+
+     Requirements      performance, usability, security
+
+                       and other NFRs gathered from the
+
+                       client.
+
+3.0  Task 1 --         Produce UML and system
+
+     Analysis &        analysis/design artifacts.
+
+     Design Artifacts
+
+3.1  Domain Model      Identify domain classes, attributes 3 days   2.6
+
+                       and relationships and create the
+
+                       UML domain class diagram.
+3.2  Design Class  Create the implementation-level      4 days  3.1  Bolu   UML tool, Visual
+                                                                            Studio
+     Diagram       UML class diagram including
+
+                   attributes, methods, access
+
+                   specifiers, keys and relationships.
+
+3.3  Sequence      Document important system            3 days  3.2  Bolu   UML tool
+                   interactions and critical flows.                  Bolu
+     Diagrams                                                        Mutsa  UML tool
+
+3.4  State Diagrams Model important system states       2 days  3.3         Azure/cloud tools,
+                                                                            diagrams
+                   and transitions.
+
+3.5  Deployment    Document environments,               2 days  3.4
+                   infrastructure and deployment
+     Plan          strategy.
+
+4.0  Task 1 -- Data & Design the application's data
+
+     Architecture  storage and overall architecture.
+
+4.1  Select Data   Evaluate and justify the selected    2 days  3.2  Bolu   Database tools,
+                                                                            research
+     Technology    database/storage technology.
+4.2  Develop ERD    Create the Entity Relationship       3 days  4.1  Bolu   Draw.io/Lucidchart,
+                                                                      Bolu   database tool
+                    Diagram showing entities,                         Bolu
+                                                                             Database tools,
+                    attributes, keys and relationships.                      Word
+
+4.3  Document Data Document database structure and 2 days        4.2         UML tool, research
+
+     Schema         JSON schemas if a NoSQL solution
+
+                    is used.
+
+4.4  Select Design  Identify appropriate software        2 days  3.2
+                    design patterns and justify their
+     Patterns       use.
+
+4.5  Architecture   Select and document the              2 days  4.4  Mutsa  Architecture
+                                                                      Mutsa  diagrams
+     Pattern        application's overall architecture
+                                                                             Azure, architecture
+                    pattern.                                                 diagrams
+
+4.6  Cloud          Design cloud services,               3 days  4.5
+
+     Architecture   connectivity, network segregation
+
+                    and communication protocols.
+5.0  Task 1 --       Plan security, CI/CD, operating
+
+     Security,       costs and organisational adoption.
+
+     DevOps & Costs
+
+5.1  Security Plan   Analyse threats, vulnerabilities,   3 days  4.6  Bolu   Security tools,
+                     network security, XSS and                        Mutsa  research, Word
+                     mitigation strategies.
+                                                                             GitHub
+5.2  GitHub          Define branches, development        2 days  1.3
+                     flow and GitHub workflow.
+     Workflow
+
+     Design
+
+5.3  CI/CD Pipeline  Design GitHub Actions pipeline,     3 days  5.2  Mutsa  GitHub Actions
+
+     Plan            automated testing and
+
+                     deployment workflow.
+
+5.4  Running Cost    Calculate hosting, database and     3 days  4.6  Mutsa  Cloud pricing
+                                                                             information, Excel
+     Analysis        infrastructure costs and two-year
+
+                     projections at different user
+
+                     scales.
+5.5  Change         Develop adoption, training,         3 days  5.4            Rai   Word, project
+                                                                                     information
+     Management     handover, transition and support                                 Word, rubric
+
+     Plan           strategy.                                                        Figma/IDE
+                                                                                     Figma/IDE
+5.6  Task 1         Combine and review all Task 1       2 days  5.1, 5.3, 5.5  All   Figma/IDE
+
+     Documentation sections against the rubric.
+
+     Review
+
+6.0  Task 1 --      Create a functional visual
+                    prototype demonstrating the
+     Prototype      intended solution.
+
+6.1  Prototype      Design key screens and interface    3 days  2.7            Rai
+
+     Screen Design  layouts.
+
+6.2  Prototype      Connect screens and demonstrate 2 days      6.1            Rai
+
+     Navigation     user navigation.
+
+6.3  Prototype Data Use dummy data to demonstrate       2 days  6.2            Bolu
+
+     Flow           information flow and interactions.
+6.4  Responsive    Create desktop and mobile         3 days  6.3       Rai  Figma/IDE
+                                                                            Figma, rubric
+     Prototype     versions of the prototype.
+                                                                            Rubric, Word,
+6.5  Prototype     Review functionality, usability,  2 days  6.4       All  Figma
+                                                                            ARC, PDF,
+     Testing &     screen connectivity and                                  Figma/GitHub
+
+     Review        completeness.                                            Visual Studio/IDE,
+                                                                            GitHub
+6.6  Task 1 Final  Perform final quality check of    1 day   5.6, 6.5  All
+
+     Review        documentation and prototype.
+
+6.7  Task 1        Submit the documentation and      1 day   6.6       Rai
+
+     Submission    prototype link on ARC.
+
+7.0  Task 2 -- Front- Build the fully designed and
+
+     End           responsive front end.
+
+     Development
+
+7.1  Front-End     Establish front-end project       2 days  6.7       Rai
+
+     Setup         structure and development
+
+                   environment.
+7.2  Implement UI     Develop screens, layouts,           5 days   7.1  Rai  IDE, HTML/CSS/JS
+                                                                             or selected
+     Components       navigation and reusable UI                             framework
+
+                      components.                                            IDE, design assets
+
+7.3  Branding &       Apply branding, colours,            3 days   7.2  Rai  IDE, browser
+                                                                             testing
+     Styling          typography and consistent visual
+                                                                             Browser tools,
+                      identity.                                              accessibility tools
+
+7.4  Responsive       Optimise interface for desktop,     3 days   7.3  Rai  Browsers, testing
+                                                                             tools
+     Design           tablet and mobile.
+
+7.5  Accessibility    Implement accessibility             2 days   7.4  Rai
+
+                      considerations including contrast,
+
+                      keyboard navigation and scalable
+
+                      text.
+
+7.6  Front-End        Test navigation, usability, feedback 2 days  7.5  All
+
+     Testing          and responsiveness.
+
+8.0  Task 2 -- Back-  Develop the functioning back-end,
+
+     End              database, APIs and business logic.
+
+     Development
+8.1  Back-End        Configure server-side project      2 days  6.7       Bolu       Visual
+                                                                          Bolu       Studio, .NET/IDE
+     Project Setup   structure and development                            Bolu
+                                                                          Bolu       SQL/NoSQL
+                     environment.                                         Bolu       database, IDE
+                                                                          Bolu, Rai
+8.2  Database        Create database structures,        4 days  8.1                  Visual Studio,
+                                                                                     GitHub
+     Implementation relationships and data access
+                                                                                     Visual Studio, API
+                     functionality.                                                  tools
+
+8.3  Business Logic  Implement core application logic,  5 days  8.2                  Security libraries,
+                                                                                     database
+                     classes, validation and error
+                                                                                     IDE, database, API
+                     handling.                                                       tools
+
+8.4  API             Develop API endpoints and front-   4 days  8.3
+
+     Development     end/back-end communication.
+
+8.5  Authentication Implement applicable                3 days  8.4
+
+     & Authorisation authentication, authorisation and
+
+                     input validation.
+
+8.6  Data Flow       Connect UI, APIs, business logic   4 days  7.6, 8.5
+                     and database.
+     Integration
+8.7  Back-End     Test functionality, APIs, database  3 days  8.6  Bolu, All    Testing framework,
+                                                                                Postman/API tool
+     Testing      operations and security.
+
+9.0  Task 2 --    Deploy the solution and establish
+                  automated
+     Hosting &    development/deployment
+                  processes.
+     DevOps
+
+9.1  Configure    Set up hosting, database and        3 days  8.7  Mutsa        Azure/cloud
+                  required cloud services.                         Mutsa        platform
+     Cloud                                                         Mutsa
+                                                                                Azure, GitHub
+     Environment
+                                                                                GitHub
+9.2  Deploy       Deploy the application and          3 days  9.1
+                  connect hosted components.
+     Application
+
+9.3  Configure    Implement feature/develop/main      2 days  8.7
+
+     GitHub       or equivalent branching workflow.
+
+     Branching
+
+9.4  Implement    Configure automated tests within    3 days  9.3  Mutsa, Bolu  GitHub Actions,
+                                                                                testing framework
+     Automated    the development pipeline.
+
+     Testing
+9.5   Implement       Configure CI/CD deployment to       3 days  9.4            Mutsa       GitHub Actions,
+                      the hosted environment.                                                Azure
+      Automated
+                                                                                             Azure, GitHub
+      Deployment                                                                             Actions
+
+9.6   Hosting &       Verify deployment, connectivity,    2 days  9.5            All         Full development
+                                                                                             environment
+      Pipeline Testing stability and pipeline operation.                                     Testing tools,
+                                                                                             GitHub
+10.0  Task 2 --       Integrate the complete system and                                      Word, screenshots,
+      Integration &   prepare the implementation                                             diagrams
+      Presentation    presentation.
+
+10.1  Full System     Integrate front end, back end,      3 days  7.6, 8.7, 9.6  All
+      Integration
+                      database, APIs, hosting and CI/CD.
+
+10.2 System Testing Identify and resolve functional,      4 days  10.1           All
+
+      & Bug Fixing    usability and integration issues.
+
+10.3  Implementation  Document technical decisions,       2 days  10.2           Rai, Mutsa
+      Documentation   features, challenges and
+                      implementation.
+10.4  Presentation     Prepare PowerPoint presentation   2 days  10.3  Mutsa  PowerPoint,
+      Slides           demonstrating the                               All    screenshots
+                       implementation.                                 All
+                                                                       Rai    PowerPoint, hosted
+10.5  Presentation     Rehearse technical demonstration  2 days  10.4         system
+      Rehearsal        and presentation delivery.                      All    PowerPoint, live
+                                                                              system
+10.6  Task 2           Present the implemented solution  1 day   10.5         ARC, GitHub
+      Presentation     and demonstrate functionality.
+                                                                              Feedback, rubric
+10.7  Task 2           Submit GitHub link and required   1 day   10.6
+      Submission       presentation material on ARC.
+
+11.0  Task 3 -- Final  Finalise the production-ready
+      Project &        system and update all
+      Documentation    documentation.
+
+11.1 Review Task 1 & Analyse lecturer/client feedback    2 days  10.7
+
+      2 Feedback       and identify required
+
+                       improvements.
+11.2 Final System        Implement functional, UI/UX and    5 days  11.1  All    IDE, GitHub
+                                                                          All
+      Improvements       performance improvements.                        Mutsa  Testing tools,
+                                                                          Rai    browsers
+11.3 Final Testing &     Conduct comprehensive testing      4 days  11.2  Rai    Azure, GitHub
+             Bug Fixing  and resolve remaining defects.                   All    Actions
+
+11.4 Final Hosting & Confirm final deployment, hosting 2 days       11.3         Word, diagrams,
+                                                                                 previous
+      CI/CD              stability and automated pipeline.                       documentation
+                                                                                 Word, screenshots
+      Verification
+                                                                                 Word, final system
+11.5 Update Final        Combine Task 1 and Task 2          5 days  11.4
+             Report
+                         documentation and incorporate all
+
+                         updates.
+
+11.6  Create User        Provide detailed instructions,     4 days  11.3
+      Guide              navigation, functionality, setup
+                         and troubleshooting.
+
+11.7 User Guide          Check instructions, screenshots,   2 days  11.6
+             Review
+                         navigation and technical
+
+                         requirements.
+12.0  Task 3 -- EXPO       Prepare the team and materials for
+      Preparation          the final EXPO presentation.
+
+12.1 EXPO                  Prepare the final presentation      3 days  11.5  Mutsa        PowerPoint,
+             PowerPoint    covering the system,                                           screenshots
+                           implementation and outcomes.
+
+12.2 Display Board         Create the physical/visual display  2 days  12.1  Rai          PowerPoint/design
+
+                           board for the exhibit.                                         software, printer
+
+12.3  Demonstration Prepare and test the live software         2 days  11.4  Bolu, Mutsa  Hosted system, PC,
+                                                                                          Internet
+      Environment          demonstration.
+
+12.4 Group                 Assign speaking roles and           2 days  12.1  All          PowerPoint,
+             Presentation  coordinate transitions.
+             Preparation                                                                  presentation script
+
+12.5 Individual            Prepare each member to explain      2 days  12.4  All          Presentation
+             Presentation
+             Preparation   their own contribution and                                     materials
+
+                           technical understanding.
+12.6 EXPO Rehearsal Conduct full rehearsal including      2 days  12.3, 12.5  All  Full EXPO setup
+
+                       live demonstration and Q&A.                                 Final submission
+                                                                                   checklist
+13.0  Task 3 -- Final  Complete final administrative and                           Annexure A
+      Submission &     assessment requirements.                                    Annexure B
+      Evaluation                                                                   GitHub, attendance
+                                                                                   records
+13.1 Final             Check final report, project, user  2 days  11.5, 11.7  All
+
+      Submission       guide, links and annexures.
+
+      Quality Review
+
+13.2 Declaration of    Complete and attach the required 1 day     13.1        All
+
+      Authenticity     declaration.
+
+13.3 Peer              Complete individual peer           1 day   13.1        All
+
+      Evaluations      evaluations for team members.
+
+13.4 Overall           Ensure evidence of individual      1 day   13.1        All
+
+      Contribution     contribution, attendance, GitHub
+
+      Review           and collaboration is available.
+13.5  Final           Compile final report, user guide,  2 days  13.2, 13.3, 13.4 Rai  Word/PDF,
+      Submission      links, declarations, peer                                        PowerPoint,
+      Package         evaluations and EXPO                                             GitHub
+                      presentation.
+                                                                                       ARC, final
+13.6 Final Individual Each member submits the final      1 day   13.5        All       documents
+
+      Submission      portfolio on ARC as required.                                    Display board,
+                                                                                       PowerPoint, hosted
+13.7 EXPO             Present the completed project      1 day   12.6, 13.5  All       system
+
+      Presentation    using the exhibit, PowerPoint and                                GitHub, cloud
+                                                                                       storage
+                      live demonstration.
+
+14.0  Project Close-  Complete final project
+      Out             administration and reflection.
+
+14.1 Archive Project Ensure final source code,           1 day   13.6, 13.7  Mutsa
+
+      Materials       documentation, diagrams and
+
+                      presentation materials are stored
+
+                      correctly.
+14.2 Final Team  Review project outcomes,            1 day     14.1  All  Microsoft Teams,
+                                                                          project records
+Review           contributions, lessons learned and
+
+                 outstanding issues.
+
+14.3 Project Closure Confirm all deliverables have been 1 day  14.2  All  Canva, submission
+                                                                          records
+                 submitted and close the project.
+
+9.1.8 Non-Functional Requirements
+
+     Information Security & Access Controls: Defining multi-tenant protection, role-based access limits, and data privacy
+         safeguards.
+
+     System Performance, Availability & Scalability: Targets for uptime, rapid checkouts under high volume, and cloud resource
+         elasticity.
+9.1.9. ANALYSIS ARTIFACTS
+
+ Domain Modelling (UML Domain Class Diagram & Descriptions)
+
+           Client: this is the corporate individual/ company/ organization that will purchase from Verichat
+           Key Personnel: procurement officers, sales, medical directors or admin managers for a client.
+           Inquiry ­ a lead captured via a web form or n email with the dynamic rank score which is used for prioritizing
+
+               sales follow-ups.
+           Deal ­ an inquiry that has moved on in the sales process, following the various stages.
+           Quotation ­ the PDF document that has been created after an inquiry has gone far enough into the sales
+
+               process.
+           Product ­ a catalog item (Infant Care, Laboratory, Hospital Infrastructure, Home Care, or PPE).
+ Design Artifacts (UML Design Class Diagram with Attributes, Methods & Keys)
+
+Relationship               Type         Cardinality  Description
+User  Address
+SalesRepresentative  Deal  Association  0..1  1      A user works at one address. The optionality (0..1) means a user
+                                                     may exist without an address record.
+
+                           Association  1  0..*      A sales rep manages multiple deals. Each deal is handled by
+                                                     exactly one representative.
+SalesRepresentative  Support   Association  0..*  1..*  A rep can escalate issues to support staff. This is a many-to-many
+                                                        relationship, often implemented via an intermediate table.
+
+Deal  Quotation                Association  1  1..*     Each deal generates one or more quotations. This captures the
+                                                        business flow from negotiation to formal pricing.
+
+Quotation  Product             Association  1  1..*     A quotation includes one or more products. This models line items
+                                                        in a quotation.
+
+Inheritance: Employee          Generalization --        Both classes inherit common attributes (e.g., employeeID, name)
+SalesRepresentative / Support                           and methods (e.g., getDetails()).
+9.1.10 IMPLEMENTATION
+
+UML Sequence Diagrams
+
+Sales Rep actions: Selecting inquiries, advancing deal stages, and choosing catalog items.
+System automation: The Verichat system checks stock internally and generates a PDF quotation.
+Client interaction: The quotation is emailed directly to the client, completing the workflow.
+This diagram captures the critical flow of a sales process: from inquiry  deal progression  quotation  client
+communication.
+UML State Machine Diagrams
+Deployment Plan Documentation
+9.1.11 DATA SCHEMA
+
+Storage Technology Rationale & Entity Relationship Diagram (ERD / JSON Schema)
+
+Storage Technology Rationale
+
+Verichat's persistence layer is built on Cloud Firestore, the NoSQL, document-oriented database
+that already sits at the base of the layered architecture described in Section 6.2, directly beneath
+the Hosting, Auth, and Functions layers shown in the topology diagram in Section 6.3. Firestore
+stores data as documents grouped into collections rather than as rows in tables and, unlike a
+relational engine, does not require every document in a collection to share identical fields
+(Firebase, 2025). Four factors specific to Verichat's requirements drove this choice over a
+relational alternative such as PostgreSQL.
+
+           Catalogue flexibility: The specialised medical catalogue described spans very different
+           product families: PPE, laboratory equipment, hospital infrastructure, home care and infant
+           care, each carrying its own attributes. A relational schema would force a wide, mostly-
+           empty products table or a costly set of subtype joins; Firestore's document-centric model
+           lets each product document carry only the fields its own category needs (FasterCapital,
+           2025).
+
+           Real-time pipeline updates: Journey 2 requires the Sales Progress Tracker board to reflect
+           a deal's stage the moment it changes. Firestore's client SDKs support live snapshot
+           listeners that push updates to every connected screen without the Nova Team having to
+           build or run a separate WebSocket layer, the same mechanism that underlies the
+           Observer-pattern stock warning already described in Section 6.1.
+
+           Native stack integration & security: Hosting, Auth, and Functions are already Firebase
+           products; Firestore avoids a separate database driver or connection pool. More
+           importantly, the existing Role-Based Access Control boundaries are enforced by Firestore
+           Security Rules at the data layer itself; rules run server-side on every request and, as
+           already noted in Section 6.3, cannot be bypassed by modifying client code.
+
+           A usage-based cost model: Firestore's pay-per-operation pricing is what produces the
+           tiered figures in Section 9.1, R0 at 100 users scaling to roughly R2 374.84/month at 10,000
+           users, because Verichat is billed for the reads, writes, and storage it actually consumes,
+           rather than for a fixed-size instance sized for peak load in advance.
+
+           The trade-off is that Firestore has no server-side JOIN operator, so a single query cannot
+           combine data from two collections (Estuary, 2026). Verichat mitigates this in two ways:
+           first, by deviating a small number of frequently read fields (e.g., copying a client's name
+           onto its deal documents so the pipeline board can render a card without a second read);
+           second, by resolving cross-collection references within Cloud Functions rather than in the
+           client. This second point is precisely the role already assigned to the One-Click Quotation
+           Generator's Facade pattern in Section 6.1, which pulls the client profile, deal, and product
+           catalog together on the server before returning a single PDF.
+
+Entity Relationship Diagram (ERD/ JSON Schema)
+
+The ERD extends the domain model defined in Section 3.1 into eight Firestore collections. The four
+collections in the sales chain: clients, inquiries, deals, and quotations map directly onto the Client,
+Inquiry, Deal, and Quotation domain classes; keyPersonnel is modelled as a subcollection of
+clients because it is only ever queried scoped to one client at a time, which is exactly the case
+Firebase's own data-modelling guidance recommends a subcollection for (Firebase, 2025).
+
+                                                              Verichat ERD
+
+                                        Firestore collections map for the Verichat CRM System
+(Miro, 2026).
+
+          Clients -- the corporate account; sector and contractStatus feed the ranked inquiry
+           scoring engine.
+          Inquiries -- one per captured lead; rankScore is written by the scoring Cloud Function
+           described in Section 2.1.3, not entered manually.
+          Deals-- created once an inquiry is qualified; stage powers the visual pipeline board in
+           Journey 2.
+          Quotations -- generated by the One-Click Quotation Generator; lineItems is stored as an
+           embedded array rather than a subcollection because a quotation's line items are small,
+           fixed once generated, and always read together with the parent document (Fireship.io,
+           n.d.).
+          Products -- the catalog referenced by both quotations and the Quick-Cart interface
+           (Journey 4); stockQty is the field the Observer pattern in Section 6.1 watches for bulk-
+           order warnings.
+          Tickets -- one per logged complaint; trackingNo is the number returned to the client in
+           UAT03/UAT04 (Section 10), and slaDeadline drives the SLA-based routing required in
+           Section 2.1.4.
+           Equipment -- one per physical asset sold to a client; warrantyExpiry feeds the 60-day
+           expiry notifications required in Section 2.1.5.
+          Users -- one per System Administrator, Sales Representative, Procurement Manager, Field
+           Support Engineer, or Medical Student account; role is the field Firestore Security Rules
+           read to enforce the access boundaries in Section 7.
+This follows the general Firestore recommendation to keep a collection at the root once it needs to
+be queried across parents (FireSchema, 2025), an administrator's dashboard, for instance, needs
+"all open tickets ranked by SLA deadline" across every client at once, not one client's tickets at a
+time, and a root-level collection answers that query more cheaply than a collection-group query
+across every client's subcollection would (Firestore, 2025).
+
+(SQL, 2026).
+9.1.12 ARCHITECTURE ARTIFACTS
+
+         Design Patterns (UML Object Diagrams)
+
+Observer Pattern (Behavioural):
+Ideal for the "Sales Stock Warnings": The Observer pattern defines a one-to-many dependency. If a
+hospital requests a bulk order that exceeds warehouse stock, the subject (inventory/contract)
+automatically pushes state updates to the observers (procurement/support objects) to trigger
+instant alerts (Refactoring.Guru, nd).
+Facade Pattern (Structural):
+Use this for the "One-Click Quotation Generator": Generating an itemized PDF quotation requires
+pulling historical data from the Unified Client Profiles and querying the specialized medical catalog
+(e.g., extracting prices for laboratory centrifuges or surgical kits). A Facade provides a single,
+simplified interface that hides this complex backend orchestration from the non-technical sales
+representative (Refactoring.Guru, nd).
+
+     Architecture Patterns
+Verichat will be using a layered (N-tier) architecture: presentation, business logic/API, and
+data are separated so each layer only calls into the layer below it, and each can be
+developed, scaled, and tested independently.
+     Cloud
+
+Firebase Security Rules run server-side on every read and write request before it reaches
+the database, and unlike client-side validation, they cannot be bypassed by modifying the
+app, since they're evaluated on Firebase's servers rather than in the client. That is the
+boundary that keeps a client from ever reading another client's records directly,
+regardless of what the front-end code does. On top of that, Google Cloud's own network-
+security guidance for segmentation (isolate workloads, centralize firewall policy, and
+prevent cross-boundary data movement) is applied at the project level: Verichat will use
+separate Firebase projects for development, staging, and production, each with its own
+IAM roles and Security Rules, so a compromised or misconfigured dev environment can't
+reach production data.
+
+All client-to-service traffic runs over HTTPS/TLS the browser and mobile app load the
+static bundle from Firebase Hosting over HTTPS, authenticate through Firebase Auth over
+HTTPS, and read/write Firestore through the client SDK, which communicates over an
+encrypted gRPC channel. Privileged operations (e.g. generating a quotation PDF) go
+through Cloud Functions instead of direct client writes, and Cloud Functions use the
+Admin SDK to reach Firestore with elevated, server-only trust.
+9.1.13 SECURITY
+
+Network Security and Data in Transit
+Securing the communication channels between the client interfaces and the backend
+infrastructure is critical to prevent interception, data tampering, and man-in-the-middle
+(MitM) attacks.
+Transport Layer Security (TLS 1.3): All external and internal network traffic is securely
+routed using the TLS 1.3 protocol. The implementation of TLS 1.3 provides forward
+secrecy. This ensures that even if a server's cryptographic keys are compromised in the
+future, the contents of previous communications remain entirely protected and encrypted
+(William Newhouse, 2017).
+
+Mitigating Common Vulnerabilities (OWASP Guidelines)
+To defend against prevalent exploitation techniques, the application's security model
+actively addresses risks outlined in the Open Worldwide Application Security Project
+(OWASP) Top 10, a globally recognized standard representing the most critical security
+risks to web applications.
+
+Broken Access Control: OWASP identifies broken access control as a primary threat that
+allows attackers to function as standard users or administrators to gain unauthorized
+access. To mitigate this, the system uses strict Role-Based Access Control (RBAC) to
+create definitive trust boundaries for data access, ensuring users cannot view or modify
+cross-account records.
+
+Cryptographic Failures: Cryptographic failures occur when stored or transmitted data is
+compromised due to inadequate encryption strength or broken algorithms. To prevent
+this, all sensitive information is encrypted at rest, and the use of weak or hardcoded
+cryptographic keys within the source code is strictly prohibited to defend against identity
+theft.
+
+Potential Threats and System Resilience
+To establish a holistic defense strategy against sophisticated threats like unauthorized
+intrusions and automated data scraping, the application lifecycle aligns closely with the
+core functions of the NIST Cybersecurity Framework (CSF).
+Identify & Protect: The architecture identifies critical assets and implements strict
+safeguards--such as encryption and access controls--designed to limit and contain the
+impact of potential cybersecurity events.
+
+Detect & Respond: The system relies on continuous monitoring tools and logging
+mechanisms to identify unusual network activities, enabling a swift response protocol to
+contain incidents before they escalate.
+
+Recover: To minimize operational impact in the event of a successful cyber attack,
+structured database backups and restoration protocols ensure that impaired services can
+facilitate a quick return to normal operations.
+
+Cross-Site Scripting (XSS) Prevention and Mitigation
+
+Cross-Site Scripting (XSS) occurs when an application includes untrusted data in a web
+page without proper validation or escaping, allowing attackers to execute malicious scripts
+in the victim's browser (OWASP Cheat Sheet Series). . To ensure the application remains
+resilient against both Reflected and Stored XSS attacks, a defense-in-depth approach is
+applied using the following techniques:
+
+Context-Aware Output Encoding: The primary defense mechanism against XSS is ensuring
+that all user-supplied data returned to the browser is strictly treated as display content
+rather than executable code (OWASP Cheat Sheet Series).
+
+Input Validation and Sanitization: All incoming data is subjected to strict allow-list
+validation on the server side. Data that requires rich text formatting is processed through
+a dedicated sanitization library to strip out hazardous HTML tags and JavaScript event
+handlers before it is committed to the database.
+
+Content Security Policy (CSP): As an additional layer of security, a robust Content
+Security Policy (CSP) is implemented via HTTP response headers. The CSP restricts the
+sources from which executable scripts can be loaded and completely disables the
+execution of inline scripts (unsafe-inline), significantly reducing the attack surface even if
+an XSS vulnerability is inadvertently introduced.
+
+Application of Core Security Principles and Additional Risk Mitigation
+
+Beyond XSS and network defenses, the application's architecture is grounded in
+foundational security principles designed to mitigate other critical vectors, ensuring the
+Confidentiality, Integrity, and Availability (CIA Triad) of the system.
+9.1.14 DEVOPS
+
+     GitHub Actions Pipeline
+Version Control, Branching & Gitflow Strategy
+
+Nova manages the Verichat codebase on GitHub using the Gitflow branching model, first published
+by Vincent Driessen and formalised as one of Atlassian's standard workflow strategies (Atlassian,
+2025). Gitflow assigns a specific purpose to each branch and defines exactly when branches
+interact (Atlassian, 2025), which suits a three-person student team that needs an explicit, low-risk
+path from a feature under development through to a production release, rather than committing
+directly against one shared branch. Gitflow is widely acknowledged to add more overhead than a
+simpler trunk-based approach and has fallen out of favour for teams shipping continuously
+(Atlassian, n.d); for Verichat, this trade-off is acceptable, because the team releases in scheduled
+batches against the three fixed Firebase environments already defined in Section 6.3, and the
+extra structure gives less experienced contributors a clear checkpoint before any change reaches
+real client data.
+
+The Gitflow Branching Model is a structured Git workflow introduced by Vincent Driessen,
+designed for projects with well-defined release cycles. It uses multiple branch types with specific
+purposes, ensuring clear separation between development. releases, and urgent fixes (Atlassian,
+2025).
+To keep the history traceable, branches are named feature/<issue-number>-<short-description>
+(e.g. feature/23-quick-cart-checkout), referencing the same GitHub Issues already used to log bugs
+during Hypercare in Section 10, and commits follow the Conventional Commits format (feat:, fix:,
+docs:, chore:) so that changes map back to a user story from Section 2.3 (Atlassian, 2025). Both
+main and develop are protected branches: direct pushes are disabled, at least one of the other two
+team members must approve a pull request, and the automated checks described in Section 8.2
+must pass before GitHub allows the merge button to be used.
+GitHub Actions CI/CD Pipeline Architecture
+
+Every push and pull request triggers a GitHub Actions workflow, defined under .github/workflows/,
+that mirrors the branch roles above and deploys into the matching Firebase project from Section
+6.3 using the Firebase CLI's deploy command (GitHub, 2026).
+9.1.15 RUNNING COSTS & FINANCIAL PROJECTIONS
+
+Infrastructure Cost Multi-Tier Analysis (100, 1,000, 10,000 Users)
+The table below illustrates how monthly infrastructure costs scale with the number of active users.
+Projections account for Firebase free-tier allowances (first 50k document reads/day free) and
+incremental costs for additional usage.
+
+Cost Component      100 Users           1,000 Users      10,000 Users
+
+Firebase Firestore  R0 (free tier)      ~R295/month      ~R2 374,84/month
+(reads/writes)
+
+Firebase Hosting    R0 (10GB free)      ~R81,89/month    ~R655,13/month
+(bandwidth)
+
+Firebase Auth       R0 (free)           R0 (free)        ~R0,090/user >10k
+
+Cloud Functions     R0 (2M free/month)  R0­R32,76/month  ~R245,67/month
+(API layer)
+
+Domain / SSL        R20,47/month        R20,47/month     R20,47/month
+
+TOTAL MONTHLY       ~R20,47             ~R429,93         ~R3 296,11
+ESTIMATE
+Two-Year Running Cost Growth Projections
+The following projection assumes organic growth aligned with Verichat's existing client acquisition
+rate. It models two scenarios: conservative growth (steady state) and optimistic growth (aggressive
+client onboarding, including Mining and Education sector expansion).
+
+   Period           Est. Active   Monthly    Annual Cost  Cumulative (USD)
+(Quarterly)            Users     Cost ZAR )       ZAR)
+
+Q1 (Months 1­3)     50­100       ~R20,47     ~R245,67     ~R245,67
+
+Q2 (Months 4­6)     100­300      ~R131,03    ~R393,08     ~R638,75
+
+Q3 (Months 7­9)     300­600      ~R245,67    ~R737,02     ~R1 375,77
+
+Q4 (Months 10­12)   600­         ~R425,83    ~R1 277,50   ~R2 653,27
+                    1,000
+
+Year 2 (Months 13­  1,000­       ~R737,02­   ~R9 826,92­  ~R12 480,19­
+24)                 3,000        R1 392,15   R16 705,76    R19 359,03
+
+TOTAL 2-YEAR        --           --          --           ~R12 480,19 -
+
+INFRASTRUCTURE                                            R19 359,03
+
+Cost-Benefit Analysis (CBA) & ROI Metrics
+The business case for the Verichat CRM system is strong. Key financial benefits are projected as
+follows:
+· Reduction in manual quotation preparation time: estimated saving of 3­5 hours per sales
+representative per week, equivalent to approximately R15 776,31­R22 655,14/month in recovered
+productivity across the sales team.
+
+· Faster deal closure ranked inquiry management: projected 15­20% increase in conversion rates
+on incoming leads.
+
+· Reduction in stock-out incidents via smart inventory warnings: estimated 10% reduction in lost
+sales due to unfulfilled orders.
+
+· Client self-service portal: reduces administrative overhead by an estimated 30%, freeing internal
+staff for higher-value tasks.
+
+· Complaint resolution automation: expected to reduce average ticket resolution time from 5 days
+to 1.5 days, improving client retention.
+9.1.16 CHANGE MANAGEMENT
+
+This section addresses the strategic approach to ensuring the successful adoption of the Verichat
+CRM and Medical Logistics system by both the organization (Verichat management and internal staff)
+and its external client base. Effective change management is as critical as technical execution; a
+well-built system that is not adopted delivers no value. This plan follows a structured framework
+adapted from Kotter's 8-Step Change Model and aligned with Verichat's operational context.
+
+     How and why will the organization adopt your software?
+
+Why the Organization Adopts It: The primary risk to any new system implementation is not
+technical failure but human resistance to change. Verichat's sales and administrative staff are
+accustomed to existing manual processes. The adoption strategy below is designed to minimize
+disruption, build confidence in the system, and achieve full operational adoption within 8 weeks of
+go-live.
+How the Organization Adopts It: VeriChat management will be engaged as active champions of the
+new system. The following steps address organizational-level adoption:
+
+           · Executive Sponsorship: Mrs. J. Maredza (client/management) will be designated as the
+           internal champion for the VeriChat system rollout. Her visible endorsement of the
+           platform to staff is critical to driving adoption.
+
+           · Business Case Communication: Management will communicate to all staff the specific
+           pain points the system resolves -- fragmented records, slow quotations, manual complaint
+           tracking, framing the system as a tool that reduces their workload rather than adding
+           complexity.
+
+           · Policy Alignment: Management will update internal standard operating procedures (SOPs)
+           to formalize use of the VeriChat system for all client interactions, inquiry management,
+           and complaint resolution. This transitions system use from optional to standard practice.
+
+           · Progress Review Meetings: Bi-weekly review meetings with management during the first 8
+           weeks post-launch will track system adoption rates, identify friction points, and allow
+           rapid course correction.
+     How and why will the users adopt your software?
+
+Why the Users Adopt It: Users adopt the system because it reduces manual workloads, minimizes
+administrative friction, and provides an intuitive, accessible interface tailored to their specific
+roles.
+How the Users Adopt It: End-user adoption is addressed through a structured, role-specific
+onboarding programme:
+
+           · Role-Based Training: Each user role (Sales Representative, Procurement Manager, System
+           Administrator) will receive a tailored training session focused specifically on the screens
+           and features relevant to their daily tasks. No user will be trained on the full system -- only
+           what they need.
+
+           · Hands-On Walkthrough: Training will include live, guided walkthroughs of the system
+           using real-world scenarios (e.g., 'Generate a quotation for a hospital client' or 'Log a
+           complaint for a broken ventilator').
+
+           · User Guide Distribution: A comprehensive User Guide (see Task 3 deliverable) will be
+           provided digitally to all users. The guide includes annotated screenshots, step-by-step
+           instructions, and a FAQ section for common user errors.
+
+           · Buddy System: During the first two weeks post-launch, experienced users (early adopters
+           or team members who participated in UAT) will be paired with resistant or less confident
+           users to provide peer support.
+
+           · Feedback Mechanism: A simple in-system feedback form will allow users to flag confusing
+           screens or missing features during the adoption period, feeding directly into the change
+           request process.
+
+Phase  Timing        Training Activity     Audience          Delivery Method
+
+1      2 weeks pre-  System demonstration  Business Owner +  Live
+                     and overview for                        walkthrough (in-
+       launch        management            Admin             person / Teams)
+2  1 week pre-launch Role-specific training:  Sales team          Hands-on
+                                                                  session using
+                   Sales Representatives                          staging system
+
+3  1 week pre-launch Role-specific training:  Client procurement  Guided
+
+                   Procurement Managers staff                     walkthrough +
+
+                                                                  User Guide
+
+                                                                  distribution
+
+4  Go-live day     System go-live with        All users           On-site + remote
+                   team on standby for                            Teams support
+                   real-time support
+
+5  Week 1­2 post-  Buddy system pairing & All users               In-person /
+                                                                  WhatsApp group
+   launch          daily check-in sessions                        support channel
+
+6  Week 4 post-    Post-adoption review:      All users +         Online survey +
+                   feedback collection        management          management
+   launch          and refinement                                 review meeting
+     Strategy to Gain Adoption (Organisation & Users)
+
+UAT Plan
+UAT ensures the system meets the agreed functional requirements before go-live.
+
+Test  Test Scenario                 Expected Outcome                       Tester Role
+ ID
+
+UAT-  Sales rep logs in and views   Inquiries displayed in priority order  Sales Representative
+01    ranked inquiry list           by urgency score
+
+UAT-  Sales rep generates a one-    PDF generated with correct line        Sales Representative
+02    click PDF quotation for a     items, pricing, and Verichat branding
+      hospital client
+
+UAT-  Procurement manager logs      Order submitted to system;             Procurement
+03    into client portal and        confirmation email sent; inventory     Manager
+      repeats a past order          warning triggered if stock low
+
+UAT-  Client logs a support ticket  Ticket created with auto-generated     Procurement
+04    for a broken ventilator       tracking number; routed to tech        Manager
+                                    support; SLA clock starts
+
+UAT-  Admin views the revenue       Dashboard renders correctly with       System Admin
+05    forecasting dashboard         real pipeline data; monthly/quarterly
+                                    projections visible
+
+UAT-  System alerts sales rep       Warning banner displayed on            Sales Representative
+06    when a bulk order exceeds     quotation screen; procurement team
+      warehouse stock               notified automatically
+Go-Live Plan
+The go-live plan outlines the transition from the development/staging environment to the
+production system accessible by VeriChat staff and clients
+
+                  Phase  Activity
+
+Pre-Launch               Final UAT sign-off; data migration from
+                         existing records to Firestore; DNS cutover
+                         to production URL
+
+Soft Launch              System goes live for internal staff only
+                         (sales team + admin). External client portal
+                         enabled after 48-hour internal validation
+                         period.
+
+Client Portal Launch     Client self-service portal opened to
+                         procurement managers; login credentials
+                         distributed; support channel activated
+
+Hypercare Period         Full team on standby for critical issue
+                         resolution. Daily status reports to
+                         management. All bugs logged via GitHub
+                         Issues.
+
+Handover                 Formal system handover to VeriChat:
+                         source code on GitHub, database access
+                         transferred, admin credentials
+                         documented in handover pack.
+9.1.17 Appendices
+
+
+ANNEXURES & REFERENCES
+
+
+
+Annexure A: Declaration of Originality and Authenticity
+
+Reiteration of the Declaration you have signed: 1. I have been informed about the seriousness of acts of plagiarism. 2. 3. 4. 5. 6.
+7. I understand what plagiarism is. I am aware that The Independent Institute of Education (IIE) has a policy regarding plagiarism
+and that it does not accept acts of plagiarism. I am aware that the Intellectual Integrity Policy and the Student Code of Conduct
+prescribe the consequences of plagiarism. I am aware that referencing guides are available in my student handbook or equivalent
+and in the library and that following them is a requirement for successful completion of my programme. I am aware that should I
+require support or assistance in using referencing guides to avoid plagiarism, I may speak to the lecturers, the librarian, or the
+campus ADC/ Campus Co-ordinator for clarification. I am aware of the consequences of plagiarism.
+
+We, _________Nova Team___________________ , hereby declare that this portfolio, and any evidence included therein,
+contains our own independent work and that we have not received help from other groups. We confirm that we have not
+committed plagiarism in the accomplishment of this work, nor have we falsified and/or invented experimental data. We accept the
+academic penalties that may be imposed for violations of the above.
+
+GROUP MEMBER DECLARATIONS
+
+Student Name Student Number  Signature                   Date
+
+Rai    ________st10248158_____ ____R.Kwenaite__________  ____17 August 2026___
+
+Bolu   ________st10286220_____ ____B.T.Fayemi____________________ ___ 17 August__2026____
+
+Mutsa  ____ st10456212_________ ___M.R._Maredza________  ___17 August 2026___
+
+
+
+Annexure B: References and Bibliography
+
+
+Atlassian, [n.d.]. Gitflow workflow. Atlassian Git Tutorial. [online] Available at:
+https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow/ [Accessed 08 August 2026].
+
+
+Black Duck, [n.d.]. What is OWASP Top 10? [online] Available at: https://www.blackduck.com/glossary/what-
+is-owasp-top-10.html [Accessed 17 August 2026].
+
+
+Douglas, B., 2024. How to build a CI/CD pipeline with GitHub Actions in four simple steps. The GitHub Blog,
+[blog] 23 July. Available at: https://github.blog/enterprise-software/ci-cd/build-ci-cd-pipeline-github-
+actions-four-steps/ [Accessed 16 August 2026].
+
+
+GeeksforGeeks, [n.d.]a. Deployment diagram in Unified Modeling Language (UML). [online] Available at:
+https://www.geeksforgeeks.org/system-design/deployment-diagram-unified-modeling-languageuml/
+[Accessed 17 August 2026].
+
+GeeksforGeeks, [n.d.]b. Gang of Four (GoF) design patterns. [online] Available at:
+https://www.geeksforgeeks.org/system-design/gang-of-four-gof-design-patterns/ [Accessed 17 August
+2026].
+
+
+GeeksforGeeks, [n.d.]c. Unified Modeling Language (UML) sequence diagrams. [online] Available at:
+https://www.geeksforgeeks.org/system-design/unified-modeling-language-uml-sequence-diagrams/
+[Accessed 17 August 2026].
+
+
+GeeksforGeeks, [n.d.]d. Unified Modeling Language (UML) state diagrams. [online] Available at:
+https://www.geeksforgeeks.org/system-design/unified-modeling-language-uml-state-diagrams/ [Accessed 17
+August 2026].
+
+
+MDN Web Docs, [n.d.]. Content Security Policy (CSP). [online] Available at: https://developer.mozilla.org/en-
+US/docs/Web/HTTP/Guides/CSP [Accessed 17 August 2026].
+
+
+Microsoft, [n.d.]. Azure architecture center: Architecture styles. Microsoft Learn. [online] Available at:
+https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/ [Accessed 17 August 2026].
+
+
+Miro, [n.d.]. ER diagram. [online] Available at: https://miro.com/aq/paid-search/er-diagram/ [Accessed 17
+August 2026].
+
+
+National Institute of Standards and Technology (NIST), 2024. The NIST cybersecurity framework (CSF) 2.0.
+NIST Cybersecurity White Paper 29. [online] Available at: https://www.nist.gov/about-nist [Accessed 11
+August 2026][cite: 13, 16, 18].
+
+
+National Institute of Standards and Technology (NIST), [n.d.]. Addressing visibility challenges TLS 1.3 within
+enterprise. [online] Available at: https://www.nist.gov/publications/addressing-visibility-challenges-tls-13-
+within-enterprise [Accessed 17 August 2026].
+
+
+OWASP Foundation, 2025. OWASP Top 10:2025 ­ Introduction. [online] Available at: https://owasp.org
+[Accessed 12 August 2026].
+
+
+OWASP Foundation, [n.d.]. Cross site scripting prevention cheat sheet. OWASP Cheat Sheet Series. [online]
+Available at: https://owasp.org/www-community/attacks/xss/ [Accessed 17 August 2026].
+
+
+Refactoring.Guru, [n.d.]. Observer design pattern. [online] Available at: https://refactoring.guru/design-
+patterns/observer [Accessed 17 August 2026].
+

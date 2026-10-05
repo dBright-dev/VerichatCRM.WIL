@@ -1,0 +1,22 @@
+@{
+    ViewData["Title"] = "No access";
+    Layout = "_Layout";
+}
+@using VerichatCRM.Web.Authorization
+
+<section class="vc-auth-main" style="min-height: 60vh; display:flex; align-items:center; justify-content:center;">
+    <div class="auth-card vc-auth-card" style="max-width: 460px; text-align:center;">
+        <h1 class="auth-title">You don't have access to this page</h1>
+        <p class="auth-subtitle">
+            This page isn't available to your account. Contact an administrator if you believe you need access.
+        </p>
+        <p class="auth-subtitle">
+            If you believe you need access, contact your system administrator.
+        </p>
+
+        <form asp-controller="Account" asp-action="Logout" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-primary btn-block">Sign out</button>
+        </form>
+    </div>
+</section>
