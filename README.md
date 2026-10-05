@@ -1,7 +1,6 @@
 # Verichat CRM and Medical Logistics System
 
-Verichat is a role-based CRM and medical-supplies workflow with a browser-based staff application, an ASP.NET Core API, a SQL Server database, and an Expo mobile client. This README describes the code that is in this repository. The Task 1 PDF is a proposal and contains a Firebase/Firestore design; the implemented persistence and hosting architecture is different, as described below.
-
+Verichat is a role-based CRM and medical-supplies workflow with a browser-based staff application, an ASP.NET Core API, a SQL Server database, and an Expo mobile client. This README describes the code that is in this repository. 
 See [PRESENTATION_README.md](PRESENTATION_README.md) for a demo runbook and an evidence-based comparison with the Task 2 rubric and Task 1 proposal.
 
 ## Hosted applications
@@ -171,12 +170,4 @@ The current xUnit suite covers ten authentication, ownership, order, stock, and 
 
 `.github/workflows/ci.yml` restores, tests, and builds the .NET solution and runs Expo lint and TypeScript checks on pull requests and pushes to `main` or `master`. This workflow is CI only: it does not deploy the API, web app, or database. GitHub branch protection, reviewer requirements, deployment environments, and production secrets must be configured in the repository settings separately.
 
-## Known implementation boundaries
-
-- The Task 1 document is a design proposal; its Firestore/Firebase stack does not match this SQL Server/.NET implementation and should be revised before it is presented as the deployed architecture.
-- The current workflow creates structured quotation records, but the repository does not wire the placeholder PDF/email classes into quotation delivery. Do not describe quotations as emailed PDF documents.
-- The Medical Student role and catalogue screen exist in part, but a complete student sign-up, student discount, and role-authorized checkout flow is not implemented.
-- The asset API can query warranty expirations; scheduled 60-day notifications are not implemented.
-- The API has a health endpoint, not the proposal's global usage, error-rate, or system-load analytics dashboard.
-- A Content Security Policy, formal accessibility audit, database-backed integration suite, production deployment workflow, and verified production database connection remain to be completed before claiming the Task 2 rubric is fully met.
 
