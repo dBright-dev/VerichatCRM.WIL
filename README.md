@@ -1,7 +1,7 @@
 # Verichat CRM and Medical Logistics System
 
 Verichat is a role-based CRM and medical-supplies workflow with a browser-based staff application, an ASP.NET Core API, a SQL Server database, and an Expo mobile client. This README describes the code that is in this repository. 
-See [PRESENTATION_README.md](PRESENTATION_README.md) 
+See [PRESENTATION_README.md](PRESENTATION_README.md) https://youtu.be/sKW-5iuRPyI 
 
 ## Hosted applications
 
