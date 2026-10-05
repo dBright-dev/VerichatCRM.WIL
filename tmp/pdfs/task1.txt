@@ -781,14 +781,14 @@ Review           contributions, lessons learned and
 
            Client: this is the corporate individual/ company/ organization that will purchase from Verichat
            Key Personnel: procurement officers, sales, medical directors or admin managers for a client.
-           Inquiry ­ a lead captured via a web form or n email with the dynamic rank score which is used for prioritizing
+           Inquiry ï¿½ a lead captured via a web form or n email with the dynamic rank score which is used for prioritizing
 
                sales follow-ups.
-           Deal ­ an inquiry that has moved on in the sales process, following the various stages.
-           Quotation ­ the PDF document that has been created after an inquiry has gone far enough into the sales
+           Deal ï¿½ an inquiry that has moved on in the sales process, following the various stages.
+           Quotation ï¿½ the PDF document that has been created after an inquiry has gone far enough into the sales
 
                process.
-           Product ­ a catalog item (Infant Care, Laboratory, Hospital Infrastructure, Home Care, or PPE).
+           Product ï¿½ a catalog item (Infant Care, Laboratory, Hospital Infrastructure, Home Care, or PPE).
  Design Artifacts (UML Design Class Diagram with Attributes, Methods & Keys)
 
 Relationship               Type         Cardinality  Description
@@ -1071,7 +1071,7 @@ Firebase Hosting    R0 (10GB free)      ~R81,89/month    ~R655,13/month
 
 Firebase Auth       R0 (free)           R0 (free)        ~R0,090/user >10k
 
-Cloud Functions     R0 (2M free/month)  R0­R32,76/month  ~R245,67/month
+Cloud Functions     R0 (2M free/month)  R0ï¿½R32,76/month  ~R245,67/month
 (API layer)
 
 Domain / SSL        R20,47/month        R20,47/month     R20,47/month
@@ -1086,16 +1086,16 @@ client onboarding, including Mining and Education sector expansion).
    Period           Est. Active   Monthly    Annual Cost  Cumulative (USD)
 (Quarterly)            Users     Cost ZAR )       ZAR)
 
-Q1 (Months 1­3)     50­100       ~R20,47     ~R245,67     ~R245,67
+Q1 (Months 1ï¿½3)     50ï¿½100       ~R20,47     ~R245,67     ~R245,67
 
-Q2 (Months 4­6)     100­300      ~R131,03    ~R393,08     ~R638,75
+Q2 (Months 4ï¿½6)     100ï¿½300      ~R131,03    ~R393,08     ~R638,75
 
-Q3 (Months 7­9)     300­600      ~R245,67    ~R737,02     ~R1 375,77
+Q3 (Months 7ï¿½9)     300ï¿½600      ~R245,67    ~R737,02     ~R1 375,77
 
-Q4 (Months 10­12)   600­         ~R425,83    ~R1 277,50   ~R2 653,27
+Q4 (Months 10ï¿½12)   600ï¿½         ~R425,83    ~R1 277,50   ~R2 653,27
                     1,000
 
-Year 2 (Months 13­  1,000­       ~R737,02­   ~R9 826,92­  ~R12 480,19­
+Year 2 (Months 13ï¿½  1,000ï¿½       ~R737,02ï¿½   ~R9 826,92ï¿½  ~R12 480,19ï¿½
 24)                 3,000        R1 392,15   R16 705,76    R19 359,03
 
 TOTAL 2-YEAR        --           --          --           ~R12 480,19 -
@@ -1105,20 +1105,20 @@ INFRASTRUCTURE                                            R19 359,03
 Cost-Benefit Analysis (CBA) & ROI Metrics
 The business case for the Verichat CRM system is strong. Key financial benefits are projected as
 follows:
-· Reduction in manual quotation preparation time: estimated saving of 3­5 hours per sales
-representative per week, equivalent to approximately R15 776,31­R22 655,14/month in recovered
+ï¿½ Reduction in manual quotation preparation time: estimated saving of 3ï¿½5 hours per sales
+representative per week, equivalent to approximately R15 776,31ï¿½R22 655,14/month in recovered
 productivity across the sales team.
 
-· Faster deal closure ranked inquiry management: projected 15­20% increase in conversion rates
+ï¿½ Faster deal closure ranked inquiry management: projected 15ï¿½20% increase in conversion rates
 on incoming leads.
 
-· Reduction in stock-out incidents via smart inventory warnings: estimated 10% reduction in lost
+ï¿½ Reduction in stock-out incidents via smart inventory warnings: estimated 10% reduction in lost
 sales due to unfulfilled orders.
 
-· Client self-service portal: reduces administrative overhead by an estimated 30%, freeing internal
+ï¿½ Client self-service portal: reduces administrative overhead by an estimated 30%, freeing internal
 staff for higher-value tasks.
 
-· Complaint resolution automation: expected to reduce average ticket resolution time from 5 days
+ï¿½ Complaint resolution automation: expected to reduce average ticket resolution time from 5 days
 to 1.5 days, improving client retention.
 9.1.16 CHANGE MANAGEMENT
 
@@ -1138,20 +1138,20 @@ go-live.
 How the Organization Adopts It: VeriChat management will be engaged as active champions of the
 new system. The following steps address organizational-level adoption:
 
-           · Executive Sponsorship: Mrs. J. Maredza (client/management) will be designated as the
+           ï¿½ Executive Sponsorship: Mrs. J. Maredza (client/management) will be designated as the
            internal champion for the VeriChat system rollout. Her visible endorsement of the
            platform to staff is critical to driving adoption.
 
-           · Business Case Communication: Management will communicate to all staff the specific
+           ï¿½ Business Case Communication: Management will communicate to all staff the specific
            pain points the system resolves -- fragmented records, slow quotations, manual complaint
            tracking, framing the system as a tool that reduces their workload rather than adding
            complexity.
 
-           · Policy Alignment: Management will update internal standard operating procedures (SOPs)
+           ï¿½ Policy Alignment: Management will update internal standard operating procedures (SOPs)
            to formalize use of the VeriChat system for all client interactions, inquiry management,
            and complaint resolution. This transitions system use from optional to standard practice.
 
-           · Progress Review Meetings: Bi-weekly review meetings with management during the first 8
+           ï¿½ Progress Review Meetings: Bi-weekly review meetings with management during the first 8
            weeks post-launch will track system adoption rates, identify friction points, and allow
            rapid course correction.
      How and why will the users adopt your software?
@@ -1162,24 +1162,24 @@ roles.
 How the Users Adopt It: End-user adoption is addressed through a structured, role-specific
 onboarding programme:
 
-           · Role-Based Training: Each user role (Sales Representative, Procurement Manager, System
+           ï¿½ Role-Based Training: Each user role (Sales Representative, Procurement Manager, System
            Administrator) will receive a tailored training session focused specifically on the screens
            and features relevant to their daily tasks. No user will be trained on the full system -- only
            what they need.
 
-           · Hands-On Walkthrough: Training will include live, guided walkthroughs of the system
+           ï¿½ Hands-On Walkthrough: Training will include live, guided walkthroughs of the system
            using real-world scenarios (e.g., 'Generate a quotation for a hospital client' or 'Log a
            complaint for a broken ventilator').
 
-           · User Guide Distribution: A comprehensive User Guide (see Task 3 deliverable) will be
+           ï¿½ User Guide Distribution: A comprehensive User Guide (see Task 3 deliverable) will be
            provided digitally to all users. The guide includes annotated screenshots, step-by-step
            instructions, and a FAQ section for common user errors.
 
-           · Buddy System: During the first two weeks post-launch, experienced users (early adopters
+           ï¿½ Buddy System: During the first two weeks post-launch, experienced users (early adopters
            or team members who participated in UAT) will be paired with resistant or less confident
            users to provide peer support.
 
-           · Feedback Mechanism: A simple in-system feedback form will allow users to flag confusing
+           ï¿½ Feedback Mechanism: A simple in-system feedback form will allow users to flag confusing
            screens or missing features during the adoption period, feeding directly into the change
            request process.
 
@@ -1204,7 +1204,7 @@ Phase  Timing        Training Activity     Audience          Delivery Method
                    team on standby for                            Teams support
                    real-time support
 
-5  Week 1­2 post-  Buddy system pairing & All users               In-person /
+5  Week 1ï¿½2 post-  Buddy system pairing & All users               In-person /
                                                                   WhatsApp group
    launch          daily check-in sessions                        support channel
 
@@ -1360,7 +1360,7 @@ enterprise. [online] Available at: https://www.nist.gov/publications/addressing-
 within-enterprise [Accessed 17 August 2026].
 
 
-OWASP Foundation, 2025. OWASP Top 10:2025 ­ Introduction. [online] Available at: https://owasp.org
+OWASP Foundation, 2025. OWASP Top 10:2025 ï¿½ Introduction. [online] Available at: https://owasp.org
 [Accessed 12 August 2026].
 
 

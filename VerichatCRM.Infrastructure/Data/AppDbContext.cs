@@ -18,7 +18,7 @@ namespace VerichatCRM.Infrastructure.Data
         public DbSet<WarehouseAlert> WarehouseAlerts => Set<WarehouseAlert>();
         public DbSet<Client> Clients => Set<Client>();
         public DbSet<Deal> Deals => Set<Deal>();
-    public DbSet<Inquiry> Inquiries => Set<Inquiry>();
+        public DbSet<Inquiry> Inquiries => Set<Inquiry>();
         public DbSet<Quotation> Quotations => Set<Quotation>();
         public DbSet<Ticket> Tickets => Set<Ticket>();
         public DbSet<Asset> Assets => Set<Asset>();
