@@ -1,3 +1,5 @@
+using VerichatCRM.Core.Models.Clients;
+
 namespace VerichatCRM.Web.Models.Inquiry
 {
     public class InquiryViewModel
@@ -44,6 +46,8 @@ namespace VerichatCRM.Web.Models.Inquiry
         public string Status { get; set; } = "New";
         public int Score { get; set; } = 50;
         public string? Notes { get; set; }
+
+        public List<ClientViewModel> Clients { get; set; } = new();
     }
 
     public class InquiryQueueViewModel

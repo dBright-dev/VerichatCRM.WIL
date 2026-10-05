@@ -26,22 +26,44 @@
     }
 
     <nav class="vc-sidebar__nav" aria-label="Primary">
+
         <div class="vc-sidebar__section-label">OVERVIEW</div>
+
         @if (isAdmin)
         {
-            <a class="vc-sidebar__link" asp-controller="Admin" asp-action="Dashboard"><span class="vc-sidebar__icon">▦</span> Admin Dashboard</a>
+            <a class="vc-sidebar__link"
+               asp-controller="Admin"
+               asp-action="Dashboard">
+                <span class="vc-sidebar__icon">▦</span>
+                Admin Dashboard
+            </a>
         }
-        @if (isProcurement)
+        else if (isProcurement)
         {
-            <a class="vc-sidebar__link" asp-controller="Procurement" asp-action="Dashboard"><span class="vc-sidebar__icon">▦</span> Dashboard</a>
+            <a class="vc-sidebar__link"
+               asp-controller="Procurement"
+               asp-action="Dashboard">
+                <span class="vc-sidebar__icon">▦</span>
+                Dashboard
+            </a>
         }
-        @if (isSupport)
+        else if (isSupport)
         {
-            <a class="vc-sidebar__link" asp-controller="Support" asp-action="Dashboard"><span class="vc-sidebar__icon">▦</span> Dashboard</a>
+            <a class="vc-sidebar__link"
+               asp-controller="Support"
+               asp-action="Dashboard">
+                <span class="vc-sidebar__icon">▦</span>
+                Dashboard
+            </a>
         }
-        @if (isSales && !isAdmin)
+        else if (isSales)
         {
-            <a class="vc-sidebar__link" asp-controller="Dashboard" asp-action="Index"><span class="vc-sidebar__icon">▦</span> Dashboard</a>
+            <a class="vc-sidebar__link"
+               asp-controller="Dashboard"
+               asp-action="Index">
+                <span class="vc-sidebar__icon">▦</span>
+                Dashboard
+            </a>
         }
 
         <div class="vc-sidebar__section-label">CLIENTS</div>
