@@ -5,7 +5,7 @@
         <div class="vc-card p-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="vc-heading h6 mb-0">Quotation Items</h2>
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="vcAddRow()">
+                <button type="button" class="btn btn-sm btn-outline-primary" id="addQuoteRowBtn">
                     + Add Row
                 </button>
             </div>
@@ -30,28 +30,28 @@
                                 <td>
                                     <label class="visually-hidden" for="product-@item.RowId">Product name</label>
                                     <input type="text" id="product-@item.RowId" class="form-control form-control-sm"
-                                           value="@item.ProductName" oninput="vcRecalculate()" />
+                                           value="@item.ProductName" />
                                 </td>
                                 <td>
                                     <label class="visually-hidden" for="sku-@item.RowId">SKU</label>
                                     <input type="text" id="sku-@item.RowId" class="form-control form-control-sm"
-                                           value="@item.Sku" oninput="vcRecalculate()" />
+                                           value="@item.Sku" />
                                 </td>
                                 <td>
                                     <label class="visually-hidden" for="qty-@item.RowId">Quantity</label>
                                     <input type="number" id="qty-@item.RowId" min="1" class="form-control form-control-sm quote-qty"
-                                           value="@item.Quantity" oninput="vcRecalculate()" />
+                                           value="@item.Quantity" />
                                 </td>
                                 <td>
                                     <label class="visually-hidden" for="price-@item.RowId">Unit price</label>
                                     <input type="number" id="price-@item.RowId" min="0" step="0.01" class="form-control form-control-sm quote-price"
-                                           value="@item.UnitPrice" oninput="vcRecalculate()" />
+                                           value="@item.UnitPrice" />
                                 </td>
                                 <td class="text-end quote-line-total" data-role="line-total">
                                     @item.LineTotal.ToString("C2")
                                 </td>
                                 <td class="text-end">
-                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="vcRemoveRow(this)"
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-action="remove-row"
                                             aria-label="Remove this line item">
                                         &times;
                                     </button>
@@ -123,61 +123,88 @@
 
         const VC_VAT_RATE = @Model.VatRate;
         let vcNextRowId = @(Model.LineItems.Count > 0 ? Model.LineItems.Max(i => i.RowId) + 1 : 1);
+        const quoteBody = document.getElementById('quoteTableBody');
+        const addRowBtn = document.getElementById('addQuoteRowBtn');
+
+        function vcFormatCurrency(value) {
+            return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+        }
 
         function vcRecalculate() {
             let subtotal = 0;
 
-            document.querySelectorAll('#quoteTableBody .quote-row').forEach(row => {
-                const qty = parseFloat(row.querySelector('.quote-qty').value) || 0;
-                const price = parseFloat(row.querySelector('.quote-price').value) || 0;
+            quoteBody.querySelectorAll('.quote-row').forEach(row => {
+                const qtyInput = row.querySelector('.quote-qty');
+                const priceInput = row.querySelector('.quote-price');
+                const lineTotalCell = row.querySelector('[data-role="line-total"]');
+                if (!qtyInput || !priceInput || !lineTotalCell) return;
+
+                const qty = parseFloat(qtyInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
                 const lineTotal = qty * price;
-
-                row.querySelector('[data-role="line-total"]').textContent =
-                    lineTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-
+                lineTotalCell.textContent = vcFormatCurrency(lineTotal);
                 subtotal += lineTotal;
             });
 
             const vat = subtotal * VC_VAT_RATE;
-            const grandTotal = subtotal + vat;
+            document.getElementById('quoteSubtotal').textContent = vcFormatCurrency(subtotal);
+            document.getElementById('quoteVat').textContent = vcFormatCurrency(vat);
+            document.getElementById('quoteGrandTotal').textContent = vcFormatCurrency(subtotal + vat);
+        }
 
-            document.getElementById('quoteSubtotal').textContent =
-                subtotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-            document.getElementById('quoteVat').textContent =
-                vat.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-            document.getElementById('quoteGrandTotal').textContent =
-                grandTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+        function vcRowMarkup(rowId) {
+            return (
+                '<tr class="quote-row" data-row-id="' + rowId + '">' +
+                    '<td><label class="visually-hidden" for="product-' + rowId + '">Product name</label>' +
+                    '<input type="text" id="product-' + rowId + '" class="form-control form-control-sm" /></td>' +
+                    '<td><label class="visually-hidden" for="sku-' + rowId + '">SKU</label>' +
+                    '<input type="text" id="sku-' + rowId + '" class="form-control form-control-sm" /></td>' +
+                    '<td><label class="visually-hidden" for="qty-' + rowId + '">Quantity</label>' +
+                    '<input type="number" id="qty-' + rowId + '" min="1" class="form-control form-control-sm quote-qty" value="1" /></td>' +
+                    '<td><label class="visually-hidden" for="price-' + rowId + '">Unit price</label>' +
+                    '<input type="number" id="price-' + rowId + '" min="0" step="0.01" class="form-control form-control-sm quote-price" value="0" /></td>' +
+                    '<td class="text-end quote-line-total" data-role="line-total">$0.00</td>' +
+                    '<td class="text-end">' +
+                        '<button type="button" class="btn btn-sm btn-outline-danger" data-action="remove-row" aria-label="Remove this line item">&times;</button>' +
+                    '</td>' +
+                '</tr>'
+            );
         }
 
         function vcAddRow() {
-            const tbody = document.getElementById('quoteTableBody');
+            if (!quoteBody) return;
             const rowId = vcNextRowId++;
-
-            const row = document.createElement('tr');
-            row.className = 'quote-row';
-            row.dataset.rowId = rowId;
-            row.innerHTML = `
-                        <td><label class="visually-hidden" for="product-${rowId}">Product name</label>
-                            <input type="text" id="product-${rowId}" class="form-control form-control-sm" oninput="vcRecalculate()" /></td>
-                        <td><label class="visually-hidden" for="sku-${rowId}">SKU</label>
-                            <input type="text" id="sku-${rowId}" class="form-control form-control-sm" oninput="vcRecalculate()" /></td>
-                        <td><label class="visually-hidden" for="qty-${rowId}">Quantity</label>
-                            <input type="number" id="qty-${rowId}" min="1" class="form-control form-control-sm quote-qty" value="1" oninput="vcRecalculate()" /></td>
-                        <td><label class="visually-hidden" for="price-${rowId}">Unit price</label>
-                            <input type="number" id="price-${rowId}" min="0" step="0.01" class="form-control form-control-sm quote-price" value="0" oninput="vcRecalculate()" /></td>
-                        <td class="text-end quote-line-total" data-role="line-total">$0.00</td>
-                        <td class="text-end">
-                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="vcRemoveRow(this)" aria-label="Remove this line item">&times;</button>
-                        </td>
-                    `;
-            tbody.appendChild(row);
-            document.getElementById(`product-${rowId}`).focus();
+            quoteBody.insertAdjacentHTML('beforeend', vcRowMarkup(rowId));
+            const product = document.getElementById('product-' + rowId);
+            if (product) {
+                product.focus();
+                const row = product.closest('.quote-row');
+                if (row && row.scrollIntoView) {
+                    row.scrollIntoView({ block: 'nearest' });
+                }
+            }
+            vcRecalculate();
         }
 
         function vcRemoveRow(button) {
             const row = button.closest('.quote-row');
+            if (!row) return;
             row.remove();
             vcRecalculate();
+        }
+
+        if (addRowBtn) {
+            addRowBtn.addEventListener('click', vcAddRow);
+        }
+
+        if (quoteBody) {
+            quoteBody.addEventListener('input', vcRecalculate);
+            quoteBody.addEventListener('click', function (event) {
+                const removeBtn = event.target.closest('[data-action="remove-row"]');
+                if (removeBtn) {
+                    vcRemoveRow(removeBtn);
+                }
+            });
         }
     </script>
 }
