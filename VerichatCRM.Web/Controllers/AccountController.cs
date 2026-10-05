@@ -119,6 +119,9 @@ namespace VerichatCRM.Web.Controllers
         [HttpGet]
         public IActionResult NoAccess()
         {
+            if (HttpContext.Session.GetString("JwtToken") is null)
+                return RedirectToAction(nameof(Login));
+            Response.StatusCode = StatusCodes.Status403Forbidden;
             return View();
         }
     }

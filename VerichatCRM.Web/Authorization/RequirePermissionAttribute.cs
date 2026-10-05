@@ -39,9 +39,9 @@ namespace VerichatCRM.Web.Authorization
                 return;
             }
 
-            // Authenticated but not entitled: refuse rather than redirect, so the
-            // user is never shown a screen they may not use.
-            context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
+            // Give denied requests a generic access page without exposing the
+            // requested screen or adding a form validation message.
+            context.Result = new RedirectToActionResult("NoAccess", "Account", null);
         }
     }
 }

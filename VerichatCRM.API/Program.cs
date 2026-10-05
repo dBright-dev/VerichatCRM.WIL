@@ -99,11 +99,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
-// CORS for the Web app
+// CORS for browser-hosted front ends. Server-side MVC calls do not need CORS,
+// but Expo Web does. Production origins are supplied through configuration.
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+if (builder.Environment.IsDevelopment() && allowedOrigins.Length == 0)
+{
+    allowedOrigins = ["https://localhost:7266", "http://localhost:5253", "http://localhost:8081", "http://localhost:8082"];
+}
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("VerichatWeb", policy =>
-        policy.WithOrigins("http://verichat-crm-api.runasp.net/", "https://localhost:5001")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials());
