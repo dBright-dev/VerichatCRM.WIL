@@ -75,6 +75,13 @@ namespace VerichatCRM.Web.Services
             return await ReadAsync<TResponse>(endpoint, response);
         }
 
+        public async Task<TResponse?> DeleteAsync<TResponse>(string endpoint)
+        {
+            EnsureToken();
+            var response = await _http.DeleteAsync(endpoint);
+            return await ReadAsync<TResponse>(endpoint, response);
+        }
+
         private static async Task<TResponse?> ReadAsync<TResponse>(string endpoint, HttpResponseMessage response)
         {
             if (response.IsSuccessStatusCode)

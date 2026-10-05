@@ -2,7 +2,7 @@
 // POST /api/auth/login            { email, password }        → { success, token, user }
 // POST /api/auth/register         staff/admin registration
 // POST /api/mobile/register       client self-registration   → { success, token, user }
-import { api, apiUrl, setAuthToken } from './api'
+import { api, setAuthToken } from './api'
 
 export type AuthUser = {
   userId: string
@@ -23,15 +23,21 @@ function fail(response: AuthResponse): never {
 }
 
 /** Staff/admin sign-in (same JWT contract as the Web app). */
-export async function login(email: string, password: string): Promise<AuthResponse> {
-  const response = await fetch(apiUrl('/api/auth/login'), {
+export async function login(email: string, password: string, audience?: 'client' | 'staff'): Promise<AuthResponse> {
+  const data = await api<AuthResponse>('/api/auth/login', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   })
-  const data = (await response.json()) as AuthResponse
-  if (!response.ok || !data.success) fail(data)
-  if (data.token) setAuthToken(data.token)
+  if (!data.success) fail(data)
+  if (!data.token) throw new Error('The server did not return a sign-in token.')
+  const role = data.user?.role
+  if (audience === 'client' && role !== 'Client User') {
+    throw new Error('This account is for staff. Choose Staff sign-in instead.')
+  }
+  if (audience === 'staff' && (!role || role === 'Client User')) {
+    throw new Error('This account is for clients. Choose Client sign-in instead.')
+  }
+  setAuthToken(data.token)
   return data
 }
 
@@ -47,7 +53,8 @@ export async function registerClient(payload: {
     body: JSON.stringify(payload),
   })
   if (!data.success) fail(data)
-  if (data.token) setAuthToken(data.token)
+  if (!data.token) throw new Error('The server did not return a registration token.')
+  setAuthToken(data.token)
   return data
 }
 
@@ -63,7 +70,8 @@ export async function registerStaff(payload: {
     body: JSON.stringify(payload),
   })
   if (!data.success) fail(data)
-  if (data.token) setAuthToken(data.token)
+  if (!data.token) throw new Error('The server did not return a registration token.')
+  setAuthToken(data.token)
   return data
 }
 

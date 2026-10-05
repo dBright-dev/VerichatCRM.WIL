@@ -8,5 +8,6 @@
         public decimal Price { get; set; }
         public int StockQty { get; set; }
         public bool IsLowStock { get; set; }
+        public string? ImageUrl { get; set; }
     }
 }

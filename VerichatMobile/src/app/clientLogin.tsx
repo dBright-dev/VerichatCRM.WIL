@@ -19,8 +19,8 @@ const ClientLoginScreen = () => {
 
     setBusy(true)
     try {
-      await login(email.trim(), password)
-      router.replace('/clientHomescreen')
+      await login(email.trim(), password, 'client')
+      router.replace('/')
     } catch (e) {
       Alert.alert('Sign in failed', e instanceof Error ? e.message : 'Something went wrong.')
     } finally {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using VerichatCRM.Core.Models.Clients;
+using VerichatCRM.Web.Authorization;
 using VerichatCRM.Web.Models.Client;
 using VerichatCRM.Web.Services;
 using VerichatCRM.Web.Services.Interfaces;
@@ -19,6 +20,7 @@ namespace VerichatCRM.Web.Controllers
             ViewData["CurrentRole"] = HttpContext.Session.GetString("UserRole") ?? "Sales Representative";
         }
 
+        [RequirePermission(Perm.ClientDirectory)]
         public async Task<IActionResult> Index(string? search, string? sector)
         {
             SetHeader("Client Directory", "Search, filter, and drill into client accounts.");
@@ -35,6 +37,7 @@ namespace VerichatCRM.Web.Controllers
             return View(model);
         }
 
+        [RequirePermission(Perm.ClientProfile)]
         public async Task<IActionResult> Profile(string id)
         {
             var client = await _clients.GetClientAsync(id);
@@ -44,6 +47,7 @@ namespace VerichatCRM.Web.Controllers
             return View(client);
         }
 
+        [RequirePermission(Perm.ClientCreate)]
         [HttpGet]
         public IActionResult Create()
         {
@@ -51,6 +55,7 @@ namespace VerichatCRM.Web.Controllers
             return View(new CreateClientViewModel());
         }
 
+        [RequirePermission(Perm.ClientCreate)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateClientViewModel model)

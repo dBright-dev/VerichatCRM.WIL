@@ -287,6 +287,70 @@ namespace VerichatCRM.Infrastructure.Migrations
                     b.ToTable("DeliveryStatusUpdate");
                 });
 
+            modelBuilder.Entity("VerichatCRM.Core.Entities.Inquiry", b =>
+                {
+                    b.Property<string>("InquiryId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ClientId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Company")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContactEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContactName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContactPhone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OwnerUserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RespondedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ResponseDueAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("InquiryId");
+
+                    b.HasIndex("ClientId");
+
+                    b.ToTable("Inquiries");
+                });
+
             modelBuilder.Entity("VerichatCRM.Core.Entities.Inventory", b =>
                 {
                     b.Property<string>("InventoryId")
@@ -581,6 +645,9 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("LowStockThreshold")
                         .HasColumnType("int");
@@ -1085,6 +1152,15 @@ namespace VerichatCRM.Infrastructure.Migrations
                     b.HasOne("VerichatCRM.Core.Entities.DeliveryLog", null)
                         .WithMany("StatusHistory")
                         .HasForeignKey("DeliveryLogDeliveryId");
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.Inquiry", b =>
+                {
+                    b.HasOne("VerichatCRM.Core.Entities.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId");
+
+                    b.Navigation("Client");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.Inventory", b =>

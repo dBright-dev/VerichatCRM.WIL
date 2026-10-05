@@ -55,6 +55,19 @@ namespace VerichatCRM.API.Controllers
         }
 
         /// <summary>
+        /// Edit a product's details, including its price. Sales representatives
+        /// and administrators may do this; procurement and clients may not.
+        /// </summary>
+        [HttpPut("{sku}")]
+        [Authorize(Roles = "System Administrator,Sales Representative")]
+        public async Task<ActionResult<ProductResponse>> UpdateProduct(string sku, [FromBody] UpdateProductRequest request)
+        {
+            var product = await _productService.UpdateProductAsync(sku, request);
+            if (product == null) return NotFound(new { message = $"Product with SKU {sku} not found." });
+            return Ok(product);
+        }
+
+        /// <summary>
         /// Update product stock quantity.
         /// </summary>
         [HttpPatch("{sku}/stock")]

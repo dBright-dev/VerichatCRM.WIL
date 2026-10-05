@@ -14,10 +14,26 @@ using VerichatCRM.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ---------------------------------------------------------------------------
+// The database password is deliberately no longer stored in appsettings.json.
+// Fail fast with a clear message when it is missing, rather than surfacing an
+// obscure SQL error on the first request.
+// Supply it as ConnectionStrings__DefaultConnection, or via user-secrets in
+// local development.
+// ---------------------------------------------------------------------------
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        "ConnectionStrings:DefaultConnection is not configured. Set the environment " +
+        "variable ConnectionStrings__DefaultConnection, or run: dotnet user-secrets set " +
+        "\"ConnectionStrings:DefaultConnection\" \"<connection string>\"");
+}
+
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
+        connectionString,
         sqlServerOptions => sqlServerOptions.EnableRetryOnFailure(
             maxRetryCount: 3,
             maxRetryDelay: TimeSpan.FromSeconds(10),
@@ -37,6 +53,7 @@ builder.Services.AddScoped<IQuotationRepository, QuotationRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<IProductService, ProductService>();
+    builder.Services.AddScoped<IInquiryService, InquiryService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
 builder.Services.AddScoped<IWarehouseAlertService, WarehouseAlertService>();
@@ -97,10 +114,16 @@ var app = builder.Build();
 
 // ---------------------------------------------------------------------------
 // Startup data bootstrap: MIGRATE first (this creates the database if it does
-// not exist), THEN seed. Order matters — seeding before migrating throws
-// "Cannot open database ... requested by the login" on a fresh machine.
-// Both steps are guarded so an unreachable database degrades the app instead
-// of killing the process (which surfaces as HTTP 500.30 on IIS).
+// not exist), THEN create the first administrator. Order matters - running
+// before migrating throws "Cannot open database ... requested by the login" on
+// a fresh machine.
+//
+// There is deliberately NO demo/seed data. Clients, products, tickets,
+// quotations and so on must all be entered by an administrator through the UI.
+// Only the initial System Administrator is created, and only from configuration
+// - see AdminBootstrapper. Both steps are guarded so an unreachable database
+// degrades the app instead of killing the process (which surfaces as HTTP
+// 500.30 on IIS).
 // ---------------------------------------------------------------------------
 using (var scope = app.Services.CreateScope())
 {
@@ -122,14 +145,24 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
-        logger.LogInformation("Seeding reference data...");
         await DataSeeder.SeedAsync(context);
-        logger.LogInformation("Reference data ready.");
+        logger.LogInformation("Starter catalogue ready.");
     }
     catch (Exception ex)
     {
         logger.LogError(ex,
-            "Data seeding failed at startup. App will run in degraded mode — check /api/health for details.");
+            "Starter catalogue seeding failed at startup. App will run in degraded mode — check /api/health for details.");
+    }
+
+    try
+    {
+        await AdminBootstrapper.BootstrapAsync(context, app.Configuration, logger);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex,
+            "Administrator bootstrap failed at startup. If the user table is empty, " +
+            "nobody will be able to sign in - check the Bootstrap__* configuration.");
     }
 }
 

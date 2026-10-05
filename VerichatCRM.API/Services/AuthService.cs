@@ -42,8 +42,10 @@ namespace VerichatCRM.API.Services
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
         {
-            if (!UserRoles.All.Contains(request.Role))
-                return new AuthResponse { Success = false, Message = "Invalid role specified." };
+            // A public sign-up form must never be able to mint an administrator.
+            // System Administrator is excluded from SelfRegisterable on purpose.
+            if (!UserRoles.SelfRegisterable.Contains(request.Role))
+                return new AuthResponse { Success = false, Message = "That role cannot be self-assigned. Ask an administrator to create the account." };
 
             if (await _users.EmailExistsAsync(request.Email))
                 return new AuthResponse { Success = false, Message = "Email is already registered." };

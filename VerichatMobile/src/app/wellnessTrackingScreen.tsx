@@ -1,12 +1,12 @@
 import { LinearGradient } from 'expo-linear-gradient'
 import { useCallback, useEffect, useState } from 'react'
-import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Circle } from 'react-native-svg'
 import DevicesTab from '../app/DevicesTab'
 import GoalsTab from '../app/GoalsTab'
 import VitalsTab from '../app/VitalsTab'
-import { fetchWellnessSummary, WellnessSummary } from '../constants/wellnessService'
+import { fetchWellnessSummary, logVitalReading, MetricType, WellnessSummary } from '../constants/wellnessService'
 
 /* ------------------------------ Constants ------------------------------- */
 
@@ -16,6 +16,13 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'vitals', label: 'Vitals' },
   { key: 'devices', label: 'Devices' },
   { key: 'goals', label: 'Goals' },
+]
+const METRIC_TYPES: { key: MetricType; label: string; unit: string }[] = [
+  { key: 'bloodPressure', label: 'Blood pressure', unit: 'mmHg' },
+  { key: 'heartRate', label: 'Heart rate', unit: 'bpm' },
+  { key: 'bloodGlucose', label: 'Blood glucose', unit: 'mmol/L' },
+  { key: 'temperature', label: 'Temperature', unit: '°C' },
+  { key: 'bodyWeight', label: 'Body weight', unit: 'kg' },
 ]
 
 const GOOD_COLOR = '#2e7d32'
@@ -92,6 +99,10 @@ const WellnessTrackingScreen = () => {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [logOpen, setLogOpen] = useState(false)
+  const [metricType, setMetricType] = useState<MetricType>('bloodPressure')
+  const [reading, setReading] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -111,10 +122,34 @@ const WellnessTrackingScreen = () => {
     void load()
   }, [load])
 
+  useEffect(() => {
+    const timer = setInterval(() => void load(), 30_000)
+    return () => clearInterval(timer)
+  }, [load])
+
   const onRefresh = async () => {
     setRefreshing(true)
     await load()
     setRefreshing(false)
+  }
+
+  const saveReading = async () => {
+    if (!reading.trim()) {
+      Alert.alert('Reading required', 'Enter a value before saving.')
+      return
+    }
+    setSaving(true)
+    try {
+      const metric = METRIC_TYPES.find((item) => item.key === metricType)!
+      await logVitalReading({ type: metricType, value: reading.trim(), unit: metric.unit })
+      setReading('')
+      setLogOpen(false)
+      await load()
+    } catch (cause) {
+      Alert.alert('Could not save reading', cause instanceof Error ? cause.message : 'Please try again.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const metrics = summary?.metrics ?? []
@@ -143,9 +178,7 @@ const WellnessTrackingScreen = () => {
 
         <TouchableOpacity
           style={styles.log_button}
-          onPress={() => {
-            // TODO: open the "log new reading" flow
-          }}
+          onPress={() => setLogOpen(true)}
         >
           <Text style={styles.log_button_text}>+ Log New Reading</Text>
         </TouchableOpacity>
@@ -196,6 +229,23 @@ const WellnessTrackingScreen = () => {
       )}
       {activeTab === 'devices' && <DevicesTab onSynced={load} />}
       {activeTab === 'goals' && <GoalsTab />}
+      <Modal visible={logOpen} transparent animationType="slide" onRequestClose={() => setLogOpen(false)}>
+        <View style={styles.modal_backdrop}>
+          <View style={styles.log_modal}>
+            <Text style={styles.log_modal_title}>Log a health reading</Text>
+            <View style={styles.metric_choices}>
+              {METRIC_TYPES.map((metric) => (
+                <TouchableOpacity key={metric.key} onPress={() => setMetricType(metric.key)} style={[styles.metric_choice, metricType === metric.key && styles.metric_choice_selected]}>
+                  <Text style={[styles.metric_choice_text, metricType === metric.key && styles.metric_choice_text_selected]}>{metric.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TextInput style={styles.reading_input} value={reading} onChangeText={setReading} placeholder={`Value (${METRIC_TYPES.find((item) => item.key === metricType)?.unit})`} keyboardType="decimal-pad" />
+            <TouchableOpacity style={styles.save_reading} disabled={saving} onPress={() => void saveReading()}><Text style={styles.save_reading_text}>{saving ? 'Saving…' : 'Save to health record'}</Text></TouchableOpacity>
+            <TouchableOpacity onPress={() => setLogOpen(false)}><Text style={styles.cancel_reading}>Cancel</Text></TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   )
 }
@@ -243,6 +293,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
+  modal_backdrop: { flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.45)', padding: 20 },
+  log_modal: { backgroundColor: '#ffffff', borderRadius: 18, padding: 20, gap: 14 },
+  log_modal_title: { fontSize: 20, color: '#0a2f55', fontWeight: '900' },
+  metric_choices: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  metric_choice: { borderRadius: 18, borderWidth: 1, borderColor: '#9e9e9e', paddingHorizontal: 10, paddingVertical: 8 },
+  metric_choice_selected: { backgroundColor: '#0057a8', borderColor: '#0057a8' },
+  metric_choice_text: { color: '#333333', fontSize: 12 },
+  metric_choice_text_selected: { color: '#ffffff', fontWeight: '700' },
+  reading_input: { borderWidth: 1, borderColor: '#9e9e9e', borderRadius: 10, paddingHorizontal: 12, height: 46, color: '#111111' },
+  save_reading: { backgroundColor: '#0057a8', borderRadius: 12, alignItems: 'center', padding: 13 },
+  save_reading_text: { color: '#ffffff', fontWeight: '800' },
+  cancel_reading: { color: '#555555', textAlign: 'center', padding: 6 },
 
   // Health score
   score_card: {

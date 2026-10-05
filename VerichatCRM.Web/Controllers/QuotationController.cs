@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using VerichatCRM.Core.Models.Quotation;
+using VerichatCRM.Web.Authorization;
 using VerichatCRM.Web.Services;
 using VerichatCRM.Web.Services.Interfaces;
 
 namespace VerichatCRM.Web.Controllers
 {
+    [RequirePermission(Perm.QuotationBuilder)]
     public class QuotationController : Controller
     {
         private readonly IQuotationApiService _quotations;

@@ -1,8 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useCallback, useEffect, useState } from 'react'
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { Appointment, AppointmentStatus, fetchAppointments } from '../constants/telehealthService'
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Appointment, AppointmentStatus, bookAppointment, fetchAppointments } from '../constants/telehealthService'
 
 /* ------------------------------ Constants ------------------------------- */
 
@@ -70,10 +70,32 @@ const AppointmentsTab = () => {
     void load()
   }, [load])
 
+  useEffect(() => {
+    const timer = setInterval(() => void load(), 30_000)
+    return () => clearInterval(timer)
+  }, [load])
+
   const onRefresh = async () => {
     setRefreshing(true)
     await load()
     setRefreshing(false)
+  }
+
+  const bookTelemedicine = async () => {
+    const startsAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
+    startsAt.setHours(10, 0, 0, 0)
+    try {
+      const created = await bookAppointment({
+        doctorName: 'Verichat Care Team',
+        specialty: 'Telemedicine',
+        facility: 'Virtual consultation',
+        startsAt: startsAt.toISOString(),
+      })
+      setAppointments((current) => [created, ...current])
+      Alert.alert('Appointment requested', `Your telemedicine request for ${formatDate(created.startsAt)} at ${formatTime(created.startsAt)} was sent.`)
+    } catch (cause) {
+      Alert.alert('Could not book appointment', cause instanceof Error ? cause.message : 'Please try again.')
+    }
   }
 
   const renderAppointment = ({ item }: { item: Appointment }) => {
@@ -119,18 +141,14 @@ const AppointmentsTab = () => {
             <View style={styles.actions_row}>
               <TouchableOpacity
                 style={styles.reschedule_button}
-                onPress={() => {
-                  // TODO: open the reschedule flow for item.id
-                }}
+                onPress={() => Alert.alert('Reschedule', 'Please contact the care team to change this appointment.')}
               >
                 <Text style={styles.reschedule_text}>Reschedule</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 activeOpacity={0.85}
-                onPress={() => {
-                  // TODO: start the video call for item.id
-                }}
+                onPress={() => Alert.alert('Video consultation', 'Your appointment is available, but the API does not yet provide a video room or in-app chat.')}
               >
                 <LinearGradient
                   colors={['#004e7a', '#2f7be0']}
@@ -183,7 +201,7 @@ const AppointmentsTab = () => {
       data={appointments}
       keyExtractor={(item) => item.id}
       renderItem={renderAppointment}
-      ListHeaderComponent={<Text style={styles.section_title}>Upcoming and Recent</Text>}
+      ListHeaderComponent={<View><Text style={styles.section_title}>Upcoming and Recent</Text><TouchableOpacity style={styles.book_button} onPress={() => void bookTelemedicine()}><MaterialCommunityIcons name="video-plus" size={18} color="#ffffff" /><Text style={styles.book_button_text}>Book telemedicine for tomorrow</Text></TouchableOpacity></View>}
       ListEmptyComponent={renderEmpty}
       contentContainerStyle={styles.list}
       showsVerticalScrollIndicator={false}
@@ -215,6 +233,8 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     marginBottom: 4,
   },
+  book_button: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#0057a8', borderRadius: 12, paddingVertical: 12, marginTop: 12 },
+  book_button_text: { color: '#ffffff', fontWeight: '800', fontSize: 14 },
 
   // Appointment card
   card: {

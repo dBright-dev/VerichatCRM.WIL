@@ -15,6 +15,7 @@ import {
     View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { logout } from '../constants/authService'
 import { fetchSettings, Preferences, updatePreferences, UserSettings } from '../constants/settingsService'
 
 /* ------------------------------ Constants ------------------------------- */
@@ -86,6 +87,11 @@ const SettingsScreen = () => {
     void load()
   }, [load])
 
+  useEffect(() => {
+    const timer = setInterval(() => void load(), 60_000)
+    return () => clearInterval(timer)
+  }, [load])
+
   const onRefresh = async () => {
     setRefreshing(true)
     await load()
@@ -115,8 +121,12 @@ const SettingsScreen = () => {
   }
 
   const handleMorePress = (key: string) => {
-    // TODO: navigate to the matching screen: 'history' | 'privacy' | 'terms' | 'about'
-    console.log('Open:', key)
+    if (key === 'history') {
+      router.push('/cartScreen')
+      return
+    }
+    const title = MORE_ROWS.find((row) => row.key === key)?.title ?? 'Information'
+    Alert.alert(title, 'This information is not available in the mobile API yet.')
   }
 
   const handleSignOut = () => {
@@ -126,8 +136,9 @@ const SettingsScreen = () => {
         text: 'Sign out',
         style: 'destructive',
         onPress: () => {
-          // TODO: clear the stored session/token, then navigate to the login screen
-          // (e.g. router.replace('/')).
+          // Clear the stored JWT, then return to the login/chooser screen.
+          logout()
+          router.replace('/')
         },
       },
     ])
@@ -161,13 +172,22 @@ const SettingsScreen = () => {
         end={{ x: 1, y: 1 }}
         style={[styles.header, { paddingTop: insets.top + 16 }]}
       >
+        <TouchableOpacity
+          onPress={() => router.back()}
+          hitSlop={10}
+          style={styles.back_button}
+          accessibilityLabel="Back to profile"
+        >
+          <MaterialCommunityIcons name="chevron-left" size={32} color="#ffffff" />
+        </TouchableOpacity>
+
         <Text style={styles.name} numberOfLines={2}>
           {settings.fullName}
         </Text>
         <TouchableOpacity
           style={styles.avatar}
           activeOpacity={0.8}
-          onPress={() => router.push('../src/app/profileScreen')}
+          onPress={() => router.push('/profileScreen')}
         >
           <Text style={styles.avatar_text}>{getInitials(settings.fullName)}</Text>
         </TouchableOpacity>
@@ -267,6 +287,12 @@ const styles = StyleSheet.create({
     paddingBottom: 22,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
+  },
+  back_button: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    marginRight: 6,
   },
   name: {
     flex: 1,

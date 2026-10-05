@@ -4,16 +4,20 @@ import { useRouter } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
 import {
     ActivityIndicator,
+    Alert,
+    Modal,
     Platform,
     RefreshControl,
     ScrollView,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
     View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { fetchProfile, Profile } from '../constants/profileService'
+import { logout } from '../constants/authService'
+import { fetchProfile, Profile, updateProfile } from '../constants/profileService'
 
 const SERIF = Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' })
 
@@ -41,6 +45,9 @@ const ProfileScreen = () => {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [addressOpen, setAddressOpen] = useState(false)
+  const [savingAddress, setSavingAddress] = useState(false)
+  const [addressForm, setAddressForm] = useState({ name: '', street: '', city: '', country: '' })
 
   const load = useCallback(async () => {
     try {
@@ -60,18 +67,66 @@ const ProfileScreen = () => {
     void load()
   }, [load])
 
+  useEffect(() => {
+    const timer = setInterval(() => void load(), 60_000)
+    return () => clearInterval(timer)
+  }, [load])
+
   const onRefresh = async () => {
     setRefreshing(true)
     await load()
     setRefreshing(false)
   }
 
-  const goBack = () => {
-    if (router.canGoBack()) {
-      router.back()
-    } else {
-      router.replace('/')
+  const goSettings = () => {
+    router.push('/settingsScreen')
+  }
+
+  const editAddress = () => {
+    setAddressForm({
+      name: profile?.defaultAddress?.name ?? '',
+      street: profile?.defaultAddress?.street ?? '',
+      city: profile?.defaultAddress?.city ?? '',
+      country: profile?.defaultAddress?.country ?? '',
+    })
+    setAddressOpen(true)
+  }
+
+  const saveAddress = async () => {
+    if (!addressForm.name.trim() || !addressForm.street.trim() || !addressForm.city.trim() || !addressForm.country.trim()) {
+      Alert.alert('Address incomplete', 'Fill in the address name, street, city and country.')
+      return
     }
+    setSavingAddress(true)
+    try {
+      const updated = await updateProfile({
+        addressName: addressForm.name.trim(),
+        street: addressForm.street.trim(),
+        city: addressForm.city.trim(),
+        country: addressForm.country.trim(),
+      })
+      setProfile(updated)
+      setAddressOpen(false)
+    } catch (cause) {
+      Alert.alert('Could not update address', cause instanceof Error ? cause.message : 'Please try again.')
+    } finally {
+      setSavingAddress(false)
+    }
+  }
+
+  const confirmSignOut = () => {
+    Alert.alert('Sign out', 'Are you sure you want to sign out?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Sign out',
+        style: 'destructive',
+        onPress: () => {
+          // Clears the persisted JWT and returns to the role chooser.
+          logout()
+          router.replace('/')
+        },
+      },
+    ])
   }
 
   if (loading) {
@@ -112,8 +167,8 @@ const ProfileScreen = () => {
         style={[styles.header, { paddingTop: insets.top + 16 }]}
       >
         <View style={styles.header_top}>
-          <TouchableOpacity onPress={goBack} hitSlop={10} style={styles.back_button}>
-            <MaterialCommunityIcons name="chevron-left" size={32} color="#ffffff" />
+          <TouchableOpacity onPress={goSettings} hitSlop={10} style={styles.back_button}>
+            <MaterialCommunityIcons name="cog-outline" size={28} color="#ffffff" />
           </TouchableOpacity>
 
           <Text style={styles.name} numberOfLines={2}>
@@ -170,15 +225,52 @@ const ProfileScreen = () => {
 
           <TouchableOpacity
             style={styles.change_link}
-            onPress={() => {
-              // TODO: open the change/add address flow
-            }}
+            onPress={editAddress}
           >
             <Text style={styles.change_text}>{address ? 'Change Address' : 'Add Address'}</Text>
             <MaterialCommunityIcons name="arrow-right" size={26} color="#1b5e20" />
           </TouchableOpacity>
         </View>
+
+        {/* Account actions */}
+        <Text style={[styles.section_label, styles.address_label]}>ACCOUNT</Text>
+        <View style={styles.details_card}>
+          <TouchableOpacity style={styles.menu_row} onPress={goSettings}>
+            <MaterialCommunityIcons name="cog-outline" size={22} color="#1b5e20" />
+            <Text style={styles.menu_text}>Settings</Text>
+            <MaterialCommunityIcons name="arrow-right" size={24} color="#9e9e9e" />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.menu_row} onPress={() => router.push('/cartScreen')}>
+            <MaterialCommunityIcons name="package-variant-closed-check" size={22} color="#1b5e20" />
+            <Text style={styles.menu_text}>Purchase history & order tracking</Text>
+            <MaterialCommunityIcons name="arrow-right" size={24} color="#9e9e9e" />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.menu_row} onPress={confirmSignOut}>
+            <MaterialCommunityIcons name="logout" size={22} color="#b3261e" />
+            <Text style={[styles.menu_text, styles.sign_out_text]}>Sign out</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
+
+      <Modal visible={addressOpen} transparent animationType="slide" onRequestClose={() => setAddressOpen(false)}>
+        <View style={styles.modal_backdrop}>
+          <View style={styles.address_modal}>
+            <Text style={styles.modal_title}>Update delivery address</Text>
+            {([
+              ['name', 'Address name'],
+              ['street', 'Street address'],
+              ['city', 'City or region'],
+              ['country', 'Country'],
+            ] as const).map(([key, label]) => (
+              <TextInput key={key} style={styles.address_input} value={addressForm[key]} onChangeText={(value) => setAddressForm((current) => ({ ...current, [key]: value }))} placeholder={label} autoCapitalize="words" />
+            ))}
+            <TouchableOpacity style={styles.save_address_button} disabled={savingAddress} onPress={() => void saveAddress()}><Text style={styles.save_address_text}>{savingAddress ? 'Saving…' : 'Save address'}</Text></TouchableOpacity>
+            <TouchableOpacity onPress={() => setAddressOpen(false)}><Text style={styles.cancel_address}>Cancel</Text></TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   )
 }
@@ -313,6 +405,28 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     gap: 8,
   },
+  menu_row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    gap: 12,
+  },
+  menu_text: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1b1b1b',
+  },
+  sign_out_text: {
+    color: '#b3261e',
+  },
+  modal_backdrop: { flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.45)', padding: 20 },
+  address_modal: { backgroundColor: '#ffffff', borderRadius: 18, padding: 20, gap: 12 },
+  modal_title: { color: '#0a2f55', fontSize: 20, fontWeight: '900', marginBottom: 4 },
+  address_input: { height: 46, borderRadius: 10, borderWidth: 1, borderColor: '#aab2b9', paddingHorizontal: 12, color: '#111111' },
+  save_address_button: { backgroundColor: '#0057a8', padding: 13, alignItems: 'center', borderRadius: 12, marginTop: 4 },
+  save_address_text: { color: '#ffffff', fontWeight: '900' },
+  cancel_address: { color: '#59636e', textAlign: 'center', padding: 6 },
   detail_label: {
     width: 90,
     textAlign: 'center',

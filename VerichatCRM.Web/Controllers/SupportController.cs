@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using VerichatCRM.Web.Authorization;
 using VerichatCRM.Web.Services.Interfaces;
 using VerichatCRM.Web.ViewModels.Support;
 
@@ -16,6 +17,7 @@ namespace VerichatCRM.Web.Controllers
 
         private bool IsAuthenticated => HttpContext.Session.GetString("JwtToken") != null;
 
+        [RequirePermission(Perm.SupportDashboard)]
         public async Task<IActionResult> Dashboard()
         {
             if (!IsAuthenticated) return RedirectToAction("Login", "Account");
@@ -43,6 +45,7 @@ namespace VerichatCRM.Web.Controllers
             return View(vm);
         }
 
+        [RequirePermission(Perm.TicketHub)]
         public async Task<IActionResult> TicketHub()
         {
             if (!IsAuthenticated) return RedirectToAction("Login", "Account");
@@ -51,6 +54,7 @@ namespace VerichatCRM.Web.Controllers
             return View(new TicketHubViewModel { Tickets = tickets });
         }
 
+        [RequirePermission(Perm.TicketHub)]
         public async Task<IActionResult> TicketDetail(string id)
         {
             if (!IsAuthenticated) return RedirectToAction("Login", "Account");
@@ -60,6 +64,7 @@ namespace VerichatCRM.Web.Controllers
         }
 
         [HttpPost]
+        [RequirePermission(Perm.TicketHub)]
         public async Task<IActionResult> UpdateStatus(string ticketId, string newStatus, string? notes)
         {
             if (!IsAuthenticated) return RedirectToAction("Login", "Account");

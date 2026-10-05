@@ -29,22 +29,7 @@ export type ClientDashboard = {
   trackingOrders: TrackingOrder[]
 }
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
-
 // Backend contract: GET /api/mobile/dashboard (JWT, token owner = client).
 export async function fetchClientDashboard(): Promise<ClientDashboard> {
-  try {
-    return await api<ClientDashboard>('/api/mobile/dashboard')
-  } catch {
-    // Back-compat: the old frontend build called this host-relative path.
-    const response = await fetch(`${API_BASE_URL}/client/dashboard`, {
-      headers: { 'Content-Type': 'application/json' },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Could not load your dashboard (${response.status}).`)
-    }
-
-    return response.json()
-  }
+  return api<ClientDashboard>('/api/mobile/dashboard')
 }

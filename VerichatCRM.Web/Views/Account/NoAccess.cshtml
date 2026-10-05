@@ -1,0 +1,23 @@
+@{
+    ViewData["Title"] = "No access";
+    Layout = "_Layout";
+}
+@using VerichatCRM.Web.Authorization
+
+<section class="vc-auth-main" style="min-height: 60vh; display:flex; align-items:center; justify-content:center;">
+    <div class="auth-card vc-auth-card" style="max-width: 460px; text-align:center;">
+        <h1 class="auth-title">This account has no staff access</h1>
+        <p class="auth-subtitle">
+            Your role (@(Context.Session.GetString("UserRole") ?? "unknown")) does not include
+            any screens in the Verichat staff application.
+        </p>
+        <p class="auth-subtitle">
+            Client and student accounts sign in through the Verichat mobile app.
+        </p>
+
+        <form asp-controller="Account" asp-action="Logout" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-primary btn-block">Sign out</button>
+        </form>
+    </div>
+</section>

@@ -80,6 +80,11 @@ const PrescriptionsTab = () => {
     void load()
   }, [load])
 
+  useEffect(() => {
+    const timer = setInterval(() => void load(), 30_000)
+    return () => clearInterval(timer)
+  }, [load])
+
   const onRefresh = async () => {
     setRefreshing(true)
     await load()

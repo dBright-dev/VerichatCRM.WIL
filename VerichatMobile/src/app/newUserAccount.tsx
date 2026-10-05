@@ -41,7 +41,7 @@ const CreateAccountScreen = () => {
         password,
         companyName: companyName.trim(),
       })
-      router.replace('/clientHomescreen')
+      router.replace('/')
     } catch (e) {
       Alert.alert('Sign up failed', e instanceof Error ? e.message : 'Something went wrong.')
     } finally {
@@ -124,8 +124,12 @@ const CreateAccountScreen = () => {
             textContentType="newPassword"
           />
 
-          <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-            <Text style={styles.button_text}>Sign up</Text>
+          <TouchableOpacity
+            style={[styles.button, busy && styles.button_disabled]}
+            onPress={handleSignUp}
+            disabled={busy}
+          >
+            <Text style={styles.button_text}>{busy ? 'Creating…' : 'Sign up'}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -193,6 +197,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#9e9e9e',
     marginTop: 24,
+  },
+  button_disabled: {
+    opacity: 0.6,
   },
   button_text: {
     fontSize: 16,

@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using VerichatCRM.Web.Authorization;
 using VerichatCRM.Web.Services;
 using VerichatCRM.Web.Services.Interfaces;
 
 namespace VerichatCRM.Web.Controllers
 {
+    [RequirePermission(Perm.PipelineBoard)]
     public class PipelineController : Controller
     {
         private readonly IPipelineApiService _pipeline;

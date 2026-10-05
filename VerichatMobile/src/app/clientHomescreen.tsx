@@ -12,7 +12,9 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { ClientDashboard, fetchClientDashboard } from '../constants/dashboardService';
+import { fetchWellnessSummary, WellnessSummary } from '../constants/wellnessService';
 
 const SERIF = Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' })
 
@@ -39,16 +41,22 @@ const formatDate = (iso: string) => {
 
 const ClientHomeScreen = () => {
   const insets = useSafeAreaInsets()
+  const router = useRouter()
   const [data, setData] = useState<ClientDashboard | null>(null)
+  const [wellness, setWellness] = useState<WellnessSummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     try {
-      const data = await fetchClientDashboard()
+      const [data, wellness] = await Promise.all([
+        fetchClientDashboard(),
+        fetchWellnessSummary().catch(() => null),
+      ])
       setError(null)
       setData(data)
+      setWellness(wellness)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong.')
     } finally {
@@ -60,6 +68,11 @@ const ClientHomeScreen = () => {
     // This effect starts an async fetch; its state updates run after the request settles.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load()
+  }, [load])
+
+  useEffect(() => {
+    const timer = setInterval(() => void load(), 30_000)
+    return () => clearInterval(timer)
   }, [load])
 
   const onRefresh = async () => {
@@ -96,14 +109,16 @@ const ClientHomeScreen = () => {
     vitals?.systolic != null && vitals?.diastolic != null
       ? `${vitals.systolic}/${vitals.diastolic} mmHg`
       : '--'
+  const glucose = wellness?.metrics.find((metric) => metric.type === 'bloodGlucose')
+  const glucoseValue = glucose?.value ? `${glucose.value} ${glucose.unit}` : '--'
+  const metricColor = (type: string) => {
+    const metric = wellness?.metrics.find((item) => item.type === type)
+    if (!metric || metric.value === null) return '#7c8792'
+    return metric.inRange ? '#2e7d32' : '#c62828'
+  }
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
+    <View style={styles.screen}>
       {/* Header */}
       <LinearGradient
         colors={['#1f5f8b', '#3d7bd9']}
@@ -118,9 +133,9 @@ const ClientHomeScreen = () => {
               {data.fullName}
             </Text>
           </View>
-          <View style={styles.avatar}>
+          <TouchableOpacity style={styles.avatar} onPress={() => router.push('/profileScreen')} accessibilityLabel="Open profile">
             <Text style={styles.avatar_text}>{getInitials(data.fullName)}</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.orders_panel}>
@@ -142,13 +157,40 @@ const ClientHomeScreen = () => {
         </View>
       </LinearGradient>
 
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+      <View style={styles.quick_actions}>
+        <Text style={styles.quick_actions_title}>Quick actions</Text>
+        <View style={styles.quick_actions_grid}>
+          <TouchableOpacity style={styles.quick_action} onPress={() => router.push('/medicalCatalogueShop')}>
+            <MaterialCommunityIcons name="medical-bag" size={24} color="#0057a8" />
+            <Text style={styles.quick_action_text}>Order PPE</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quick_action} onPress={() => router.push('/telehealthScreen')}>
+            <MaterialCommunityIcons name="video-outline" size={24} color="#0057a8" />
+            <Text style={styles.quick_action_text}>Book telemedicine</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quick_action} onPress={() => router.push('/wellnessTrackingScreen')}>
+            <MaterialCommunityIcons name="heart-pulse" size={24} color="#0057a8" />
+            <Text style={styles.quick_action_text}>Log health check</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quick_action} onPress={() => router.push('/telehealthScreen?tab=ePrescription')}>
+            <MaterialCommunityIcons name="pill" size={24} color="#0057a8" />
+            <Text style={styles.quick_action_text}>Prescriptions</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       {/* Quick Vitals */}
       <View style={styles.vitals_card}>
         <Text style={styles.vitals_title}>Quick Vitals Profile</Text>
 
         <View style={styles.vitals_row}>
           <View style={styles.vital}>
-            <MaterialCommunityIcons name="heart-pulse" size={40} color="#d32f2f" />
+            <MaterialCommunityIcons name="heart-pulse" size={40} color={metricColor('heartRate')} />
             <View>
               <Text style={styles.vital_label}>Heart Rate</Text>
               <Text style={styles.vital_value}>{heartRate}</Text>
@@ -156,7 +198,7 @@ const ClientHomeScreen = () => {
           </View>
 
           <View style={styles.vital}>
-            <MaterialCommunityIcons name="gauge" size={40} color="#546e7a" />
+            <MaterialCommunityIcons name="gauge" size={40} color={metricColor('bloodPressure')} />
             <View>
               <Text style={styles.vital_label}>Blood Pressure</Text>
               <Text style={styles.vital_value}>{bloodPressure}</Text>
@@ -166,7 +208,17 @@ const ClientHomeScreen = () => {
 
         <View style={styles.vitals_row}>
           <View style={styles.vital}>
-            <MaterialCommunityIcons name="thermometer" size={40} color="#d32f2f" />
+            <MaterialCommunityIcons name="water" size={40} color={metricColor('bloodGlucose')} />
+            <View>
+              <Text style={styles.vital_label}>Blood Glucose</Text>
+              <Text style={styles.vital_value}>{glucoseValue}</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.vitals_row}>
+          <View style={styles.vital}>
+            <MaterialCommunityIcons name="thermometer" size={40} color={metricColor('temperature')} />
             <View>
               <Text style={styles.vital_label}>Temperature</Text>
               <Text style={styles.vital_value}>{temperature}</Text>
@@ -176,9 +228,7 @@ const ClientHomeScreen = () => {
 
         <TouchableOpacity
           activeOpacity={0.85}
-          onPress={() => {
-            // TODO: navigate to the vitals report screen
-          }}
+          onPress={() => router.push('/wellnessTrackingScreen')}
         >
           <LinearGradient
             colors={['#004e7a', '#2f7be0']}
@@ -223,7 +273,8 @@ const ClientHomeScreen = () => {
           )}
         </View>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   )
 }
 
@@ -237,6 +288,11 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: 30,
   },
+  quick_actions: { paddingHorizontal: 16, paddingTop: 18 },
+  quick_actions_title: { color: '#0a2f55', fontWeight: '900', fontSize: 18, marginBottom: 10 },
+  quick_actions_grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  quick_action: { width: '48%', minHeight: 76, borderRadius: 14, backgroundColor: '#f1f6fa', padding: 12, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  quick_action_text: { flexShrink: 1, color: '#0a2f55', fontWeight: '700', fontSize: 13 },
   center: {
     flex: 1,
     justifyContent: 'center',

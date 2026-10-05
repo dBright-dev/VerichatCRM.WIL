@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using VerichatCRM.Web.Authorization;
 using VerichatCRM.Web.Services.Interfaces;
 
 namespace VerichatCRM.Web.Controllers
@@ -11,6 +12,7 @@ namespace VerichatCRM.Web.Controllers
 
         private bool IsAuthenticated => HttpContext.Session.GetString("JwtToken") != null;
 
+        [RequirePermission(Perm.LogisticsTracker)]
         public async Task<IActionResult> Tracker()
         {
             if (!IsAuthenticated) return RedirectToAction("Login", "Account");
@@ -20,6 +22,7 @@ namespace VerichatCRM.Web.Controllers
             return View(deliveries);
         }
 
+        [RequirePermission(Perm.AssetTracking)]
         public async Task<IActionResult> Assets()
         {
             if (!IsAuthenticated) return RedirectToAction("Login", "Account");
@@ -27,6 +30,7 @@ namespace VerichatCRM.Web.Controllers
             return View(assets);
         }
 
+        [RequirePermission(Perm.AssetTracking)]
         public async Task<IActionResult> AssetDetail(string id)
         {
             if (!IsAuthenticated) return RedirectToAction("Login", "Account");

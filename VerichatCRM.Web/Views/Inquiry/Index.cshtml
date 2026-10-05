@@ -1,0 +1,117 @@
+@model VerichatCRM.Web.Models.Inquiry.InquiryQueueViewModel
+@{
+    ViewData["Title"] = "Inquiry Queue";
+    ViewData["Subtitle"] = $"{Model.Inquiries.Count} enquiries";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<div class="kpi-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-bottom:22px;">
+    <div class="kpi-card">
+        <div class="kpi-label">Total</div>
+        <div class="kpi-value">@Model.Summary.Total</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Open</div>
+        <div class="kpi-value">@Model.Summary.Open</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">New</div>
+        <div class="kpi-value">@Model.Summary.New</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Overdue</div>
+        <div class="kpi-value" style="@(Model.Summary.Overdue > 0 ? "color:#b3261e;" : "")">@Model.Summary.Overdue</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Won</div>
+        <div class="kpi-value">@Model.Summary.Won</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Avg score</div>
+        <div class="kpi-value">@Model.Summary.AverageScore</div>
+    </div>
+</div>
+
+<div style="display:flex; gap:12px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
+    <div class="chip-row">
+        <a class="chip @(Model.ActiveStatus == "All" ? "active" : "")"
+           asp-action="Index" asp-route-status="All">All</a>
+        @foreach (var s in Model.Statuses)
+        {
+            <a class="chip @(Model.ActiveStatus == s ? "active" : "")"
+               asp-action="Index" asp-route-status="@s">@s</a>
+        }
+    </div>
+    <div style="margin-left:auto;">
+        <a class="btn btn-primary" asp-action="Create">+ New enquiry</a>
+    </div>
+</div>
+
+@if (Model.Inquiries.Count == 0)
+{
+    <div style="text-align:center; padding:56px 24px;">
+        <h2 class="auth-title" style="font-size:1.25rem;">
+            @(Model.ActiveStatus == "All" ? "The inquiry queue is empty" : $"No {Model.ActiveStatus.ToLower()} enquiries")
+        </h2>
+        <p class="auth-subtitle">
+            Enquiries you record are scored automatically and appear here, highest first.
+        </p>
+        <a class="btn btn-primary" asp-action="Create">+ Record the first enquiry</a>
+    </div>
+}
+else
+{
+    <div style="overflow-x:auto;">
+        <table class="data-table" style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="text-align:left; border-bottom:1px solid #e2e5ea;">
+                    <th style="padding:10px;">Score</th>
+                    <th style="padding:10px;">Subject</th>
+                    <th style="padding:10px;">Contact</th>
+                    <th style="padding:10px;">Client</th>
+                    <th style="padding:10px;">Source</th>
+                    <th style="padding:10px;">Status</th>
+                    <th style="padding:10px;">Received</th>
+                    <th style="padding:10px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var i in Model.Inquiries)
+                {
+                    <tr style="border-bottom:1px solid #f0f2f5;">
+                        <td style="padding:10px;">
+                            <span class="badge @(i.Score >= 70 ? "badge-success" : i.Score >= 40 ? "badge-warning" : "")">
+                                @i.Score
+                            </span>
+                        </td>
+                        <td style="padding:10px;">
+                            <strong>@i.Subject</strong>
+                            @if (i.IsOverdue)
+                            {
+                                <div class="badge badge-warning" style="margin-top:4px;">Overdue</div>
+                            }
+                        </td>
+                        <td style="padding:10px;">
+                            @i.ContactName
+                            @if (!string.IsNullOrWhiteSpace(i.Company))
+                            {
+                                <div style="font-size:12px; color:#6b7280;">@i.Company</div>
+                            }
+                        </td>
+                        <td style="padding:10px;">@(i.ClientName ?? "—")</td>
+                        <td style="padding:10px;">@i.Source</td>
+                        <td style="padding:10px;">@i.Status</td>
+                        <td style="padding:10px; white-space:nowrap;">@i.CreatedAt.ToString("d MMM yyyy")</td>
+                        <td style="padding:10px; white-space:nowrap;">
+                            <a asp-action="Edit" asp-route-id="@i.InquiryId">Edit</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

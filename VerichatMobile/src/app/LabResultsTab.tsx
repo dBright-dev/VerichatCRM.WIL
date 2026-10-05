@@ -12,6 +12,7 @@ import {
 } from 'react-native'
 import {
     fetchLabResults,
+    markLabResultViewed,
     LabResult,
     LabResultsData,
     LabResultStatus,
@@ -71,6 +72,11 @@ const LabResultsTab = () => {
     void load()
   }, [load])
 
+  useEffect(() => {
+    const timer = setInterval(() => void load(), 30_000)
+    return () => clearInterval(timer)
+  }, [load])
+
   const onRefresh = async () => {
     setRefreshing(true)
     await load()
@@ -89,12 +95,8 @@ const LabResultsTab = () => {
     }
 
     try {
-      // TODO: if the PDF needs the client's auth token, download it first
-      // (e.g. expo-file-system) and share/open the local file instead.
       await Linking.openURL(item.pdfUrl)
-
-      // Clear the "NEW" badge locally.
-      // TODO: also tell the backend this result has been viewed.
+      await markLabResultViewed(item.id)
       setData((current) =>
         current
           ? {

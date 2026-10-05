@@ -8,9 +8,9 @@ export type MobileProduct = {
   category: string
   price: number
   stockQty: number
-  lowStockThreshold: number
   isLowStock: boolean
-  statusBadge: string
+  /** Product photo set by an administrator; absent when none was uploaded. */
+  imageUrl?: string | null
 }
 
 export async function fetchMobileCatalogue(category?: string): Promise<MobileProduct[]> {

@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { ComponentProps, useCallback, useEffect, useState } from 'react'
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { fetchGoals, Goal, GoalsData, GoalType, WeeklyExercise } from '../constants/goalsService'
+import { ActivityIndicator, Alert, FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { fetchGoals, Goal, GoalsData, GoalType, logExercise, updateGoal, WeeklyExercise } from '../constants/goalsService'
 
 /* ------------------------------ Constants ------------------------------- */
 
@@ -79,6 +79,11 @@ const GoalsTab = () => {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
+  const [targetValue, setTargetValue] = useState('')
+  const [exerciseOpen, setExerciseOpen] = useState(false)
+  const [exerciseMinutes, setExerciseMinutes] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -98,10 +103,54 @@ const GoalsTab = () => {
     void load()
   }, [load])
 
+  useEffect(() => {
+    const timer = setInterval(() => void load(), 30_000)
+    return () => clearInterval(timer)
+  }, [load])
+
   const onRefresh = async () => {
     setRefreshing(true)
     await load()
     setRefreshing(false)
+  }
+
+  const saveGoal = async () => {
+    const target = Number(targetValue)
+    if (!editingGoal || !Number.isFinite(target) || target <= 0) {
+      Alert.alert('Check target', 'Enter a target greater than zero.')
+      return
+    }
+    setSaving(true)
+    try {
+      const updated = await updateGoal({ ...editingGoal, target })
+      setData((current) => current ? { ...current, goals: current.goals.map((goal) => goal.id === updated.id ? updated : goal) } : current)
+      setEditingGoal(null)
+    } catch (cause) {
+      Alert.alert('Could not save goal', cause instanceof Error ? cause.message : 'Please try again.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const saveExercise = async () => {
+    const minutes = Number(exerciseMinutes)
+    if (!Number.isInteger(minutes) || minutes <= 0) {
+      Alert.alert('Check exercise time', 'Enter a whole number of minutes greater than zero.')
+      return
+    }
+    setSaving(true)
+    try {
+      const today = (new Date().getDay() + 6) % 7
+      const currentMinutes = data?.weeklyExercise?.days[today]?.minutes ?? 0
+      const weeklyExercise = await logExercise(today, currentMinutes + minutes)
+      setData((current) => current ? { ...current, weeklyExercise } : current)
+      setExerciseMinutes('')
+      setExerciseOpen(false)
+    } catch (cause) {
+      Alert.alert('Could not save exercise', cause instanceof Error ? cause.message : 'Please try again.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const renderGoal = ({ item }: { item: Goal }) => {
@@ -129,6 +178,9 @@ const GoalsTab = () => {
               <Text style={styles.goal_value}>{formatNumber(item.current)}</Text>
               <Text style={styles.goal_unit}>{item.unit}</Text>
             </View>
+            <TouchableOpacity accessibilityLabel={`Edit ${item.name} target`} onPress={() => { setEditingGoal(item); setTargetValue(String(item.target)) }}>
+              <MaterialCommunityIcons name="pencil-outline" size={21} color="#0057a8" />
+            </TouchableOpacity>
           </View>
 
           <View style={styles.track}>
@@ -148,7 +200,7 @@ const GoalsTab = () => {
     )
   }
 
-  const renderHeader = () => <Text style={styles.section_title}>Goal Details</Text>
+  const renderHeader = () => <View><Text style={styles.section_title}>Goal Details</Text><TouchableOpacity style={styles.exercise_button} onPress={() => setExerciseOpen(true)}><MaterialCommunityIcons name="dumbbell" size={18} color="#ffffff" /><Text style={styles.exercise_button_text}>Log exercise</Text></TouchableOpacity></View>
 
   const renderFooter = () =>
     data?.weeklyExercise ? <WeeklyExerciseCard weekly={data.weeklyExercise} /> : null
@@ -182,6 +234,7 @@ const GoalsTab = () => {
   }
 
   return (
+    <>
     <FlatList
       style={styles.flex}
       data={data?.goals ?? []}
@@ -195,6 +248,13 @@ const GoalsTab = () => {
       refreshing={refreshing}
       onRefresh={onRefresh}
     />
+    <Modal visible={editingGoal !== null} transparent animationType="slide" onRequestClose={() => setEditingGoal(null)}>
+      <View style={styles.modal_backdrop}><View style={styles.modal_card}><Text style={styles.modal_title}>Update {editingGoal?.name ?? 'goal'} target</Text><TextInput style={styles.modal_input} value={targetValue} onChangeText={setTargetValue} keyboardType="decimal-pad" placeholder="Daily target"/><TouchableOpacity style={styles.modal_save} disabled={saving} onPress={() => void saveGoal()}><Text style={styles.modal_save_text}>{saving ? 'Saving…' : 'Save to account'}</Text></TouchableOpacity><TouchableOpacity onPress={() => setEditingGoal(null)}><Text style={styles.modal_cancel}>Cancel</Text></TouchableOpacity></View></View>
+    </Modal>
+    <Modal visible={exerciseOpen} transparent animationType="slide" onRequestClose={() => setExerciseOpen(false)}>
+      <View style={styles.modal_backdrop}><View style={styles.modal_card}><Text style={styles.modal_title}>Log today’s exercise</Text><TextInput style={styles.modal_input} value={exerciseMinutes} onChangeText={setExerciseMinutes} keyboardType="number-pad" placeholder="Minutes"/><TouchableOpacity style={styles.modal_save} disabled={saving} onPress={() => void saveExercise()}><Text style={styles.modal_save_text}>{saving ? 'Saving…' : 'Save exercise'}</Text></TouchableOpacity><TouchableOpacity onPress={() => setExerciseOpen(false)}><Text style={styles.modal_cancel}>Cancel</Text></TouchableOpacity></View></View>
+    </Modal>
+    </>
   )
 }
 
@@ -220,6 +280,15 @@ const styles = StyleSheet.create({
     marginLeft: 24,
     marginBottom: 2,
   },
+  exercise_button: { alignSelf: 'flex-start', flexDirection: 'row', gap: 8, alignItems: 'center', backgroundColor: '#0057a8', paddingHorizontal: 14, paddingVertical: 9, borderRadius: 10, marginBottom: 8 },
+  exercise_button_text: { color: '#ffffff', fontWeight: '800' },
+  modal_backdrop: { flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.45)', padding: 20 },
+  modal_card: { backgroundColor: '#ffffff', borderRadius: 18, padding: 20, gap: 12 },
+  modal_title: { color: '#0a2f55', fontSize: 19, fontWeight: '900' },
+  modal_input: { height: 46, borderWidth: 1, borderColor: '#aab2b9', borderRadius: 10, paddingHorizontal: 12, color: '#111111' },
+  modal_save: { backgroundColor: '#0057a8', padding: 13, borderRadius: 12, alignItems: 'center' },
+  modal_save_text: { color: '#ffffff', fontWeight: '900' },
+  modal_cancel: { textAlign: 'center', color: '#59636e', padding: 6 },
 
   // Goal card
   card: {

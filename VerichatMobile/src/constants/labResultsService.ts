@@ -20,68 +20,12 @@ export type LabResultsData = {
   results: LabResult[]
 }
 
-// Flip to false to keep using the bundled mock data.
-const USE_MOCK_DATA = false
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
-
-// Static data for the front-end build. Remove when the endpoint is live.
-const MOCK_LAB_RESULTS: LabResultsData = {
-  limsConnected: true,
-  connectedLabs: ['Lancet', 'Interpath'],
-  results: [
-    {
-      id: '1',
-      reference: 'LLB-2026-086',
-      testName: 'Full Blood Count (FBC)',
-      laboratory: 'Lancet Laboratories',
-      reportedAt: '2026-08-08T10:00:00',
-      status: 'ready',
-      fileSizeKb: 240,
-      isNew: true,
-      pdfUrl: null,
-    },
-    {
-      id: '2',
-      reference: 'IPL-2026-812',
-      testName: 'Lipid Profile',
-      laboratory: 'Interpath Laboratories',
-      reportedAt: '2026-08-12T09:15:00',
-      status: 'ready',
-      fileSizeKb: 220,
-      isNew: false,
-      pdfUrl: null,
-    },
-    {
-      id: '3',
-      reference: 'LLB-2026-085',
-      testName: 'Typhoid',
-      laboratory: 'Lancet Laboratories',
-      reportedAt: '2026-08-05T14:40:00',
-      status: 'ready',
-      fileSizeKb: 180,
-      isNew: false,
-      pdfUrl: null,
-    },
-  ],
-}
-
 // Backend contract: GET /api/mobile/lab-results (JWT).
 export async function fetchLabResults(): Promise<LabResultsData> {
-  if (USE_MOCK_DATA) {
-    return MOCK_LAB_RESULTS
-  }
-
   return api<LabResultsData>('/api/mobile/lab-results')
 }
 
 // Clears "NEW" on the server when a result is opened.
 export async function markLabResultViewed(id: string): Promise<void> {
-  if (USE_MOCK_DATA) {
-    const found = MOCK_LAB_RESULTS.results.find((r) => r.id === id)
-    if (found) found.isNew = false
-    return
-  }
-
   await api(`/api/mobile/lab-results/${id}/viewed`, { method: 'POST' })
 }

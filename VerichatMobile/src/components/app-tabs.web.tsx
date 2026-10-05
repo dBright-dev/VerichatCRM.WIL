@@ -6,15 +6,16 @@ import {
   TabTriggerSlotProps,
   TabListProps,
 } from 'expo-router/ui';
-import { SymbolView } from 'expo-symbols';
-import { Pressable, useColorScheme, View, StyleSheet } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Pressable, View, StyleSheet, Text } from 'react-native';
 
-import { ExternalLink } from './external-link';
-import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
-import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
+import { MaxContentWidth, Spacing } from '@/constants/theme';
 
+/**
+ * Web mirror of the native bottom bar: Home, Shop, Telehealth, Vitals, Profile.
+ */
 export default function AppTabs() {
   return (
     <Tabs>
@@ -22,10 +23,27 @@ export default function AppTabs() {
       <TabList asChild>
         <CustomTabList>
           <TabTrigger name="home" href="/" asChild>
-            <TabButton>Home</TabButton>
+            <TabButton icon="home">Home</TabButton>
           </TabTrigger>
-          <TabTrigger name="explore" href="/explore" asChild>
-            <TabButton>Explore</TabButton>
+          <TabTrigger name="shop" href="/medicalCatalogueShop" asChild>
+            <TabButton icon="shopping">Shop</TabButton>
+          </TabTrigger>
+          <TabTrigger name="telehealth" href="/telehealthScreen" asChild>
+            <TabButton icon="video-outline">Health</TabButton>
+          </TabTrigger>
+          <TabTrigger name="vitals" href="/wellnessTrackingScreen" asChild>
+            <TabButton icon="heart-pulse">Vitals</TabButton>
+          </TabTrigger>
+          <TabTrigger name="profile" href="/profileScreen" asChild>
+            <TabButton icon="account-circle">Profile</TabButton>
+          </TabTrigger>
+          {/* Web equivalent of the native `hidden` trigger: registers
+              /settingsScreen as a navigable route with no tab-bar button. */}
+          <TabTrigger name="settings" href="/settingsScreen" asChild>
+            <HiddenTabButton />
+          </TabTrigger>
+          <TabTrigger name="cart" href="/cartScreen" asChild>
+            <HiddenTabButton />
           </TabTrigger>
         </CustomTabList>
       </TabList>
@@ -33,43 +51,34 @@ export default function AppTabs() {
   );
 }
 
-export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps) {
+/** Renders nothing so a route is registered without a visible tab. */
+function HiddenTabButton() {
+  return null;
+}
+
+type TabButtonProps = TabTriggerSlotProps & {
+  icon: React.ComponentProps<typeof MaterialCommunityIcons>['name']
+}
+
+export function TabButton({ children, isFocused, icon, ...props }: TabButtonProps) {
   return (
-    <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
-      <ThemedView
-        type={isFocused ? 'backgroundSelected' : 'backgroundElement'}
-        style={styles.tabButtonView}>
-        <ThemedText type="small" themeColor={isFocused ? 'text' : 'textSecondary'}>
-          {children}
-        </ThemedText>
-      </ThemedView>
+    <Pressable
+      {...props}
+      accessibilityRole="tab"
+      style={({ pressed }) => [styles.tabButton, pressed && styles.pressed, isFocused && styles.focused]}>
+      <MaterialCommunityIcons name={icon} size={22} color={isFocused ? '#0057a8' : '#59636e'} />
+      <Text style={[styles.tabLabel, isFocused && styles.focusedLabel]} numberOfLines={1}>
+        {children}
+      </Text>
     </Pressable>
   );
 }
 
 export function CustomTabList(props: TabListProps) {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
-
   return (
     <View {...props} style={styles.tabListContainer}>
       <ThemedView type="backgroundElement" style={styles.innerContainer}>
-        <ThemedText type="smallBold" style={styles.brandText}>
-          Expo Starter
-        </ThemedText>
-
         {props.children}
-
-        <ExternalLink href="https://docs.expo.dev" asChild>
-          <Pressable style={styles.externalPressable}>
-            <ThemedText type="link">Docs</ThemedText>
-            <SymbolView
-              tintColor={colors.text}
-              name={{ ios: 'arrow.up.right.square', web: 'link' }}
-              size={12}
-            />
-          </Pressable>
-        </ExternalLink>
       </ThemedView>
     </View>
   );
@@ -86,30 +95,19 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.five,
+    paddingHorizontal: Spacing.two,
     borderRadius: Spacing.five,
     flexDirection: 'row',
     alignItems: 'center',
     flexGrow: 1,
-    gap: Spacing.two,
+    gap: Spacing.one,
     maxWidth: MaxContentWidth,
   },
-  brandText: {
-    marginRight: 'auto',
-  },
+  tabButton: { flex: 1, minWidth: 0, minHeight: 52, alignItems: 'center', justifyContent: 'center', gap: 2, borderRadius: Spacing.three },
+  focused: { backgroundColor: '#e4eef8' },
+  tabLabel: { fontSize: 11, color: '#59636e', fontWeight: '600' },
+  focusedLabel: { color: '#0057a8', fontWeight: '800' },
   pressed: {
     opacity: 0.7,
-  },
-  tabButtonView: {
-    paddingVertical: Spacing.one,
-    paddingHorizontal: Spacing.three,
-    borderRadius: Spacing.three,
-  },
-  externalPressable: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: Spacing.one,
-    marginLeft: Spacing.three,
   },
 });

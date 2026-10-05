@@ -1,4 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient'
+import { useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -18,7 +19,9 @@ const SERIF = Platform.select({ ios: 'Georgia', android: 'serif', default: 'seri
 
 const TelehealthScreen = () => {
   const insets = useSafeAreaInsets()
-  const [activeTab, setActiveTab] = useState<TabKey>('appointments')
+  const { tab } = useLocalSearchParams<{ tab?: string }>()
+  const initialTab: TabKey = tab === 'ePrescription' || tab === 'labResults' ? tab : 'appointments'
+  const [activeTab, setActiveTab] = useState<TabKey>(initialTab)
 
   return (
     <View style={styles.screen}>

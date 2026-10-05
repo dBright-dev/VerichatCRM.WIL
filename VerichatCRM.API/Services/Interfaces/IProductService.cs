@@ -9,5 +9,6 @@ namespace VerichatCRM.API.Services.Interfaces
         Task<ProductResponse?> GetProductBySkuAsync(string sku);
         Task<ProductResponse> CreateProductAsync(CreateProductRequest request);
         Task<ProductResponse?> UpdateStockAsync(string sku, UpdateStockRequest request);
+        Task<ProductResponse?> UpdateProductAsync(string sku, UpdateProductRequest request);
     }
 }

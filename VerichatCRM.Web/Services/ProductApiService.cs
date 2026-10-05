@@ -27,5 +27,51 @@ namespace VerichatCRM.Web.Services
                 return new();
             }
         }
+
+        public async Task<ProductViewModel?> CreateAsync(ProductViewModel product)
+        {
+            try
+            {
+                // The API assigns the SKU, so it is not sent on create.
+                var payload = new
+                {
+                    product.ProductName,
+                    product.Category,
+                    product.Price,
+                    InitialStockQty = product.StockQty,
+                    product.LowStockThreshold,
+                    product.ImageUrl,
+                };
+
+                return await _api.PostAsync<object, ProductViewModel>("/api/product", payload);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create product {Name}.", product.ProductName);
+                return null;
+            }
+        }
+
+        public async Task<ProductViewModel?> UpdateAsync(string sku, ProductViewModel product)
+        {
+            try
+            {
+                var payload = new
+                {
+                    product.ProductName,
+                    product.Category,
+                    product.Price,
+                    product.LowStockThreshold,
+                    product.ImageUrl,
+                };
+
+                return await _api.PutAsync<object, ProductViewModel>($"/api/product/{sku}", payload);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update product {Sku}.", sku);
+                return null;
+            }
+        }
     }
 }

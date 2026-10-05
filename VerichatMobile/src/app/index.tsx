@@ -1,8 +1,25 @@
 import { useRouter } from 'expo-router'
+import { useEffect, useState } from 'react'
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { getAuthToken, subscribeAuth } from '../constants/api'
+import ClientHomeScreen from './clientHomescreen'
 
+/**
+ * Auth gate: when a JWT is present the Home tab renders the client dashboard;
+ * otherwise it shows the role chooser for signing in / registering.
+ */
 const HomeScreen = () => {
   const router = useRouter()
+  const [signedIn, setSignedIn] = useState(() => getAuthToken() !== null)
+
+  useEffect(() => {
+    return subscribeAuth((token) => setSignedIn(token !== null))
+  }, [])
+
+  if (signedIn) {
+    return <ClientHomeScreen />
+  }
+
   return (
     <View style={styles.container}>
 

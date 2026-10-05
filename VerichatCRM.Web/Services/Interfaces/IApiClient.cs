@@ -6,6 +6,7 @@
         Task<TResponse?> PostAsync<TRequest, TResponse>(string endpoint, TRequest body);
         Task<TResponse?> PatchAsync<TRequest, TResponse>(string endpoint, TRequest body);
         Task<TResponse?> PutAsync<TRequest, TResponse>(string endpoint, TRequest body);
+        Task<TResponse?> DeleteAsync<TResponse>(string endpoint);
         void SetToken(string token);
     }
 

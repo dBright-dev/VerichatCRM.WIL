@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using VerichatCRM.Web.Authorization;
 using VerichatCRM.Web.Services.Interfaces;
 using VerichatCRM.Web.ViewModels.Admin;
 
@@ -30,6 +31,7 @@ namespace VerichatCRM.Web.Controllers
             return role == "System Administrator";
         }
 
+        [RequirePermission(Perm.AdminDashboard)]
         public async Task<IActionResult> Dashboard()
         {
             if (HttpContext.Session.GetString("JwtToken") == null)
@@ -100,6 +102,7 @@ namespace VerichatCRM.Web.Controllers
             return View(vm);
         }
 
+        [RequirePermission(Perm.AdminAnalytics)]
         public IActionResult Analytics()
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
@@ -108,6 +111,7 @@ namespace VerichatCRM.Web.Controllers
             return View();
         }
 
+        [RequirePermission(Perm.AdminRules)]
         public IActionResult Rules()
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
@@ -116,6 +120,7 @@ namespace VerichatCRM.Web.Controllers
             return View();
         }
 
+        [RequirePermission(Perm.RoleAssignments)]
         public async Task<IActionResult> Users()
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
@@ -127,6 +132,7 @@ namespace VerichatCRM.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [RequirePermission(Perm.RoleAssignments)]
         public async Task<IActionResult> UpdateUserRole(string userId, string role)
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
@@ -136,6 +142,7 @@ namespace VerichatCRM.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [RequirePermission(Perm.RoleAssignments)]
         public async Task<IActionResult> DeactivateUser(string userId)
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
@@ -145,6 +152,7 @@ namespace VerichatCRM.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [RequirePermission(Perm.WarehouseAlerts)]
         public async Task<IActionResult> RunSlaCheck()
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
@@ -155,6 +163,7 @@ namespace VerichatCRM.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [RequirePermission(Perm.WarehouseAlerts)]
         public async Task<IActionResult> ResolveAlert(string alertId)
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");

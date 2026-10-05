@@ -13,11 +13,16 @@
     </div>
 
     @{
+        // Mirrors the server-side permission map in Authorization/Perm.cs. Hiding
+        // a link is only cosmetic - the RequirePermission filter is what actually
+        // stops a user reaching a screen by typing its URL.
         var role = Context.Session.GetString("UserRole") ?? "";
-        var isAdmin = role == "System Administrator";
-        var isSales = role == "Sales Representative" || isAdmin;
-        var isProcurement = role == "Procurement Manager" || isAdmin;
-        var isSupport = role == "Field Support Engineer" || isAdmin;
+        bool Can(string permission) => Perm.Has(role, permission);
+
+        var isAdmin = Can(Perm.AdminDashboard);
+        var isSales = Can(Perm.SalesDashboard);
+        var isProcurement = Can(Perm.ProcurementDashboard);
+        var isSupport = Can(Perm.SupportDashboard);
     }
 
     <nav class="vc-sidebar__nav" aria-label="Primary">
@@ -40,7 +45,10 @@
         }
 
         <div class="vc-sidebar__section-label">CLIENTS</div>
-        <a class="vc-sidebar__link" asp-controller="Clients" asp-action="Index"><span class="vc-sidebar__icon">👥</span> Client Directory</a>
+        @if (Can(Perm.ClientDirectory))
+        {
+            <a class="vc-sidebar__link" asp-controller="Clients" asp-action="Index"><span class="vc-sidebar__icon">👥</span> Client Directory</a>
+        }
         @if (isSales)
         {
             <a class="vc-sidebar__link" asp-controller="Logistics" asp-action="Assets"><span class="vc-sidebar__icon">🔧</span> Asset Tracking</a>
@@ -49,6 +57,7 @@
         @if (isSales)
         {
             <div class="vc-sidebar__section-label">SALES</div>
+            <a class="vc-sidebar__link" asp-controller="Inquiry" asp-action="Index"><span class="vc-sidebar__icon">📥</span> Inquiry Queue</a>
             <a class="vc-sidebar__link" asp-controller="Pipeline" asp-action="Index"><span class="vc-sidebar__icon">📊</span> Pipeline Board</a>
             <a class="vc-sidebar__link" asp-controller="Quotation" asp-action="Index"><span class="vc-sidebar__icon">📄</span> Quotation Builder</a>
         }

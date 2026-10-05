@@ -1,32 +1,68 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
 
+/**
+ * Bottom navigation: Home, Shop, Telehealth, Vitals, Profile.
+ * `index` doubles as the auth gate — it shows the "Log in As" chooser when
+ * signed out and the client dashboard when signed in.
+ */
 export default function AppTabs() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
+  const activeColor = scheme === 'dark' ? '#80bfff' : '#0057a8';
 
   return (
     <NativeTabs
       backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
+      indicatorColor={colors.backgroundSelected}
+      labelVisibilityMode="labeled"
+      labelStyle={{
+        default: { color: colors.textSecondary, fontSize: 11 },
+        selected: { color: activeColor, fontSize: 11, fontWeight: '700' },
+      }}
+      iconColor={{ default: colors.textSecondary, selected: activeColor }}>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
+          src={<NativeTabs.Trigger.VectorIcon family={MaterialCommunityIcons} name="home" />}
         />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
+      <NativeTabs.Trigger name="medicalCatalogueShop">
+        <NativeTabs.Trigger.Label>Shop</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
+          src={<NativeTabs.Trigger.VectorIcon family={MaterialCommunityIcons} name="shopping" />}
         />
       </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="telehealthScreen">
+        <NativeTabs.Trigger.Label>Health</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          src={<NativeTabs.Trigger.VectorIcon family={MaterialCommunityIcons} name="video-outline" />}
+        />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="wellnessTrackingScreen">
+        <NativeTabs.Trigger.Label>Vitals</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          src={<NativeTabs.Trigger.VectorIcon family={MaterialCommunityIcons} name="heart-pulse" />}
+        />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="profileScreen">
+        <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          src={<NativeTabs.Trigger.VectorIcon family={MaterialCommunityIcons} name="account-circle" />}
+        />
+      </NativeTabs.Trigger>
+
+      {/* Settings is pushed on top of the Profile tab rather than owning a
+          tab-bar slot, so it stays hidden until navigated to. */}
+      <NativeTabs.Trigger name="settingsScreen" hidden />
+      <NativeTabs.Trigger name="cartScreen" hidden />
     </NativeTabs>
   );
 }

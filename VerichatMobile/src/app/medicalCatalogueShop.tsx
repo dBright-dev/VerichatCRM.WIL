@@ -1,8 +1,11 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons'; //insert animated icons in expo.icon
 import { LinearGradient } from 'expo-linear-gradient';
-import { ComponentProps, useMemo, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { ComponentProps, useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
+  ActivityIndicator,
+  Alert,
   Image,
   ImageSourcePropType,
   Platform,
@@ -14,12 +17,14 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { fetchMobileCatalogue, MobileProduct } from '../constants/catalogueService';
+import { addCartItem, getCartLines, subscribeCart } from '../constants/cartStore';
 
 /* ----------------------------- Types & data ----------------------------- */
 
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name']
 
-type Category = 'PPE' | 'Infant Care' | 'Hospital' | 'Lab' | 'Home Care'
+type Category = string
 
 type Product = {
   id: string
@@ -37,122 +42,7 @@ type Product = {
 
 const CURRENCY = '$'
 
-const CATEGORIES = ['All', 'PPE', 'Infant Care', 'Hospital', 'Lab', 'Home Care'] as const
-type Filter = (typeof CATEGORIES)[number]
-
-// Static data. Replace with a backend call when the catalogue API is ready.
-const PRODUCTS: Product[] = [
-  {
-    id: '1',
-    name: 'Stethoscope',
-    sku: 'ACC-STH-001',
-    category: 'Hospital',
-    price: 35,
-    unit: 'per pack',
-    rating: 4.8,
-    reviews: 192,
-    icon: 'stethoscope',
-  },
-  {
-    id: '2',
-    name: 'Surgical Face Masks (Box 100)',
-    sku: 'PPE-MSK-100',
-    category: 'PPE',
-    price: 5,
-    unit: 'per pack',
-    rating: 4.7,
-    reviews: 125,
-    icon: 'face-mask',
-  },
-  {
-    id: '3',
-    name: 'Wheelchair',
-    sku: 'HC-WCH-210',
-    category: 'Home Care',
-    price: 80,
-    unit: 'each',
-    rating: 4.6,
-    reviews: 65,
-    icon: 'wheelchair-accessibility',
-  },
-  {
-    id: '4',
-    name: 'Portable Ultrasound Scanner',
-    sku: 'HSP-ULS-450',
-    category: 'Hospital',
-    price: 18500,
-    unit: 'each',
-    rating: 4.4,
-    reviews: 84,
-    icon: 'monitor-dashboard',
-  },
-  {
-    id: '5',
-    name: 'Digital Thermometer',
-    sku: 'HC-THM-014',
-    category: 'Home Care',
-    price: 12.5,
-    unit: 'each',
-    rating: 4.5,
-    reviews: 210,
-    icon: 'thermometer',
-  },
-  {
-    id: '6',
-    name: 'Nitrile Examination Gloves (Box 100)',
-    sku: 'PPE-GLV-100',
-    category: 'PPE',
-    price: 9,
-    unit: 'per pack',
-    rating: 4.8,
-    reviews: 340,
-    icon: 'hand-back-left',
-  },
-  {
-    id: '7',
-    name: 'Infant Nasal Aspirator',
-    sku: 'INF-NSA-007',
-    category: 'Infant Care',
-    price: 7.5,
-    unit: 'each',
-    rating: 4.3,
-    reviews: 58,
-    icon: 'baby-face-outline',
-  },
-  {
-    id: '8',
-    name: 'Infant Weighing Scale',
-    sku: 'INF-SCL-021',
-    category: 'Infant Care',
-    price: 45,
-    unit: 'each',
-    rating: 4.6,
-    reviews: 77,
-    icon: 'scale-bathroom',
-  },
-  {
-    id: '9',
-    name: 'Microscope Slides (Pack 50)',
-    sku: 'LAB-SLD-050',
-    category: 'Lab',
-    price: 6,
-    unit: 'per pack',
-    rating: 4.4,
-    reviews: 96,
-    icon: 'microscope',
-  },
-  {
-    id: '10',
-    name: 'Test Tubes (Pack 100)',
-    sku: 'LAB-TTB-100',
-    category: 'Lab',
-    price: 11,
-    unit: 'per pack',
-    rating: 4.5,
-    reviews: 143,
-    icon: 'test-tube',
-  },
-]
+type Filter = string
 
 const SERIF = Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' })
 
@@ -162,19 +52,77 @@ const formatPrice = (value: number) =>
     maximumFractionDigits: 2,
   })}`
 
+// Icons for categories served by the CRM product API.
+const CATEGORY_ICONS: Record<string, IconName> = {
+  PPE: 'face-mask',
+  'Infant Care': 'baby-face-outline',
+  Hospital: 'hospital-building',
+  Lab: 'microscope',
+  'Home Care': 'home-heart',
+  Clinical: 'medical-bag',
+  Education: 'school',
+  Rehab: 'wheelchair-accessibility',
+  Mining: 'pickaxe',
+  Manufacturing: 'factory',
+}
+
+// Maps a live API product onto the shape the cards render.
+const mapApiProduct = (p: MobileProduct): Product => ({
+  id: p.sku,
+  name: p.productName,
+  sku: p.sku,
+  category: p.category,
+  price: p.price,
+  unit: p.isLowStock ? 'Low stock' : `${p.stockQty} in stock`,
+  rating: 4.5,
+  reviews: 0,
+  icon: CATEGORY_ICONS[p.category] ?? 'package-variant-closed',
+  // The API returns a URL; React Native needs it wrapped as an image source.
+  ...(p.imageUrl ? { image: { uri: p.imageUrl } as ImageSourcePropType } : null),
+})
+
 /* -------------------------------- Screen -------------------------------- */
 
 const MedicalCatalogScreen = () => {
   const insets = useSafeAreaInsets()
+  const router = useRouter()
   const [query, setQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState<Filter>('All')
-  const [cart, setCart] = useState<Record<string, number>>({})
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [cartCount, setCartCount] = useState(() => getCartLines().reduce((sum, line) => sum + line.quantity, 0))
 
-  const cartCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0)
+  useEffect(() => subscribeCart(() => setCartCount(getCartLines().reduce((sum, line) => sum + line.quantity, 0))), [])
+
+  useEffect(() => {
+    let cancelled = false
+    fetchMobileCatalogue()
+      .then((live) => {
+        if (!cancelled) {
+          setProducts(live.map(mapApiProduct))
+          setError(null)
+        }
+      })
+      .catch((cause: unknown) => {
+        if (!cancelled) setError(cause instanceof Error ? cause.message : 'Could not load products.')
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const chips = useMemo(() => {
+    const live = Array.from(new Set(products.map((p) => p.category))).sort()
+    return live
+  }, [products])
 
   const filteredProducts = useMemo(() => {
     const term = query.trim().toLowerCase()
-    return PRODUCTS.filter((product) => {
+    return products.filter((product) => {
       const matchesCategory = activeFilter === 'All' || product.category === activeFilter
       const matchesSearch =
         term === '' ||
@@ -183,9 +131,7 @@ const MedicalCatalogScreen = () => {
         product.category.toLowerCase().includes(term)
       return matchesCategory && matchesSearch
     })
-  }, [query, activeFilter])
-
-  const addToCart = (id: string) => setCart((prev) => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }))
+  }, [products, query, activeFilter])
 
   const renderProduct = ({ item }: { item: Product }) => (
     <View style={styles.card}>
@@ -224,14 +170,14 @@ const MedicalCatalogScreen = () => {
           <Text style={styles.unit}>{item.unit}</Text>
         </View>
 
-        <TouchableOpacity activeOpacity={0.85} onPress={() => addToCart(item.id)}>
+        <TouchableOpacity activeOpacity={0.85} onPress={() => addCartItem({ sku: item.sku, productName: item.name, price: item.price })}>
           <LinearGradient
             colors={['#004e7a', '#2f7be0']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.add_button}
           >
-            <Text style={styles.add_button_text}>+ Add to cart</Text>
+            <Text style={styles.add_button_text}>Add to cart</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -255,18 +201,9 @@ const MedicalCatalogScreen = () => {
             </Text>
           </View>
 
-          <TouchableOpacity
-            style={styles.cart_button}
-            onPress={() => {
-              // TODO: navigate to the cart screen
-            }}
-          >
-            <MaterialCommunityIcons name="cart-outline" size={30} color="#0a2f55" />
-            {cartCount > 0 && (
-              <View style={styles.cart_badge}>
-                <Text style={styles.cart_badge_text}>{cartCount > 99 ? '99+' : cartCount}</Text>
-              </View>
-            )}
+          <TouchableOpacity style={styles.cart_button} accessibilityRole="button" accessibilityLabel={`Open cart, ${cartCount} items`} onPress={() => router.push('/cartScreen')}>
+            <MaterialCommunityIcons name="cart-outline" size={28} color="#ffffff" />
+            {cartCount > 0 && <View style={styles.cart_badge}><Text style={styles.cart_badge_text}>{cartCount > 99 ? '99+' : cartCount}</Text></View>}
           </TouchableOpacity>
         </View>
 
@@ -288,6 +225,9 @@ const MedicalCatalogScreen = () => {
           ) : (
             <MaterialCommunityIcons name="magnify" size={22} color="#546e7a" />
           )}
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Barcode lookup" onPress={() => Alert.alert('Barcode lookup', 'Enter the barcode or SKU in the search field. Camera scanning is not configured in this app build.')}>
+            <MaterialCommunityIcons name="barcode-scan" size={22} color="#0057a8" />
+          </TouchableOpacity>
         </View>
       </LinearGradient>
 
@@ -298,7 +238,7 @@ const MedicalCatalogScreen = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.chips}
         >
-          {CATEGORIES.map((category) => {
+          {['All', ...chips].map((category) => {
             const selected = category === activeFilter
             return (
               <TouchableOpacity
@@ -318,17 +258,19 @@ const MedicalCatalogScreen = () => {
       {/* Product list */}
       <FlatList
         data={filteredProducts}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.sku}
         renderItem={renderProduct}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        ListEmptyComponent={
+        ListEmptyComponent={loading ? <ActivityIndicator style={{ marginTop: 48 }} size="large" color="#004e7a" /> : error ? (
+          <View style={styles.empty}><Text style={styles.empty_text}>{error}</Text><TouchableOpacity onPress={() => { setLoading(true); setError(null); fetchMobileCatalogue().then((live) => setProducts(live.map(mapApiProduct))).catch((cause: unknown) => setError(cause instanceof Error ? cause.message : 'Could not load products.')).finally(() => setLoading(false)) }}><Text style={styles.empty_text}>Tap to retry</Text></TouchableOpacity></View>
+        ) : (
           <View style={styles.empty}>
             <MaterialCommunityIcons name="package-variant-closed" size={48} color="#9e9e9e" />
             <Text style={styles.empty_text}>No products found</Text>
           </View>
-        }
+        )}
       />
     </View>
   )

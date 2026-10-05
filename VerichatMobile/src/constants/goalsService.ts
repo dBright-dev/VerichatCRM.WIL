@@ -27,42 +27,24 @@ export type GoalsData = {
   weeklyExercise: WeeklyExercise | null
 }
 
-// Flip to false to keep using the bundled mock data.
-const USE_MOCK_DATA = false
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
-
-// Static data for the front-end build. Remove when the endpoint is live.
-const MOCK_GOALS: GoalsData = {
-  goals: [
-    { id: '1', type: 'steps', name: 'Steps', current: 724, target: 1000, unit: 'steps' },
-    { id: '2', type: 'water', name: 'Water', current: 1.4, target: 2, unit: 'L' },
-    { id: '3', type: 'sleep', name: 'Sleep', current: 6.5, target: 8, unit: 'hrs' },
-    { id: '4', type: 'exercise', name: 'Exercise', current: 25, target: 30, unit: 'min' },
-  ],
-  weeklyExercise: {
-    targetPerDayMin: 30,
-    todayIndex: 6,
-    days: [
-      { label: 'M', minutes: 20 },
-      { label: 'T', minutes: 40 },
-      { label: 'W', minutes: 15 },
-      { label: 'T', minutes: 35 },
-      { label: 'F', minutes: 30 },
-      { label: 'S', minutes: 10 },
-      { label: 'S', minutes: 25 },
-    ],
-  },
-}
-
 // Backend contract: GET /api/mobile/goals (JWT).
 
 export async function fetchGoals(): Promise<GoalsData> {
-  if (USE_MOCK_DATA) {
-    return MOCK_GOALS
-  }
-
   return api<GoalsData>('/api/mobile/goals')
+}
+
+/** Persist edits to a goal the API has already assigned to this account. */
+export async function updateGoal(goal: Pick<Goal, 'id'> & Partial<Omit<Goal, 'id'>>): Promise<Goal> {
+  return api<Goal>(`/api/mobile/goals/${encodeURIComponent(goal.id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      current: goal.current,
+      target: goal.target,
+      name: goal.name,
+      unit: goal.unit,
+      type: goal.type,
+    }),
+  })
 }
 
 /** Log minutes of exercise for one day of the current week (0=Monday). */

@@ -1,0 +1,113 @@
+@model VerichatCRM.Web.Models.Inquiry.InquiryFormViewModel
+@{
+    var isEdit = ViewData["IsEdit"] is true;
+    var statuses = (string[])ViewData["AllStatuses"]!;
+    var sources = (string[])ViewData["AllSources"]!;
+    ViewData["Title"] = isEdit ? "Edit Inquiry" : "New Inquiry";
+}
+
+<div class="auth-card" style="max-width: 720px; margin: 0 auto;">
+    <h1 class="auth-title">@(isEdit ? "Edit enquiry" : "Record an enquiry")</h1>
+    <p class="auth-subtitle">
+        The score decides where the enquiry sits in the queue — 100 is worked first.
+    </p>
+
+    <form asp-action="@(isEdit ? "Edit" : "Create")" method="post" asp-route-id="@Model.InquiryId">
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly" class="text-critical"></div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="Subject">Subject</label>
+            <input asp-for="Subject" class="form-input" placeholder="What the client needs" />
+            <span asp-validation-for="Subject" class="text-critical"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="ContactName">Contact name</label>
+            <input asp-for="ContactName" class="form-input" />
+            <span asp-validation-for="ContactName" class="text-critical"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="Company">Company</label>
+            <input asp-for="Company" class="form-input" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="ContactEmail">Email</label>
+            <input asp-for="ContactEmail" type="email" class="form-input" />
+            <span asp-validation-for="ContactEmail" class="text-critical"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="ContactPhone">Phone</label>
+            <input asp-for="ContactPhone" class="form-input" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="Source">Source</label>
+            <select asp-for="Source" class="form-select">
+                @foreach (var s in sources)
+                {
+                    <option value="@s">@s</option>
+                }
+            </select>
+        </div>
+
+        @if (isEdit)
+        {
+            <div class="form-group">
+                <label class="form-label" asp-for="Status">Status</label>
+                <select asp-for="Status" class="form-select">
+                    @foreach (var s in statuses)
+                    {
+                        <option value="@s">@s</option>
+                    }
+                </select>
+                <span class="form-hint">
+                    Moving the status off &ldquo;New&rdquo; records that a response was sent.
+                </span>
+            </div>
+        }
+
+        <div class="form-group">
+            <label class="form-label" asp-for="Score">Score (0&ndash;100)</label>
+            <input asp-for="Score" type="number" min="0" max="100" class="form-input" />
+            <span class="form-hint">
+                Higher scores are worked first.
+            </span>
+            <span asp-validation-for="Score" class="text-critical"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="Description">Details</label>
+            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+        </div>
+
+        @if (isEdit)
+        {
+            <div class="form-group">
+                <label class="form-label" asp-for="Notes">Internal notes</label>
+                <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+            </div>
+        }
+
+        <div style="display:flex; gap:12px; margin-top:24px;">
+            <button type="submit" class="btn btn-primary">
+                @(isEdit ? "Save changes" : "Add to queue")
+            </button>
+            <a class="btn btn-secondary" asp-action="Index">Cancel</a>
+        </div>
+    </form>
+
+    @if (isEdit)
+    {
+        <form asp-action="Delete" asp-route-id="@Model.InquiryId" method="post"
+              style="margin-top:18px; border-top:1px solid #e2e5ea; padding-top:16px;"
+              onsubmit="return confirm('Delete this enquiry permanently?');">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-danger">Delete enquiry</button>
+        </form>
+    }
+</div>

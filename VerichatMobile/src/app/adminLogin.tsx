@@ -9,21 +9,18 @@ const AdminLoginScreen = () => {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState('')
   const [busy, setBusy] = useState(false)
 
   const handleLogin = async () => {
-    if (!email.trim() || !password || !role.trim()) {
-      Alert.alert('Missing details', 'Enter your email address, password and role to log in.')
+    if (!email.trim() || !password) {
+      Alert.alert('Missing details', 'Enter your email address and password to log in.')
       return
     }
 
-    // The API authenticates on email + password only; the role field is
-    // display-only (the JWT returned carries the real role).
     setBusy(true)
     try {
-      await login(email.trim(), password)
-      router.replace('/clientHomescreen')
+      await login(email.trim(), password, 'staff')
+      router.replace('/')
     } catch (e) {
       Alert.alert('Sign in failed', e instanceof Error ? e.message : 'Something went wrong.')
     } finally {
@@ -82,17 +79,12 @@ const AdminLoginScreen = () => {
             textContentType="password"
           />
 
-          <Text style={styles.label}>Role (eg. Sales Rep, Procurement Rep)</Text>
-          <TextInput
-            style={styles.input}
-            value={role}
-            onChangeText={setRole}
-            autoCapitalize="words"
-            autoCorrect={false}
-          />
-
-          <TouchableOpacity style={[styles.button, styles.first_button]} onPress={handleLogin}>
-            <Text style={styles.button_text}>Log in</Text>
+          <TouchableOpacity
+            style={[styles.button, styles.first_button, busy && styles.button_disabled]}
+            onPress={handleLogin}
+            disabled={busy}
+          >
+            <Text style={styles.button_text}>{busy ? 'Signing in…' : 'Log in'}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={handleSSOLogin}>
@@ -176,6 +168,9 @@ const styles = StyleSheet.create({
   },
   first_button: {
     marginTop: 12,
+  },
+  button_disabled: {
+    opacity: 0.6,
   },
   button_text: {
     fontSize: 16,
