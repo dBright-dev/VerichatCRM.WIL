@@ -20,10 +20,12 @@ namespace VerichatCRM.Web.Controllers
             { "Phone", "Email", "Website", "Walk-in", "Mobile App", "Referral" };
 
         private readonly IInquiryApiService _inquiries;
+        private readonly IClientApiService _clients;
 
-        public InquiryController(IInquiryApiService inquiries)
+        public InquiryController(IInquiryApiService inquiries, IClientApiService clients)
         {
             _inquiries = inquiries;
+            _clients = clients;
         }
 
         private void SetHeader(string title, string subtitle)
@@ -53,20 +55,23 @@ namespace VerichatCRM.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult Create() => Form(new InquiryFormViewModel());
+        public async Task<IActionResult> Create()
+        {
+            return await Form(new InquiryFormViewModel());
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(InquiryFormViewModel model)
         {
-            if (!ModelState.IsValid) return Form(model);
+            if (!ModelState.IsValid) return await Form(model);
 
             var created = await _inquiries.CreateAsync(model);
             if (created == null)
             {
                 ModelState.AddModelError(string.Empty,
                     "The enquiry could not be saved. Check the details and try again.");
-                return Form(model);
+                return await Form(model);
             }
 
             TempData["Success"] = $"Enquiry \"{created.Subject}\" was added to the queue.";
@@ -80,7 +85,7 @@ namespace VerichatCRM.Web.Controllers
             var inquiry = inquiries.FirstOrDefault(i => i.InquiryId == id);
             if (inquiry == null) return NotFound();
 
-            return Form(new InquiryFormViewModel
+            return await Form(new InquiryFormViewModel
             {
                 InquiryId = inquiry.InquiryId,
                 Subject = inquiry.Subject,
@@ -102,14 +107,14 @@ namespace VerichatCRM.Web.Controllers
         public async Task<IActionResult> Edit(string id, InquiryFormViewModel model)
         {
             model.InquiryId = id;
-            if (!ModelState.IsValid) return Form(model);
+            if (!ModelState.IsValid) return await Form(model);
 
             var updated = await _inquiries.UpdateAsync(id, model);
             if (updated == null)
             {
                 ModelState.AddModelError(string.Empty,
                     "The enquiry could not be updated. Check the details and try again.");
-                return Form(model);
+                return await Form(model);
             }
 
             TempData["Success"] = $"\"{updated.Subject}\" was updated.";
@@ -125,9 +130,27 @@ namespace VerichatCRM.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private IActionResult Form(InquiryFormViewModel model)
+        private async Task<IActionResult> Form(InquiryFormViewModel model)
         {
             var isEdit = !string.IsNullOrEmpty(model.InquiryId);
+
+            // Load existing client records for the dropdowns.
+            model.Clients = await _clients.GetClientsAsync(null, null);
+
+            // If an existing enquiry has a company but no ClientId,
+            // try to match it to an existing client.
+            if (string.IsNullOrWhiteSpace(model.ClientId) &&
+                !string.IsNullOrWhiteSpace(model.Company))
+            {
+                model.ClientId = model.Clients
+                    .FirstOrDefault(c =>
+                        string.Equals(
+                            c.Name,
+                            model.Company,
+                            StringComparison.OrdinalIgnoreCase))
+                    ?.Id;
+            }
+
             SetHeader(
                 isEdit ? "Edit Inquiry" : "New Inquiry",
                 "Enquiries are scored 0-100; the highest scores surface first in the queue.");
@@ -135,6 +158,7 @@ namespace VerichatCRM.Web.Controllers
             ViewData["IsEdit"] = isEdit;
             ViewData["AllStatuses"] = AllStatuses;
             ViewData["AllSources"] = AllSources;
+
             return View("Form", model);
         }
     }
