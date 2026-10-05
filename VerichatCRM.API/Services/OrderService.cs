@@ -35,6 +35,10 @@ namespace VerichatCRM.API.Services
 
         public async Task<OrderResponse> CreateOrderAsync(CreateOrderRequest request)
         {
+            if (string.IsNullOrWhiteSpace(request.ClientId)) throw new ArgumentException("A client is required.");
+            if (request.LineItems == null || request.LineItems.Count == 0 || request.LineItems.Any(i => i == null || i.Quantity <= 0))
+                throw new ArgumentException("Add at least one item with a quantity greater than zero.");
+
             var order = new Order
             {
                 ClientId = request.ClientId,
@@ -45,16 +49,24 @@ namespace VerichatCRM.API.Services
 
             decimal total = 0;
 
-            foreach (var item in request.LineItems)
+            var requestedItems = request.LineItems.GroupBy(i => i.SKU)
+                .Select(g => new { SKU = g.Key, Quantity = g.Sum(i => i.Quantity) }).ToList();
+            var products = new List<(Product Product, int Quantity)>();
+            foreach (var item in requestedItems)
             {
                 var product = await _context.Products.FindAsync(item.SKU);
-                if (product == null) continue;
+                if (product == null) throw new ArgumentException($"Product {item.SKU} is unavailable.");
+                if (product.StockQty < item.Quantity) throw new ArgumentException($"Insufficient stock for {product.ProductName}.");
+                products.Add((product, item.Quantity));
+            }
 
+            foreach (var (product, quantity) in products)
+            {
                 var lineItem = new OrderLineItem
                 {
                     SKU = product.SKU,
                     ProductName = product.ProductName,
-                    Quantity = item.Quantity,
+                    Quantity = quantity,
                     UnitPrice = product.Price
                 };
 
@@ -62,7 +74,7 @@ namespace VerichatCRM.API.Services
                 order.LineItems.Add(lineItem);
 
                 // Deduct stock
-                product.StockQty -= item.Quantity;
+                product.StockQty -= quantity;
             }
 
             order.TotalAmount = total;

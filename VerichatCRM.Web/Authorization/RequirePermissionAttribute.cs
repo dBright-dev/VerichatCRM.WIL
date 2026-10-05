@@ -34,7 +34,7 @@ namespace VerichatCRM.Web.Authorization
             }
 
             var role = session.GetString("UserRole");
-            if (Perm.Has(role, _permission))
+            if (Perm.Has(role ?? string.Empty, _permission))
             {
                 return;
             }

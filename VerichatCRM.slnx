@@ -3,4 +3,5 @@
   <Project Path="VerichatCRM.Core/VerichatCRM.Core.csproj" Id="14ebdd54-8371-4096-9871-c557ed37b1f8" />
   <Project Path="VerichatCRM.Infrastructure/VerichatCRM.Infrastructure.csproj" />
   <Project Path="VerichatCRM.Web/VerichatCRM.Web.csproj" />
+  <Project Path="VerichatCRM.Tests/VerichatCRM.Tests.csproj" />
 </Solution>

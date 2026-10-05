@@ -1,5 +1,4 @@
 import { api } from './api'
-import type { ClientDashboard } from './dashboardService'
 
 /** Quick catalogue read against the real product API (auth: any signed-in role). */
 export type MobileProduct = {
@@ -37,11 +36,18 @@ export type MobileOrderTracking = {
 }
 
 export async function fetchMyOrders(): Promise<MobileOrderTracking[]> {
-  const dashboard = await api<ClientDashboard>('/api/mobile/dashboard')
-  return dashboard.trackingOrders.map((t) => ({
-    orderId: t.id,
-    trackingNumber: t.reference,
-    status: t.status,
-    totalAmount: 0,
-  }))
+  const orders = await api<{ orderId: string; trackingNumber?: string | null; status: string; totalAmount: number; expectedDeliveryDate?: string | null }[]>('/api/mobile/orders')
+  return orders.map((o) => ({ orderId: o.orderId, trackingNumber: o.trackingNumber || o.orderId, status: o.status, totalAmount: o.totalAmount, expectedDeliveryDate: o.expectedDeliveryDate || undefined }))
+}
+
+export async function submitCartOrder(lines: { sku: string; quantity: number }[]) {
+  return api<{ orderId: string; totalAmount: number; status: string }>('/api/mobile/orders', {
+    method: 'POST', body: JSON.stringify({ lineItems: lines }),
+  })
+}
+
+export type MobileQuotation = { quotationId: string; quoteReference: string; status: string; grandTotal: number; validUntil: string; lineItems: { productName: string; quantity: number; lineTotal: number }[] }
+
+export async function fetchMyQuotations(): Promise<MobileQuotation[]> {
+  return api<MobileQuotation[]>('/api/mobile/quotations')
 }

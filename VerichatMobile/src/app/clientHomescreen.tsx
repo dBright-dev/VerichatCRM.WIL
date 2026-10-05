@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ClientDashboard, fetchClientDashboard } from '../constants/dashboardService';
 import { fetchWellnessSummary, WellnessSummary } from '../constants/wellnessService';
+import { fetchMyQuotations, MobileQuotation } from '../constants/catalogueService';
 
 const SERIF = Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' })
 
@@ -44,19 +45,22 @@ const ClientHomeScreen = () => {
   const router = useRouter()
   const [data, setData] = useState<ClientDashboard | null>(null)
   const [wellness, setWellness] = useState<WellnessSummary | null>(null)
+  const [quotations, setQuotations] = useState<MobileQuotation[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     try {
-      const [data, wellness] = await Promise.all([
+      const [data, wellness, quotations] = await Promise.all([
         fetchClientDashboard(),
         fetchWellnessSummary().catch(() => null),
+        fetchMyQuotations().catch(() => []),
       ])
       setError(null)
       setData(data)
       setWellness(wellness)
+      setQuotations(quotations)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong.')
     } finally {
@@ -273,6 +277,17 @@ const ClientHomeScreen = () => {
           )}
         </View>
       </View>
+      <View style={styles.quote_section}>
+        <Text style={styles.quote_heading}>My quotations</Text>
+        {quotations.length === 0 ? <Text style={styles.quote_empty}>No quotations available yet.</Text> : quotations.slice(0, 3).map((quote) => (
+          <View key={quote.quotationId} style={styles.quote_card}>
+            <View style={styles.quote_row}><Text style={styles.quote_ref}>{quote.quoteReference}</Text><Text style={styles.quote_status}>{quote.status}</Text></View>
+            <Text style={styles.quote_total}>R {quote.grandTotal.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}</Text>
+            <Text style={styles.quote_meta}>Valid until {formatDate(quote.validUntil)}</Text>
+            {quote.lineItems.map((line, index) => <Text key={`${quote.quotationId}-${index}`} style={styles.quote_meta}>{line.productName} × {line.quantity} · R {line.lineTotal.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}</Text>)}
+          </View>
+        ))}
+      </View>
       </ScrollView>
     </View>
   )
@@ -478,6 +493,15 @@ const styles = StyleSheet.create({
   tracking_box: {
     backgroundColor: '#ffe0e0',
   },
+  quote_section: { marginHorizontal: 16, marginTop: 20, gap: 10 },
+  quote_heading: { color: '#0a2f55', fontSize: 18, fontWeight: '900' },
+  quote_empty: { color: '#68737d', paddingVertical: 8 },
+  quote_card: { backgroundColor: '#f1f6fa', borderRadius: 14, padding: 14, gap: 5 },
+  quote_row: { flexDirection: 'row', justifyContent: 'space-between' },
+  quote_ref: { color: '#0a2f55', fontWeight: '800' },
+  quote_status: { color: '#0057a8', fontWeight: '700' },
+  quote_total: { color: '#111', fontSize: 18, fontWeight: '900' },
+  quote_meta: { color: '#68737d', fontSize: 12 },
   box_title: {
     fontSize: 13,
     fontWeight: '900',

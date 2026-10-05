@@ -12,8 +12,9 @@ namespace VerichatCRM.Web.Controllers
     public class SupportController : Controller
     {
         private readonly ISupportApiService _support;
+        private readonly IApiClient _api;
 
-        public SupportController(ISupportApiService support) => _support = support;
+        public SupportController(ISupportApiService support, IApiClient api) { _support = support; _api = api; }
 
         private bool IsAuthenticated => HttpContext.Session.GetString("JwtToken") != null;
 
@@ -21,28 +22,9 @@ namespace VerichatCRM.Web.Controllers
         public async Task<IActionResult> Dashboard()
         {
             if (!IsAuthenticated) return RedirectToAction("Login", "Account");
-
-            var tickets = await _support.GetTicketsAsync();
-
-            var vm = new SupportDashboardViewModel
-            {
-                OpenTickets = tickets.Count(t => t.Status != "Resolved" && t.Status != "Closed"),
-                Escalated = tickets.Count(t => t.EscalationLevel > 0),
-                SlaBreaches = tickets.Count(t => t.IsSlaBreached),
-                RecentTickets = tickets
-                    .OrderByDescending(t => t.CreatedAt)
-                    .Take(5)
-                    .Select(t => new RecentTicketItem
-                    {
-                        TrackingNumber = t.TrackingNumber,
-                        Title = t.Title,
-                        Priority = t.Priority,
-                        Status = t.Status,
-                        TimeAgo = GetTimeAgo(t.CreatedAt)
-                    }).ToList()
-            };
-
-            return View(vm);
+            var dashboard = await _api.GetAsync<VerichatCRM.Core.Models.Dashboard.DashboardAnalyticsResponse>("/api/dashboard/analytics")
+                ?? new VerichatCRM.Core.Models.Dashboard.DashboardAnalyticsResponse();
+            return View("~/Views/Dashboard/Index.cshtml", dashboard);
         }
 
         [RequirePermission(Perm.TicketHub)]

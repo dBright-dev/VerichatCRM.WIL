@@ -10,13 +10,16 @@ namespace VerichatCRM.Web.Controllers
     {
         private readonly IProductApiService _products;
         private readonly IWarehouseAlertApiService _alerts;
+        private readonly IApiClient _api;
 
         public ProcurementController(
             IProductApiService products,
-            IWarehouseAlertApiService alerts)
+            IWarehouseAlertApiService alerts,
+            IApiClient api)
         {
             _products = products;
             _alerts = alerts;
+            _api = api;
         }
 
         private bool IsAuthenticated => HttpContext.Session.GetString("JwtToken") != null;
@@ -39,29 +42,9 @@ namespace VerichatCRM.Web.Controllers
         {
             if (!IsAuthenticated) return RedirectToAction("Login", "Account");
             SetHeader("Procurement Dashboard", "Reorder consumables, track deliveries, monitor stock.");
-
-            var products = await _products.GetAllAsync();
-            var alerts = await _alerts.GetActiveAsync();
-            var lowStock = products.Count(p => p.IsLowStock);
-
-            var vm = new ProcurementDashboardViewModel
-            {
-                ManagerName = HttpContext.Session.GetString("UserName") ?? "Procurement Manager",
-                CurrentDate = DateTime.Now,
-                ActiveOrders = 0,
-                PendingQuotes = 0,
-                CatalogItems = products.Count,
-                LowStockItems = alerts.Count + lowStock,
-                RevenueVsTarget = new List<RevenuePoint>(),
-                RecentActivity = alerts.Take(5).Select(a => new ActivityItem
-                {
-                    Title = $"Low stock: {a.ProductName} ({a.CurrentStock} left)",
-                    Subtitle = a.Severity,
-                    Timestamp = a.CreatedAt.ToString("HH:mm"),
-                    Severity = a.Severity == "Critical" ? "critical" : "warning"
-                }).ToList()
-            };
-            return View(vm);
+            var dashboard = await _api.GetAsync<VerichatCRM.Core.Models.Dashboard.DashboardAnalyticsResponse>("/api/dashboard/analytics")
+                ?? new VerichatCRM.Core.Models.Dashboard.DashboardAnalyticsResponse();
+            return View("~/Views/Dashboard/Index.cshtml", dashboard);
         }
 
         [RequirePermission(Perm.ProductCatalog)]

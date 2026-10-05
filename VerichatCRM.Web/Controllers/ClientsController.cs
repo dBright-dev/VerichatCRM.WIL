@@ -4,14 +4,16 @@ using VerichatCRM.Web.Authorization;
 using VerichatCRM.Web.Models.Client;
 using VerichatCRM.Web.Services;
 using VerichatCRM.Web.Services.Interfaces;
+using VerichatCRM.Web.ViewModels;
 
 namespace VerichatCRM.Web.Controllers
 {
     public class ClientsController : Controller
     {
         private readonly IClientApiService _clients;
+        private readonly IApiClient _api;
 
-        public ClientsController(IClientApiService clients) => _clients = clients;
+        public ClientsController(IClientApiService clients, IApiClient api) { _clients = clients; _api = api; }
 
         private void SetHeader(string title, string subtitle)
         {
@@ -44,7 +46,9 @@ namespace VerichatCRM.Web.Controllers
             if (client is null) return NotFound();
 
             SetHeader(client.Name, $"{client.Sector} · Assigned to {client.AssignedRep}");
-            return View(client);
+            var orders = await _api.GetAsync<List<ClientOrderRow>>($"/api/order/client/{Uri.EscapeDataString(id)}") ?? new();
+            var quotations = await _api.GetAsync<List<ClientQuotationRow>>($"/api/quotation/client/{Uri.EscapeDataString(id)}") ?? new();
+            return View(new ClientProfileViewModel { Client = client, Orders = orders, Quotations = quotations });
         }
 
         [RequirePermission(Perm.ClientCreate)]

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Verichat",
-    "slug": "Verichat",
+    "slug": "verichat",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -40,6 +40,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c238e4c2-2c5f-4492-abd9-07ff2d3a1302"
+      }
+    },
+    "owner": "dbright"
   }
 }

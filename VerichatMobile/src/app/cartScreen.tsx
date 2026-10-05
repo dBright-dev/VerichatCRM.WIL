@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { CartLine, changeCartQuantity, getCartLines, getPlacedCartOrders, PlacedCartOrder, recordPlacedOrder, subscribeCart } from '../constants/cartStore'
-import { fetchMyOrders, MobileOrderTracking, quickReorder } from '../constants/catalogueService'
+import { fetchMyOrders, MobileOrderTracking, submitCartOrder } from '../constants/catalogueService'
 
 const PROGRESS = ['pending', 'processing', 'confirmed', 'shipped', 'delivered']
 
@@ -61,20 +61,9 @@ export default function CartScreen() {
     if (busy || lines.length === 0) return
     setBusy(true)
     try {
-      // The CRM exposes quick reorder per SKU, so each cart unit is submitted
-      // through that API and becomes a database order. Failed units stay in cart.
-      for (const line of [...lines]) {
-        for (let unit = 0; unit < line.quantity; unit += 1) {
-          const result = await quickReorder(line.sku)
-          recordPlacedOrder({
-            orderId: result.orderId,
-            sku: line.sku,
-            productName: line.productName,
-            status: result.status,
-            total: result.total,
-          })
-        }
-      }
+      const result = await submitCartOrder(lines.map(({ sku, quantity }) => ({ sku, quantity })))
+      recordPlacedOrder({ orderId: result.orderId, sku: lines[0].sku, productName: lines.length === 1 ? lines[0].productName : `${lines.length} products`, status: result.status, total: result.totalAmount })
+      for (const line of [...lines]) changeCartQuantity(line.sku, 0)
       Alert.alert('Order submitted', 'Your items were sent to Verichat. Order status will update here from the API.')
       await loadOrders()
     } catch (error) {

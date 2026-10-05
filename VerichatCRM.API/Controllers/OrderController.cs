@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using VerichatCRM.API.DTOs.Requests;
 using VerichatCRM.API.DTOs.Responses;
 using VerichatCRM.API.Services.Interfaces;
+using System.Security.Claims;
+using VerichatCRM.Core.Entities;
 
 namespace VerichatCRM.API.Controllers
 {
@@ -36,6 +38,7 @@ namespace VerichatCRM.API.Controllers
         [Authorize(Roles = "System Administrator,Sales Representative,Procurement Manager")]
         public async Task<ActionResult<IEnumerable<OrderResponse>>> GetClientOrders(string clientId)
         {
+            if (User.IsInRole(UserRoles.ClientUser) && clientId != CurrentUserId()) return Forbid();
             var orders = await _orderService.GetOrdersByClientAsync(clientId);
             return Ok(orders);
         }
@@ -44,12 +47,20 @@ namespace VerichatCRM.API.Controllers
         /// Create a new order.
         /// </summary>
         [HttpPost]
-        [Authorize(Roles = "Sales Representative,Procurement Manager")]
+        [Authorize(Roles = "Sales Representative,Procurement Manager,Client User")]
         public async Task<ActionResult<OrderResponse>> CreateOrder([FromBody] CreateOrderRequest request)
         {
-            var order = await _orderService.CreateOrderAsync(request);
-            return CreatedAtAction(nameof(GetOrders), new { id = order.OrderId }, order);
+            if (User.IsInRole(UserRoles.ClientUser)) request.ClientId = CurrentUserId();
+            try
+            {
+                var order = await _orderService.CreateOrderAsync(request);
+                return CreatedAtAction(nameof(GetOrders), new { id = order.OrderId }, order);
+            }
+            catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
         }
+
+        private string CurrentUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value ?? string.Empty;
 
         /// <summary>
         /// Update order status (e.g., Confirmed → Shipped → Delivered).

@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using VerichatCRM.API.DTOs.Requests;
 using VerichatCRM.API.Services.Interfaces;
+using System.Security.Claims;
+using VerichatCRM.Core.Entities;
 
 namespace VerichatCRM.API.Controllers
 {
@@ -22,9 +24,13 @@ namespace VerichatCRM.API.Controllers
         [HttpGet("{clientId}")]
         public async Task<IActionResult> GetById(string clientId)
         {
+            if (User.IsInRole(UserRoles.ClientUser) && clientId != CurrentUserId()) return Forbid();
             var c = await _clients.GetByIdAsync(clientId);
             return c == null ? NotFound() : Ok(c);
         }
+
+        private string CurrentUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value ?? string.Empty;
 
         [HttpPost]
         [Authorize(Roles = "System Administrator,Sales Representative")]

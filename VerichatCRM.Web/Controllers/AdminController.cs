@@ -1,27 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using VerichatCRM.Web.Authorization;
-using VerichatCRM.Web.Services.Interfaces;
 using VerichatCRM.Web.ViewModels.Admin;
+using VerichatCRM.Web.Services.Interfaces;
 
 namespace VerichatCRM.Web.Controllers
 {
     public class AdminController : Controller
     {
-        private readonly IClientApiService _clients;
-        private readonly IPipelineApiService _pipeline;
-        private readonly ISupportApiService _support;
         private readonly IAdminApiService _admin;
+        private readonly IApiClient _api;
 
         public AdminController(
-            IClientApiService clients,
-            IPipelineApiService pipeline,
-            ISupportApiService support,
-            IAdminApiService admin)
+            IAdminApiService admin, IApiClient api)
         {
-            _clients = clients;
-            _pipeline = pipeline;
-            _support = support;
             _admin = admin;
+            _api = api;
         }
 
         private bool IsAdmin()
@@ -39,76 +32,22 @@ namespace VerichatCRM.Web.Controllers
             if (!IsAdmin())
                 return RedirectToAction("Login", "Account");
 
+            var dashboard = await _api.GetAsync<VerichatCRM.Core.Models.Dashboard.DashboardAnalyticsResponse>("/api/dashboard/analytics")
+                ?? new VerichatCRM.Core.Models.Dashboard.DashboardAnalyticsResponse();
             ViewData["Title"] = "Dashboard";
-            ViewData["Subtitle"] = $"Here's what's happening across your workspace — {DateTime.Now:dddd, d MMMM yyyy}";
-
-            var clients = new List<VerichatCRM.Core.Models.Clients.ClientViewModel>();
-            VerichatCRM.Core.Models.Pipeline.PipelineBoardViewModel board = new();
-            var tickets = new List<VerichatCRM.Web.Models.Support.TicketDto>();
-            var deliveries = new List<VerichatCRM.Web.Models.Support.DeliveryDto>();
-            try
-            {
-                clients = await _clients.GetClientsAsync(null, null);
-                board = await _pipeline.GetBoardAsync();
-                tickets = await _support.GetTicketsAsync();
-                deliveries = await _support.GetDeliveriesAsync();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Admin Dashboard data load failed: {ex}");
-            }
-
-            var openTickets = tickets.Where(t => t.Status != "Resolved" && t.Status != "Closed").ToList();
-            var monthRevenue = board.TotalPipelineValue;
-            var vm = new AdminDashboardViewModel
-            {
-                UserName = HttpContext.Session.GetString("UserName") ?? "System Administrator",
-                CurrentDate = DateTime.Now,
-                TotalRevenue = monthRevenue,
-                RevenueTarget = 2600000m,
-                ActiveClients = clients.Count,
-                RenewalsDue = clients.Count(c => c.Status == "Prospect"),
-                OpenTickets = openTickets.Count,
-                CriticalTickets = openTickets.Count(t => t.Priority == "Critical"),
-                LowStockItems = 3,
-                RevenueVsTarget = new List<AdminRevenuePoint>
-                {
-                    new() { Month = "Feb", Revenue = 2000000, Target = 2000000 },
-                    new() { Month = "Mar", Revenue = 2050000, Target = 2100000 },
-                    new() { Month = "Apr", Revenue = 2150000, Target = 2200000 },
-                    new() { Month = "May", Revenue = 2150000, Target = 2300000 },
-                    new() { Month = "Jun", Revenue = 2285000, Target = 2450000 },
-                    new() { Month = "Jul", Revenue = monthRevenue, Target = 2600000 },
-                },
-                RecentActivity = openTickets
-                    .OrderByDescending(t => t.CreatedAt).Take(3)
-                    .Select(t => new AdminActivityItem
-                    {
-                        Title = $"{t.TrackingNumber} — {t.Title}",
-                        Subtitle = t.Status,
-                        Timestamp = t.CreatedAt.ToString("HH:mm"),
-                        Severity = t.Priority == "Critical" ? "critical" : t.Priority == "High" ? "warning" : "info"
-                    })
-                    .Concat(deliveries.OrderByDescending(d => d.EstimatedArrival).Take(2)
-                        .Select(d => new AdminActivityItem
-                        {
-                            Title = $"{d.TrackingNumber} dispatched",
-                            Subtitle = d.Status,
-                            Timestamp = d.EstimatedArrival.ToString("HH:mm"),
-                            Severity = "success"
-                        }))
-                    .Take(5).ToList()
-            };
-            return View(vm);
+            ViewData["Subtitle"] = $"System Administrator overview — {DateTime.Now:dddd, d MMMM yyyy}";
+            return View("~/Views/Dashboard/Index.cshtml", dashboard);
         }
 
         [RequirePermission(Perm.AdminAnalytics)]
-        public IActionResult Analytics()
+        public async Task<IActionResult> Analytics()
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
             ViewData["Title"] = "Analytics";
-            ViewData["Subtitle"] = "Year-to-date performance overview";
-            return View();
+            ViewData["Subtitle"] = "Live year-to-date performance from CRM records";
+            var analytics = await _api.GetAsync<VerichatCRM.Core.Models.Dashboard.DashboardAnalyticsResponse>("/api/dashboard/analytics")
+                ?? new VerichatCRM.Core.Models.Dashboard.DashboardAnalyticsResponse();
+            return View(analytics);
         }
 
         [RequirePermission(Perm.AdminRules)]

@@ -99,12 +99,39 @@ namespace VerichatCRM.API.Controllers
             // Self-heal: older mobile accounts may pre-date the Client row.
             await _mobile.EnsureClientAccountAsync(UserId);
 
-            var order = await orders.CreateOrderAsync(new CreateOrderRequest
+            try
             {
-                ClientId = UserId,
-                LineItems = new List<OrderLineItemRequest> { new() { SKU = sku, Quantity = 1 } }
-            });
-            return Ok(new { orderId = order.OrderId, total = order.TotalAmount, status = order.Status });
+                var order = await orders.CreateOrderAsync(new CreateOrderRequest
+                {
+                    ClientId = UserId,
+                    LineItems = new List<OrderLineItemRequest> { new() { SKU = sku, Quantity = 1 } }
+                });
+                return Ok(new { orderId = order.OrderId, total = order.TotalAmount, status = order.Status });
+            }
+            catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        [HttpPost("orders")]
+        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request, [FromServices] IOrderService orders)
+        {
+            await _mobile.EnsureClientAccountAsync(UserId);
+            request.ClientId = UserId;
+            try { return Ok(await orders.CreateOrderAsync(request)); }
+            catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        [HttpGet("orders")]
+        public async Task<IActionResult> GetOrders([FromServices] IOrderService orders)
+        {
+            await _mobile.EnsureClientAccountAsync(UserId);
+            return Ok(await orders.GetOrdersByClientAsync(UserId));
+        }
+
+        [HttpGet("quotations")]
+        public async Task<IActionResult> GetQuotations([FromServices] IQuotationService quotations)
+        {
+            await _mobile.EnsureClientAccountAsync(UserId);
+            return Ok(await quotations.GetByClientAsync(UserId));
         }
     }
 }
