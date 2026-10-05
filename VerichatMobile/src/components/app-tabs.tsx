@@ -1,5 +1,4 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
@@ -26,37 +25,27 @@ export default function AppTabs() {
       iconColor={{ default: colors.textSecondary, selected: activeColor }}>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={<NativeTabs.Trigger.VectorIcon family={MaterialCommunityIcons} name="home" />}
-        />
+        <NativeTabs.Trigger.Icon sf="house.fill" md="home" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="medicalCatalogueShop">
         <NativeTabs.Trigger.Label>Shop</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={<NativeTabs.Trigger.VectorIcon family={MaterialCommunityIcons} name="shopping" />}
-        />
+        <NativeTabs.Trigger.Icon sf="bag.fill" md="shopping_cart" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="telehealthScreen">
         <NativeTabs.Trigger.Label>Health</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={<NativeTabs.Trigger.VectorIcon family={MaterialCommunityIcons} name="video-outline" />}
-        />
+        <NativeTabs.Trigger.Icon sf="video" md="videocam" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="wellnessTrackingScreen">
         <NativeTabs.Trigger.Label>Vitals</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={<NativeTabs.Trigger.VectorIcon family={MaterialCommunityIcons} name="heart-pulse" />}
-        />
+        <NativeTabs.Trigger.Icon sf="heart.fill" md="favorite" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="profileScreen">
         <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={<NativeTabs.Trigger.VectorIcon family={MaterialCommunityIcons} name="account-circle" />}
-        />
+        <NativeTabs.Trigger.Icon sf="person.crop.circle.fill" md="account_circle" />
       </NativeTabs.Trigger>
 
       {/* Settings is pushed on top of the Profile tab rather than owning a

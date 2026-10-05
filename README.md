@@ -107,6 +107,8 @@ For a hosted API, set `Jwt__Key`, `ConnectionStrings__DefaultConnection`, and `C
 
 > A signing key was previously present in repository configuration. Removing it from current files does not remove it from Git history. Rotate the key in every running environment and invalidate tokens signed with the old key before deployment.
 
+EF Core migration-script generation during publish uses `DesignTimeAppDbContextFactory` and does not start the API host, so publish can build its database script without a JWT secret. The running API still requires both the JWT key and a real database connection string from its environment or secret store.
+
 ### Start the API
 
 In PowerShell window 1:
@@ -165,7 +167,7 @@ npx expo lint
 npx tsc --noEmit
 ```
 
-The current xUnit suite covers ten authentication, ownership, order, stock, and role-dashboard cases. It is not a complete integration or end-to-end suite.
+The current xUnit suite covers eleven authentication, ownership, order, stock, role-dashboard, and EF design-time context cases. It is not a complete integration or end-to-end suite.
 
 ## GitHub Actions
 

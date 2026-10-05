@@ -29,6 +29,8 @@ For the code architecture, local setup, environment variables, and test commands
 5. Prepare a client account, product stock, inquiry/deal, and staff-issued quote before the live walkthrough if time is limited. Avoid making a live quote the first time the quotation path is exercised.
 6. Run the automated checks before the session. Do not describe CI as a deployment pipeline.
 
+Latest local verification: 11 xUnit tests pass, the .NET solution builds with zero warnings/errors, the API publishes, an idempotent EF migration script generates without a JWT secret, and the mobile TypeScript and lint checks pass. Re-run the checks before presenting if the code changes.
+
 ## Evidence against the Task 2 rubric
 
 | Assessment area | Current evidence | Status and qualification |

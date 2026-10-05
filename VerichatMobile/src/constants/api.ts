@@ -6,7 +6,7 @@ import { Platform } from 'react-native';
 // deployed production API so the app works out of the box.
 export const API_BASE_URL =
   (process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/+$/, '') ||
-    'https://verichat-crm-api.runasp.net')
+    'http://verichat-crm-api.runasp.net')
 
 const TOKEN_KEY = 'verichat.auth.token'
 
