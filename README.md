@@ -4,6 +4,16 @@ Verichat is a role-based CRM and medical-supplies workflow with a browser-based 
 
 See [PRESENTATION_README.md](PRESENTATION_README.md) for a demo runbook and an evidence-based comparison with the Task 2 rubric and Task 1 proposal.
 
+## Hosted applications
+
+The checked-in publish profiles list these deployment targets:
+
+- **Staff web application:** [http://verichat-crm-web.runasp.net/](http://verichat-crm-web.runasp.net/)
+- **API health:** [http://verichat-crm-api.runasp.net/health](http://verichat-crm-api.runasp.net/health)
+- **API readiness and database check:** [http://verichat-crm-api.runasp.net/api/health](http://verichat-crm-api.runasp.net/api/health)
+
+These links come from the Web Deploy profiles in `VerichatCRM.Web/Properties/PublishProfiles` and `VerichatCRM.API/Properties/PublishProfiles`. They could not be live-checked from the current development environment, so availability and the deployed version are unverified. The `/health` endpoint checks that the API process is running; `/api/health` also checks database readiness.
+
 ## Architecture
 
 ```mermaid
@@ -52,6 +62,21 @@ VerichatCRM.Tests/                 xUnit automated tests
 .github/workflows/ci.yml           Pull request and branch CI checks
 ```
 
+### Projects and dependencies
+
+```text
+VerichatCRM.Web ──HTTP/JSON──> VerichatCRM.API ──> VerichatCRM.Core
+                                      │                    ▲
+                                      └──> VerichatCRM.Infrastructure
+                                                │
+                                                └── SQL Server
+
+VerichatMobile ──HTTP/JSON──────────> VerichatCRM.API
+VerichatCRM.Tests ──tests───────────> API/Core/Infrastructure behavior
+```
+
+`Core` contains the domain and contracts; `Infrastructure` implements persistence using EF Core; `API` exposes business operations and authentication; `Web` is the staff-facing MVC application; `Mobile` is the Expo client application. The solution file is `VerichatCRM.slnx`.
+
 ## Local development
 
 ### Prerequisites
@@ -60,6 +85,13 @@ VerichatCRM.Tests/                 xUnit automated tests
 - SQL Server; on Windows, the checked-in Development connection string uses LocalDB
 - Node.js 22 and npm
 - A supported Expo device, emulator, or browser
+
+### Clone the repository
+
+```powershell
+git clone https://github.com/dBright-dev/VerichatCRM.WIL.git
+Set-Location VerichatCRM.WIL
+```
 
 ### Configure secrets
 
