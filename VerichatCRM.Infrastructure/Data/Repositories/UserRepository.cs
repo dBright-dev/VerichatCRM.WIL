@@ -27,6 +27,19 @@ namespace VerichatCRM.Infrastructure.Data.Repositories
             return await _context.Users.FindAsync(userId);
         }
 
+        public async Task<IEnumerable<User>> GetAllAsync()
+        {
+            return await _context.Users
+                .OrderByDescending(u => u.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<User?> GetByResetTokenAsync(string token)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.PasswordResetToken == token);
+        }
+
         public async Task<bool> EmailExistsAsync(string email)
         {
             return await ((System.Linq.IQueryable<User>)_context.Users)
@@ -44,6 +57,11 @@ namespace VerichatCRM.Infrastructure.Data.Repositories
         {
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> CountByRoleAsync(string role)
+        {
+            return await _context.Users.CountAsync(u => u.Role == role);
         }
     }
 }

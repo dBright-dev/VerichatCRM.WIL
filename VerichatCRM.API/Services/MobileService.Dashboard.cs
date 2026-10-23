@@ -1,4 +1,5 @@
-﻿using VerichatCRM.API.DTOs.Responses;
+﻿using VerichatCRM.API.DTOs.Requests;
+using VerichatCRM.API.DTOs.Responses;
 using VerichatCRM.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -75,27 +76,46 @@ namespace VerichatCRM.API.Services
                 .Select(d => MapDevice(d))
                 .ToListAsync();
 
-        public async Task<MobileDeviceResponse?> RegisterDeviceAsync(string userId, string name, string type)
+        public async Task<MobileDeviceResponse?> RegisterDeviceAsync(string userId, string name, string type, string? externalId)
         {
             var device = new MobileDevice
             {
                 UserId = userId,
                 Name = name.Trim(),
                 Type = type,
-                Status = "connected"
+                Status = "connected",
+                ExternalId = string.IsNullOrWhiteSpace(externalId) ? null : externalId.Trim()
             };
             _db.MobileDevices.Add(device);
             await _db.SaveChangesAsync();
             return MapDevice(device);
         }
 
-        public async Task<MobileDeviceResponse?> SyncDeviceAsync(string userId, string deviceId)
+        public async Task<MobileDeviceResponse?> SyncDeviceAsync(string userId, string deviceId, IReadOnlyList<DeviceSyncReadingDto>? readings)
         {
             var device = await _db.MobileDevices
                 .FirstOrDefaultAsync(d => d.DeviceId == deviceId && d.UserId == userId);
             if (device == null) return null;
             device.LastSyncAt = DateTime.UtcNow;
             if (device.Status != "connected") device.Status = "connected";
+
+            // Persist any readings the app pulled from the physical device.
+            if (readings != null && readings.Count > 0)
+            {
+                foreach (var r in readings.Where(r => !string.IsNullOrWhiteSpace(r.Value)))
+                {
+                    _db.VitalReadings.Add(new VitalReading
+                    {
+                        UserId = userId,
+                        Type = r.Type,
+                        Value = r.Value.Trim(),
+                        Unit = r.Unit ?? string.Empty,
+                        StatusLabel = string.IsNullOrWhiteSpace(r.StatusLabel) ? "Normal" : r.StatusLabel,
+                        InRange = r.InRange,
+                        RecordedAt = r.RecordedAt ?? DateTime.UtcNow
+                    });
+                }
+            }
             await _db.SaveChangesAsync();
             return MapDevice(device);
         }
@@ -127,7 +147,8 @@ namespace VerichatCRM.API.Services
             Name = d.Name,
             Type = d.Type,
             Status = d.Status,
-            LastSyncAt = d.LastSyncAt
+            LastSyncAt = d.LastSyncAt,
+            ExternalId = d.ExternalId
         };
     }
 }

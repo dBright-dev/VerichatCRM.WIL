@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace VerichatCRM.Core.Entities
 {
@@ -16,5 +14,9 @@ namespace VerichatCRM.Core.Entities
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastLoginAt { get; set; }
+
+        /// <summary>One-time token issued by the forgot-password flow.</summary>
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetExpiry { get; set; }
     }
 }

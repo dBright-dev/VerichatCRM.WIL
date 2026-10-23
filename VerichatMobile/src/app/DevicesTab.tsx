@@ -5,17 +5,20 @@ import {
     ActivityIndicator,
     Alert,
     FlatList,
+    Modal,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
 } from 'react-native'
+import { DiscoveredDevice, isBleSupported, ParsedReading, readMeasurement, scanHealthDevices } from '../constants/bleDevices'
 import {
     Device,
     DeviceStatus,
     DeviceType,
     fetchDevices,
     reconnectDevice,
+    registerDevice,
     removeDevice,
     syncDevice,
 } from '../constants/devicesServices'
@@ -75,6 +78,13 @@ const DevicesTab = ({ onSynced }: Props) => {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState<Record<string, BusyAction>>({})
 
+  // Pairing flow ("+ Add New Device")
+  const [pairingOpen, setPairingOpen] = useState(false)
+  const [pairingType, setPairingType] = useState<DeviceType>('heartRate')
+  const [scanning, setScanning] = useState(false)
+  const [discovered, setDiscovered] = useState<DiscoveredDevice[]>([])
+  const [pairingDeviceId, setPairingDeviceId] = useState<string | null>(null)
+
   const load = useCallback(async () => {
     try {
       const devices = await fetchDevices()
@@ -125,7 +135,17 @@ const DevicesTab = ({ onSynced }: Props) => {
 
   const handleSync = (device: Device) =>
     run(device.id, 'sync', async () => {
-      replaceDevice(await syncDevice(device.id))
+      let readings: ParsedReading[] = []
+      if (device.externalId && isBleSupported()) {
+        try {
+          const reading = await readMeasurement(device.externalId, device.type)
+          if (reading) readings = [reading]
+        } catch (e) {
+          // Still record the sync attempt; tell the user the read failed.
+          Alert.alert('Device read failed', e instanceof Error ? e.message : 'Could not read the device.')
+        }
+      }
+      replaceDevice(await syncDevice(device.id, readings))
       onSynced?.()
     })
 
@@ -149,8 +169,54 @@ const DevicesTab = ({ onSynced }: Props) => {
       },
     ])
 
+  const PAIRING_TYPES: { type: DeviceType; label: string }[] = [
+    { type: 'heartRate', label: 'Heart Rate' },
+    { type: 'bloodPressure', label: 'Blood Pressure' },
+    { type: 'thermometer', label: 'Thermometer' },
+    { type: 'glucoseMeter', label: 'Glucose Meter' },
+    { type: 'weightScale', label: 'Weight Scale' },
+  ]
+
+  const openPairing = () => {
+    setDiscovered([])
+    setPairingDeviceId(null)
+    setPairingOpen(true)
+  }
+
+  const scanForDevices = async () => {
+    setScanning(true)
+    try {
+      setDiscovered(await scanHealthDevices())
+    } catch (e) {
+      Alert.alert('Cannot scan', e instanceof Error ? e.message : 'Please try again.')
+    } finally {
+      setScanning(false)
+    }
+  }
+
+  const pairDevice = async (found: DiscoveredDevice) => {
+    setPairingDeviceId(found.id)
+    try {
+      const device = await registerDevice(found.name, pairingType, found.id)
+      setDevices(current => [...current, device].sort((a, b) => a.name.localeCompare(b.name)))
+      setPairingOpen(false)
+      onSynced?.()
+    } catch (e) {
+      Alert.alert('Pairing failed', e instanceof Error ? e.message : 'Please try again.')
+    } finally {
+      setPairingDeviceId(null)
+    }
+  }
+
   const handleAddDevice = () => {
-    // TODO: start the device pairing flow (e.g. Bluetooth scan with react-native-ble-plx).
+    if (!isBleSupported()) {
+      Alert.alert(
+        'Bluetooth unavailable',
+        'Device pairing needs the native iOS/Android build of the app.',
+      )
+      return
+    }
+    openPairing()
   }
 
   const renderDevice = ({ item }: { item: Device }) => {
@@ -265,18 +331,86 @@ const DevicesTab = ({ onSynced }: Props) => {
     )
 
   return (
-    <FlatList
-      style={styles.flex}
-      data={devices}
-      keyExtractor={(item) => item.id}
-      renderItem={renderDevice}
-      ListEmptyComponent={renderEmpty}
-      ListFooterComponent={renderFooter}
-      contentContainerStyle={styles.list}
-      showsVerticalScrollIndicator={false}
-      refreshing={refreshing}
-      onRefresh={onRefresh}
-    />
+    <View style={styles.flex}>
+      <Modal visible={pairingOpen} transparent animationType="fade" onRequestClose={() => setPairingOpen(false)}>
+        <View style={styles.modal_backdrop}>
+          <View style={styles.modal_card}>
+            <Text style={styles.modal_title}>Pair a device</Text>
+
+            <Text style={styles.modal_label}>Device type</Text>
+            <View style={styles.type_row}>
+              {PAIRING_TYPES.map(({ type, label }) => (
+                <TouchableOpacity
+                  key={type}
+                  style={[styles.type_chip, pairingType === type && styles.type_chip_selected]}
+                  onPress={() => setPairingType(type)}
+                >
+                  <Text style={[styles.type_chip_text, pairingType === type && styles.type_chip_text_selected]}>
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity style={styles.scan_button} disabled={scanning} onPress={scanForDevices}>
+              {scanning ? (
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                <Text style={styles.scan_button_text}>Scan for devices</Text>
+              )}
+            </TouchableOpacity>
+
+            {discovered.length > 0 && (
+              <FlatList
+                style={styles.discovered_list}
+                data={discovered}
+                keyExtractor={item => item.id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.discovered_row}
+                    disabled={pairingDeviceId !== null}
+                    onPress={() => pairDevice(item)}
+                  >
+                    <MaterialCommunityIcons name="bluetooth" size={20} color="#004e7a" />
+                    <View style={styles.discovered_info}>
+                      <Text style={styles.discovered_name}>{item.name}</Text>
+                      <Text style={styles.discovered_id}>{item.id}</Text>
+                    </View>
+                    {pairingDeviceId === item.id ? (
+                      <ActivityIndicator size="small" color="#004e7a" />
+                    ) : (
+                      <Text style={styles.discovered_pair}>Pair</Text>
+                    )}
+                  </TouchableOpacity>
+                )}
+              />
+            )}
+
+            {scanning && <Text style={styles.scan_hint}>Looking for nearby health devices…</Text>}
+            {!scanning && discovered.length === 0 && (
+              <Text style={styles.scan_hint}>Tap scan, then select your device from the list.</Text>
+            )}
+
+            <TouchableOpacity style={styles.modal_cancel} onPress={() => setPairingOpen(false)}>
+              <Text style={styles.modal_cancel_text}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <FlatList
+        style={styles.flex}
+        data={devices}
+        keyExtractor={(item) => item.id}
+        renderItem={renderDevice}
+        ListEmptyComponent={renderEmpty}
+        ListFooterComponent={renderFooter}
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+      />
+    </View>
   )
 }
 
@@ -437,5 +571,110 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+
+  // Pairing modal
+  modal_backdrop: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    padding: 20,
+  },
+  modal_card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 20,
+    gap: 12,
+    maxHeight: '80%',
+  },
+  modal_title: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#0a2f55',
+  },
+  modal_label: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#424242',
+  },
+  type_row: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  type_chip: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#9e9e9e',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  type_chip_selected: {
+    backgroundColor: '#0057a8',
+    borderColor: '#0057a8',
+  },
+  type_chip_text: {
+    fontSize: 12,
+    color: '#333333',
+  },
+  type_chip_text_selected: {
+    color: '#ffffff',
+    fontWeight: '700',
+  },
+  scan_button: {
+    backgroundColor: '#0097b2',
+    borderRadius: 14,
+    minHeight: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scan_button_text: {
+    color: '#ffffff',
+    fontWeight: '900',
+    fontSize: 13,
+  },
+  scan_hint: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: '#757575',
+    textAlign: 'center',
+  },
+  discovered_list: {
+    flexGrow: 0,
+    maxHeight: 220,
+  },
+  discovered_row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+  },
+  discovered_info: {
+    flex: 1,
+    gap: 2,
+  },
+  discovered_name: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#000000',
+  },
+  discovered_id: {
+    fontSize: 11,
+    color: '#757575',
+  },
+  discovered_pair: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#0057a8',
+  },
+  modal_cancel: {
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  modal_cancel_text: {
+    color: '#555555',
+    fontWeight: '700',
   },
 })

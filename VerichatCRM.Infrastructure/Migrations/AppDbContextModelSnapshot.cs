@@ -468,6 +468,9 @@ namespace VerichatCRM.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ExternalId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("LastSyncAt")
                         .HasColumnType("datetime2");
 

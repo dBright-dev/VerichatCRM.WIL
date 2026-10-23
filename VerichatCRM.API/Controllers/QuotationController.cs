@@ -4,6 +4,8 @@ using VerichatCRM.API.DTOs.Requests;
 using VerichatCRM.API.Services.Interfaces;
 using System.Security.Claims;
 using VerichatCRM.Core.Entities;
+using VerichatCRM.Core.Interfaces;
+using VerichatCRM.Infrastructure.Data.External;
 
 namespace VerichatCRM.API.Controllers
 {
@@ -13,8 +15,21 @@ namespace VerichatCRM.API.Controllers
     public class QuotationController : ControllerBase
     {
         private readonly IQuotationService _quotations;
+        private readonly IQuotationRepository _quotationRepo;
+        private readonly IClientRepository _clientRepo;
+        private readonly IPdfGenerator _pdf;
 
-        public QuotationController(IQuotationService quotations) => _quotations = quotations;
+        public QuotationController(
+            IQuotationService quotations,
+            IQuotationRepository quotationRepo,
+            IClientRepository clientRepo,
+            IPdfGenerator pdf)
+        {
+            _quotations = quotations;
+            _quotationRepo = quotationRepo;
+            _clientRepo = clientRepo;
+            _pdf = pdf;
+        }
 
         [HttpGet]
         [Authorize(Roles = "System Administrator,Sales Representative")]
@@ -33,6 +48,24 @@ namespace VerichatCRM.API.Controllers
             var q = await _quotations.GetByIdAsync(id);
             if (q != null && User.IsInRole(UserRoles.ClientUser) && q.ClientId != CurrentUserId()) return Forbid();
             return q == null ? NotFound() : Ok(q);
+        }
+
+        /// <summary>
+        /// Renders the quotation as a branded, print-ready PDF (QuestPDF).
+        /// </summary>
+        [HttpGet("{id}/pdf")]
+        public async Task<IActionResult> GetPdf(string id)
+        {
+            var quotation = await _quotationRepo.GetByIdAsync(id);
+            if (quotation == null) return NotFound(new { message = "Quotation not found." });
+
+            if (User.IsInRole(UserRoles.ClientUser) && quotation.ClientId != CurrentUserId()) return Forbid();
+
+            var client = await _clientRepo.GetByIdAsync(quotation.ClientId);
+            if (client == null) return NotFound(new { message = "Client for this quotation not found." });
+
+            var pdf = _pdf.GenerateQuotationPdf(quotation, client);
+            return File(pdf, "application/pdf", $"{quotation.QuoteReference}.pdf");
         }
 
         private string CurrentUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value
