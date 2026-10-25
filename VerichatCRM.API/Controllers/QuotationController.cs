@@ -6,6 +6,10 @@ using System.Security.Claims;
 using VerichatCRM.Core.Entities;
 using VerichatCRM.Core.Interfaces;
 using VerichatCRM.Infrastructure.Data.External;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
+using VerichatCRM.API.Hubs;
+using VerichatCRM.Infrastructure.Data;
 
 namespace VerichatCRM.API.Controllers
 {
@@ -18,17 +22,23 @@ namespace VerichatCRM.API.Controllers
         private readonly IQuotationRepository _quotationRepo;
         private readonly IClientRepository _clientRepo;
         private readonly IPdfGenerator _pdf;
+        private readonly AppDbContext _db;
+        private readonly IHubContext<NotificationHub> _hub;
 
         public QuotationController(
             IQuotationService quotations,
             IQuotationRepository quotationRepo,
             IClientRepository clientRepo,
-            IPdfGenerator pdf)
+            IPdfGenerator pdf,
+            AppDbContext db,
+            IHubContext<NotificationHub> hub)
         {
             _quotations = quotations;
             _quotationRepo = quotationRepo;
             _clientRepo = clientRepo;
             _pdf = pdf;
+            _db = db;
+            _hub = hub;
         }
 
         [HttpGet]
@@ -41,6 +51,13 @@ namespace VerichatCRM.API.Controllers
             if (User.IsInRole(UserRoles.ClientUser) && clientId != CurrentUserId()) return Forbid();
             return Ok(await _quotations.GetByClientAsync(clientId));
         }
+
+        // The mobile client only needs its own quotation list. Keep this route
+        // separate from the staff-only GET /api/quotation collection endpoint.
+        [HttpGet("~/api/mobile/quotations")]
+        [Authorize(Roles = "Client User")]
+        public async Task<IActionResult> GetMyMobileQuotations() =>
+            Ok(await _quotations.GetByClientAsync(CurrentUserId()));
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
@@ -70,6 +87,64 @@ namespace VerichatCRM.API.Controllers
 
         private string CurrentUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value
             ?? User.FindFirst("sub")?.Value ?? string.Empty;
+
+        public sealed record QuoteRequestLine([System.ComponentModel.DataAnnotations.Required] string Sku,
+            [System.ComponentModel.DataAnnotations.Range(1, 10000)] int Quantity);
+        public sealed record QuoteRequestBody(
+            [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.MinLength(1)] List<QuoteRequestLine> Lines,
+            [System.ComponentModel.DataAnnotations.StringLength(4000)] string? Notes);
+
+        /// <summary>Creates a CRM draft quote from live catalogue prices for the signed-in client.</summary>
+        [HttpPost("request")]
+        [Authorize(Roles = "Client User")]
+        public async Task<IActionResult> RequestQuote([FromBody] QuoteRequestBody request)
+        {
+            var clientId = CurrentUserId();
+            var client = await _db.Clients.SingleOrDefaultAsync(c => c.ClientId == clientId);
+            if (client == null) return BadRequest(new { message = "Your CRM client account is not set up yet." });
+            var requested = request.Lines.GroupBy(x => x.Sku.Trim(), StringComparer.OrdinalIgnoreCase)
+                .Select(g => new { Sku = g.Key, Quantity = g.Sum(x => x.Quantity) }).ToList();
+            if (requested.Any(x => x.Quantity < 1 || x.Quantity > 10000))
+                return BadRequest(new { message = "Each requested product quantity must be between 1 and 10,000." });
+            var skus = requested.Select(x => x.Sku).ToList();
+            var products = await _db.Products.AsNoTracking().Where(p => skus.Contains(p.SKU)).ToListAsync();
+            if (products.Count != skus.Count)
+                return BadRequest(new { message = "One or more products are no longer available in the catalogue." });
+            var lines = requested.Select(item =>
+            {
+                var product = products.Single(p => p.SKU == item.Sku);
+                return new QuotationLineItem { SKU = product.SKU, ProductName = product.ProductName,
+                    Quantity = item.Quantity, UnitPrice = product.Price };
+            }).ToList();
+            var subtotal = lines.Sum(x => x.Quantity * x.UnitPrice);
+            var deal = await _db.Deals.Where(d => d.ClientId == clientId)
+                .OrderByDescending(d => d.CreatedAt).FirstOrDefaultAsync();
+            if (deal == null)
+            {
+                deal = new Deal { ClientId = clientId, Stage = "Initial Inquiry", Revenue = subtotal,
+                    Notes = "Created from a mobile quote request.", CreatedAt = DateTime.UtcNow };
+                _db.Deals.Add(deal);
+            }
+            var quote = new Quotation
+            {
+                QuoteReference = "VC-QT-" + DateTime.UtcNow.ToString("yyyyMMdd") + "-" + Guid.NewGuid().ToString("N")[..6].ToUpperInvariant(),
+                ClientId = clientId, Deal = deal, DealId = deal.DealId,
+                ValidUntil = DateTime.UtcNow.AddDays(30), VatRate = 0.15m, Subtotal = subtotal,
+                VatAmount = subtotal * 0.15m, GrandTotal = subtotal * 1.15m,
+                Status = "Draft", Terms = "Mobile quote request. " + (string.IsNullOrWhiteSpace(request.Notes)
+                    ? "Please confirm pricing and availability."
+                    : "Client notes: " + request.Notes.Trim()),
+                LineItems = lines, CreatedAt = DateTime.UtcNow
+            };
+            _db.Quotations.Add(quote);
+            await _db.SaveChangesAsync();
+            var dto = await _quotations.GetByIdAsync(quote.QuotationId);
+            var notice = new { title = "New Mobile Quote Request", message = $"{client.ClientName} requested a quote ({quote.QuoteReference}).", quotationId = quote.QuotationId, clientId };
+            await Task.WhenAll(
+                _hub.Clients.Group(UserRoles.SystemAdministrator).SendAsync(NotificationHub.NotificationEvent, notice),
+                _hub.Clients.Group(UserRoles.SalesRepresentative).SendAsync(NotificationHub.NotificationEvent, notice));
+            return CreatedAtAction(nameof(GetById), new { id = quote.QuotationId }, dto);
+        }
 
         [HttpPost]
         [Authorize(Roles = "System Administrator,Sales Representative")]

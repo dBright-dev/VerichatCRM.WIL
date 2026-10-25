@@ -13,10 +13,12 @@ namespace VerichatCRM.API.Controllers
     public class SupportTicketController : Controller
     {
         private readonly ITicketService _ticketService;
+        private readonly IAssetService _assets;
 
-        public SupportTicketController(ITicketService ticket)
+        public SupportTicketController(ITicketService ticket, IAssetService assets)
         {
             _ticketService = ticket;
+            _assets = assets;
         }
 
         private string CurrentUserId =>
@@ -30,9 +32,12 @@ namespace VerichatCRM.API.Controllers
             => Ok(await _ticketService.GetAllAsync());
 
         [HttpGet("client/{clientId}")]
-        [Authorize(Roles = "System Administrator,Field Support Engineer,Sales Representative")]
+        [Authorize(Roles = "System Administrator,Field Support Engineer,Sales Representative,Client User")]
         public async Task<IActionResult> GetByClient(string clientId)
-            => Ok(await _ticketService.GetByClientAsync(clientId));
+        {
+            if (User.IsInRole(UserRoles.ClientUser) && clientId != CurrentUserId) return Forbid();
+            return Ok(await _ticketService.GetByClientAsync(clientId));
+        }
 
         [HttpGet("assigned-to-me")]
         [Authorize(Roles = "Field Support Engineer")]
@@ -52,9 +57,18 @@ namespace VerichatCRM.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "System Administrator,Sales Representative,Procurement Manager")]
+        [Authorize(Roles = "System Administrator,Sales Representative,Procurement Manager,Client User")]
         public async Task<IActionResult> Create([FromBody] CreateTicketRequest request)
         {
+            if (User.IsInRole(UserRoles.ClientUser))
+            {
+                request.ClientId = CurrentUserId;
+                if (!string.IsNullOrWhiteSpace(request.EquipmentId))
+                {
+                    var asset = await _assets.GetByIdAsync(request.EquipmentId);
+                    if (asset == null || asset.ClientId != CurrentUserId) return BadRequest(new { message = "The selected equipment is not registered to your account." });
+                }
+            }
             var ticket = await _ticketService.CreateAsync(request, CurrentUserId);
             return CreatedAtAction(nameof(GetById), new { ticketId = ticket.TicketId }, ticket);
         }
