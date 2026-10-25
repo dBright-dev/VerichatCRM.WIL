@@ -1,3 +1,4 @@
+import { CRMTheme } from '../constants/crmTheme'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
@@ -16,6 +17,9 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { logout } from '../constants/authService'
+import { authenticateBiometric, hasUsableBiometrics } from '../constants/biometricAuth'
+import { getBiometricLoginEnabled, setBiometricLoginEnabled } from '../constants/api'
+import { applyDarkMode } from '../constants/appTheme'
 import { fetchSettings, Preferences, updatePreferences, UserSettings } from '../constants/settingsService'
 
 /* ------------------------------ Constants ------------------------------- */
@@ -44,9 +48,9 @@ const PREFERENCE_ROWS: { key: keyof Preferences; title: string; subtitle: string
 
 const MORE_ROWS: { key: string; title: string; icon: IconName; color: string }[] = [
   { key: 'history', title: 'Purchase History & Reports', icon: 'chart-bar', color: '#e65100' },
-  { key: 'privacy', title: 'Privacy', icon: 'lock', color: '#000000' },
+  { key: 'privacy', title: 'Privacy', icon: 'lock', color: CRMTheme.text },
   { key: 'terms', title: 'Terms and Conditions', icon: 'text-box-check-outline', color: '#8d6e63' },
-  { key: 'about', title: 'About Verichat', icon: 'information', color: '#0057a8' },
+  { key: 'about', title: 'About Verichat', icon: 'information', color: CRMTheme.primary },
 ]
 
 /* ------------------------------- Helpers -------------------------------- */
@@ -72,6 +76,8 @@ const SettingsScreen = () => {
   const load = useCallback(async () => {
     try {
       const settings = await fetchSettings()
+      settings.preferences.biometricLogin = await getBiometricLoginEnabled()
+      await applyDarkMode(settings.preferences.darkMode)
       setError(null)
       setSettings(settings)
     } catch (e) {
@@ -101,18 +107,41 @@ const SettingsScreen = () => {
   const setPreference = async (key: keyof Preferences, value: boolean) => {
     if (!settings) return
 
+    if (key === 'biometricLogin') {
+      if (value) {
+        try {
+          if (!(await hasUsableBiometrics())) {
+            Alert.alert('Biometrics unavailable', 'Set up Face ID or fingerprint authentication on this device first.')
+            return
+          }
+          if (!(await authenticateBiometric('Enable biometric sign-in for Verichat'))) return
+          await setBiometricLoginEnabled(true)
+        } catch {
+          Alert.alert('Could not enable', 'Biometric sign-in could not be enabled on this device.')
+          return
+        }
+      } else {
+        try {
+          await setBiometricLoginEnabled(false)
+        } catch {
+          Alert.alert('Could not disable', 'Biometric sign-in could not be changed on this device.')
+          return
+        }
+      }
+    }
+
     const previous = settings.preferences[key]
     // Update the switch straight away, then roll back if saving fails.
     setSettings((current) =>
       current ? { ...current, preferences: { ...current.preferences, [key]: value } } : current,
     )
+    if (key === 'darkMode') await applyDarkMode(value)
 
     try {
-      // TODO: for biometric login, check the device supports it
-      // (e.g. expo-local-authentication) before saving.
-      // TODO: for dark mode, also apply the theme across the app.
       await updatePreferences({ [key]: value })
     } catch {
+      if (key === 'biometricLogin') await setBiometricLoginEnabled(previous)
+      if (key === 'darkMode') await applyDarkMode(previous)
       setSettings((current) =>
         current ? { ...current, preferences: { ...current.preferences, [key]: previous } } : current,
       )
@@ -147,7 +176,7 @@ const SettingsScreen = () => {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#004e7a" />
+        <ActivityIndicator size="large" color={CRMTheme.primary} />
       </View>
     )
   }
@@ -167,7 +196,7 @@ const SettingsScreen = () => {
     <View style={styles.screen}>
       {/* Header */}
       <LinearGradient
-        colors={['#1f5f8b', '#3d7bd9']}
+        colors={[CRMTheme.primaryDark, CRMTheme.primary]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.header, { paddingTop: insets.top + 16 }]}
@@ -212,7 +241,7 @@ const SettingsScreen = () => {
                 <Switch
                   value={settings.preferences[row.key]}
                   onValueChange={(value) => setPreference(row.key, value)}
-                  trackColor={{ false: '#9e9e9e', true: '#7ed957' }}
+                  trackColor={{ false: '#9e9e9e', true: CRMTheme.primary }}
                   thumbColor="#ffffff"
                   ios_backgroundColor="#9e9e9e"
                 />
@@ -251,13 +280,13 @@ export default SettingsScreen
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: CRMTheme.background,
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: CRMTheme.background,
     padding: 24,
     gap: 16,
   },
@@ -267,7 +296,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   retry_button: {
-    backgroundColor: '#0057a8',
+    backgroundColor: CRMTheme.primary,
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 20,
@@ -310,9 +339,9 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#004e9a',
+    backgroundColor: CRMTheme.primary,
     borderWidth: 2,
-    borderColor: '#0a2f55',
+    borderColor: CRMTheme.primaryDark,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -331,7 +360,7 @@ const styles = StyleSheet.create({
   section_label: {
     fontSize: 12,
     fontWeight: '900',
-    color: '#424242',
+    color: CRMTheme.muted,
     marginLeft: 6,
     marginBottom: 6,
   },
@@ -339,13 +368,13 @@ const styles = StyleSheet.create({
     marginTop: 26,
   },
   group: {
-    backgroundColor: '#efefef',
+    backgroundColor: CRMTheme.surface,
     borderRadius: 18,
     overflow: 'hidden',
   },
   divider: {
     height: 1,
-    backgroundColor: '#d0d0d0',
+    backgroundColor: CRMTheme.border,
     marginHorizontal: 8,
   },
 
@@ -365,12 +394,12 @@ const styles = StyleSheet.create({
   pref_title: {
     fontSize: 16,
     fontWeight: '900',
-    color: '#000000',
+    color: CRMTheme.text,
   },
   pref_subtitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#424242',
+    color: CRMTheme.muted,
   },
 
   // More
@@ -385,13 +414,13 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     fontWeight: '900',
-    color: '#000000',
+    color: CRMTheme.text,
   },
 
   // Sign out
   sign_out: {
     marginTop: 24,
-    backgroundColor: '#efefef',
+    backgroundColor: CRMTheme.surface,
     borderWidth: 2,
     borderColor: '#b71c3c',
     borderRadius: 14,
@@ -404,3 +433,7 @@ const styles = StyleSheet.create({
     color: '#b71c3c',
   },
 })
+
+
+
+

@@ -1,44 +1,31 @@
+import { CRMTheme } from '../constants/crmTheme'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
 import {
-    ActivityIndicator,
-    Alert,
-    Modal,
-    Platform,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Modal,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { logout } from '../constants/authService'
 import { fetchProfile, Profile, updateProfile } from '../constants/profileService'
+import BrandLoader from '../components/ui/BrandLoader'
 
-const SERIF = Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' })
-
-/* ------------------------------- Helpers -------------------------------- */
-
-const getInitials = (name: string) => {
-  const parts = name.trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return '?'
-  const first = parts[0][0]
-  const last = parts.length > 1 ? parts[parts.length - 1][0] : ''
-  return (first + last).toUpperCase()
+const initials = (name: string) => name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase() || '?'
+const memberYear = (date: string) => {
+  const parsed = new Date(date)
+  return Number.isNaN(parsed.getTime()) ? '—' : String(parsed.getFullYear())
 }
 
-const getYear = (iso: string) => {
-  const date = new Date(iso)
-  return isNaN(date.getTime()) ? '--' : String(date.getFullYear())
-}
-
-/* -------------------------------- Screen -------------------------------- */
-
-const ProfileScreen = () => {
+export default function ProfileScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -51,36 +38,21 @@ const ProfileScreen = () => {
 
   const load = useCallback(async () => {
     try {
-      const profile = await fetchProfile()
+      setProfile(await fetchProfile())
       setError(null)
-      setProfile(profile)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went wrong.')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Something went wrong.')
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
   }, [])
 
   useEffect(() => {
-    // This effect starts an async fetch; its state updates run after the request settles.
+    // Load the authenticated user's profile after this route mounts.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load()
   }, [load])
-
-  useEffect(() => {
-    const timer = setInterval(() => void load(), 60_000)
-    return () => clearInterval(timer)
-  }, [load])
-
-  const onRefresh = async () => {
-    setRefreshing(true)
-    await load()
-    setRefreshing(false)
-  }
-
-  const goSettings = () => {
-    router.push('/settingsScreen')
-  }
 
   const editAddress = () => {
     setAddressForm({
@@ -99,13 +71,17 @@ const ProfileScreen = () => {
     }
     setSavingAddress(true)
     try {
-      const updated = await updateProfile({
+      const changes = {
         addressName: addressForm.name.trim(),
         street: addressForm.street.trim(),
         city: addressForm.city.trim(),
         country: addressForm.country.trim(),
-      })
-      setProfile(updated)
+      }
+      const updated = await updateProfile(changes)
+      setProfile(updated ?? (profile ? {
+        ...profile,
+        defaultAddress: { name: changes.addressName, street: changes.street, city: changes.city, country: changes.country },
+      } : profile))
       setAddressOpen(false)
     } catch (cause) {
       Alert.alert('Could not update address', cause instanceof Error ? cause.message : 'Please try again.')
@@ -114,359 +90,160 @@ const ProfileScreen = () => {
     }
   }
 
-  const confirmSignOut = () => {
-    Alert.alert('Sign out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Sign out',
-        style: 'destructive',
-        onPress: () => {
-          // Clears the persisted JWT and returns to the role chooser.
-          logout()
-          router.replace('/')
-        },
-      },
-    ])
-  }
+  const confirmSignOut = () => Alert.alert('Sign out', 'Are you sure you want to sign out?', [
+    { text: 'Cancel', style: 'cancel' },
+    { text: 'Sign out', style: 'destructive', onPress: () => { logout(); router.replace('/') } },
+  ])
 
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#004e7a" />
-      </View>
-    )
-  }
+  if (loading) return <View style={styles.loading}><BrandLoader label="Loading your profile…" /></View>
+  if (!profile) return <View style={styles.loading}><Text style={styles.error}>{error ?? 'No profile available.'}</Text><TouchableOpacity style={styles.retry} onPress={() => { setRefreshing(true); void load() }}><Text style={styles.retryText}>Try again</Text></TouchableOpacity></View>
 
-  if (!profile) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.error_text}>{error ?? 'No profile available.'}</Text>
-        <TouchableOpacity style={styles.retry_button} onPress={onRefresh}>
-          <Text style={styles.retry_text}>Try again</Text>
-        </TouchableOpacity>
-      </View>
-    )
-  }
-
-  const address = profile.defaultAddress
-
-  const details: { label: string; value: string | null }[] = [
-    { label: 'Email:', value: profile.email },
-    { label: 'Phone', value: profile.phone },
-    { label: 'Company', value: profile.company },
-    { label: 'VAT No.', value: profile.vatNumber },
+  const accountRows = [
+    { label: 'Email address', value: profile.email, icon: 'email-outline' as const },
+    { label: 'Phone number', value: profile.phone || 'Add your phone number', icon: 'phone-outline' as const },
+    { label: 'Company', value: profile.company || 'Add your company', icon: 'domain' as const },
+    { label: 'VAT number', value: profile.vatNumber || 'Not provided', icon: 'card-account-details-outline' as const },
   ]
+  const address = profile.defaultAddress
 
   return (
     <View style={styles.screen}>
-      {/* Header */}
-      <LinearGradient
-        colors={['#1f5f8b', '#3d7bd9']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[styles.header, { paddingTop: insets.top + 16 }]}
-      >
-        <View style={styles.header_top}>
-          <TouchableOpacity onPress={goSettings} hitSlop={10} style={styles.back_button}>
-            <MaterialCommunityIcons name="cog-outline" size={28} color="#ffffff" />
-          </TouchableOpacity>
-
-          <Text style={styles.name} numberOfLines={2}>
-            {profile.fullName}
-          </Text>
-
-          <View style={styles.avatar}>
-            <Text style={styles.avatar_text}>{getInitials(profile.fullName)}</Text>
-          </View>
-        </View>
-
-        <View style={styles.stats_panel}>
-          <View style={styles.stat_pill}>
-            <Text style={styles.stat_text}>{profile.orderCount}</Text>
-            <Text style={styles.stat_text}>{profile.orderCount === 1 ? 'order' : 'orders'}</Text>
-          </View>
-          <View style={styles.stat_pill}>
-            <Text style={styles.stat_text}>Since</Text>
-            <Text style={styles.stat_text}>{getYear(profile.memberSince)}</Text>
-          </View>
-        </View>
-      </LinearGradient>
-
       <ScrollView
-        contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 28 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); void load() }} tintColor="#1167a8" />}
       >
-        {/* Account details */}
-        <Text style={styles.section_label}>ACCOUNT DETAILS</Text>
-        <View style={styles.details_card}>
-          {details.map((item) => (
-            <View key={item.label} style={styles.detail_row}>
-              <Text style={styles.detail_label}>{item.label}</Text>
-              <Text style={styles.detail_value}>{item.value || '--'}</Text>
+        <LinearGradient colors={['#123c61', '#17689b']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.hero, { paddingTop: insets.top + 18 }]}>
+          <View style={styles.topline}>
+            <View><Text style={styles.eyebrow}>ACCOUNT</Text><Text style={styles.pageTitle}>Your profile</Text></View>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open settings" style={styles.settingsButton} onPress={() => router.push('/settingsScreen')}>
+              <MaterialCommunityIcons name="cog-outline" size={22} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.identity}>
+            <View style={styles.avatar}><Text style={styles.avatarText}>{initials(profile.fullName)}</Text></View>
+            <View style={styles.identityText}><Text style={styles.name} numberOfLines={2}>{profile.fullName}</Text><Text style={styles.company}>{profile.company || 'Verichat client account'}</Text></View>
+          </View>
+          <View style={styles.summary}>
+            <View style={styles.summaryCell}><Text style={styles.summaryValue}>{profile.orderCount}</Text><Text style={styles.summaryLabel}>Orders</Text></View>
+            <View style={styles.summaryDivider} />
+            <View style={styles.summaryCell}><Text style={styles.summaryValue}>{memberYear(profile.memberSince)}</Text><Text style={styles.summaryLabel}>Member since</Text></View>
+          </View>
+        </LinearGradient>
+
+        <View style={styles.body}>
+          {error ? <Text style={styles.inlineError}>{error} · Pull to refresh to try again.</Text> : null}
+          <SectionHeading title="Account details" subtitle="Your contact and business information" />
+          <View style={styles.card}>
+            {accountRows.map((row, index) => <View key={row.label} style={[styles.detailRow, index > 0 && styles.divided]}>
+              <View style={styles.rowIcon}><MaterialCommunityIcons name={row.icon} size={19} color="#17689b" /></View>
+              <View style={styles.rowCopy}><Text style={styles.rowLabel}>{row.label}</Text><Text style={styles.rowValue}>{row.value}</Text></View>
+            </View>)}
+          </View>
+
+          <SectionHeading title="Delivery address" subtitle="Used when preparing orders and quotations" />
+          <View style={styles.addressCard}>
+            <View style={styles.addressIcon}><MaterialCommunityIcons name="map-marker-outline" size={22} color="#17689b" /></View>
+            <View style={styles.addressCopy}>
+              <Text style={styles.addressName}>{address?.name || 'No default address'}</Text>
+              <Text style={styles.addressText}>{address ? `${address.street}, ${address.city}, ${address.country}` : 'Add your organisation’s delivery location.'}</Text>
             </View>
-          ))}
-        </View>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={address ? 'Edit delivery address' : 'Add delivery address'} onPress={editAddress} style={styles.editButton}>
+              <MaterialCommunityIcons name="pencil-outline" size={18} color="#17689b" />
+            </TouchableOpacity>
+          </View>
 
-        {/* Default address */}
-        <Text style={[styles.section_label, styles.address_label]}>DEFAULT ADDRESS</Text>
-        <View style={styles.address_card}>
-          {address ? (
-            <>
-              <Text style={styles.address_name}>{address.name}</Text>
-              <Text style={styles.address_text}>{address.street},</Text>
-              <Text style={styles.address_text}>
-                {address.city}, {address.country}
-              </Text>
-            </>
-          ) : (
-            <Text style={styles.address_text}>No default address set</Text>
-          )}
-
-          <TouchableOpacity
-            style={styles.change_link}
-            onPress={editAddress}
-          >
-            <Text style={styles.change_text}>{address ? 'Change Address' : 'Add Address'}</Text>
-            <MaterialCommunityIcons name="arrow-right" size={26} color="#1b5e20" />
+          <SectionHeading title="Preferences and activity" subtitle="Manage your account" />
+          <View style={styles.card}>
+            <ActionRow icon="cog-outline" title="Settings" subtitle="Theme, notifications and sign-in" onPress={() => router.push('/settingsScreen')} />
+            <ActionRow icon="clipboard-list-outline" title="Orders and quote requests" subtitle="Track requests and delivery progress" onPress={() => router.push('/cartScreen')} />
+          </View>
+          <TouchableOpacity accessibilityRole="button" onPress={confirmSignOut} style={styles.signOut}>
+            <MaterialCommunityIcons name="logout" size={19} color="#b42318" /><Text style={styles.signOutText}>Sign out</Text>
           </TouchableOpacity>
-        </View>
-
-        {/* Account actions */}
-        <Text style={[styles.section_label, styles.address_label]}>ACCOUNT</Text>
-        <View style={styles.details_card}>
-          <TouchableOpacity style={styles.menu_row} onPress={goSettings}>
-            <MaterialCommunityIcons name="cog-outline" size={22} color="#1b5e20" />
-            <Text style={styles.menu_text}>Settings</Text>
-            <MaterialCommunityIcons name="arrow-right" size={24} color="#9e9e9e" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menu_row} onPress={() => router.push('/cartScreen')}>
-            <MaterialCommunityIcons name="package-variant-closed-check" size={22} color="#1b5e20" />
-            <Text style={styles.menu_text}>Purchase history & order tracking</Text>
-            <MaterialCommunityIcons name="arrow-right" size={24} color="#9e9e9e" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menu_row} onPress={confirmSignOut}>
-            <MaterialCommunityIcons name="logout" size={22} color="#b3261e" />
-            <Text style={[styles.menu_text, styles.sign_out_text]}>Sign out</Text>
-          </TouchableOpacity>
+          <Text style={styles.version}>VERICHAT CRM · BUSINESS ACCOUNT</Text>
         </View>
       </ScrollView>
 
       <Modal visible={addressOpen} transparent animationType="slide" onRequestClose={() => setAddressOpen(false)}>
-        <View style={styles.modal_backdrop}>
-          <View style={styles.address_modal}>
-            <Text style={styles.modal_title}>Update delivery address</Text>
-            {([
-              ['name', 'Address name'],
-              ['street', 'Street address'],
-              ['city', 'City or region'],
-              ['country', 'Country'],
-            ] as const).map(([key, label]) => (
-              <TextInput key={key} style={styles.address_input} value={addressForm[key]} onChangeText={(value) => setAddressForm((current) => ({ ...current, [key]: value }))} placeholder={label} autoCapitalize="words" />
-            ))}
-            <TouchableOpacity style={styles.save_address_button} disabled={savingAddress} onPress={() => void saveAddress()}><Text style={styles.save_address_text}>{savingAddress ? 'Saving…' : 'Save address'}</Text></TouchableOpacity>
-            <TouchableOpacity onPress={() => setAddressOpen(false)}><Text style={styles.cancel_address}>Cancel</Text></TouchableOpacity>
-          </View>
-        </View>
+        <View style={styles.modalBackdrop}><View style={[styles.modal, { paddingBottom: insets.bottom + 20 }]}>
+          <View style={styles.modalHandle} /><Text style={styles.modalTitle}>Delivery address</Text><Text style={styles.modalSubtitle}>Keep your organisation delivery details up to date.</Text>
+          {([['name', 'Address label'], ['street', 'Street address'], ['city', 'City or region'], ['country', 'Country']] as const).map(([key, label]) => <TextInput key={key} style={styles.input} value={addressForm[key]} onChangeText={value => setAddressForm(current => ({ ...current, [key]: value }))} placeholder={label} autoCapitalize="words" />)}
+          <TouchableOpacity style={styles.saveButton} disabled={savingAddress} onPress={() => void saveAddress()}><Text style={styles.saveText}>{savingAddress ? 'Saving…' : 'Save address'}</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => setAddressOpen(false)}><Text style={styles.cancel}>Cancel</Text></TouchableOpacity>
+        </View></View>
       </Modal>
     </View>
   )
 }
 
-export default ProfileScreen
+function SectionHeading({ title, subtitle }: { title: string; subtitle: string }) {
+  return <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>{title}</Text><Text style={styles.sectionSubtitle}>{subtitle}</Text></View>
+}
 
-/* -------------------------------- Styles -------------------------------- */
+function ActionRow({ icon, title, subtitle, onPress }: { icon: 'cog-outline' | 'clipboard-list-outline'; title: string; subtitle: string; onPress: () => void }) {
+  return <TouchableOpacity accessibilityRole="button" onPress={onPress} style={styles.actionRow}>
+    <View style={styles.rowIcon}><MaterialCommunityIcons name={icon} size={20} color="#17689b" /></View>
+    <View style={styles.rowCopy}><Text style={styles.actionTitle}>{title}</Text><Text style={styles.rowLabel}>{subtitle}</Text></View>
+    <MaterialCommunityIcons name="chevron-right" size={23} color="#8b9bad" />
+  </TouchableOpacity>
+}
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    padding: 24,
-    gap: 16,
-  },
-  error_text: {
-    fontSize: 16,
-    color: '#333333',
-    textAlign: 'center',
-  },
-  retry_button: {
-    backgroundColor: '#0057a8',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 20,
-  },
-  retry_text: {
-    color: '#ffffff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-
-  // Header
-  header: {
-    paddingHorizontal: 16,
-    paddingBottom: 22,
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
-  },
-  header_top: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 18,
-  },
-  back_button: {
-    marginRight: 4,
-  },
-  name: {
-    flex: 1,
-    paddingRight: 12,
-    fontSize: 30,
-    color: '#ffffff',
-    fontStyle: 'italic',
-    fontWeight: '700',
-    fontFamily: SERIF,
-    textShadowColor: 'rgba(255,255,255,0.45)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 8,
-  },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#004e9a',
-    borderWidth: 2,
-    borderColor: '#0a2f55',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatar_text: {
-    color: '#ffffff',
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  stats_panel: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#0b4a8f',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.45)',
-    borderRadius: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-  },
-  stat_pill: {
-    backgroundColor: '#f7f7f7',
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 28,
-  },
-  stat_text: {
-    fontSize: 14,
-    fontWeight: '900',
-    color: '#000000',
-  },
-
-  // Content
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 22,
-    paddingBottom: 30,
-  },
-  section_label: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: '#424242',
-    marginLeft: 4,
-    marginBottom: 8,
-  },
-  address_label: {
-    marginTop: 26,
-  },
-
-  // Account details
-  details_card: {
-    backgroundColor: '#efefef',
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-  },
-  detail_row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    gap: 8,
-  },
-  menu_row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    gap: 12,
-  },
-  menu_text: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1b1b1b',
-  },
-  sign_out_text: {
-    color: '#b3261e',
-  },
-  modal_backdrop: { flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.45)', padding: 20 },
-  address_modal: { backgroundColor: '#ffffff', borderRadius: 18, padding: 20, gap: 12 },
-  modal_title: { color: '#0a2f55', fontSize: 20, fontWeight: '900', marginBottom: 4 },
-  address_input: { height: 46, borderRadius: 10, borderWidth: 1, borderColor: '#aab2b9', paddingHorizontal: 12, color: '#111111' },
-  save_address_button: { backgroundColor: '#0057a8', padding: 13, alignItems: 'center', borderRadius: 12, marginTop: 4 },
-  save_address_text: { color: '#ffffff', fontWeight: '900' },
-  cancel_address: { color: '#59636e', textAlign: 'center', padding: 6 },
-  detail_label: {
-    width: 90,
-    textAlign: 'center',
-    fontSize: 14,
-    color: '#424242',
-  },
-  detail_value: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 14,
-    color: '#333333',
-  },
-
-  // Address
-  address_card: {
-    backgroundColor: '#efefef',
-    borderRadius: 14,
-    padding: 16,
-    gap: 4,
-  },
-  address_name: {
-    fontSize: 15,
-    fontWeight: '900',
-    color: '#000000',
-    marginBottom: 2,
-  },
-  address_text: {
-    fontSize: 15,
-    color: '#333333',
-  },
-  change_link: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    alignSelf: 'flex-start',
-    marginTop: 10,
-  },
-  change_text: {
-    fontSize: 14,
-    fontWeight: '900',
-    color: '#1b5e20',
-  },
+  screen: { flex: 1, backgroundColor: CRMTheme.background },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: CRMTheme.background },
+  error: { textAlign: 'center', color: '#465a6e', marginBottom: 14 },
+  retry: { backgroundColor: '#17689b', paddingHorizontal: 22, paddingVertical: 11, borderRadius: 12 },
+  retryText: { color: '#fff', fontWeight: '800' },
+  hero: { paddingHorizontal: 22, paddingBottom: 22, borderBottomLeftRadius: 26, borderBottomRightRadius: 26 },
+  topline: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  eyebrow: { color: '#b9d9ef', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  pageTitle: { color: '#fff', fontSize: 26, fontWeight: '900', marginTop: 2 },
+  settingsButton: { width: 42, height: 42, borderRadius: 14, backgroundColor: '#ffffff20', alignItems: 'center', justifyContent: 'center' },
+  identity: { flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 23, marginBottom: 22 },
+  avatar: { width: 62, height: 62, borderRadius: 21, backgroundColor: '#d7edf9', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#ffffff70' },
+  avatarText: { color: '#14557f', fontSize: 20, fontWeight: '900' },
+  identityText: { flex: 1 },
+  name: { color: '#fff', fontSize: 20, fontWeight: '900' },
+  company: { color: '#d8eaf6', fontSize: 13, marginTop: 4 },
+  summary: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#ffffff18', borderWidth: 1, borderColor: '#ffffff2b', borderRadius: 16, paddingVertical: 13 },
+  summaryCell: { flex: 1, alignItems: 'center', gap: 3 },
+  summaryValue: { color: '#fff', fontSize: 19, fontWeight: '900' },
+  summaryLabel: { color: '#d5e7f3', fontSize: 11, fontWeight: '600' },
+  summaryDivider: { width: 1, height: 32, backgroundColor: '#ffffff40' },
+  body: { paddingHorizontal: 18, paddingTop: 20 },
+  inlineError: { color: '#9f322b', backgroundColor: '#fff0ee', padding: 12, borderRadius: 12, marginBottom: 14 },
+  sectionHeading: { marginTop: 5, marginBottom: 10 },
+  sectionTitle: { color: CRMTheme.text, fontSize: 16, fontWeight: '900' },
+  sectionSubtitle: { color: CRMTheme.muted, fontSize: 12, marginTop: 3 },
+  card: { backgroundColor: '#fff', borderRadius: 17, paddingHorizontal: 14, borderWidth: 1, borderColor: CRMTheme.border, marginBottom: 20, shadowColor: '#153c5c', shadowOpacity: 0.04, shadowRadius: 9, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
+  detailRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13 },
+  divided: { borderTopWidth: 1, borderTopColor: '#edf1f5' },
+  rowIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: CRMTheme.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
+  rowCopy: { flex: 1 },
+  rowLabel: { color: '#7a8999', fontSize: 11, fontWeight: '600' },
+  rowValue: { color: '#243c53', fontSize: 14, fontWeight: '700', marginTop: 3 },
+  addressCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff', borderRadius: 17, padding: 14, borderWidth: 1, borderColor: CRMTheme.border, marginBottom: 20 },
+  addressIcon: { width: 42, height: 42, borderRadius: 13, backgroundColor: CRMTheme.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
+  addressCopy: { flex: 1 },
+  addressName: { color: '#243c53', fontSize: 14, fontWeight: '800' },
+  addressText: { color: CRMTheme.muted, fontSize: 12, lineHeight: 18, marginTop: 3 },
+  editButton: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 11, backgroundColor: '#f3f8fb' },
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 68 },
+  actionTitle: { color: '#243c53', fontSize: 14, fontWeight: '800', marginBottom: 3 },
+  signOut: { minHeight: 50, borderRadius: 14, borderWidth: 1, borderColor: '#f0d6d3', backgroundColor: '#fff', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, marginTop: 1 },
+  signOutText: { color: '#b42318', fontWeight: '800', fontSize: 14 },
+  version: { textAlign: 'center', color: '#99a7b6', fontSize: 9, fontWeight: '800', letterSpacing: 1, marginTop: 20, marginBottom: 4 },
+  modalBackdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0a203866' },
+  modal: { backgroundColor: '#fff', borderTopLeftRadius: 25, borderTopRightRadius: 25, padding: 22, gap: 11 },
+  modalHandle: { width: 42, height: 4, borderRadius: 3, backgroundColor: '#d6dfe8', alignSelf: 'center', marginBottom: 5 },
+  modalTitle: { color: CRMTheme.text, fontSize: 20, fontWeight: '900' },
+  modalSubtitle: { color: '#718295', fontSize: 13, marginBottom: 3 },
+  input: { minHeight: 48, borderRadius: 12, borderWidth: 1, borderColor: '#dce4ec', paddingHorizontal: 13, color: CRMTheme.text, backgroundColor: '#fbfcfd' },
+  saveButton: { minHeight: 49, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: '#17689b', marginTop: 4 },
+  saveText: { color: '#fff', fontWeight: '900' },
+  cancel: { color: '#66788b', textAlign: 'center', padding: 8, fontWeight: '700' },
 })
+
+
+
