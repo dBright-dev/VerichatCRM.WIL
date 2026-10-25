@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using VerichatCRM.API.DTOs.Requests;
 using VerichatCRM.API.Services.Interfaces;
+using VerichatCRM.Infrastructure.Data;
 
 namespace VerichatCRM.API.Controllers
 {
@@ -13,11 +15,13 @@ namespace VerichatCRM.API.Controllers
     {
         private readonly IMobileService _mobile;
         private readonly IAuthService _auth;
+        private readonly AppDbContext _db;
 
-        public MobileAccountController(IMobileService mobile, IAuthService auth)
+        public MobileAccountController(IMobileService mobile, IAuthService auth, AppDbContext db)
         {
             _mobile = mobile;
             _auth = auth;
+            _db = db;
         }
 
         private string UserId =>
@@ -30,29 +34,42 @@ namespace VerichatCRM.API.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] ClientRegisterRequest request)
         {
-            var result = await _auth.RegisterAsync(new RegisterRequest
+            // Registration spans Users, MobileProfiles and Clients, all in the
+            // same CRM database. Commit them together so a failed profile/client
+            // insert cannot leave a half-created account behind.
+            var strategy = _db.Database.CreateExecutionStrategy();
+            var result = await strategy.ExecuteAsync(async () =>
             {
-                DisplayName = request.DisplayName,
-                Email = request.Email,
-                Password = request.Password,
-                Role = Core.Entities.UserRoles.ClientUser
+                await using var transaction = await _db.Database.BeginTransactionAsync();
+                var registration = await _auth.RegisterAsync(new RegisterRequest
+                {
+                    DisplayName = request.DisplayName,
+                    Email = request.Email,
+                    Password = request.Password,
+                    Role = Core.Entities.UserRoles.ClientUser
+                });
+
+                if (!registration.Success || registration.User == null)
+                {
+                    await transaction.RollbackAsync();
+                    return registration;
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.CompanyName))
+                {
+                    await _mobile.UpdateProfileAsync(
+                        registration.User.UserId,
+                        _ => { },
+                        p => p.Company = request.CompanyName!.Trim());
+                }
+
+                await _mobile.EnsureClientAccountAsync(registration.User.UserId);
+                await transaction.CommitAsync();
+                return registration;
             });
 
             if (!result.Success || result.User == null)
                 return BadRequest(result);
-
-            // Persist the company name captured on the sign-up form...
-            if (!string.IsNullOrWhiteSpace(request.CompanyName))
-            {
-                await _mobile.UpdateProfileAsync(
-                    result.User.UserId,
-                    _ => { },
-                    p => p.Company = request.CompanyName!.Trim());
-            }
-
-            // ...then create the CRM Client row (orders/quotations FK to
-            // Clients.ClientId) using that company name.
-            await _mobile.EnsureClientAccountAsync(result.User.UserId);
 
             return Ok(result);
         }
