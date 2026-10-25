@@ -35,8 +35,44 @@ namespace VerichatCRM.Infrastructure.Data
         public DbSet<MobileProfile> MobileProfiles => Set<MobileProfile>();
         public DbSet<MobileSettings> MobileSettings => Set<MobileSettings>();
         public DbSet<HealthMetric> HealthMetrics => Set<HealthMetric>();
+        public DbSet<ClientTimelineNote> ClientTimelineNotes => Set<ClientTimelineNote>();
+        public DbSet<Appointment> Appointments => Set<Appointment>();
+        public DbSet<SalesGoal> SalesGoals => Set<SalesGoal>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<ClientTimelineNote>(entity =>
+            {
+                entity.HasKey(note => note.NoteId);
+                entity.Property(note => note.Text).IsRequired().HasMaxLength(4000);
+                entity.Property(note => note.ClientId).IsRequired();
+                entity.Property(note => note.CreatedByUserId).IsRequired();
+                entity.HasIndex(note => new { note.ClientId, note.CreatedAt });
+            });
+
+            modelBuilder.Entity<Appointment>(entity =>
+            {
+                entity.HasKey(appointment => appointment.Id);
+                entity.Property(appointment => appointment.ClientId).IsRequired();
+                entity.Property(appointment => appointment.RequestedByUserId).IsRequired();
+                entity.Property(appointment => appointment.Topic).IsRequired().HasMaxLength(160);
+                entity.Property(appointment => appointment.Status).IsRequired().HasMaxLength(24);
+                entity.Property(appointment => appointment.Notes).HasMaxLength(4000);
+                entity.HasIndex(appointment => new { appointment.ClientId, appointment.ScheduledDate });
+                entity.HasIndex(appointment => new { appointment.Status, appointment.ScheduledDate });
+            });
+
+            modelBuilder.Entity<SalesGoal>(entity =>
+            {
+                entity.HasKey(goal => goal.Id);
+                entity.Property(goal => goal.UserId).IsRequired();
+                entity.Property(goal => goal.Title).IsRequired().HasMaxLength(160);
+                entity.Property(goal => goal.Period).IsRequired().HasMaxLength(24);
+                entity.Property(goal => goal.PeriodLabel).HasMaxLength(80);
+                entity.Property(goal => goal.Target).HasPrecision(18, 2);
+                entity.Property(goal => goal.Achieved).HasPrecision(18, 2);
+                entity.HasIndex(goal => new { goal.UserId, goal.Period });
+            });
+
             // Product configuration
             modelBuilder.Entity<Product>(entity =>
             {
