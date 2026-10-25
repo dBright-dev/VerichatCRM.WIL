@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { api } from '../constants/api'
 
 export type DeliveryTracking = {
@@ -90,7 +91,7 @@ export function useRealTimeUpdates() {
     return () => {
       window.removeEventListener('verichat-realtime-update', handleRealTime)
     }
-  }, [])
+  }, [listeners])
 
   const subscribe = (listener: (data: any) => void) => {
     setListeners(prev => new Set(prev).add(listener))

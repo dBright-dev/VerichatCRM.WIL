@@ -1,16 +1,29 @@
-import { PermissionsAndroid, Platform } from 'react-native'
-import * as Notifications from 'expo-notifications'
-import * as Device from 'expo-device'
+import { Platform } from 'react-native'
 import { api } from '../constants/api'
 
-// Configure desired notification content handlers
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-})
+type NotificationsModule = typeof import('expo-notifications')
+
+let notificationsModule: NotificationsModule | null | undefined
+
+/** Load notifications on demand so Expo Go can run when its native module is unavailable. */
+async function getNotifications(): Promise<NotificationsModule | null> {
+  if (notificationsModule !== undefined) return notificationsModule
+  try {
+    notificationsModule = await import('expo-notifications')
+    notificationsModule.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    })
+  } catch (error) {
+    notificationsModule = null
+    console.warn('[Notifications] Native module is unavailable in this app build:', error)
+  }
+  return notificationsModule
+}
 
 export type NotificationType = 'info' | 'warning' | 'error' | 'success'
 export type NotificationPriority = 'low' | 'normal' | 'high'
@@ -26,19 +39,12 @@ export type PushNotification = {
 
 /** Request notification permissions and return the Expo push token. */
 export async function requestNotificationsPermission(): Promise<string | null> {
-  // Ask for permissions on iOS
+  const Notifications = await getNotifications()
+  if (!Notifications) return null
+  // Ask for notification permissions on supported mobile platforms.
   if (Platform.OS === 'ios' || Platform.OS === 'android') {
     const { status: permStatus } = await Notifications.requestPermissionsAsync()
     if (permStatus !== 'granted') {
-      // On Android, also ask for notification permission in manifest
-      if (Platform.OS === 'android' && permStatus !== 'granted') {
-        const androidPerms = await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-        ])
-        if (androidPerms['android.permission.POST_NOTIFICATIONS'] !== 'granted') {
-          console.warn('[Notifications] POST_NOTIFICATIONS permission denied')
-        }
-      }
       return null
     }
   }
@@ -95,7 +101,7 @@ export async function sendPushNotification(
   data?: Record<string, string>,
 ): Promise<boolean> {
   try {
-    const response = await api(`/api/notifications/send`, {
+    await api(`/api/notifications/send`, {
       method: 'POST',
       body: JSON.stringify({
         userId,
@@ -111,29 +117,26 @@ export async function sendPushNotification(
   }
 }
 
-/** Poll for foreground notifications (trap them so they appear on the lock screen). */
+/** Subscribe to notifications received while the app is open. */
 export function setupForegroundNotificationHandler() {
-  return Notifications.addNotificationReceivedHandler((notification) => {
+  return getNotifications().then((Notifications) => Notifications?.addNotificationReceivedListener((notification) => {
     console.log('[Notifications] Received foreground notification:', notification)
-    return {
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: true,
-    }
-  })
+  }) ?? null)
 }
 
 /** Listen for delivered notifications. */
 export function setupDeliveredNotificationHandler() {
-  return Notifications.addNotificationResponseReceivedListener((response) => {
+  return getNotifications().then((Notifications) => Notifications?.addNotificationResponseReceivedListener((response) => {
     console.log('[Notifications] Notification response:', response)
     // Handle notification tap (e.g., navigate to specific screen)
-  })
+  }) ?? null)
 }
 
 /** Request permissions and return the token. */
 export async function initPushNotifications(): Promise<string | null> {
   try {
+    const Notifications = await getNotifications()
+    if (!Notifications) return null
     const { status: permStatus } = await Notifications.requestPermissionsAsync()
     if (permStatus !== 'granted') {
       return null
@@ -157,14 +160,10 @@ export async function showLocalNotification(
   body: string,
   data?: Record<string, string>,
 ) {
-  const notification = new Notifications.NotificationContent()
-  notification.setTitle(title)
-  notification.setBody(body)
-  if (data) {
-    Object.entries(data).forEach(([key, value]) => {
-      notification.setValue(key, value)
-    })
-  }
-
-  await Notifications.displayNotificationAsync(notification)
+  const Notifications = await getNotifications()
+  if (!Notifications) return
+  await Notifications.scheduleNotificationAsync({
+    content: { title, body, data },
+    trigger: null,
+  })
 }
