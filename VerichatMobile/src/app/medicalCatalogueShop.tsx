@@ -1,11 +1,10 @@
+import { CRMTheme } from '../constants/crmTheme'
 import { MaterialCommunityIcons } from '@expo/vector-icons'; //insert animated icons in expo.icon
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { ComponentProps, useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
-  ActivityIndicator,
-  Alert,
   Image,
   ImageSourcePropType,
   Platform,
@@ -19,6 +18,10 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fetchMobileCatalogue, MobileProduct } from '../constants/catalogueService';
 import { addCartItem, getCartLines, subscribeCart } from '../constants/cartStore';
+import BarcodeScannerModal from '../components/barcode-scanner-modal';
+import SkeletonCard from '../components/ui/SkeletonCard';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import AnimatedButton from '../components/ui/AnimatedButton';
 
 /* ----------------------------- Types & data ----------------------------- */
 
@@ -87,6 +90,7 @@ const MedicalCatalogScreen = () => {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const [query, setQuery] = useState('')
+  const [scannerOpen, setScannerOpen] = useState(false)
   const [activeFilter, setActiveFilter] = useState<Filter>('All')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -133,8 +137,8 @@ const MedicalCatalogScreen = () => {
     })
   }, [products, query, activeFilter])
 
-  const renderProduct = ({ item }: { item: Product }) => (
-    <View style={styles.card}>
+  const renderProduct = ({ item, index }: { item: Product; index: number }) => (
+    <Animated.View entering={FadeInDown.delay(Math.min(index * 55, 440)).duration(300)} style={styles.card}>
       <View style={styles.card_top}>
         <View style={styles.image_box}>
           {item.image ? (
@@ -170,32 +174,32 @@ const MedicalCatalogScreen = () => {
           <Text style={styles.unit}>{item.unit}</Text>
         </View>
 
-        <TouchableOpacity activeOpacity={0.85} onPress={() => addCartItem({ sku: item.sku, productName: item.name, price: item.price })}>
+        <AnimatedButton shimmer onPress={() => addCartItem({ sku: item.sku, productName: item.name, price: item.price })}>
           <LinearGradient
-            colors={['#004e7a', '#2f7be0']}
+            colors={[CRMTheme.primaryDark, CRMTheme.primary]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.add_button}
           >
             <Text style={styles.add_button_text}>Add to cart</Text>
           </LinearGradient>
-        </TouchableOpacity>
+        </AnimatedButton>
       </View>
-    </View>
+    </Animated.View>
   )
 
   return (
     <View style={styles.screen}>
       {/* Header */}
       <LinearGradient
-        colors={['#1f5f8b', '#3d7bd9']}
+        colors={[CRMTheme.primaryDark, CRMTheme.primary]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.header, { paddingTop: insets.top + 16 }]}
       >
         <View style={styles.header_top}>
           <View>
-            <Text style={styles.title}>Medical Catalog</Text>
+              <Text style={styles.title}>Equipment Catalogue</Text>
             <Text style={styles.subtitle}>
               {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
             </Text>
@@ -225,8 +229,8 @@ const MedicalCatalogScreen = () => {
           ) : (
             <MaterialCommunityIcons name="magnify" size={22} color="#546e7a" />
           )}
-          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Barcode lookup" onPress={() => Alert.alert('Barcode lookup', 'Enter the barcode or SKU in the search field. Camera scanning is not configured in this app build.')}>
-            <MaterialCommunityIcons name="barcode-scan" size={22} color="#0057a8" />
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Scan barcode" onPress={() => setScannerOpen(true)}>
+            <MaterialCommunityIcons name="barcode-scan" size={22} color={CRMTheme.primary} />
           </TouchableOpacity>
         </View>
       </LinearGradient>
@@ -263,7 +267,7 @@ const MedicalCatalogScreen = () => {
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        ListEmptyComponent={loading ? <ActivityIndicator style={{ marginTop: 48 }} size="large" color="#004e7a" /> : error ? (
+        ListEmptyComponent={loading ? <View style={{ paddingTop: 18 }}><SkeletonCard /><SkeletonCard /><SkeletonCard /></View> : error ? (
           <View style={styles.empty}><Text style={styles.empty_text}>{error}</Text><TouchableOpacity onPress={() => { setLoading(true); setError(null); fetchMobileCatalogue().then((live) => setProducts(live.map(mapApiProduct))).catch((cause: unknown) => setError(cause instanceof Error ? cause.message : 'Could not load products.')).finally(() => setLoading(false)) }}><Text style={styles.empty_text}>Tap to retry</Text></TouchableOpacity></View>
         ) : (
           <View style={styles.empty}>
@@ -271,6 +275,12 @@ const MedicalCatalogScreen = () => {
             <Text style={styles.empty_text}>No products found</Text>
           </View>
         )}
+      />
+      <BarcodeScannerModal
+        visible={scannerOpen}
+        title="Scan product barcode"
+        onClose={() => setScannerOpen(false)}
+        onScanned={setQuery}
       />
     </View>
   )
@@ -283,7 +293,7 @@ export default MedicalCatalogScreen
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#efefef',
+    backgroundColor: CRMTheme.background,
   },
 
   // Header
@@ -493,3 +503,6 @@ const styles = StyleSheet.create({
     color: '#757575',
   },
 })
+
+
+

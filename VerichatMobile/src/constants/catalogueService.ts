@@ -48,6 +48,11 @@ export async function submitCartOrder(lines: { sku: string; quantity: number }[]
 
 export type MobileQuotation = { quotationId: string; quoteReference: string; status: string; grandTotal: number; validUntil: string; lineItems: { productName: string; quantity: number; lineTotal: number }[] }
 
+/** Submit a mobile request cart; the API recalculates live catalogue pricing and creates a Draft quotation. */
+export async function requestQuotation(lines: { sku: string; quantity: number }[], notes?: string): Promise<MobileQuotation> {
+  return api<MobileQuotation>('/api/quotation/request', { method: 'POST', body: JSON.stringify({ lines, notes }) })
+}
+
 export async function fetchMyQuotations(): Promise<MobileQuotation[]> {
   return api<MobileQuotation[]>('/api/mobile/quotations')
 }
