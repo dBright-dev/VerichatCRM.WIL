@@ -1,6 +1,16 @@
-import React, { useEffect, useState } from "react"
-import { FlatList, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, ActivityIndicator, Alert } from "react-native"
+import { CRMTheme } from '../constants/crmTheme'
+import React, { useCallback, useEffect, useState } from "react"
+import { Alert, ScrollView, Text, View, ActivityIndicator, TouchableOpacity } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import * as Linking from "expo-linking"
+import { api } from "../constants/api"
+
+type ClientContact = {
+  clientName: string
+  contactPerson?: string | null
+  contactEmail?: string | null
+  contactPhone?: string | null
+}
 
 type SupportTicket = {
   id: string
@@ -22,31 +32,6 @@ type Inquiry = {
   updatedAt: string
 }
 
-type Appointment = {
-  id: string
-  clientId: string
-  date: string
-  time: string
-  status: string
-  notes?: string
-}
-
-type FollowUp = {
-  id: string
-  clientId: string
-  nextFollowUpDate: string
-  notes?: string
-}
-
-type TimelineItem = {
-  id: string
-  type: "ticket" | "inquiry" | "appointment" | "followup"
-  title: string
-  details: string
-  date: string
-  timestamp: string
-}
-
 type Props = {
   clientId: string
 }
@@ -55,39 +40,55 @@ const ClientCommunicationScreen = ({ clientId }: Props) => {
   const insets = useSafeAreaInsets()
   const [tickets, setTickets] = useState<SupportTicket[]>([])
   const [inquiries, setInquiries] = useState<Inquiry[]>([])
-  const [appointments, setAppointments] = useState<Appointment[]>([])
-  const [followUps, setFollowUps] = useState<FollowUp[]>([])
+  const [client, setClient] = useState<ClientContact | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [timelineError, setTimelineError] = useState(false)
+
+  const loadData = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [clientResult, ticketsResult, inquiriesResult] = await Promise.allSettled([
+        api<ClientContact>(`/api/client/${encodeURIComponent(clientId)}`),
+        api<SupportTicket[]>(`/api/supportticket/client/${encodeURIComponent(clientId)}`),
+        api<Inquiry[]>(`/api/inquiry/client/${encodeURIComponent(clientId)}`),
+      ])
+      if (clientResult.status === "rejected") throw clientResult.reason
+      setClient(clientResult.value)
+      setTickets(ticketsResult.status === "fulfilled" ? ticketsResult.value || [] : [])
+      setInquiries(inquiriesResult.status === "fulfilled" ? inquiriesResult.value || [] : [])
+      setTimelineError(ticketsResult.status === "rejected" && inquiriesResult.status === "rejected")
+      setError(null)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load data.")
+    } finally {
+      setLoading(false)
+    }
+  }, [clientId])
 
   useEffect(() => {
-    ;(async () => {
-      try {
-        const ticketsResp = await fetch(`/api/supportticket/client/${clientId}`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        })
-        const ticketsData = await ticketsResp.json()
-        setTickets(ticketsData || [])
-
-        const inquiriesResp = await fetch(`/api/inquiry/client/${clientId}`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        })
-        const inquiriesData = await inquiriesResp.json()
-        setInquiries(inquiriesData || [])
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load data.")
-      } finally {
-        setLoading(false)
-      }
-    })()
-  }, [clientId])
+    // This effect starts an async load; state updates happen after the request settles.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadData()
+  }, [loadData])
 
   const formatDate = (isoDate: string) => {
     const date = new Date(isoDate)
     return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
   }
+
+  const openContactLink = async (url: string, service: string) => {
+    try {
+      await Linking.openURL(url)
+    } catch {
+      Alert.alert(`${service} unavailable`, `No app could open this ${service.toLowerCase()} link.`)
+    }
+  }
+
+  const phone = client?.contactPhone?.trim() || ""
+  const phoneForDial = phone.replace(/[^\d+]/g, "")
+  const phoneForWhatsApp = phone.replace(/\D/g, "")
+  const email = client?.contactEmail?.trim() || ""
 
   const timelineItems = [
     ...tickets.map((t) => ({
@@ -108,20 +109,42 @@ const ClientCommunicationScreen = ({ clientId }: Props) => {
     })),
   ].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
 
-  if (loading) {
-    return <View><ActivityIndicator size="large" color="#0057a8" /></View>
+  if (loading && !client) {
+    return <View><ActivityIndicator size="large" color={CRMTheme.primary} /></View>
   }
 
-  if (error) {
-    return <View>{error}</View>
+  if (error && !client) {
+    return <View style={{ padding: 24, paddingTop: insets.top + 24 }}><Text>{error}</Text><TouchableOpacity onPress={() => void loadData()}><Text style={{ color: CRMTheme.primary, marginTop: 12 }}>Try again</Text></TouchableOpacity></View>
   }
 
   return (
-    <ScrollView style={{ paddingTop: insets.top, paddingBottom: insets.bottom + 24 }}>
+    <ScrollView contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24, paddingHorizontal: 16 }}>
+      <View style={{ backgroundColor: "#fff", borderRadius: 12, padding: 16, marginBottom: 24, borderWidth: 1, borderColor: CRMTheme.border }}>
+        <Text style={{ fontSize: 18, fontWeight: "700", color: CRMTheme.text }}>{client?.clientName || "Client contact"}</Text>
+        {!!client?.contactPerson && <Text style={{ color: CRMTheme.muted, marginTop: 4 }}>{client.contactPerson}</Text>}
+
+        <View style={{ marginTop: 16, gap: 12 }}>
+          <View>
+            <Text style={{ color: CRMTheme.muted, marginBottom: 8 }}>Phone</Text>
+            {phone ? <Text style={{ color: CRMTheme.text, marginBottom: 8 }}>{phone}</Text> : <Text style={{ color: "#8993a4", marginBottom: 8 }}>No phone number on file</Text>}
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              {!!phoneForDial && <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Call ${phone}`} onPress={() => void openContactLink(`tel:${phoneForDial}`, "Phone")} style={actionStyle}><Text style={actionTextStyle}>Call</Text></TouchableOpacity>}
+              {!!phoneForWhatsApp && <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Message ${phone} on WhatsApp`} onPress={() => void openContactLink(`whatsapp://send?phone=${phoneForWhatsApp}`, "WhatsApp")} style={actionStyle}><Text style={actionTextStyle}>WhatsApp</Text></TouchableOpacity>}
+            </View>
+          </View>
+          <View>
+            <Text style={{ color: CRMTheme.muted, marginBottom: 8 }}>Email</Text>
+            {email ? <Text style={{ color: CRMTheme.text, marginBottom: 8 }}>{email}</Text> : <Text style={{ color: "#8993a4", marginBottom: 8 }}>No email address on file</Text>}
+            {!!email && <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Email ${email}`} onPress={() => void openContactLink(`mailto:${encodeURIComponent(email)}`, "Email")} style={actionStyle}><Text style={actionTextStyle}>Email</Text></TouchableOpacity>}
+          </View>
+        </View>
+      </View>
       <View style={{ marginBottom: 24 }}>
+        {timelineError && <Text style={{ color: "#8a5a00", marginBottom: 12 }}>Communication history is temporarily unavailable.</Text>}
+        {loading && <ActivityIndicator size="small" color={CRMTheme.primary} />}
         {timelineItems.length === 0 && <Text>No communication records yet</Text>}
         {timelineItems.map((item) => (
-          <View key={item.id} style={{ borderLeftWidth: 4, borderLeftColor: "#0057a8", marginBottom: 12, paddingLeft: 8 }}>
+          <View key={item.id} style={{ borderLeftWidth: 4, borderLeftColor: CRMTheme.primary, marginBottom: 12, paddingLeft: 8 }}>
             <Text style={{ fontWeight: "700", fontSize: 12 }}>{item.type}</Text>
             <Text style={{ fontSize: 12, color: "#888" }}>{formatDate(item.date)}</Text>
             <Text style={{ fontSize: 14 }}>{item.details}</Text>
@@ -132,73 +155,9 @@ const ClientCommunicationScreen = ({ clientId }: Props) => {
   )
 }
 
-export default ClientCommunicationScreen
-import React, { useEffect, useState } from "react"
-import { Modal, ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator, Alert } from "react-native"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { styles } from "./ClientCommunicationScreenStyles"
-
-const ClientCommunicationScreen = ({ clientId }: { clientId: string }) => {
-  const insets = useSafeAreaInsets()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [refreshing, setRefreshing] = useState(false)
-  const [showFollowUpModal, setShowFollowUpModal] = useState(false)
-  const [followUpText, setFollowUpText] = useState("")
-
-  useEffect(() => { loadData() }, [clientId])
-  const loadData = async () => {
-    try {
-      const [ticketsResp, inquiriesResp, appointmentsResp, followUpsResp, complaintsResp] = await Promise.all([
-        fetch(`/api/supportticket/client/${clientId}`, { method: "GET", headers: { "Content-Type": "application/json" } }),
-        fetch(`/api/inquiry/client/${clientId}`, { method: "GET", headers: { "Content-Type": "application/json" } }),
-        fetch(`/api/appointments/client/${clientId}`, { method: "GET", headers: { "Content-Type": "application/json" } }),
-        fetch(`/api/followup/client/${clientId}`, { method: "GET", headers: { "Content-Type": "application/json" } }),
-        fetch(`/api/complaint/client/${clientId}`, { method: "GET", headers: { "Content-Type": "application/json" } }),
-      ])
-      const ticketsData = await ticketsResp.json()
-      const inquiriesData = await inquiriesResp.json()
-      const appointmentsData = await appointmentsResp.json()
-      const followUpsData = await followUpsResp.json()
-      const complaintsData = await complaintsResp.json()
-      setTickets(ticketsData || [])
-      setInquiries(inquiriesData || [])
-      setAppointments(appointmentsData || [])
-      setFollowUps(followUpsData || [])
-      setComplaints(complaintsData || [])
-      setError(null)
-    } catch (e) { setError(e instanceof Error ? e.message : "Failed to load data.") } finally { setLoading(false) }
-  }
-
-  const onRefresh = async () => { setRefreshing(true); await loadData(); setRefreshing(false) }
-
-  const handleLogFollowUp = async () => {
-    if (!followUpText.trim()) { Alert.alert("Enter follow-up text", "Please type follow-up notes before saving."); return }
-    try {
-      const resp = await fetch(`/api/inquiry/client/${clientId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nextFollowUpDate: new Date().toISOString(), notes: followUpText }) })
-      const result = await resp.json()
-      if (resp.ok) { setShowFollowUpModal(false); setFollowUpText(""); await loadData(); Alert.alert("Follow-up logged", "Follow-up logged successfully.") }
-      else Alert.alert("Error", result.message || "Failed to log follow-up.")
-    } catch (e) { Alert.alert("Error", e instanceof Error ? e.message : "Failed to log follow-up.") }
-  }
-
-  if (loading) return <View style={styles.loading}><ActivityIndicator size="large" color="#0057a8" /></View>
-  if (error) return <View style={styles.errorContainer}><Text style={styles.errorText}>{error}</Text><TouchableOpacity style={styles.retryButton} onPress={() => window.location.reload()}><Text style={styles.retryText}>Retry</Text></TouchableOpacity></View>
-
-  return (
-    <ScrollView style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom + 24 }]} contentContainerStyle={{ gap: 12 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0057a8']} />}>
-      {error && <View style={styles.errorBanner}><Text style={styles.errorText}>{error}</Text></View>}
-      <View style={styles.header}><Text style={styles.headerTitle}>Client Communication</Text><Text style={styles.headerSubtitle}>Client ID: {clientId}</Text></View>
-      {loading && <View style={styles.emptyState}><ActivityIndicator size="large" color="#0057a8" /></View>}
-      <TouchableOpacity style={[styles.actionButton, styles.followUpButton]} onPress={() => setShowFollowUpModal(true)}><Text style={styles.actionButtonText}>📝 Log Follow-up</Text></TouchableOpacity>
-      <Modal visible={showFollowUpModal} transparent animationType="fade" onRequestClose={() => setShowFollowUpModal(false)}>
-        <View style={styles.modalBackground}><View style={styles.modalContent}><Text style={styles.modalTitle}>Log Follow-up</Text><Text style={styles.modalLabel}>Follow-up notes</Text>
-          <TextInput style={styles.followUpInput} value={followUpText} onChangeText={setFollowUpText} multiline numberOfLines={3} placeholder="Enter follow-up notes..." />
-          <View style={styles.modalActionButtons}><TouchableOpacity style={styles.modalSaveButton} onPress={handleLogFollowUp}><Text style={styles.modalSaveButtonText}>Save</Text></TouchableOpacity><TouchableOpacity style={styles.modalCancelButton2} onPress={() => setShowFollowUpModal(false)}><Text style={styles.modalCancelButtonText2}>Cancel</Text></TouchableOpacity></View>
-        </View></View>
-      </Modal>
-    </ScrollView>
-  )
-}
+const actionStyle = { alignSelf: "flex-start" as const, backgroundColor: CRMTheme.primary, borderRadius: 8, paddingVertical: 9, paddingHorizontal: 14 }
+const actionTextStyle = { color: "#fff", fontSize: 14, fontWeight: "600" as const }
 
 export default ClientCommunicationScreen
+
+
