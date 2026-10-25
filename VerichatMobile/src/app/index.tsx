@@ -1,3 +1,4 @@
+import { CRMTheme } from '../constants/crmTheme'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
@@ -52,7 +53,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#004e7a',
+    backgroundColor: CRMTheme.primaryDark,
   },
   Logo: {
     marginBottom: 50,
@@ -85,3 +86,4 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
 })
+
