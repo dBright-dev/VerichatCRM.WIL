@@ -9,8 +9,9 @@ namespace VerichatCRM.Web.Controllers
     public class PipelineController : Controller
     {
         private readonly IPipelineApiService _pipeline;
+        private readonly IApiClient _api;
 
-        public PipelineController(IPipelineApiService pipeline) => _pipeline = pipeline;
+        public PipelineController(IPipelineApiService pipeline, IApiClient api) { _pipeline = pipeline; _api = api; }
 
         public async Task<IActionResult> Index()
         {
@@ -22,6 +23,9 @@ namespace VerichatCRM.Web.Controllers
             ViewData["CurrentRole"] = HttpContext.Session.GetString("UserRole") ?? "Sales Representative";
 
             var model = await _pipeline.GetBoardAsync();
+            var quotations = await _api.GetAsync<List<VerichatCRM.Web.Models.Quotation.QuotationDto>>("/api/quotation") ?? new();
+            ViewBag.MobileQuoteRequests = quotations.Where(q => q.Status == "Draft" && q.Terms.StartsWith("Mobile quote request", StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(q => q.DateGenerated).ToList();
             return View(model);
         }
 

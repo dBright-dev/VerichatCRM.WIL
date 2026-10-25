@@ -1,5 +1,18 @@
 ﻿@model VerichatCRM.Core.Models.Pipeline.PipelineBoardViewModel
 
+@if (ViewBag.MobileQuoteRequests is IEnumerable<VerichatCRM.Web.Models.Quotation.QuotationDto> mobileQuotes && mobileQuotes.Any())
+{
+    <section class="vc-card p-3 mb-4" id="mobileQuoteRequests">
+        <div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h5 mb-0">Mobile quote requests</h2><span class="badge bg-primary">@mobileQuotes.Count()</span></div>
+        <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Client</th><th>Quote</th><th>Requested items</th><th>Estimate</th><th>Received</th></tr></thead><tbody>
+        @foreach (var quote in mobileQuotes)
+        {
+            <tr><td>@quote.ClientName</td><td>@quote.QuoteReference</td><td>@string.Join(", ", quote.LineItems.Select(line => $"{line.ProductName} × {line.Quantity}"))</td><td>@quote.GrandTotal.ToString("C2")</td><td>@quote.DateGenerated.ToLocalTime().ToString("d MMM HH:mm")</td></tr>
+        }
+        </tbody></table></div>
+    </section>
+}
+
 <div class="row g-3 mb-4">
     <div class="col-12 col-md-4">
         <div class="vc-card vc-kpi-card">
