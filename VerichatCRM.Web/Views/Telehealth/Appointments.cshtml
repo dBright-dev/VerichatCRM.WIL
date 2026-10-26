@@ -16,16 +16,16 @@
         <div style="overflow-x:auto;">
             <table class="table">
                 <thead>
-                    <tr><th>Client</th><th>Appointment</th><th>Provider</th><th>Facility</th><th>Status</th><th>Requested</th></tr>
+                    <tr><th>Client</th><th>Topic</th><th>Scheduled</th><th>Assigned representative</th><th>Status</th><th>Requested</th></tr>
                 </thead>
                 <tbody>
                     @foreach (var appointment in Model)
                     {
                         <tr>
-                            <td><strong>@appointment.ClientName</strong><br /><small>@appointment.ClientUserId</small></td>
-                            <td>@appointment.StartsAt.ToLocalTime().ToString("ddd, d MMM yyyy · HH:mm")</td>
-                            <td>@appointment.DoctorName<br /><small>@appointment.Specialty</small></td>
-                            <td>@appointment.Facility</td>
+                            <td><strong>@appointment.ClientName</strong><br /><small>@appointment.ClientEmail</small></td>
+                            <td>@appointment.Topic</td>
+                            <td>@appointment.ScheduledDate.ToLocalTime().ToString("ddd, d MMM yyyy · HH:mm")</td>
+                            <td>@appointment.AssignedToUserId</td>
                             <td><span class="badge">@appointment.Status</span></td>
                             <td>@appointment.CreatedAt.ToLocalTime().ToString("d MMM yyyy HH:mm")</td>
                         </tr>

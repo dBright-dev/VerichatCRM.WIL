@@ -140,15 +140,11 @@ namespace VerichatCRM.API.Controllers
         [HttpGet("orders")]
         public async Task<IActionResult> GetOrders([FromServices] IOrderService orders)
         {
-            await _mobile.EnsureClientAccountAsync(UserId);
+            // A read must not manufacture a CRM client record for a staff user
+            // who opens the mobile app. The order service returns only rows
+            // matching this authenticated user ID.
             return Ok(await orders.GetOrdersByClientAsync(UserId));
         }
 
-        [HttpGet("quotations")]
-        public async Task<IActionResult> GetQuotations([FromServices] IQuotationService quotations)
-        {
-            await _mobile.EnsureClientAccountAsync(UserId);
-            return Ok(await quotations.GetByClientAsync(UserId));
-        }
     }
 }
