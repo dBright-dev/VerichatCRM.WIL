@@ -21,10 +21,12 @@ namespace VerichatCRM.Web.Controllers
             ViewData["Title"] = "Pipeline Board";
             ViewData["Subtitle"] = "Drag cards between stages to update deal progress.";
             ViewData["CurrentRole"] = HttpContext.Session.GetString("UserRole") ?? "Sales Representative";
+            ViewBag.ApiBaseUrl = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["ApiBaseUrl"]?.TrimEnd('/');
+            ViewBag.ApiToken = System.Text.Json.JsonSerializer.Serialize(HttpContext.Session.GetString("JwtToken") ?? string.Empty);
 
             var model = await _pipeline.GetBoardAsync();
             var quotations = await _api.GetAsync<List<VerichatCRM.Web.Models.Quotation.QuotationDto>>("/api/quotation") ?? new();
-            ViewBag.MobileQuoteRequests = quotations.Where(q => q.Status == "Draft" && q.Terms.StartsWith("Mobile quote request", StringComparison.OrdinalIgnoreCase))
+            ViewBag.MobileQuoteRequests = quotations.Where(q => q.Terms.StartsWith("Mobile quote request", StringComparison.OrdinalIgnoreCase))
                 .OrderByDescending(q => q.DateGenerated).ToList();
             return View(model);
         }

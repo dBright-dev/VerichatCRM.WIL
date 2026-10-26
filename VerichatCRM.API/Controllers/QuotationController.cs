@@ -24,6 +24,7 @@ namespace VerichatCRM.API.Controllers
         private readonly IPdfGenerator _pdf;
         private readonly AppDbContext _db;
         private readonly IHubContext<NotificationHub> _hub;
+        private readonly ILogger<QuotationController> _logger;
 
         public QuotationController(
             IQuotationService quotations,
@@ -31,7 +32,8 @@ namespace VerichatCRM.API.Controllers
             IClientRepository clientRepo,
             IPdfGenerator pdf,
             AppDbContext db,
-            IHubContext<NotificationHub> hub)
+            IHubContext<NotificationHub> hub,
+            ILogger<QuotationController> logger)
         {
             _quotations = quotations;
             _quotationRepo = quotationRepo;
@@ -39,6 +41,7 @@ namespace VerichatCRM.API.Controllers
             _pdf = pdf;
             _db = db;
             _hub = hub;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -54,8 +57,10 @@ namespace VerichatCRM.API.Controllers
 
         // The mobile client only needs its own quotation list. Keep this route
         // separate from the staff-only GET /api/quotation collection endpoint.
+        // The caller's ID is used below, so staff can open account activity
+        // without receiving the sales team's quotation queue.
         [HttpGet("~/api/mobile/quotations")]
-        [Authorize(Roles = "Client User")]
+        [Authorize]
         public async Task<IActionResult> GetMyMobileQuotations() =>
             Ok(await _quotations.GetByClientAsync(CurrentUserId()));
 
@@ -93,6 +98,8 @@ namespace VerichatCRM.API.Controllers
         public sealed record QuoteRequestBody(
             [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.MinLength(1)] List<QuoteRequestLine> Lines,
             [System.ComponentModel.DataAnnotations.StringLength(4000)] string? Notes);
+        public sealed record QuoteStatusRequest([System.ComponentModel.DataAnnotations.Required] string Status);
+        public sealed record QuoteResponseRequest([System.ComponentModel.DataAnnotations.Required] string Status);
 
         /// <summary>Creates a CRM draft quote from live catalogue prices for the signed-in client.</summary>
         [HttpPost("request")]
@@ -140,10 +147,83 @@ namespace VerichatCRM.API.Controllers
             await _db.SaveChangesAsync();
             var dto = await _quotations.GetByIdAsync(quote.QuotationId);
             var notice = new { title = "New Mobile Quote Request", message = $"{client.ClientName} requested a quote ({quote.QuoteReference}).", quotationId = quote.QuotationId, clientId };
-            await Task.WhenAll(
-                _hub.Clients.Group(UserRoles.SystemAdministrator).SendAsync(NotificationHub.NotificationEvent, notice),
-                _hub.Clients.Group(UserRoles.SalesRepresentative).SendAsync(NotificationHub.NotificationEvent, notice));
+            // Persisting a request is authoritative; a disconnected live-notification service must not
+            // turn a saved quote into an apparent failed submission and cause duplicate retries.
+            try
+            {
+                await Task.WhenAll(
+                    _hub.Clients.Group(UserRoles.SystemAdministrator).SendAsync(NotificationHub.NotificationEvent, notice),
+                    _hub.Clients.Group(UserRoles.SalesRepresentative).SendAsync(NotificationHub.NotificationEvent, notice),
+                    _hub.Clients.Group(UserRoles.ProcurementManager).SendAsync(NotificationHub.NotificationEvent, notice));
+            }
+            catch (Exception exception)
+            {
+                _logger.LogWarning(exception, "Quote {QuoteReference} was saved, but staff SignalR notification failed.", quote.QuoteReference);
+            }
             return CreatedAtAction(nameof(GetById), new { id = quote.QuotationId }, dto);
+        }
+
+        /// <summary>Sales/admin staff review a mobile request, then mark the verified offer as sent.</summary>
+        [HttpPatch("{id}/status")]
+        [Authorize(Roles = "System Administrator,Sales Representative,Procurement Manager")]
+        public async Task<IActionResult> UpdateMobileRequestStatus(string id, QuoteStatusRequest request)
+        {
+            var quote = await _db.Quotations.SingleOrDefaultAsync(q => q.QuotationId == id);
+            if (quote == null) return NotFound(new { message = "Quotation not found." });
+            if (!quote.Terms.StartsWith("Mobile quote request", StringComparison.OrdinalIgnoreCase))
+                return BadRequest(new { message = "This workflow only applies to mobile quote requests." });
+
+            var next = request.Status.Trim();
+            var validTransition = (quote.Status == "Draft" && next == "Reviewed")
+                || (quote.Status == "Reviewed" && next == "Sent");
+            if (!validTransition)
+                return Conflict(new { message = "Review the draft first, then send the verified quotation to the client." });
+
+            quote.Status = next;
+            quote.UpdatedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+            var dto = await _quotations.GetByIdAsync(id);
+            // SignalR alerts connected client sessions; the mobile screen also refreshes on focus/foreground.
+            try
+            {
+                await _hub.Clients.Group("user:" + quote.ClientId).SendAsync(NotificationHub.NotificationEvent,
+                    new { title = next == "Sent" ? "Quotation ready" : "Quotation reviewed", message = $"{quote.QuoteReference} is {next.ToLowerInvariant()}.", quotation = dto });
+            }
+            catch (Exception exception)
+            {
+                _logger.LogWarning(exception, "Quotation {QuoteReference} status was saved, but its client notification failed.", quote.QuoteReference);
+            }
+            return Ok(dto);
+        }
+
+        /// <summary>A client responds only after staff sends the verified quotation.</summary>
+        [HttpPatch("~/api/mobile/quotations/{id}/response")]
+        [Authorize(Roles = "Client User")]
+        public async Task<IActionResult> RespondToMobileQuotation(string id, QuoteResponseRequest request)
+        {
+            var status = request.Status.Trim();
+            if (status is not ("Accepted" or "Rejected"))
+                return BadRequest(new { message = "Response must be Accepted or Rejected." });
+            var clientId = CurrentUserId();
+            var quote = await _db.Quotations.SingleOrDefaultAsync(q => q.QuotationId == id && q.ClientId == clientId);
+            if (quote == null) return NotFound(new { message = "Quotation not found for this client account." });
+            if (quote.Status != "Sent") return Conflict(new { message = "Only a sent quotation can be accepted or declined." });
+            quote.Status = status;
+            quote.UpdatedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+            var notice = new { title = $"Quotation {status}", message = $"Client responded to {quote.QuoteReference}: {status}.", quotationId = id, clientId };
+            try
+            {
+                await Task.WhenAll(
+                    _hub.Clients.Group(UserRoles.SystemAdministrator).SendAsync(NotificationHub.NotificationEvent, notice),
+                    _hub.Clients.Group(UserRoles.SalesRepresentative).SendAsync(NotificationHub.NotificationEvent, notice),
+                    _hub.Clients.Group(UserRoles.ProcurementManager).SendAsync(NotificationHub.NotificationEvent, notice));
+            }
+            catch (Exception exception)
+            {
+                _logger.LogWarning(exception, "Client response to quotation {QuoteReference} was saved, but staff notification failed.", quote.QuoteReference);
+            }
+            return Ok(await _quotations.GetByIdAsync(id));
         }
 
         [HttpPost]
