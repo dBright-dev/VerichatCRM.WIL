@@ -5,7 +5,9 @@ import { useRouter } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
 import {
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -33,8 +35,11 @@ export default function ProfileScreen() {
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [addressOpen, setAddressOpen] = useState(false)
+  const [detailsOpen, setDetailsOpen] = useState(false)
   const [savingAddress, setSavingAddress] = useState(false)
+  const [savingDetails, setSavingDetails] = useState(false)
   const [addressForm, setAddressForm] = useState({ name: '', street: '', city: '', country: '' })
+  const [detailsForm, setDetailsForm] = useState({ fullName: '', phone: '', company: '', vatNumber: '' })
 
   const load = useCallback(async () => {
     try {
@@ -62,6 +67,40 @@ export default function ProfileScreen() {
       country: profile?.defaultAddress?.country ?? '',
     })
     setAddressOpen(true)
+  }
+
+  const editDetails = () => {
+    if (!profile) return
+    setDetailsForm({
+      fullName: profile.fullName,
+      phone: profile.phone,
+      company: profile.company,
+      vatNumber: profile.vatNumber ?? '',
+    })
+    setDetailsOpen(true)
+  }
+
+  const saveDetails = async () => {
+    if (!detailsForm.fullName.trim()) {
+      Alert.alert('Name required', 'Enter the name of the account contact.')
+      return
+    }
+    setSavingDetails(true)
+    try {
+      const updated = await updateProfile({
+        displayName: detailsForm.fullName.trim(),
+        phone: detailsForm.phone.trim(),
+        company: detailsForm.company.trim(),
+        vatNumber: detailsForm.vatNumber.trim() || null,
+      })
+      setProfile(updated)
+      setDetailsOpen(false)
+      Alert.alert('Profile updated', 'Your contact and business details have been saved.')
+    } catch (cause) {
+      Alert.alert('Could not update profile', cause instanceof Error ? cause.message : 'Please try again.')
+    } finally {
+      setSavingDetails(false)
+    }
   }
 
   const saveAddress = async () => {
@@ -133,7 +172,12 @@ export default function ProfileScreen() {
 
         <View style={styles.body}>
           {error ? <Text style={styles.inlineError}>{error} · Pull to refresh to try again.</Text> : null}
-          <SectionHeading title="Account details" subtitle="Your contact and business information" />
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>Account details</Text><Text style={styles.sectionSubtitle}>Your contact and business information</Text></View>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Edit account contact details" onPress={editDetails} style={styles.editDetailsButton}>
+              <MaterialCommunityIcons name="pencil-outline" size={16} color={CRMTheme.primary} /><Text style={styles.editDetailsText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.card}>
             {accountRows.map((row, index) => <View key={row.label} style={[styles.detailRow, index > 0 && styles.divided]}>
               <View style={styles.rowIcon}><MaterialCommunityIcons name={row.icon} size={19} color="#17689b" /></View>
@@ -172,6 +216,25 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.saveButton} disabled={savingAddress} onPress={() => void saveAddress()}><Text style={styles.saveText}>{savingAddress ? 'Saving…' : 'Save address'}</Text></TouchableOpacity>
           <TouchableOpacity onPress={() => setAddressOpen(false)}><Text style={styles.cancel}>Cancel</Text></TouchableOpacity>
         </View></View>
+      </Modal>
+
+      <Modal visible={detailsOpen} transparent animationType="slide" onRequestClose={() => setDetailsOpen(false)}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalBackdrop}>
+          <View style={[styles.modal, { paddingBottom: insets.bottom + 20 }]}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>Contact and business details</Text>
+            <Text style={styles.modalSubtitle}>Keep your account contact information current for quotes and consultations.</Text>
+            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={styles.detailsForm}>
+              <TextInput style={styles.input} value={detailsForm.fullName} onChangeText={fullName => setDetailsForm(current => ({ ...current, fullName }))} placeholder="Account contact name" autoCapitalize="words" maxLength={150} returnKeyType="next" />
+              <TextInput style={styles.input} value={detailsForm.phone} onChangeText={phone => setDetailsForm(current => ({ ...current, phone }))} placeholder="Phone number" keyboardType="phone-pad" maxLength={40} returnKeyType="next" />
+              <TextInput style={styles.input} value={detailsForm.company} onChangeText={company => setDetailsForm(current => ({ ...current, company }))} placeholder="Company or organisation" autoCapitalize="words" maxLength={200} returnKeyType="next" />
+              <TextInput style={styles.input} value={detailsForm.vatNumber} onChangeText={vatNumber => setDetailsForm(current => ({ ...current, vatNumber }))} placeholder="VAT number (optional)" autoCapitalize="characters" maxLength={80} returnKeyType="done" />
+              <Text style={styles.emailNote}>Sign-in email: {profile.email || 'Not available'}. This login identifier is read-only here.</Text>
+            </ScrollView>
+            <TouchableOpacity style={styles.saveButton} disabled={savingDetails} onPress={() => void saveDetails()}><Text style={styles.saveText}>{savingDetails ? 'Saving…' : 'Save profile'}</Text></TouchableOpacity>
+            <TouchableOpacity disabled={savingDetails} onPress={() => setDetailsOpen(false)}><Text style={styles.cancel}>Cancel</Text></TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   )
@@ -214,6 +277,9 @@ const styles = StyleSheet.create({
   body: { paddingHorizontal: 18, paddingTop: 20 },
   inlineError: { color: '#9f322b', backgroundColor: '#fff0ee', padding: 12, borderRadius: 12, marginBottom: 14 },
   sectionHeading: { marginTop: 5, marginBottom: 10 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  editDetailsButton: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: CRMTheme.surfaceAlt, borderRadius: 10, paddingHorizontal: 11, paddingVertical: 8 },
+  editDetailsText: { color: CRMTheme.primary, fontSize: 12, fontWeight: '800' },
   sectionTitle: { color: CRMTheme.text, fontSize: 16, fontWeight: '900' },
   sectionSubtitle: { color: CRMTheme.muted, fontSize: 12, marginTop: 3 },
   card: { backgroundColor: '#fff', borderRadius: 17, paddingHorizontal: 14, borderWidth: 1, borderColor: CRMTheme.border, marginBottom: 20, shadowColor: '#153c5c', shadowOpacity: 0.04, shadowRadius: 9, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
@@ -239,6 +305,8 @@ const styles = StyleSheet.create({
   modalHandle: { width: 42, height: 4, borderRadius: 3, backgroundColor: '#d6dfe8', alignSelf: 'center', marginBottom: 5 },
   modalTitle: { color: CRMTheme.text, fontSize: 20, fontWeight: '900' },
   modalSubtitle: { color: '#718295', fontSize: 13, marginBottom: 3 },
+  detailsForm: { gap: 11, paddingBottom: 4 },
+  emailNote: { color: CRMTheme.muted, fontSize: 12, lineHeight: 17 },
   input: { minHeight: 48, borderRadius: 12, borderWidth: 1, borderColor: '#dce4ec', paddingHorizontal: 13, color: CRMTheme.text, backgroundColor: '#fbfcfd' },
   saveButton: { minHeight: 49, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: '#17689b', marginTop: 4 },
   saveText: { color: '#fff', fontWeight: '900' },
