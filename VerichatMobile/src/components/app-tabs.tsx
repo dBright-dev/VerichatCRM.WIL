@@ -1,34 +1,34 @@
 import { Tabs } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { ColorValue, useColorScheme } from 'react-native';
+import { ColorValue } from 'react-native';
 import { useEffect } from 'react';
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
 
-import { Colors } from '@/constants/theme';
+import { CRMTheme } from '@/constants/crmTheme';
+import { getAuthRole, isStaffMobileRole } from '@/constants/api';
 
 /**
  * Bottom navigation: Home, Product Catalogue, Consultations, My Assets, Profile.
- * `index` doubles as the auth gate — it shows the "Log in As" chooser when
- * signed out and the client dashboard when signed in.
+ * `index` doubles as the auth gate — signed-in clients get the client dashboard,
+ * while staff accounts get the operations dashboard and staff-only tabs.
  */
 export default function AppTabs() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
-  const activeColor = scheme === 'dark' ? '#80bfff' : '#0057a8';
+  const activeColor = CRMTheme.primary;
+  const staffAccount = isStaffMobileRole(getAuthRole());
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: activeColor,
-        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarInactiveTintColor: CRMTheme.muted,
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
-        tabBarStyle: { backgroundColor: colors.background, borderTopColor: scheme === 'dark' ? '#303238' : '#e1e5ea' },
+        tabBarStyle: { backgroundColor: CRMTheme.surface, borderTopColor: CRMTheme.border },
       }}>
       <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: ({ color, size, focused }) => <BouncyTabIcon name="home" size={size} color={color} focused={focused} /> }} />
-      <Tabs.Screen name="medicalCatalogueShop" options={{ title: 'Catalogue', tabBarIcon: ({ color, size, focused }) => <BouncyTabIcon name="shopping" size={size} color={color} focused={focused} /> }} />
-      <Tabs.Screen name="BookAppointmentScreen" options={{ title: 'Consult', tabBarIcon: ({ color, size, focused }) => <BouncyTabIcon name="calendar-clock" size={size} color={color} focused={focused} /> }} />
-      <Tabs.Screen name="EquipmentStatusScreen" options={{ title: 'My Assets', tabBarIcon: ({ color, size, focused }) => <BouncyTabIcon name="medical-cotton-swab" size={size} color={color} focused={focused} /> }} />
+      <Tabs.Screen name="medicalCatalogueShop" options={{ href: staffAccount ? null : undefined, title: 'Catalogue', tabBarIcon: ({ color, size, focused }) => <BouncyTabIcon name="shopping" size={size} color={color} focused={focused} /> }} />
+      <Tabs.Screen name="BookAppointmentScreen" options={{ href: staffAccount ? null : undefined, title: 'Consult', tabBarIcon: ({ color, size, focused }) => <BouncyTabIcon name="calendar-clock" size={size} color={color} focused={focused} /> }} />
+      <Tabs.Screen name="EquipmentStatusScreen" options={{ href: staffAccount ? null : undefined, title: 'My Assets', tabBarIcon: ({ color, size, focused }) => <BouncyTabIcon name="medical-cotton-swab" size={size} color={color} focused={focused} /> }} />
       <Tabs.Screen name="profileScreen" options={{ title: 'Profile', tabBarIcon: ({ color, size, focused }) => <BouncyTabIcon name="account-circle" size={size} color={color} focused={focused} /> }} />
       {/* Keep non-tab routes out of the bar while allowing in-app navigation. */}
       <Tabs.Screen name="adminLogin" options={{ href: null }} />

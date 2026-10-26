@@ -3,7 +3,6 @@ import { MaterialCommunityIcons } from '@expo/vector-icons'; //insert animated i
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -19,7 +18,7 @@ import { api } from '../constants/api';
 import { fetchMyQuotations, MobileQuotation } from '../constants/catalogueService';
 import { subscribeGlobalRefresh } from '../utils/refreshEvents';
 
-const SERIF = Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' })
+type AppointmentSummary = { id: string; topic: string; scheduledDate: string; status: string }
 
 const getGreeting = () => {
   const hour = new Date().getHours()
@@ -48,6 +47,7 @@ const ClientHomeScreen = () => {
   const [data, setData] = useState<ClientDashboard | null>(null)
   const [equipment, setEquipment] = useState<{ assetId: string; model: string; serialNumber: string; status: string; nextServiceDue?: string | null }[]>([])
   const [quotations, setQuotations] = useState<MobileQuotation[]>([])
+  const [appointments, setAppointments] = useState<AppointmentSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [today] = useState(() => Date.now())
   const [refreshing, setRefreshing] = useState(false)
@@ -55,15 +55,17 @@ const ClientHomeScreen = () => {
 
   const load = useCallback(async () => {
     try {
-      const [data, equipment, quotations] = await Promise.all([
+      const [data, equipment, quotations, appointments] = await Promise.all([
         fetchClientDashboard(),
         api<{ assetId: string; model: string; serialNumber: string; status: string; nextServiceDue?: string | null }[]>('/api/asset/mine').catch(() => []),
         fetchMyQuotations().catch(() => []),
+        api<AppointmentSummary[]>('/api/appointments').catch(() => []),
       ])
       setError(null)
       setData(data)
       setEquipment(equipment)
       setQuotations(quotations)
+      setAppointments(appointments)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong.')
     } finally {
@@ -199,7 +201,7 @@ const ClientHomeScreen = () => {
       {/* Bottom boxes */}
       <View style={styles.boxes_row}>
         <View style={[styles.box, styles.recurring_box]}>
-          <MaterialCommunityIcons name="autorenew" size={44} color="#2196f3" />
+          <MaterialCommunityIcons name="autorenew" size={36} color={CRMTheme.primary} />
           <Text style={styles.box_title}>Recurring order</Text>
           {nextRecurringOrder ? (
             <Text style={styles.box_text}>
@@ -211,7 +213,7 @@ const ClientHomeScreen = () => {
         </View>
 
         <View style={[styles.box, styles.tracking_box]}>
-          <MaterialCommunityIcons name="truck-delivery" size={44} color="#d32f2f" />
+          <MaterialCommunityIcons name="truck-delivery" size={36} color={CRMTheme.primary} />
           <Text style={styles.box_title}>Tracking order/s</Text>
           {trackingOrders.length > 0 ? (
             <>
@@ -237,6 +239,11 @@ const ClientHomeScreen = () => {
             {quote.lineItems.map((line, index) => <Text key={`${quote.quotationId}-${index}`} style={styles.quote_meta}>{line.productName} × {line.quantity} · R {line.lineTotal.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}</Text>)}
           </View>
         ))}
+      </View>
+      <View style={styles.consultation_section}>
+        <View style={styles.consultation_heading}><View><Text style={styles.quote_heading}>Consultations</Text><Text style={styles.consultation_subtitle}>Follow requests sent to your account team</Text></View><TouchableOpacity onPress={() => router.push('/BookAppointmentScreen')} accessibilityRole="button" accessibilityLabel="Book a consultation"><MaterialCommunityIcons name="plus-circle" size={27} color={CRMTheme.primary}/></TouchableOpacity></View>
+        {appointments.length === 0 ? <Text style={styles.quote_empty}>No consultations requested yet.</Text> : appointments.slice(0, 3).map(appointment => <View key={appointment.id} style={styles.consultation_card}><View style={styles.quote_row}><Text style={styles.quote_ref}>{appointment.topic}</Text><Text style={styles.quote_status}>{appointment.status}</Text></View><Text style={styles.quote_meta}>{new Date(appointment.scheduledDate).toLocaleString()}</Text></View>)}
+        <Text style={styles.consultation_note}>Approval confirms the request. Your representative will contact you to coordinate the meeting; no video call is created automatically.</Text>
       </View>
       </ScrollView>
     </View>
@@ -268,7 +275,7 @@ const styles = StyleSheet.create({
   },
   error_text: {
     fontSize: 16,
-    color: '#333333',
+    color: CRMTheme.text,
     textAlign: 'center',
   },
   retry_button: {
@@ -306,35 +313,30 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   name: {
-    fontSize: 32,
+    fontSize: 28,
     color: '#ffffff',
-    fontStyle: 'italic',
-    fontWeight: '700',
-    fontFamily: SERIF,
+    fontWeight: '900',
     marginTop: 4,
-    textShadowColor: 'rgba(255,255,255,0.45)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 8,
   },
   avatar: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#004e9a',
-    borderWidth: 2,
-    borderColor: CRMTheme.primaryDark,
+    backgroundColor: CRMTheme.surfaceAlt,
+    borderWidth: 1,
+    borderColor: '#ffffff70',
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatar_text: {
-    color: '#ffffff',
+    color: CRMTheme.primaryDark,
     fontWeight: 'bold',
     fontSize: 18,
   },
   orders_panel: {
     backgroundColor: CRMTheme.primary,
-    borderWidth: 2,
-    borderColor: '#7db3ff',
+    borderWidth: 1,
+    borderColor: '#ffffff40',
     borderRadius: 18,
     paddingVertical: 12,
     paddingHorizontal: 10,
@@ -342,9 +344,7 @@ const styles = StyleSheet.create({
   orders_title: {
     color: '#ffffff',
     fontSize: 18,
-    fontStyle: 'italic',
     fontWeight: '900',
-    fontFamily: SERIF,
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -369,8 +369,10 @@ const styles = StyleSheet.create({
 
   // Vitals
   vitals_card: {
-    backgroundColor: CRMTheme.background,
-    borderRadius: 25,
+    backgroundColor: CRMTheme.surface,
+    borderWidth: 1,
+    borderColor: CRMTheme.border,
+    borderRadius: 18,
     marginHorizontal: 16,
     marginTop: 18,
     padding: 18,
@@ -378,11 +380,8 @@ const styles = StyleSheet.create({
   },
   vitals_title: {
     fontSize: 18,
-    fontStyle: 'italic',
     fontWeight: '900',
-    fontFamily: SERIF,
-    textAlign: 'center',
-    color: '#000000',
+    color: CRMTheme.text,
   },
   vitals_row: {
     flexDirection: 'row',
@@ -397,13 +396,12 @@ const styles = StyleSheet.create({
   vital_label: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#000000',
+    color: CRMTheme.muted,
   },
   vital_value: {
     fontSize: 14,
     fontWeight: '700',
-    fontStyle: 'italic',
-    color: '#000000',
+    color: CRMTheme.text,
   },
   report_button: {
     flexDirection: 'row',
@@ -438,10 +436,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   recurring_box: {
-    backgroundColor: '#cfe2ff',
+    backgroundColor: CRMTheme.surfaceAlt,
   },
   tracking_box: {
-    backgroundColor: '#ffe0e0',
+    backgroundColor: CRMTheme.surfaceAlt,
   },
   quote_section: { marginHorizontal: 16, marginTop: 20, gap: 10 },
   quote_heading: { color: CRMTheme.primaryDark, fontSize: 18, fontWeight: '900' },
@@ -450,31 +448,36 @@ const styles = StyleSheet.create({
   quote_row: { flexDirection: 'row', justifyContent: 'space-between' },
   quote_ref: { color: CRMTheme.primaryDark, fontWeight: '800' },
   quote_status: { color: CRMTheme.primary, fontWeight: '700' },
-  quote_total: { color: '#111', fontSize: 18, fontWeight: '900' },
-  quote_meta: { color: '#68737d', fontSize: 12 },
+  quote_total: { color: CRMTheme.text, fontSize: 18, fontWeight: '900' },
+  quote_meta: { color: CRMTheme.muted, fontSize: 12 },
   box_title: {
     fontSize: 13,
     fontWeight: '900',
-    color: '#000000',
+    color: CRMTheme.text,
     textAlign: 'center',
   },
   box_text: {
     fontSize: 13,
     fontWeight: 'bold',
-    color: '#000000',
+    color: CRMTheme.text,
     textAlign: 'center',
   },
   box_empty: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#555555',
+    color: CRMTheme.muted,
     textAlign: 'center',
   },
   box_more: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#555555',
+    color: CRMTheme.muted,
   },
+  consultation_section: { marginHorizontal: 16, marginTop: 20, gap: 9, paddingBottom: 18 },
+  consultation_heading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  consultation_subtitle: { color: CRMTheme.muted, fontSize: 12, marginTop: 3 },
+  consultation_card: { backgroundColor: CRMTheme.surface, borderWidth: 1, borderColor: CRMTheme.border, borderRadius: 14, padding: 14, gap: 6 },
+  consultation_note: { color: CRMTheme.muted, fontSize: 11, lineHeight: 16, marginTop: 2 },
 })
 
 
