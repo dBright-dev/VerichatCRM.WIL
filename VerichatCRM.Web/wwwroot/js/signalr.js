@@ -14,7 +14,7 @@
       toast.style.display = 'block';
       window.setTimeout(() => { toast.style.display = 'none'; }, 6000);
     }
-    if (notice?.title?.includes('Appointment') || notice?.title?.includes('Quote Request')) {
+    if (notice?.title?.includes('Appointment') || notice?.title?.includes('Quote Request') || notice?.title?.includes('Quotation')) {
       window.setTimeout(() => window.location.reload(), 900);
     }
   });

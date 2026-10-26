@@ -1,13 +1,16 @@
 ﻿@model VerichatCRM.Core.Models.Pipeline.PipelineBoardViewModel
 
+<div id="appointmentToast" role="status" aria-live="polite" style="display:none;position:fixed;right:22px;top:22px;z-index:2000;background:#102b46;color:white;padding:14px 18px;border-radius:12px;box-shadow:0 8px 30px #0003"></div>
+
 @if (ViewBag.MobileQuoteRequests is IEnumerable<VerichatCRM.Web.Models.Quotation.QuotationDto> mobileQuotes && mobileQuotes.Any())
 {
     <section class="vc-card p-3 mb-4" id="mobileQuoteRequests">
         <div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h5 mb-0">Mobile quote requests</h2><span class="badge bg-primary">@mobileQuotes.Count()</span></div>
-        <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Client</th><th>Quote</th><th>Requested items</th><th>Estimate</th><th>Received</th></tr></thead><tbody>
+        @if (TempData["MobileQuoteMessage"] is string quoteMessage) { <div class="alert alert-info">@quoteMessage</div> }
+        <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Client</th><th>Quote</th><th>Requested items</th><th>Estimate</th><th>Received</th><th>Review</th></tr></thead><tbody>
         @foreach (var quote in mobileQuotes)
         {
-            <tr><td>@quote.ClientName</td><td>@quote.QuoteReference</td><td>@string.Join(", ", quote.LineItems.Select(line => $"{line.ProductName} × {line.Quantity}"))</td><td>@quote.GrandTotal.ToString("C2")</td><td>@quote.DateGenerated.ToLocalTime().ToString("d MMM HH:mm")</td></tr>
+            <tr><td>@quote.ClientName</td><td>@quote.QuoteReference</td><td>@string.Join(", ", quote.LineItems.Select(line => $"{line.ProductName} × {line.Quantity}"))</td><td>@quote.GrandTotal.ToString("C2")</td><td>@quote.DateGenerated.ToLocalTime().ToString("d MMM HH:mm")</td><td><span class="badge bg-secondary">@quote.Status</span>@if (quote.Status is "Draft" or "Reviewed") { <form asp-controller="Quotation" asp-action="AdvanceMobileRequest" method="post" class="mt-2">@Html.AntiForgeryToken()<input type="hidden" name="quotationId" value="@quote.QuotationId"/><input type="hidden" name="status" value="@(quote.Status == "Draft" ? "Reviewed" : "Sent")"/><button class="btn btn-sm btn-outline-primary">@(quote.Status == "Draft" ? "Mark reviewed" : "Send to client")</button></form> }</td></tr>
         }
         </tbody></table></div>
     </section>
@@ -130,4 +133,7 @@
             }
         }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js" referrerpolicy="no-referrer"></script>
+    <script>window.verichatSignalR={baseUrl:@Html.Raw(System.Text.Json.JsonSerializer.Serialize((string?)ViewBag.ApiBaseUrl)),token:@Html.Raw((string)ViewBag.ApiToken)};</script>
+    <script src="~/js/signalr.js" asp-append-version="true"></script>
 }

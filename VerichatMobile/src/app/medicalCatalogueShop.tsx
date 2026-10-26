@@ -1,13 +1,13 @@
 import { CRMTheme } from '../constants/crmTheme'
 import { MaterialCommunityIcons } from '@expo/vector-icons'; //insert animated icons in expo.icon
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
-import { ComponentProps, useEffect, useMemo, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { ComponentProps, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
   Image,
   ImageSourcePropType,
-  Platform,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -22,6 +22,7 @@ import BarcodeScannerModal from '../components/barcode-scanner-modal';
 import SkeletonCard from '../components/ui/SkeletonCard';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import AnimatedButton from '../components/ui/AnimatedButton';
+import { subscribeGlobalRefresh } from '../utils/refreshEvents';
 
 /* ----------------------------- Types & data ----------------------------- */
 
@@ -36,18 +37,15 @@ type Product = {
   category: Category
   price: number
   unit: string // "each", "per pack", ...
-  rating: number
-  reviews: number
   icon: IconName
   // Optional: add a real product photo, e.g. require('../../assets/images/products/stethoscope.png')
   image?: ImageSourcePropType
 }
 
-const CURRENCY = '$'
+const CURRENCY = 'R'
 
 type Filter = string
 
-const SERIF = Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' })
 
 const formatPrice = (value: number) =>
   `${CURRENCY}${value.toLocaleString('en-US', {
@@ -77,8 +75,6 @@ const mapApiProduct = (p: MobileProduct): Product => ({
   category: p.category,
   price: p.price,
   unit: p.isLowStock ? 'Low stock' : `${p.stockQty} in stock`,
-  rating: 4.5,
-  reviews: 0,
   icon: CATEGORY_ICONS[p.category] ?? 'package-variant-closed',
   // The API returns a URL; React Native needs it wrapped as an image source.
   ...(p.imageUrl ? { image: { uri: p.imageUrl } as ImageSourcePropType } : null),
@@ -94,30 +90,29 @@ const MedicalCatalogScreen = () => {
   const [activeFilter, setActiveFilter] = useState<Filter>('All')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [cartCount, setCartCount] = useState(() => getCartLines().reduce((sum, line) => sum + line.quantity, 0))
 
   useEffect(() => subscribeCart(() => setCartCount(getCartLines().reduce((sum, line) => sum + line.quantity, 0))), [])
 
-  useEffect(() => {
-    let cancelled = false
-    fetchMobileCatalogue()
-      .then((live) => {
-        if (!cancelled) {
-          setProducts(live.map(mapApiProduct))
-          setError(null)
-        }
-      })
-      .catch((cause: unknown) => {
-        if (!cancelled) setError(cause instanceof Error ? cause.message : 'Could not load products.')
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => {
-      cancelled = true
+  const loadProducts = useCallback(async (showSkeleton = false) => {
+    if (showSkeleton) setLoading(true)
+    setRefreshing(true)
+    try {
+      const live = await fetchMobileCatalogue()
+      setProducts(live.map(mapApiProduct))
+      setError(null)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not load products.')
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
     }
   }, [])
+
+  useFocusEffect(useCallback(() => { void loadProducts() }, [loadProducts]))
+  useEffect(() => subscribeGlobalRefresh(() => { void loadProducts() }), [loadProducts])
 
   const chips = useMemo(() => {
     const live = Array.from(new Set(products.map((p) => p.category))).sort()
@@ -155,10 +150,8 @@ const MedicalCatalogScreen = () => {
           <Text style={styles.product_sku}>{item.sku}</Text>
 
           <View style={styles.meta_row}>
-            <MaterialCommunityIcons name="star" size={16} color="#f9a825" />
-            <Text style={styles.rating}>
-              {item.rating.toFixed(1)} ({item.reviews})
-            </Text>
+            <MaterialCommunityIcons name="warehouse" size={16} color={CRMTheme.primary} />
+            <Text style={styles.rating}>{item.unit}</Text>
             <View style={styles.tag}>
               <Text style={styles.tag_text}>{item.category}</Text>
             </View>
@@ -265,10 +258,11 @@ const MedicalCatalogScreen = () => {
         keyExtractor={(item) => item.sku}
         renderItem={renderProduct}
         contentContainerStyle={styles.list}
+        refreshControl={<RefreshControl refreshing={refreshing} tintColor={CRMTheme.primary} onRefresh={() => { void loadProducts() }} />}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={loading ? <View style={{ paddingTop: 18 }}><SkeletonCard /><SkeletonCard /><SkeletonCard /></View> : error ? (
-          <View style={styles.empty}><Text style={styles.empty_text}>{error}</Text><TouchableOpacity onPress={() => { setLoading(true); setError(null); fetchMobileCatalogue().then((live) => setProducts(live.map(mapApiProduct))).catch((cause: unknown) => setError(cause instanceof Error ? cause.message : 'Could not load products.')).finally(() => setLoading(false)) }}><Text style={styles.empty_text}>Tap to retry</Text></TouchableOpacity></View>
+          <View style={styles.empty}><Text style={styles.empty_text}>{error}</Text><TouchableOpacity onPress={() => { setError(null); void loadProducts(true) }}><Text style={styles.empty_text}>Tap to retry</Text></TouchableOpacity></View>
         ) : (
           <View style={styles.empty}>
             <MaterialCommunityIcons name="package-variant-closed" size={48} color="#9e9e9e" />
@@ -312,12 +306,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     color: '#ffffff',
-    fontStyle: 'italic',
     fontWeight: '900',
-    fontFamily: SERIF,
-    textShadowColor: 'rgba(255,255,255,0.45)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 8,
   },
   subtitle: {
     color: '#ffffff',
@@ -348,7 +337,7 @@ const styles = StyleSheet.create({
   search_bar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: CRMTheme.surface,
     borderRadius: 20,
     paddingHorizontal: 14,
     height: 42,
@@ -356,7 +345,7 @@ const styles = StyleSheet.create({
   search_input: {
     flex: 1,
     fontSize: 15,
-    color: '#000000',
+    color: CRMTheme.text,
     paddingVertical: 0,
   },
 
@@ -369,21 +358,21 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   chip: {
-    backgroundColor: '#ffffff',
+    backgroundColor: CRMTheme.surface,
     borderWidth: 1,
-    borderColor: '#9e9e9e',
+    borderColor: CRMTheme.border,
     borderRadius: 18,
     paddingVertical: 8,
     paddingHorizontal: 22,
   },
   chip_selected: {
-    backgroundColor: '#001a3d',
-    borderColor: '#001a3d',
+    backgroundColor: CRMTheme.primaryDark,
+    borderColor: CRMTheme.primaryDark,
   },
   chip_text: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#000000',
+    color: CRMTheme.text,
   },
   chip_text_selected: {
     color: '#ffffff',
@@ -398,10 +387,10 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: CRMTheme.surface,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#d0d0d0',
+    borderColor: CRMTheme.border,
     overflow: 'hidden',
   },
   card_top: {
@@ -428,11 +417,11 @@ const styles = StyleSheet.create({
   product_name: {
     fontSize: 15,
     fontWeight: '900',
-    color: '#000000',
+    color: CRMTheme.text,
   },
   product_sku: {
     fontSize: 11,
-    color: '#9e9e9e',
+    color: CRMTheme.muted,
   },
   meta_row: {
     flexDirection: 'row',
@@ -444,11 +433,11 @@ const styles = StyleSheet.create({
   rating: {
     fontSize: 11,
     fontWeight: 'bold',
-    color: '#000000',
+    color: CRMTheme.text,
   },
   tag: {
     borderWidth: 1,
-    borderColor: '#9e9e9e',
+    borderColor: CRMTheme.border,
     borderRadius: 10,
     paddingVertical: 2,
     paddingHorizontal: 12,
@@ -456,11 +445,11 @@ const styles = StyleSheet.create({
   tag_text: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#000000',
+    color: CRMTheme.text,
   },
   divider: {
     height: 1,
-    backgroundColor: '#d0d0d0',
+    backgroundColor: CRMTheme.border,
   },
   card_bottom: {
     flexDirection: 'row',
@@ -472,12 +461,12 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 14,
     fontWeight: '900',
-    color: '#000000',
+    color: CRMTheme.text,
   },
   unit: {
     fontSize: 11,
     fontWeight: 'bold',
-    color: '#000000',
+    color: CRMTheme.text,
   },
   add_button: {
     paddingVertical: 8,
@@ -500,7 +489,7 @@ const styles = StyleSheet.create({
   empty_text: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#757575',
+    color: CRMTheme.muted,
   },
 })
 

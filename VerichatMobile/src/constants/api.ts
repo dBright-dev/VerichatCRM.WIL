@@ -9,7 +9,7 @@ import { authenticateBiometric, hasUsableBiometrics } from './biometricAuth';
 // deployed production API so the app works out of the box.
 export const API_BASE_URL =
   (process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/+$/, '') ||
-    'http://verichat-crm-api.runasp.net')
+    'https://verichat-crm-api.runasp.net')
 
 const TOKEN_KEY = 'verichat.auth.token'
 const BIOMETRIC_LOGIN_KEY = 'verichat.auth.biometric-login'
@@ -290,6 +290,34 @@ export function getAuthToken(): string | null {
   return authToken
 }
 
+/** Reads the signed role claim so the app can keep client and staff workflows separate. */
+export function getAuthRole(): string | null {
+  if (!authToken) return null
+  try {
+    const payload = authToken.split('.')[1]
+    if (!payload) return null
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const binary = globalThis.atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '='))
+    const json = decodeURIComponent(Array.from(binary, character => `%${character.charCodeAt(0).toString(16).padStart(2, '0')}`).join(''))
+    const claims = JSON.parse(json) as Record<string, unknown>
+    const role = claims.role ?? claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+    return typeof role === 'string' ? role : null
+  } catch {
+    return null
+  }
+}
+
+export const STAFF_MOBILE_ROLES = [
+  'System Administrator',
+  'Sales Representative',
+  'Procurement Manager',
+  'Field Support Engineer',
+] as const
+
+export function isStaffMobileRole(role: string | null): boolean {
+  return role !== null && (STAFF_MOBILE_ROLES as readonly string[]).includes(role)
+}
+
 function authHeaders(extra?: Record<string, string>, token = authToken): Record<string, string> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -300,7 +328,8 @@ function authHeaders(extra?: Record<string, string>, token = authToken): Record<
 }
 
 /** Typed fetch wrapper: attaches JWT, throws a readable Error on non-2xx. */
-export async function api<T>(path: string, init?: RequestInit): Promise<T> {
+export async function api<T>(path: string, init?: RequestInit, options: { allowCachedFallback?: boolean } = {}): Promise<T> {
+  const allowCachedFallback = options.allowCachedFallback !== false
   const method = (init?.method ?? 'GET').toUpperCase()
   const isRead = method === 'GET'
   const isAuthRequest = path.startsWith('/api/auth/') || path === '/api/mobile/register'
@@ -310,7 +339,7 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const canQueueBody = init?.body == null || typeof init.body === 'string'
 
   if (!(await networkAvailable())) {
-    if (isCacheable) {
+    if (isCacheable && allowCachedFallback) {
       const cached = await readCached<T>(path)
       if (cached !== null) return cached
       throw new Error('This information is not available offline yet. Connect once to download it.')
@@ -331,7 +360,7 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
       headers: authHeaders(init?.headers as Record<string, string> | undefined),
     })
   } catch {
-    if (isCacheable) {
+    if (isCacheable && allowCachedFallback) {
       const cached = await readCached<T>(path)
       if (cached !== null) return cached
     }
@@ -357,6 +386,9 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
       const parsed = JSON.parse(detail) as { message?: string; title?: string; error?: string }
       message = parsed.message ?? parsed.title ?? parsed.error ?? detail
     } catch { /* response was plain text */ }
+    if (response.status === 403 && path === '/api/quotation/request') {
+      throw new Error('Quote requests are for client accounts. Sign out and use Client sign-in; staff should review incoming requests in the website Pipeline.')
+    }
     throw new Error(message || `Request failed (${response.status}).`)
   }
 

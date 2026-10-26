@@ -50,7 +50,8 @@
         {
           "faceIDPermission": "Allow Verichat to use Face ID to unlock your account."
         }
-      ]
+      ],
+      "expo-background-task"
     ],
     "experiments": {
       "typedRoutes": true,
