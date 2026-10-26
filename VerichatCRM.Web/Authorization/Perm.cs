@@ -12,6 +12,7 @@ namespace VerichatCRM.Web.Authorization
         public const string ProcurementDashboard = "procurement.dashboard";
         public const string SupportDashboard = "support.dashboard";
         public const string SalesDashboard = "sales.dashboard";
+        public const string AppointmentManagement = "appointments.manage";
 
         // Clients
         public const string ClientDirectory = "clients.directory";
@@ -44,7 +45,7 @@ namespace VerichatCRM.Web.Authorization
         {
             [Roles.SystemAdministrator] = new[]
             {
-                AdminDashboard, ProcurementDashboard, SupportDashboard, SalesDashboard,
+                AdminDashboard, ProcurementDashboard, SupportDashboard, SalesDashboard, AppointmentManagement,
                 ClientDirectory, ClientProfile, ClientCreate,
                 AssetTracking, LogisticsTracker,
                 PipelineBoard, InquiryQueue, QuotationBuilder, ProductCatalog, ProductCreate, ProductEdit,
@@ -56,7 +57,7 @@ namespace VerichatCRM.Web.Authorization
             // quotation builder and product catalog. Cannot create clients.
             [Roles.SalesRepresentative] = new[]
             {
-                SalesDashboard,
+                SalesDashboard, AppointmentManagement,
                 ClientDirectory, ClientProfile,
                 AssetTracking,
                 PipelineBoard, InquiryQueue, QuotationBuilder, ProductCatalog, ProductEdit,
@@ -66,7 +67,7 @@ namespace VerichatCRM.Web.Authorization
             // monitored in real time.
             [Roles.ProcurementManager] = new[]
             {
-                ProcurementDashboard,
+                ProcurementDashboard, AppointmentManagement,
                 ClientDirectory, ClientProfile,
                 ProductCatalog,
                 TicketHub, LogisticsTracker,
@@ -77,7 +78,7 @@ namespace VerichatCRM.Web.Authorization
             {
                 SupportDashboard,
                 AssetTracking,
-                TicketHub,
+                TicketHub, AppointmentManagement,
             },
 
             // Delivery/logistics movements: tracker and asset movement.

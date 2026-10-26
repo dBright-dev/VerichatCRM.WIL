@@ -37,6 +37,10 @@ namespace VerichatCRM.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("MeetingUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
                     b.Property<string>("Notes")
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)");

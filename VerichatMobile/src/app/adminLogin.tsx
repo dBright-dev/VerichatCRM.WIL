@@ -61,7 +61,8 @@ const AdminLoginScreen = () => {
         </View>
 
         <Text style={styles.welcome_text}>Welcome Back!</Text>
-        <Text style={styles.title}>Admin Log in</Text>
+        <Text style={styles.title}>Staff / Admin Log in</Text>
+        <Text style={styles.accessNote}>For System Administrators, Sales Representatives, Procurement Managers, and Field Support Engineers.</Text>
 
         <View style={styles.card}>
           <FloatingInput
@@ -150,6 +151,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 24,
   },
+  accessNote: { color: '#dceaf5', textAlign: 'center', fontSize: 13, lineHeight: 19, maxWidth: 330, marginTop: -14, marginBottom: 18 },
   card: {
     backgroundColor: '#f9f9f9',
     width: '88%',
