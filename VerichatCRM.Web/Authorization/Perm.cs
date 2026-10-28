@@ -14,6 +14,7 @@ namespace VerichatCRM.Web.Authorization
         public const string SalesDashboard = "sales.dashboard";
 
         // Clients
+        public const string ClientAssign = "clients.assign";
         public const string ClientDirectory = "clients.directory";
         public const string ClientProfile = "clients.profile";
         public const string ClientCreate = "clients.create";
@@ -23,6 +24,7 @@ namespace VerichatCRM.Web.Authorization
         public const string LogisticsTracker = "logistics.tracker";
 
         // Sales workflow
+        public const string SalesMap = "sales.map";
         public const string SalesLeads = "sales.leads";
         public const string PipelineBoard = "pipeline.board";
         public const string InquiryQueue = "inquiries.queue";
@@ -46,9 +48,9 @@ namespace VerichatCRM.Web.Authorization
             [Roles.SystemAdministrator] = new[]
             {
                 AdminDashboard, ProcurementDashboard, SupportDashboard, SalesDashboard,
-                ClientDirectory, ClientProfile, ClientCreate,
+                ClientDirectory, ClientProfile, ClientCreate, ClientAssign,
                 AssetTracking, LogisticsTracker,
-                PipelineBoard, InquiryQueue, SalesLeads, QuotationBuilder, ProductCatalog, ProductCreate, ProductEdit,
+                PipelineBoard, InquiryQueue, SalesLeads, SalesMap, QuotationBuilder, ProductCatalog, ProductCreate, ProductEdit,
                 TicketHub, WarehouseAlerts,
                 AdminAnalytics, AdminRules, RoleAssignments,
             },
@@ -60,7 +62,7 @@ namespace VerichatCRM.Web.Authorization
                 SalesDashboard,
                 ClientDirectory, ClientProfile,
                 AssetTracking,
-                PipelineBoard, InquiryQueue, SalesLeads, QuotationBuilder, ProductCatalog, ProductEdit,
+                PipelineBoard, InquiryQueue, SalesLeads, SalesMap, QuotationBuilder, ProductCatalog, ProductEdit,
             },
 
             // Client directory, product catalog, ticket hub and logistics tracker,
