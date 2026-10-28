@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using VerichatCRM.Core.Entities;
 using VerichatCRM.Web.Authorization;
+using VerichatCRM.Web.Models;
 using VerichatCRM.Web.Models.Auth;
 using VerichatCRM.Web.Services.Interfaces;
 
@@ -121,8 +122,11 @@ namespace VerichatCRM.Web.Controllers
         {
             if (HttpContext.Session.GetString("JwtToken") is null)
                 return RedirectToAction(nameof(Login));
+
             Response.StatusCode = StatusCodes.Status403Forbidden;
-            return View();
+            return View(
+                "~/Views/Shared/Unauthorized.cshtml",
+                StatusPageViewModel.For(403, HttpContext.Session.GetString("UserRole"), true));
         }
     }
 }
