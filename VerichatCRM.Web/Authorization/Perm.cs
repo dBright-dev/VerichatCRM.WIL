@@ -23,6 +23,7 @@ namespace VerichatCRM.Web.Authorization
         public const string LogisticsTracker = "logistics.tracker";
 
         // Sales workflow
+        public const string SalesLeads = "sales.leads";
         public const string PipelineBoard = "pipeline.board";
         public const string InquiryQueue = "inquiries.queue";
         public const string QuotationBuilder = "quotation.builder";
@@ -47,7 +48,7 @@ namespace VerichatCRM.Web.Authorization
                 AdminDashboard, ProcurementDashboard, SupportDashboard, SalesDashboard,
                 ClientDirectory, ClientProfile, ClientCreate,
                 AssetTracking, LogisticsTracker,
-                PipelineBoard, InquiryQueue, QuotationBuilder, ProductCatalog, ProductCreate, ProductEdit,
+                PipelineBoard, InquiryQueue, SalesLeads, QuotationBuilder, ProductCatalog, ProductCreate, ProductEdit,
                 TicketHub, WarehouseAlerts,
                 AdminAnalytics, AdminRules, RoleAssignments,
             },
@@ -59,7 +60,7 @@ namespace VerichatCRM.Web.Authorization
                 SalesDashboard,
                 ClientDirectory, ClientProfile,
                 AssetTracking,
-                PipelineBoard, InquiryQueue, QuotationBuilder, ProductCatalog, ProductEdit,
+                PipelineBoard, InquiryQueue, SalesLeads, QuotationBuilder, ProductCatalog, ProductEdit,
             },
 
             // Client directory, product catalog, ticket hub and logistics tracker,
