@@ -89,6 +89,10 @@
                 <a class="vc-sidebar__link" asp-controller="Sales" asp-action="Map"><span class="vc-sidebar__icon">🗺</span> Client Map</a>
             }
             <a class="vc-sidebar__link" asp-controller="Pipeline" asp-action="Index"><span class="vc-sidebar__icon">📊</span> Pipeline Board</a>
+            @if (Can(Perm.DashboardAnalytics))
+            {
+                <a class="vc-sidebar__link" asp-controller="Analytics" asp-action="Index"><span class="vc-sidebar__icon">📈</span> Analytics</a>
+            }
             <a class="vc-sidebar__link" asp-controller="Quotation" asp-action="Index"><span class="vc-sidebar__icon">📄</span> Quotation Builder</a>
         }
 

@@ -39,6 +39,7 @@ namespace VerichatCRM.Web.Authorization
 
         // Administration
         public const string AdminAnalytics = "admin.analytics";
+        public const string DashboardAnalytics = "dashboard.analytics";
         public const string AdminRules = "admin.rules";
         public const string RoleAssignments = "admin.roles";
 
@@ -52,14 +53,14 @@ namespace VerichatCRM.Web.Authorization
                 AssetTracking, LogisticsTracker,
                 PipelineBoard, InquiryQueue, SalesLeads, SalesMap, QuotationBuilder, ProductCatalog, ProductCreate, ProductEdit,
                 TicketHub, WarehouseAlerts,
-                AdminAnalytics, AdminRules, RoleAssignments,
+                AdminAnalytics, DashboardAnalytics, AdminRules, RoleAssignments,
             },
 
             // Client directory + client details, asset tracking, pipeline board,
             // quotation builder and product catalog. Cannot create clients.
             [Roles.SalesRepresentative] = new[]
             {
-                SalesDashboard,
+                SalesDashboard, DashboardAnalytics,
                 ClientDirectory, ClientProfile,
                 AssetTracking,
                 PipelineBoard, InquiryQueue, SalesLeads, SalesMap, QuotationBuilder, ProductCatalog, ProductEdit,

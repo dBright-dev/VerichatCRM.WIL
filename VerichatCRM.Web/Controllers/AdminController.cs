@@ -27,14 +27,7 @@ namespace VerichatCRM.Web.Controllers
         }
 
         [RequirePermission(Perm.AdminAnalytics)]
-        public async Task<IActionResult> Analytics()
-        {
-            ViewData["Title"] = "Analytics";
-            ViewData["Subtitle"] = "Live year-to-date performance from CRM records";
-            var analytics = await _api.GetAsync<DashboardAnalyticsResponse>("/api/dashboard/analytics")
-                ?? new DashboardAnalyticsResponse();
-            return View(analytics);
-        }
+        public IActionResult Analytics() => RedirectToAction("Index", "Analytics");
 
         [RequirePermission(Perm.AdminRules)]
         public IActionResult Rules()
