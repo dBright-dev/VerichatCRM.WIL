@@ -1,6 +1,15 @@
 @model VerichatCRM.Web.ViewModels.ClientProfileViewModel
 @{ var client = Model.Client; }
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success" role="status">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" role="alert">@TempData["ErrorMessage"]</div>
+}
+
 <div class="mb-3"><a asp-controller="Clients" asp-action="Index" class="text-decoration-none">&larr; Back to Client Directory</a></div>
 <div class="row g-3">
     <div class="col-12 col-lg-8"><div class="vc-card p-4 h-100">
@@ -15,6 +24,45 @@
     </div></div>
     <div class="col-12 col-lg-4"><div class="vc-card vc-kpi-card"><div class="vc-kpi-card__label">Total Deals Value</div><div class="vc-kpi-card__value">@client.TotalDealsValue.ToString("C0")</div></div>
         <div class="vc-card p-3 mt-3"><h3 class="vc-heading h6 mb-2">Quick actions</h3><div class="d-grid gap-2">
+            @if (ViewData["CanAssign"] is true)
+            {
+                var reps = ViewData["Reps"] as List<VerichatCRM.Web.Services.Interfaces.UserListItem> ?? new();
+                var history = ViewData["AssignmentHistory"] as List<VerichatCRM.Web.Models.Client.AssignmentHistoryItem> ?? new();
+
+                <div class="vc-card p-3 mt-3">
+                    <h3 class="vc-heading h6 mb-2">Assign sales rep</h3>
+                    @if (reps.Count == 0)
+                    {
+                        <p class="vc-text-muted small mb-0">No active sales representatives found.</p>
+                    }
+                    else
+                    {
+                        <form asp-controller="Clients" asp-action="Assign" method="post">
+                            <input type="hidden" name="id" value="@client.Id" />
+                            <label for="salesRepId" class="visually-hidden">Sales representative</label>
+                            <select id="salesRepId" name="salesRepId" class="form-select form-select-sm mb-2">
+                                <option value="">Choose a rep…</option>
+                                @foreach (var r in reps)
+                                {
+                                    <option value="@r.UserId" selected="@(r.DisplayName == client.AssignedRep)">@r.DisplayName</option>
+                                }
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm w-100">Save assignment</button>
+                        </form>
+                    }
+
+                    @if (history.Count > 0)
+                    {
+                        <h4 class="small vc-text-muted mt-3 mb-1">Assignment history</h4>
+                        @foreach (var h in history.OrderByDescending(x => x.AssignedDate))
+                        {
+                            <div class="small border-top py-1">
+                                @h.SalesRepName <span class="vc-text-muted">&middot; @h.AssignedDate.ToString("dd MMM yyyy")</span>
+                            </div>
+                        }
+                    }
+                </div>
+            }
             <a class="btn btn-primary btn-sm" asp-controller="Quotation" asp-action="Index" asp-route-clientId="@client.Id">Start a Quotation</a>
             <a class="btn btn-outline-primary btn-sm" asp-controller="Pipeline" asp-action="Index">View in Pipeline</a>
         </div></div>

@@ -84,6 +84,10 @@
             {
                 <a class="vc-sidebar__link" asp-controller="Sales" asp-action="Leads"><span class="vc-sidebar__icon">🎯</span> Lead Tracker</a>
             }
+            @if (Can(Perm.SalesMap))
+            {
+                <a class="vc-sidebar__link" asp-controller="Sales" asp-action="Map"><span class="vc-sidebar__icon">🗺</span> Client Map</a>
+            }
             <a class="vc-sidebar__link" asp-controller="Pipeline" asp-action="Index"><span class="vc-sidebar__icon">📊</span> Pipeline Board</a>
             <a class="vc-sidebar__link" asp-controller="Quotation" asp-action="Index"><span class="vc-sidebar__icon">📄</span> Quotation Builder</a>
         }
