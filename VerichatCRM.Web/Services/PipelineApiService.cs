@@ -10,16 +10,19 @@ namespace VerichatCRM.Web.Services
 
         public PipelineApiService(IApiClient api) => _api = api;
 
+        private static bool IsOpen(string stage) =>
+            stage != PipelineStages.ClosedWon && stage != PipelineStages.Lost;
+
         public async Task<PipelineBoardViewModel> GetBoardAsync()
         {
             var dtos = await _api.GetAsync<List<DealDto>>("/api/pipeline/deals") ?? new();
+            var open = dtos.Where(d => IsOpen(d.Stage)).ToList();
 
             var board = new PipelineBoardViewModel
             {
-                TotalPipelineValue = dtos.Where(d => d.Stage != "Won" && d.Stage != "Lost").Sum(d => d.Revenue),
+                TotalPipelineValue = open.Sum(d => d.Revenue),
                 DealsThisPeriod = dtos.Count(d => d.CreatedAt >= DateTime.UtcNow.AddDays(-30)),
-                WeightedForecast = dtos.Where(d => d.Stage != "Won" && d.Stage != "Lost")
-                                         .Sum(d => d.Revenue * (d.Probability / 100m))
+                WeightedForecast = open.Sum(d => d.Revenue * (d.Probability / 100m))
             };
 
             foreach (var stage in PipelineStages.All)
@@ -33,7 +36,8 @@ namespace VerichatCRM.Web.Services
                         Value = d.Revenue,
                         AssignedRep = d.AssignedRep ?? "Unassigned",
                         ExpectedCloseDate = d.ExpectedCloseDate,
-                        Stage = d.Stage
+                        Stage = d.Stage,
+                        LastContactDate = d.LastContactDate
                     }).ToList();
             }
 
