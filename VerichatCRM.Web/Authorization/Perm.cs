@@ -35,6 +35,7 @@ namespace VerichatCRM.Web.Authorization
 
         // Support & operations
         public const string TicketHub = "tickets.hub";
+        public const string TicketUpdate = "support.ticket.update";
         public const string WarehouseAlerts = "warehouse.alerts";
 
         // Administration
@@ -43,7 +44,7 @@ namespace VerichatCRM.Web.Authorization
         public const string AdminRules = "admin.rules";
         public const string RoleAssignments = "admin.roles";
 
-        /// <summary>Permissions granted to each role.</summary>
+        // Permissions granted to each role.
         public static readonly Dictionary<string, string[]> ByRole = new()
         {
             [Roles.SystemAdministrator] = new[]
@@ -52,7 +53,7 @@ namespace VerichatCRM.Web.Authorization
                 ClientDirectory, ClientProfile, ClientCreate, ClientAssign,
                 AssetTracking, LogisticsTracker,
                 PipelineBoard, InquiryQueue, SalesLeads, SalesMap, QuotationBuilder, ProductCatalog, ProductCreate, ProductEdit,
-                TicketHub, WarehouseAlerts,
+                TicketHub, TicketUpdate, WarehouseAlerts,
                 AdminAnalytics, DashboardAnalytics, AdminRules, RoleAssignments,
             },
 
@@ -81,7 +82,7 @@ namespace VerichatCRM.Web.Authorization
             {
                 SupportDashboard,
                 AssetTracking,
-                TicketHub,
+                TicketHub, TicketUpdate,
             },
 
             // Delivery/logistics movements: tracker and asset movement.
