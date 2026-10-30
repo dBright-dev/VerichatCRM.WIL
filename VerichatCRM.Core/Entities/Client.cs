@@ -2,6 +2,19 @@
 
 namespace VerichatCRM.Core.Entities;
 
+public static class SectorTypes
+{
+    public const string Mine = "Mine";
+    public const string Clinic = "Clinic";
+    public const string Education = "Education";
+    public const string Hospital = "Hospital";
+
+    public static readonly string[] All =
+    {
+        Mine, Clinic, Education, Hospital
+    };
+}
+
 public class Client
 {
     [Key]
@@ -13,6 +26,11 @@ public class Client
     public string ContactPerson { get; set; } = string.Empty;
     public string ContactEmail { get; set; } = string.Empty;
     public string ContactPhone { get; set; } = string.Empty;
+
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+    public string SectorType { get; set; } = SectorTypes.Clinic;
+    public bool RequiresCalibration { get; set; }
 
     public string ContractStatus { get; set; } = "Active";  // Active | Prospect | Inactive
     public string? AssignedRepId { get; set; }              // FK → Users.UserId
@@ -27,6 +45,8 @@ public class Client
     public List<Order> Orders { get; set; } = new();
     public List<Ticket> Tickets { get; set; } = new();
     public List<Asset> Assets { get; set; } = new();
+    public List<ClientAssignment> Assignments { get; set; } = new();
+    public List<CalibrationSchedule> CalibrationSchedules { get; set; } = new();
 }
 
 public class KeyPersonnel
