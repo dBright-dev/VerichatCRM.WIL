@@ -12,8 +12,17 @@ namespace VerichatCRM.Web.Controllers
     {
         private readonly IClientApiService _clients;
         private readonly IApiClient _api;
+        private readonly IAdminApiService _admin;
+        private readonly IClientFieldApiService _field;
 
-        public ClientsController(IClientApiService clients, IApiClient api) { _clients = clients; _api = api; }
+        public ClientsController(IClientApiService clients, IApiClient api,
+                                 IAdminApiService admin, IClientFieldApiService field)
+        {
+            _clients = clients;
+            _api = api;
+            _admin = admin;
+            _field = field;
+        }
 
         private void SetHeader(string title, string subtitle)
         {
@@ -48,7 +57,49 @@ namespace VerichatCRM.Web.Controllers
             SetHeader(client.Name, $"{client.Sector} · Assigned to {client.AssignedRep}");
             var orders = await _api.GetAsync<List<ClientOrderRow>>($"/api/order/client/{Uri.EscapeDataString(id)}") ?? new();
             var quotations = await _api.GetAsync<List<ClientQuotationRow>>($"/api/quotation/client/{Uri.EscapeDataString(id)}") ?? new();
+
+            // Assignment card is admin-only; skip the extra API calls for everyone else.
+            var role = HttpContext.Session.GetString("UserRole") ?? "";
+            var canAssign = Perm.Has(role, Perm.ClientAssign);
+            ViewData["CanAssign"] = canAssign;
+
+            if (canAssign)
+            {
+                var reps = new List<UserListItem>();
+                try
+                {
+                    reps = (await _admin.GetUsersAsync())
+                        .Where(u => u.IsActive && u.Role == Roles.SalesRepresentative)
+                        .OrderBy(u => u.DisplayName)
+                        .ToList();
+                }
+                catch
+                {
+                    // Show the card with an empty list rather than failing the whole profile.
+                }
+
+                ViewData["Reps"] = reps;
+                ViewData["AssignmentHistory"] = await _field.GetAssignmentHistoryAsync(id);
+            }
+
             return View(new ClientProfileViewModel { Client = client, Orders = orders, Quotations = quotations });
+        }
+
+        [RequirePermission(Perm.ClientAssign)]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Assign(string id, string salesRepId)
+        {
+            if (string.IsNullOrWhiteSpace(salesRepId))
+            {
+                TempData["ErrorMessage"] = "Choose a sales representative first.";
+                return RedirectToAction(nameof(Profile), new { id });
+            }
+
+            var ok = await _field.AssignAsync(id, salesRepId);
+            if (ok) TempData["SuccessMessage"] = "Client reassigned.";
+            else TempData["ErrorMessage"] = "Couldn't reassign this client. Please try again.";
+            return RedirectToAction(nameof(Profile), new { id });
         }
 
         [RequirePermission(Perm.ClientCreate)]

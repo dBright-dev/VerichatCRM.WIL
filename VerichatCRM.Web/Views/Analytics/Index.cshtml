@@ -1,0 +1,208 @@
+﻿@model VerichatCRM.Web.Models.Analytics.AnalyticsPageViewModel
+
+@section Styles {
+    <style>
+        .vc-hover-card {
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+
+            .vc-hover-card:hover {
+                transform: scale(1.02);
+                box-shadow: 0 8px 24px rgba(0,0,0,.10);
+            }
+
+        .vc-chart-box {
+            position: relative;
+            height: 280px;
+        }
+
+        @@media (prefers-reduced-motion: reduce) {
+            .vc-hover-card {
+                transition: none;
+            }
+
+                .vc-hover-card:hover {
+                    transform: none;
+                }
+        }
+    </style>
+}
+
+@if (Model.IsDemo)
+{
+    <div class="alert alert-info" role="status">Showing demo data (Development only).</div>
+}
+else if (Model.Charts is null)
+{
+    <div class="alert alert-secondary" role="status">Sales, pipeline and sector charts will appear once analytics data is available.</div>
+}
+
+<div class="stat-grid">
+    @foreach (var kpi in Model.Overview.Kpis)
+    {
+        <div class="stat-card vc-hover-card"><div class="stat-label">@kpi.Label</div><div class="stat-value vc-accent">@kpi.Value</div><div class="stat-meta">@kpi.DeltaLabel</div></div>
+    }
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-12 col-xl-8">
+        <div class="card vc-hover-card h-100">
+            <div class="card-title">Sales vs target</div>
+            <div class="vc-chart-box"><canvas id="chartSalesTarget" role="img" aria-label="Bar chart comparing monthly sales with target"></canvas></div>
+            <div class="vc-text-muted small d-none" id="emptySalesTarget">No sales or target data yet.</div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-4">
+        <div class="card vc-hover-card h-100">
+            <div class="card-title">Pipeline funnel</div>
+            <div class="vc-chart-box"><canvas id="chartFunnel" role="img" aria-label="Funnel of inquiries, quotes and won deals"></canvas></div>
+            <div class="vc-text-muted small d-none" id="emptyFunnel">No pipeline activity yet.</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-xl-5">
+        <div class="card vc-hover-card h-100">
+            <div class="card-title">Revenue by sector</div>
+            <div class="vc-chart-box"><canvas id="chartSectors" role="img" aria-label="Doughnut chart of revenue by sector"></canvas></div>
+            <div class="vc-text-muted small d-none" id="emptySectors">No sector revenue yet.</div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-7">
+        <div class="card vc-hover-card h-100">
+            <div class="card-title">Monthly order value</div>
+            <div class="vc-chart-box"><canvas id="chartRevenue" role="img" aria-label="Line chart of monthly order value"></canvas></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    <script>
+        (function() {
+            if (typeof Chart === 'undefined') return;
+
+            const charts = @Html.Raw(Model.ChartsJson);
+            const trendLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Overview.RevenueTrend.Select(x => x.Label)));
+            const trendValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Overview.RevenueTrend.Select(x => x.Value)));
+
+            const zar = new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR', maximumFractionDigits: 0 });
+            const sectorColors = { Mine: '#b26a00', Hospital: '#c62828', Education: '#1565c0', Clinic: '#00796b', Other: '#546e7a' };
+            const fallbackColors = ['#5B5BD6', '#1D9E75', '#D85A30', '#BA7517', '#7F77DD'];
+
+            function showEmpty(name) {
+                document.getElementById('chart' + name).parentElement.classList.add('d-none');
+                document.getElementById('empty' + name).classList.remove('d-none');
+            }
+
+            // Sales vs target (grouped bars)
+            const st = (charts && charts.salesVsTarget) || [];
+            if (st.length === 0) {
+                showEmpty('SalesTarget');
+            } else {
+                new Chart(document.getElementById('chartSalesTarget'), {
+                    type: 'bar',
+                    data: {
+                        labels: st.map(x => x.label),
+                        datasets: [
+                            { label: 'Sales', data: st.map(x => x.sales), backgroundColor: '#5B5BD6', borderRadius: 4 },
+                            { label: 'Target', data: st.map(x => x.target), backgroundColor: '#c7cad1', borderRadius: 4 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { tooltip: { callbacks: { label: c => `${c.dataset.label}: ${zar.format(c.parsed.y)}` } } },
+                        scales: { y: { beginAtZero: true, ticks: { callback: v => zar.format(v) } } }
+                    }
+                });
+            }
+
+            // Pipeline funnel (centred floating bars)
+            const f = charts && charts.funnel;
+            if (!f || !f.inquiries) {
+                showEmpty('Funnel');
+            } else {
+                const stages = [['Inquiry', f.inquiries], ['Quote', f.quotes], ['Won', f.won]];
+                new Chart(document.getElementById('chartFunnel'), {
+                    type: 'bar',
+                    data: {
+                        labels: stages.map(s => `${s[0]} (${s[1]})`),
+                        datasets: [{
+                            data: stages.map(s => [-s[1] / 2, s[1] / 2]),
+                            backgroundColor: ['#5B5BD6', '#8587e3', '#1D9E75'],
+                            borderRadius: 4,
+                            barPercentage: 0.9,
+                            categoryPercentage: 0.9
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { x: { display: false }, y: { grid: { display: false } } },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: c => {
+                                        const i = c.dataIndex, v = stages[i][1];
+                                        const prev = i > 0 ? stages[i - 1][1] : 0;
+                                        return prev ? `${v} (${Math.round(v / prev * 100)}% of previous stage)` : `${v}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Sector breakdown (doughnut)
+            const sr = ((charts && charts.sectorRevenue) || []).filter(x => x.revenue > 0);
+            if (sr.length === 0) {
+                showEmpty('Sectors');
+            } else {
+                new Chart(document.getElementById('chartSectors'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: sr.map(x => x.sector),
+                        datasets: [{
+                            data: sr.map(x => x.revenue),
+                            backgroundColor: sr.map((x, i) => sectorColors[x.sector] || fallbackColors[i % fallbackColors.length]),
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '62%',
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    label: c => {
+                                        const total = c.dataset.data.reduce((a, b) => a + b, 0);
+                                        return `${c.label}: ${zar.format(c.parsed)} (${Math.round(c.parsed / total * 100)}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Existing monthly order value line (carried over from the old admin page)
+            new Chart(document.getElementById('chartRevenue'), {
+                type: 'line',
+                data: { labels: trendLabels, datasets: [{ label: 'Order value', data: trendValues, borderColor: '#5B5BD6', backgroundColor: 'rgba(91,91,214,.12)', fill: true, tension: 0.3 }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { tooltip: { callbacks: { label: c => zar.format(c.parsed.y) } } },
+                    scales: { y: { ticks: { callback: v => zar.format(v) } } }
+                }
+            });
+        })();
+    </script>
+}

@@ -11,5 +11,6 @@
         public DateTime? ExpectedCloseDate { get; set; }
         public int Probability { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? LastContactDate { get; set; }
     }
 }
