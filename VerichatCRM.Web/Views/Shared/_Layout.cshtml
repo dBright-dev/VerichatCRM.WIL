@@ -14,30 +14,21 @@
 </head>
 <body>
     <a class="vc-skip-link" href="#mainContent">Skip to main content</a>
-    @if (Context.Session.GetString("JwtToken") != null)
-    {
-        <div class="vc-shell">
-            <partial name="_Sidebar" />
-            <div class="vc-main">
-                <partial name="_Topbar" />
-                <main class="vc-content" id="mainContent">
-                    @RenderBody()
-                </main>
-            </div>
-        </div>
-    }
-    else
-    {
-        <div class="vc-public">
-            <main id="mainContent">
+    <div class="vc-shell">
+        <partial name="_Sidebar" />
+        <div class="vc-main">
+            <partial name="_Topbar" />
+            <main class="vc-content" id="mainContent">
                 @RenderBody()
             </main>
         </div>
-    }
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script src="~/js/site.js"></script>
+    <script src="~/js/notifications.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
