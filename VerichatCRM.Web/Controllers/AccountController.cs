@@ -18,9 +18,16 @@ namespace VerichatCRM.Web.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            var role = HttpContext.Session.GetString("UserRole");
-            if (HttpContext.Session.GetString("JwtToken") != null && role != null)
-                return RedirectToRoleDashboard(role);
+            try
+            {
+                var role = HttpContext.Session.GetString("UserRole");
+                if (HttpContext.Session.GetString("JwtToken") != null && role != null)
+                    return RedirectToRoleDashboard(role);
+            }
+            catch
+            {
+                // Session may not be available - continue to login view
+            }
 
             return View();
         }
@@ -39,10 +46,26 @@ namespace VerichatCRM.Web.Controllers
                 return View(request);
             }
 
-            HttpContext.Session.SetString("JwtToken", result.Token);
-            HttpContext.Session.SetString("UserRole", result.User.Role);
-            HttpContext.Session.SetString("UserName", result.User.DisplayName);
-            HttpContext.Session.SetString("UserEmail", result.User.Email);
+            try
+            {
+                HttpContext.Session.SetString("JwtToken", result.Token);
+                HttpContext.Session.SetString("UserRole", result.User.Role);
+                HttpContext.Session.SetString("UserName", result.User.DisplayName);
+                HttpContext.Session.SetString("UserEmail", result.User.Email);
+
+                // Also set cookie for JavaScript access (used by notifications.js)
+                Response.Cookies.Append("JwtToken", result.Token, new CookieOptions
+                {
+                    HttpOnly = false,
+                    Secure = false,
+                    SameSite = SameSiteMode.Lax,
+                    Expires = DateTimeOffset.UtcNow.AddDays(7)
+                });
+            }
+            catch
+            {
+                // Session may not be configured - continue anyway
+            }
 
             // System Administrator always lands on the Admin dashboard.
             if (result.User.Role == "System Administrator")
@@ -77,10 +100,26 @@ namespace VerichatCRM.Web.Controllers
                 return View(request);
             }
 
-            HttpContext.Session.SetString("JwtToken", result.Token);
-            HttpContext.Session.SetString("UserRole", result.User.Role);
-            HttpContext.Session.SetString("UserName", result.User.DisplayName);
-            HttpContext.Session.SetString("UserEmail", result.User.Email);
+            try
+            {
+                HttpContext.Session.SetString("JwtToken", result.Token);
+                HttpContext.Session.SetString("UserRole", result.User.Role);
+                HttpContext.Session.SetString("UserName", result.User.DisplayName);
+                HttpContext.Session.SetString("UserEmail", result.User.Email);
+
+                // Also set cookie for JavaScript access (used by notifications.js)
+                Response.Cookies.Append("JwtToken", result.Token, new CookieOptions
+                {
+                    HttpOnly = false,
+                    Secure = false,
+                    SameSite = SameSiteMode.Lax,
+                    Expires = DateTimeOffset.UtcNow.AddDays(7)
+                });
+            }
+            catch
+            {
+                // Session may not be configured - continue anyway
+            }
 
             if (result.User.Role == "System Administrator")
                 return RedirectToAction("Dashboard", "Admin");
@@ -91,7 +130,14 @@ namespace VerichatCRM.Web.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Logout()
         {
-            HttpContext.Session.Clear();
+            try
+            {
+                HttpContext.Session.Clear();
+            }
+            catch
+            {
+                // Session may not be available
+            }
             return RedirectToAction("Login", "Account");
         }
 
@@ -119,8 +165,15 @@ namespace VerichatCRM.Web.Controllers
         [HttpGet]
         public IActionResult NoAccess()
         {
-            if (HttpContext.Session.GetString("JwtToken") is null)
+            try
+            {
+                if (HttpContext.Session.GetString("JwtToken") is null)
+                    return RedirectToAction(nameof(Login));
+            }
+            catch
+            {
                 return RedirectToAction(nameof(Login));
+            }
             Response.StatusCode = StatusCodes.Status403Forbidden;
             return View();
         }
