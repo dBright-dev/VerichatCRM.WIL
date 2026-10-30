@@ -71,6 +71,7 @@ builder.Services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
 
 // Background service
 builder.Services.AddHostedService<SlaEscalationService>();
+builder.Services.AddHostedService<FollowUpBackgroundService>();
 
 // JWT Auth
 var jwtKey = builder.Configuration["Jwt:Key"];
