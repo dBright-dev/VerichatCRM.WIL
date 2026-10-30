@@ -11,6 +11,8 @@ namespace VerichatCRM.Core.Entities
         public string Name { get; set; } = string.Empty;
         public string Type { get; set; } = "other"; // weightScale | thermometer | bloodPressure | glucoseMeter | heartRate | other
         public string Status { get; set; } = "connected"; // connected | disconnected
+        /// <summary>BLE peripheral id (MAC / UUID) of the physical device, used to reconnect.</summary>
+        public string? ExternalId { get; set; }
         public DateTime? LastSyncAt { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

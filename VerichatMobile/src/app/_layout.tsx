@@ -1,11 +1,17 @@
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { AppState, useColorScheme } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useEffect, useState } from 'react';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
-import { getAuthToken, hydrateAuthToken, subscribeAuth } from '@/constants/api';
+import OfflineStatusBanner from '@/components/offline-status-banner';
+import { getAuthToken, hydrateAuthToken, startOfflineSync, subscribeAuth } from '@/constants/api';
+import { emitGlobalRefresh } from '@/utils/refreshEvents';
+import { registerBackgroundAssignmentSync } from '@/utils/backgroundFetch';
+import { applyDarkMode, followSystemTheme, restoreDarkMode } from '@/constants/appTheme';
+import { fetchSettings } from '@/constants/settingsService';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -22,6 +28,33 @@ export default function TabLayout() {
 
   useEffect(() => subscribeAuth((token) => setSignedIn(token !== null)), []);
 
+  useEffect(() => startOfflineSync(), []);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') emitGlobalRefresh();
+    });
+    void registerBackgroundAssignmentSync();
+    return () => subscription.remove();
+  }, []);
+
+  useEffect(() => {
+    void restoreDarkMode();
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (!signedIn) {
+      followSystemTheme();
+      return;
+    }
+    let cancelled = false;
+    void fetchSettings()
+      .then((settings) => { if (!cancelled) void applyDarkMode(settings.preferences.darkMode); })
+      .catch(() => { /* use the locally restored preference when offline */ });
+    return () => { cancelled = true; };
+  }, [hydrated, signedIn]);
+
   useEffect(() => {
     // Restore a persisted session before deciding which navigator to mount.
     void hydrateAuthToken().finally(() => setHydrated(true));
@@ -36,18 +69,21 @@ export default function TabLayout() {
   }, [router, segments, signedIn, hydrated]);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      {!hydrated ? null : signedIn ? (
-        <AppTabs />
-      ) : (
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="clientLogin" />
-          <Stack.Screen name="adminLogin" />
-          <Stack.Screen name="newUserAccount" />
-        </Stack>
-      )}
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <AnimatedSplashOverlay />
+        {hydrated && <OfflineStatusBanner />}
+        {!hydrated ? null : signedIn ? (
+          <AppTabs />
+        ) : (
+          <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="clientLogin" />
+            <Stack.Screen name="adminLogin" />
+            <Stack.Screen name="newUserAccount" />
+          </Stack>
+        )}
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

@@ -5,7 +5,35 @@
         <div class="stat-card"><div class="stat-label">@kpi.Label</div><div class="stat-value vc-accent">@kpi.Value</div><div class="stat-meta">@kpi.DeltaLabel</div></div>
     }
 </div>
-<div class="card"><div class="card-title">Order value · last six months</div><canvas id="revenueTrend" height="120" aria-label="Monthly order value trend" role="img"></canvas></div>
+
+<div class="chart-grid">
+    <div class="card"><div class="card-title">Order value · last six months</div><div class="chart-card-canvas"><canvas id="revenueTrend" aria-label="Monthly order value trend" role="img"></canvas></div></div>
+    <div class="card"><div class="card-title">Order status mix · last six months</div><div class="chart-card-canvas"><canvas id="statusBreakdown" aria-label="Order status breakdown" role="img"></canvas></div></div>
+</div>
+
+<div class="card"><div class="card-title">Volume trends · last six months</div><div class="chart-card-canvas"><canvas id="seriesChart" aria-label="Monthly volume trends" role="img"></canvas></div></div>
+
+<div class="card mt-3"><div class="card-title">Timeline</div>
+    @if (Model.Timeline.Count == 0)
+    {
+        <p class="stat-meta">No events recorded yet.</p>
+    }
+    else
+    {
+        <ul class="timeline">
+            @foreach (var ev in Model.Timeline)
+            {
+                <li class="timeline-item">
+                    <span class="timeline-dot @ev.BadgeVariant"></span>
+                    <span class="timeline-time">@ev.OccurredAt.ToLocalTime().ToString("dd MMM HH:mm")</span>
+                    <div class="timeline-title">@ev.Title</div>
+                    <div class="timeline-detail">@ev.Detail</div>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
 <div class="card mt-3"><div class="card-title">Recent activity</div>
     @if (Model.RecentActivity.Count == 0) { <p class="stat-meta">No recent activity.</p> }
     else { <ul class="list-unstyled mb-0">@foreach (var item in Model.RecentActivity) { <li class="py-2 border-bottom">@item.Title <small class="text-muted">@item.Timestamp</small></li> }</ul> }
@@ -16,6 +44,25 @@
         const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueTrend.Select(p => p.Label)));
         const values = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueTrend.Select(p => p.Value)));
         const canvas = document.getElementById('revenueTrend');
-        if (canvas && window.Chart) new Chart(canvas, { type: 'line', data: { labels, datasets: [{ label: 'Order value (R)', data: values, borderColor: '#8050ff', tension: .35 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+        if (canvas && window.Chart) new Chart(canvas, { type: 'line', data: { labels, datasets: [{ label: 'Order value (R)', data: values, borderColor: '#8050ff', tension: .35 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+
+        const seriesNames = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Series.Select(s => s.Name)));
+        const seriesData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Series.Select(s => s.Points.Select(p => p.Value))));
+        const palette = ['#8050ff', '#2B6CB0', '#2F855A', '#C53030', '#DD6B20'];
+        const seriesCanvas = document.getElementById('seriesChart');
+        if (seriesCanvas && window.Chart && seriesNames.length) new Chart(seriesCanvas, {
+            type: 'line',
+            data: { labels, datasets: seriesNames.map((name, i) => ({ label: name, data: seriesData[i], borderColor: palette[i % palette.length], tension: .35, pointRadius: 2 })) },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', align: 'end' } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+        });
+
+        const breakdownLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Breakdown.Select(p => p.Label)));
+        const breakdownValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Breakdown.Select(p => p.Value)));
+        const breakdownCanvas = document.getElementById('statusBreakdown');
+        if (breakdownCanvas && window.Chart && breakdownLabels.length) new Chart(breakdownCanvas, {
+            type: 'doughnut',
+            data: { labels: breakdownLabels, datasets: [{ data: breakdownValues, backgroundColor: ['#8050ff', '#2B6CB0', '#2F855A', '#DD6B20', '#C53030', '#718096'] }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+        });
     </script>
 }

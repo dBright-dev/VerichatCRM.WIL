@@ -15,6 +15,9 @@ namespace VerichatCRM.Web.Controllers
             _pipeline = pipeline;
             _goals = goals;
         }
+        private readonly IApiClient _api;
+
+        public PipelineController(IPipelineApiService pipeline, IApiClient api) { _pipeline = pipeline; _api = api; }
 
         public async Task<IActionResult> Index()
         {
@@ -25,8 +28,13 @@ namespace VerichatCRM.Web.Controllers
             ViewData["Subtitle"] = "Drag cards between stages to update deal progress.";
             ViewData["CurrentRole"] = HttpContext.Session.GetString("UserRole") ?? "Sales Representative";
             ViewData["GoalProgress"] = await _goals.GetDashboardProgressAsync();
+            ViewBag.ApiBaseUrl = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["ApiBaseUrl"]?.TrimEnd('/');
+            ViewBag.ApiToken = System.Text.Json.JsonSerializer.Serialize(HttpContext.Session.GetString("JwtToken") ?? string.Empty);
 
             var model = await _pipeline.GetBoardAsync();
+            var quotations = await _api.GetAsync<List<VerichatCRM.Web.Models.Quotation.QuotationDto>>("/api/quotation") ?? new();
+            ViewBag.MobileQuoteRequests = quotations.Where(q => q.Terms.StartsWith("Mobile quote request", StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(q => q.DateGenerated).ToList();
             return View(model);
         }
 

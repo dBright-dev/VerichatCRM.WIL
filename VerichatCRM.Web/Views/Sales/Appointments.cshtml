@@ -1,0 +1,43 @@
+@model IReadOnlyList<VerichatCRM.Web.Models.Telehealth.TelehealthAppointmentViewModel>
+@{
+    var assignees = ViewBag.Assignees as IReadOnlyList<VerichatCRM.Web.Models.Telehealth.TelehealthAssigneeViewModel>
+        ?? Array.Empty<VerichatCRM.Web.Models.Telehealth.TelehealthAssigneeViewModel>();
+    var canManage = ViewBag.CanManageAppointments is bool value && value;
+}
+@Html.AntiForgeryToken()
+<div id="appointmentToast" role="status" aria-live="polite" style="display:none;position:fixed;right:22px;top:22px;z-index:2000;background:#102b46;color:white;padding:14px 18px;border-radius:12px;box-shadow:0 8px 30px #0003"></div>
+<section class="card">
+    <div class="card-header"><div><h2>Client appointments</h2><p>Procurement consultations, quotations, invoicing and equipment service requests.</p></div><span id="appointmentCount">@Model.Count requests</span></div>
+    @if (TempData["AppointmentMessage"] is string message) { <div class="alert alert-info">@message</div> }
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state" style="padding:32px 16px;text-align:center"><p>No client appointments have been requested yet.</p></div>
+    }
+    else
+    {
+        <div style="overflow-x:auto"><table class="table"><thead><tr><th>Client and contact</th><th>Topic</th><th>Requested date</th><th>Notes</th><th>Status</th><th>Assign representative</th><th>Actions</th></tr></thead><tbody>
+        @foreach (var appointment in Model)
+        {
+            <tr data-appointment-id="@appointment.Id">
+                <td><strong>@appointment.ClientName</strong><br/><small>@if (!string.IsNullOrWhiteSpace(appointment.ClientEmail)) { <a href="mailto:@appointment.ClientEmail">@appointment.ClientEmail</a> }</small><br/><small>@if (!string.IsNullOrWhiteSpace(appointment.ClientPhone)) { <a href="tel:@appointment.ClientPhone">@appointment.ClientPhone</a> }</small></td>
+                <td>@appointment.Topic</td><td>@appointment.ScheduledDate.ToLocalTime().ToString("ddd, d MMM yyyy · HH:mm")</td><td>@appointment.Notes</td>
+                <td><span class="badge">@appointment.Status</span>@if (!string.IsNullOrWhiteSpace(appointment.MeetingUrl)) { <br/><a href="@appointment.MeetingUrl" target="_blank" rel="noopener">Meeting ready</a> }</td>
+                @if (canManage)
+                {
+                    <td><form asp-controller="Telehealth" asp-action="Update" method="post" class="d-flex flex-column gap-2">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@appointment.Id"/><select name="assignedToUserId" class="form-select form-select-sm" aria-label="Assign representative"><option value="">Unassigned</option>@foreach (var assignee in assignees) { <option value="@assignee.UserId" selected="@(appointment.AssignedToUserId == assignee.UserId)">@assignee.DisplayName · @assignee.Role</option> }</select><input name="meetingUrl" type="url" class="form-control form-control-sm" value="@appointment.MeetingUrl" placeholder="Teams/Zoom meeting link" aria-label="Meeting link"/><button class="btn btn-sm btn-outline-primary" name="status" value="@appointment.Status">Save assignment / link</button></form></td>
+                    <td><div class="d-flex gap-2">@if (appointment.Status == "Pending") { <form asp-controller="Telehealth" asp-action="Update" method="post">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@appointment.Id"/><input type="hidden" name="assignedToUserId" value="@appointment.AssignedToUserId"/><button class="btn btn-sm btn-success" name="status" value="Approved">Approve</button></form><form asp-controller="Telehealth" asp-action="Update" method="post">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@appointment.Id"/><input type="hidden" name="assignedToUserId" value="@appointment.AssignedToUserId"/><button class="btn btn-sm btn-outline-danger" name="status" value="Declined">Decline</button></form> } else if (appointment.Status == "Approved") { <form asp-controller="Telehealth" asp-action="Update" method="post">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@appointment.Id"/><input type="hidden" name="assignedToUserId" value="@appointment.AssignedToUserId"/><button class="btn btn-sm btn-outline-success" name="status" value="Completed">Mark completed</button></form> }</div></td>
+                }
+                else
+                {
+                    <td>@appointment.AssignedToUserId</td><td>View only</td>
+                }
+            </tr>
+        }
+        </tbody></table></div>
+    }
+</section>
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js" referrerpolicy="no-referrer"></script>
+    <script>window.verichatSignalR={baseUrl:@Html.Raw(System.Text.Json.JsonSerializer.Serialize((string?)ViewBag.ApiBaseUrl)),token:@Html.Raw((string)ViewBag.ApiToken)};</script>
+    <script src="~/js/signalr.js" asp-append-version="true"></script>
+}

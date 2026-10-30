@@ -1,9 +1,11 @@
+import { CRMTheme } from '../constants/crmTheme'
 import { useRouter } from 'expo-router'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
     Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native'
 import { registerClient } from '../constants/authService'
+import { useKeyboardAutoScroll } from '../hooks/useKeyboardAutoScroll'
 
 const CreateAccountScreen = () => {
   const router = useRouter()
@@ -13,6 +15,12 @@ const CreateAccountScreen = () => {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [busy, setBusy] = useState(false)
+  const fullNameInput = useRef<TextInput>(null)
+  const companyInput = useRef<TextInput>(null)
+  const emailInput = useRef<TextInput>(null)
+  const passwordInput = useRef<TextInput>(null)
+  const confirmPasswordInput = useRef<TextInput>(null)
+  const { scrollRef, contentRef, onFieldFocus } = useKeyboardAutoScroll()
 
   const handleSignUp = async () => {
     if (
@@ -52,13 +60,15 @@ const CreateAccountScreen = () => {
   return (
     <KeyboardAvoidingView
       style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        <View ref={contentRef} collapsable={false} style={styles.content}>
         <View style={styles.Logo}>
           <Image
             source={require('../../assets/images/canva/design_pt.png')}
@@ -71,6 +81,8 @@ const CreateAccountScreen = () => {
         <View style={styles.form}>
           <Text style={styles.label}>Full Name</Text>
           <TextInput
+            ref={fullNameInput}
+            onFocus={() => onFieldFocus(fullNameInput.current)}
             style={styles.input}
             value={fullName}
             onChangeText={setFullName}
@@ -81,6 +93,8 @@ const CreateAccountScreen = () => {
 
           <Text style={styles.label}>Company Name</Text>
           <TextInput
+            ref={companyInput}
+            onFocus={() => onFieldFocus(companyInput.current)}
             style={styles.input}
             value={companyName}
             onChangeText={setCompanyName}
@@ -90,6 +104,8 @@ const CreateAccountScreen = () => {
 
           <Text style={styles.label}>Email address</Text>
           <TextInput
+            ref={emailInput}
+            onFocus={() => onFieldFocus(emailInput.current)}
             style={styles.input}
             value={email}
             onChangeText={setEmail}
@@ -102,6 +118,8 @@ const CreateAccountScreen = () => {
 
           <Text style={styles.label}>Password</Text>
           <TextInput
+            ref={passwordInput}
+            onFocus={() => onFieldFocus(passwordInput.current)}
             style={styles.input}
             value={password}
             onChangeText={setPassword}
@@ -114,6 +132,8 @@ const CreateAccountScreen = () => {
 
           <Text style={styles.label}>Confirm Password</Text>
           <TextInput
+            ref={confirmPasswordInput}
+            onFocus={() => onFieldFocus(confirmPasswordInput.current)}
             style={styles.input}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
@@ -132,6 +152,7 @@ const CreateAccountScreen = () => {
             <Text style={styles.button_text}>{busy ? 'Creating…' : 'Sign up'}</Text>
           </TouchableOpacity>
         </View>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   )
@@ -142,15 +163,16 @@ export default CreateAccountScreen
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
-    backgroundColor: '#004e7a',
+    backgroundColor: CRMTheme.primaryDark,
   },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#004e7a',
+    backgroundColor: CRMTheme.primaryDark,
     paddingVertical: 40,
   },
+  content: { width: '100%', alignItems: 'center' },
   Logo: {
     marginBottom: 10,
   },
@@ -188,7 +210,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   button: {
-    backgroundColor: '#0057a8',
+    backgroundColor: CRMTheme.primary,
     paddingVertical: 14,
     width: 170,
     alignSelf: 'center',

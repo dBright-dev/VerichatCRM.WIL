@@ -12,6 +12,7 @@ namespace VerichatCRM.Web.Authorization
         public const string ProcurementDashboard = "procurement.dashboard";
         public const string SupportDashboard = "support.dashboard";
         public const string SalesDashboard = "sales.dashboard";
+        public const string AppointmentManagement = "appointments.manage";
 
         // Clients
         public const string ClientAssign = "clients.assign";
@@ -49,7 +50,7 @@ namespace VerichatCRM.Web.Authorization
         {
             [Roles.SystemAdministrator] = new[]
             {
-                AdminDashboard, ProcurementDashboard, SupportDashboard, SalesDashboard,
+                AdminDashboard, ProcurementDashboard, SupportDashboard, SalesDashboard, AppointmentManagement,
                 ClientDirectory, ClientProfile, ClientCreate, ClientAssign,
                 AssetTracking, LogisticsTracker,
                 PipelineBoard, InquiryQueue, SalesLeads, SalesMap, QuotationBuilder, ProductCatalog, ProductCreate, ProductEdit,
@@ -62,6 +63,7 @@ namespace VerichatCRM.Web.Authorization
             [Roles.SalesRepresentative] = new[]
             {
                 SalesDashboard, DashboardAnalytics,
+                SalesDashboard, AppointmentManagement,
                 ClientDirectory, ClientProfile,
                 AssetTracking,
                 PipelineBoard, InquiryQueue, SalesLeads, SalesMap, QuotationBuilder, ProductCatalog, ProductEdit,
@@ -71,7 +73,7 @@ namespace VerichatCRM.Web.Authorization
             // monitored in real time.
             [Roles.ProcurementManager] = new[]
             {
-                ProcurementDashboard,
+                ProcurementDashboard, AppointmentManagement,
                 ClientDirectory, ClientProfile,
                 ProductCatalog,
                 TicketHub, LogisticsTracker,
@@ -82,7 +84,7 @@ namespace VerichatCRM.Web.Authorization
             {
                 SupportDashboard,
                 AssetTracking,
-                TicketHub, TicketUpdate,
+                TicketHub, TicketUpdate, AppointmentManagement,
             },
 
             // Delivery/logistics movements: tracker and asset movement.

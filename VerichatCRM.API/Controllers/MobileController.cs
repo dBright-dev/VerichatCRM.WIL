@@ -36,14 +36,14 @@ namespace VerichatCRM.API.Controllers
         [HttpPost("devices")]
         public async Task<IActionResult> RegisterDevice([FromBody] RegisterDeviceRequest request)
         {
-            var device = await _mobile.RegisterDeviceAsync(UserId, request.Name, request.Type);
+            var device = await _mobile.RegisterDeviceAsync(UserId, request.Name, request.Type, request.ExternalId);
             return CreatedAtAction(nameof(Devices), device);
         }
 
         [HttpPost("devices/{id}/sync")]
-        public async Task<IActionResult> SyncDevice(string id)
+        public async Task<IActionResult> SyncDevice(string id, [FromBody] SyncDeviceRequest? request)
         {
-            var device = await _mobile.SyncDeviceAsync(UserId, id);
+            var device = await _mobile.SyncDeviceAsync(UserId, id, request?.Readings);
             return device == null ? NotFound(new { message = "Device not found." }) : Ok(device);
         }
 

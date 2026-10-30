@@ -30,12 +30,28 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "backgroundColor": "#F3F6FA",
+          "image": "./assets/images/verichat-loader-mark.png",
+          "imageWidth": 220
         }
       ],
-      "expo-secure-store"
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Verichat to use the camera to scan barcodes and QR codes.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
+        }
+      ],
+      "expo-secure-store",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Verichat to use Face ID to unlock your account."
+        }
+      ],
+      "expo-background-task"
     ],
     "experiments": {
       "typedRoutes": true,

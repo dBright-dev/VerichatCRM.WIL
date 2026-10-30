@@ -75,6 +75,10 @@
         {
             <a class="vc-sidebar__link" asp-controller="Logistics" asp-action="Assets"><span class="vc-sidebar__icon">🔧</span> Asset Tracking</a>
         }
+        @if (Can(Perm.AppointmentManagement))
+        {
+            <a class="vc-sidebar__link" asp-controller="Telehealth" asp-action="Appointments"><span class="vc-sidebar__icon">📅</span> Client Appointments</a>
+        }
 
         @if (isSales)
         {

@@ -2,7 +2,7 @@
 // POST /api/auth/login            { email, password }        → { success, token, user }
 // POST /api/auth/register         staff/admin registration
 // POST /api/mobile/register       client self-registration   → { success, token, user }
-import { api, setAuthToken } from './api'
+import { api, setAuthToken, STAFF_MOBILE_ROLES } from './api'
 
 export type AuthUser = {
   userId: string
@@ -34,8 +34,8 @@ export async function login(email: string, password: string, audience?: 'client'
   if (audience === 'client' && role !== 'Client User') {
     throw new Error('This account is for staff. Choose Staff sign-in instead.')
   }
-  if (audience === 'staff' && (!role || role === 'Client User')) {
-    throw new Error('This account is for clients. Choose Client sign-in instead.')
+  if (audience === 'staff' && (!role || !(STAFF_MOBILE_ROLES as readonly string[]).includes(role))) {
+    throw new Error('Staff sign-in is limited to System Administrators, Sales Representatives, Procurement Managers, and Field Support Engineers. Client accounts must use Client sign-in.')
   }
   setAuthToken(data.token)
   return data
