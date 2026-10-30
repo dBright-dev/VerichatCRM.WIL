@@ -17,6 +17,9 @@ namespace VerichatCRM.Infrastructure.Data
         public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
         public DbSet<WarehouseAlert> WarehouseAlerts => Set<WarehouseAlert>();
         public DbSet<Client> Clients => Set<Client>();
+        public DbSet<ClientAssignment> ClientAssignments => Set<ClientAssignment>();
+        public DbSet<CalibrationSchedule> CalibrationSchedules => Set<CalibrationSchedule>();
+        public DbSet<SalesGoal> SalesGoals => Set<SalesGoal>();
         public DbSet<Deal> Deals => Set<Deal>();
         public DbSet<Inquiry> Inquiries => Set<Inquiry>();
         public DbSet<Quotation> Quotations => Set<Quotation>();
@@ -88,12 +91,89 @@ namespace VerichatCRM.Infrastructure.Data
             });
 
             // Client -> Deals (one cascade path Client -> Deal is kept)
+            modelBuilder.Entity<Client>(entity =>
+            {
+                entity.HasKey(e => e.ClientId);
+                entity.Property(e => e.ClientName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Sector).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.SectorType).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.ContactEmail).HasMaxLength(256);
+                entity.HasIndex(e => e.SectorType);
+            });
+
             modelBuilder.Entity<Deal>(entity =>
             {
                 entity.HasOne(e => e.Client)
                       .WithMany(c => c.Deals)
                       .HasForeignKey(e => e.ClientId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<ClientAssignment>(entity =>
+            {
+                entity.HasKey(e => e.ClientAssignmentId);
+                entity.Property(e => e.SalesRepId).IsRequired().HasMaxLength(64);
+                entity.HasIndex(e => new { e.ClientId, e.SalesRepId, e.AssignedDate });
+
+                entity.HasOne(e => e.Client)
+                      .WithMany(c => c.Assignments)
+                      .HasForeignKey(e => e.ClientId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.SalesRep)
+                      .WithMany()
+                      .HasForeignKey(e => e.SalesRepId)
+                      .HasPrincipalKey(u => u.UserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<CalibrationSchedule>(entity =>
+            {
+                entity.HasKey(e => e.ScheduleId);
+                entity.Property(e => e.EquipmentId).IsRequired().HasMaxLength(64);
+                entity.Property(e => e.AssignedTechId).IsRequired().HasMaxLength(64);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.HasIndex(e => new { e.ClientId, e.ScheduledDate });
+                entity.HasIndex(e => e.Status);
+
+                entity.HasOne(e => e.Client)
+                      .WithMany(c => c.CalibrationSchedules)
+                      .HasForeignKey(e => e.ClientId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Equipment)
+                      .WithMany()
+                      .HasForeignKey(e => e.EquipmentId)
+                      .HasPrincipalKey(a => a.AssetId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.AssignedTech)
+                      .WithMany()
+                      .HasForeignKey(e => e.AssignedTechId)
+                      .HasPrincipalKey(u => u.UserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<SalesGoal>(entity =>
+            {
+                entity.HasKey(e => e.GoalId);
+                entity.Property(e => e.UserId).IsRequired().HasMaxLength(64);
+                entity.Property(e => e.TargetAmount).HasPrecision(18, 2);
+                entity.Property(e => e.Type).IsRequired().HasMaxLength(20);
+                entity.HasIndex(e => new { e.UserId, e.StartDate, e.EndDate });
+
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .HasPrincipalKey(u => u.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Inquiry>(entity =>
+            {
+                entity.Property(e => e.FollowUpStatus).IsRequired().HasMaxLength(20);
+                entity.HasIndex(e => e.NextFollowUpDate);
+                entity.HasIndex(e => e.FollowUpStatus);
             });
 
             // Quotation links to both Client and Deal. SQL Server forbids
