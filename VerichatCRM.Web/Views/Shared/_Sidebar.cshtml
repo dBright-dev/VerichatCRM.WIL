@@ -5,18 +5,31 @@
     </a>
 
     <div class="vc-sidebar__user">
-        <div class="vc-avatar">@(Context.Session.GetString("UserName")?.Substring(0, 1) ?? "V")</div>
+        @{
+            string? userName = "";
+            string? userRole = "";
+            if (ViewContext.HttpContext.Session != null && ViewContext.HttpContext.Session.Keys.Contains("UserName"))
+            {
+                userName = ViewContext.HttpContext.Session.GetString("UserName");
+            }
+            if (ViewContext.HttpContext.Session != null && ViewContext.HttpContext.Session.Keys.Contains("UserRole"))
+            {
+                userRole = ViewContext.HttpContext.Session.GetString("UserRole");
+            }
+        }
+        <div class="vc-avatar">@(userName?.Substring(0, 1) ?? "V")</div>
         <div>
-            <div class="vc-user-name">@(Context.Session.GetString("UserName") ?? "Verichat User")</div>
-            <div class="vc-user-role">@((Context.Session.GetString("UserRole") ?? "GUEST").ToUpper())</div>
+            <div class="vc-user-name">@(userName ?? "Verichat User")</div>
+            <div class="vc-user-role">@(userRole ?? "GUEST").ToUpper()</div>
         </div>
     </div>
 
     @{
-        // Mirrors the server-side permission map in Authorization/Perm.cs. Hiding
-        // a link is only cosmetic - the RequirePermission filter is what actually
-        // stops a user reaching a screen by typing its URL.
-        var role = Context.Session.GetString("UserRole") ?? "";
+        string? role = "";
+        if (ViewContext.HttpContext.Session != null && ViewContext.HttpContext.Session.Keys.Contains("UserRole"))
+        {
+            role = ViewContext.HttpContext.Session.GetString("UserRole");
+        }
         bool Can(string permission) => Perm.Has(role, permission);
 
         var isAdmin = Can(Perm.AdminDashboard);
