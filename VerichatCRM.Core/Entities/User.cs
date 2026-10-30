@@ -31,4 +31,7 @@ public class User
     [MaxLength(256)]
     public string? PasswordResetToken { get; set; }
     public DateTime? PasswordResetExpiry { get; set; }
+    /// <summary>Expo push notification token for mobile app.</summary>
+    [MaxLength(512)]
+    public string? DeviceToken { get; set; }
 }
