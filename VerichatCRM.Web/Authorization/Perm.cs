@@ -15,6 +15,7 @@ namespace VerichatCRM.Web.Authorization
         public const string AppointmentManagement = "appointments.manage";
 
         // Clients
+        public const string ClientAssign = "clients.assign";
         public const string ClientDirectory = "clients.directory";
         public const string ClientProfile = "clients.profile";
         public const string ClientCreate = "clients.create";
@@ -24,6 +25,8 @@ namespace VerichatCRM.Web.Authorization
         public const string LogisticsTracker = "logistics.tracker";
 
         // Sales workflow
+        public const string SalesMap = "sales.map";
+        public const string SalesLeads = "sales.leads";
         public const string PipelineBoard = "pipeline.board";
         public const string InquiryQueue = "inquiries.queue";
         public const string QuotationBuilder = "quotation.builder";
@@ -33,34 +36,37 @@ namespace VerichatCRM.Web.Authorization
 
         // Support & operations
         public const string TicketHub = "tickets.hub";
+        public const string TicketUpdate = "support.ticket.update";
         public const string WarehouseAlerts = "warehouse.alerts";
 
         // Administration
         public const string AdminAnalytics = "admin.analytics";
+        public const string DashboardAnalytics = "dashboard.analytics";
         public const string AdminRules = "admin.rules";
         public const string RoleAssignments = "admin.roles";
 
-        /// <summary>Permissions granted to each role.</summary>
+        // Permissions granted to each role.
         public static readonly Dictionary<string, string[]> ByRole = new()
         {
             [Roles.SystemAdministrator] = new[]
             {
                 AdminDashboard, ProcurementDashboard, SupportDashboard, SalesDashboard, AppointmentManagement,
-                ClientDirectory, ClientProfile, ClientCreate,
+                ClientDirectory, ClientProfile, ClientCreate, ClientAssign,
                 AssetTracking, LogisticsTracker,
-                PipelineBoard, InquiryQueue, QuotationBuilder, ProductCatalog, ProductCreate, ProductEdit,
-                TicketHub, WarehouseAlerts,
-                AdminAnalytics, AdminRules, RoleAssignments,
+                PipelineBoard, InquiryQueue, SalesLeads, SalesMap, QuotationBuilder, ProductCatalog, ProductCreate, ProductEdit,
+                TicketHub, TicketUpdate, WarehouseAlerts,
+                AdminAnalytics, DashboardAnalytics, AdminRules, RoleAssignments,
             },
 
             // Client directory + client details, asset tracking, pipeline board,
             // quotation builder and product catalog. Cannot create clients.
             [Roles.SalesRepresentative] = new[]
             {
+                SalesDashboard, DashboardAnalytics,
                 SalesDashboard, AppointmentManagement,
                 ClientDirectory, ClientProfile,
                 AssetTracking,
-                PipelineBoard, InquiryQueue, QuotationBuilder, ProductCatalog, ProductEdit,
+                PipelineBoard, InquiryQueue, SalesLeads, SalesMap, QuotationBuilder, ProductCatalog, ProductEdit,
             },
 
             // Client directory, product catalog, ticket hub and logistics tracker,
@@ -78,7 +84,7 @@ namespace VerichatCRM.Web.Authorization
             {
                 SupportDashboard,
                 AssetTracking,
-                TicketHub, AppointmentManagement,
+                TicketHub, TicketUpdate, AppointmentManagement,
             },
 
             // Delivery/logistics movements: tracker and asset movement.

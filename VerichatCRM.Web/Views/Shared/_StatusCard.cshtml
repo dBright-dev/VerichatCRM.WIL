@@ -1,0 +1,96 @@
+﻿@model VerichatCRM.Web.Models.StatusPageViewModel
+
+<style>
+    .vc-status {
+        min-height: 60vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .vc-status__card {
+        max-width: 480px;
+        width: 100%;
+        text-align: center;
+        padding: 2.5rem 2rem;
+        background: #fff;
+        border: 1px solid var(--vc-border, #e5e7eb);
+        border-radius: 12px;
+        box-shadow: var(--vc-shadow, 0 1px 3px rgba(0,0,0,.08));
+    }
+
+    .vc-status__code {
+        font-size: 3.5rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: .25rem;
+        color: var(--vc-accent, #5B5BD6);
+    }
+
+    .vc-status__icon {
+        font-size: 2.5rem;
+        line-height: 1;
+        margin-bottom: .5rem;
+    }
+
+    .vc-status__title {
+        font-size: 1.35rem;
+        margin: .5rem 0;
+    }
+
+    .vc-status__msg {
+        color: var(--vc-text-muted, #6b7280);
+        margin-bottom: 1.5rem;
+    }
+
+    .vc-status__actions {
+        display: flex;
+        gap: .5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .vc-status__req {
+        margin-top: 1.25rem;
+        font-size: .8rem;
+        color: var(--vc-text-muted, #6b7280);
+    }
+</style>
+
+<section class="vc-status" aria-labelledby="statusTitle">
+    <div class="vc-status__card">
+        @if (Model.Code == 404)
+        {
+            <div class="vc-status__code" aria-hidden="true">404</div>
+        }
+        else
+        {
+            <div class="vc-status__icon" aria-hidden="true">@Model.Icon</div>
+        }
+
+        <h2 class="vc-status__title" id="statusTitle">@Model.Heading</h2>
+        <p class="vc-status__msg">@Model.Message</p>
+
+        <div class="vc-status__actions">
+            <a class="btn btn-primary" href="@Model.PrimaryUrl">@Model.PrimaryLabel</a>
+
+            @if (Model.Code != 403 || Model.IsAuthenticated)
+            {
+                <button type="button" class="btn btn-outline-secondary" onclick="history.length > 1 ? history.back() : (location.href='@Model.PrimaryUrl')">Go back</button>
+            }
+
+            @if (Model.IsAuthenticated)
+            {
+                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-outline-secondary">Sign out</button>
+                </form>
+            }
+        </div>
+
+        @if (Model.ShowRequestId)
+        {
+            <p class="vc-status__req">Request ID: <code>@Model.RequestId</code></p>
+        }
+    </div>
+</section>

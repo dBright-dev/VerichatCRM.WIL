@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using VerichatCRM.Web.Authorization;
-using VerichatCRM.Web.Services;
 using VerichatCRM.Web.Services.Interfaces;
 
 namespace VerichatCRM.Web.Controllers
@@ -9,6 +8,13 @@ namespace VerichatCRM.Web.Controllers
     public class PipelineController : Controller
     {
         private readonly IPipelineApiService _pipeline;
+        private readonly ISalesGoalApiService _goals;
+
+        public PipelineController(IPipelineApiService pipeline, ISalesGoalApiService goals)
+        {
+            _pipeline = pipeline;
+            _goals = goals;
+        }
         private readonly IApiClient _api;
 
         public PipelineController(IPipelineApiService pipeline, IApiClient api) { _pipeline = pipeline; _api = api; }
@@ -21,6 +27,7 @@ namespace VerichatCRM.Web.Controllers
             ViewData["Title"] = "Pipeline Board";
             ViewData["Subtitle"] = "Drag cards between stages to update deal progress.";
             ViewData["CurrentRole"] = HttpContext.Session.GetString("UserRole") ?? "Sales Representative";
+            ViewData["GoalProgress"] = await _goals.GetDashboardProgressAsync();
             ViewBag.ApiBaseUrl = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["ApiBaseUrl"]?.TrimEnd('/');
             ViewBag.ApiToken = System.Text.Json.JsonSerializer.Serialize(HttpContext.Session.GetString("JwtToken") ?? string.Empty);
 
@@ -35,6 +42,8 @@ namespace VerichatCRM.Web.Controllers
         public async Task<IActionResult> MoveDeal([FromBody] MoveDealRequest request)
         {
             if (HttpContext.Session.GetString("JwtToken") == null) return Unauthorized();
+            if (request is null || string.IsNullOrWhiteSpace(request.DealId)) return BadRequest();
+
             var ok = await _pipeline.MoveDealAsync(request.DealId, request.NewStage);
             return ok ? Ok() : BadRequest();
         }

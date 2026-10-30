@@ -1,0 +1,222 @@
+﻿@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <style>
+        .vc-map-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 16px;
+        }
+
+        #clientMap {
+            height: 68vh;
+            min-height: 420px;
+            border-radius: 12px;
+            border: 1px solid var(--vc-border, #e5e7eb);
+            z-index: 0;
+        }
+
+        .vc-pin span {
+            display: flex;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 16px;
+            border: 2px solid #fff;
+            box-shadow: 0 1px 4px rgba(0,0,0,.4);
+        }
+
+        .vc-legend-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid var(--vc-border, #e5e7eb);
+            background: #fff;
+            border-radius: 999px;
+            padding: 3px 10px;
+            font-size: .8rem;
+            cursor: pointer;
+        }
+
+            .vc-legend-btn.off {
+                opacity: .4;
+            }
+
+        @@media (max-width: 900px) {
+            .vc-map-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+}
+
+@Html.AntiForgeryToken()
+
+<div class="vc-map-layout">
+    <div>
+        <div id="legend" class="d-flex flex-wrap gap-2 mb-2" aria-label="Filter by sector"></div>
+        <div id="clientMap" role="application" aria-label="Map of client locations"></div>
+    </div>
+
+    <aside>
+        <div class="vc-card p-3 mb-3" id="clientPanel" aria-live="polite">
+            <div class="vc-text-muted small">Click a pin to view the client, their last contact date, and log a visit.</div>
+        </div>
+
+        <div class="vc-card p-3">
+            <h3 class="vc-heading h6 mb-1">Not mapped</h3>
+            <div class="vc-text-muted small mb-2" id="unmappedHint">Clients without coordinates.</div>
+            <div id="unmappedList" class="small"></div>
+        </div>
+    </aside>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script>
+        const vcDataUrl = '@Url.Action("MapData", "Sales")';
+        const vcLogUrl = '@Url.Action("LogVisit", "Sales")';
+        const vcProfileUrl = '@Url.Action("Profile", "Clients")';
+        const vcDemo = new URLSearchParams(location.search).get('demo') === 'true';
+
+        const vcSectors = {
+            Hospital: { icon: '✚', color: '#c62828', label: 'Hospital' },
+            Mine: { icon: '⛏', color: '#b26a00', label: 'Mine' },
+            Education: { icon: '🎓', color: '#1565c0', label: 'Education' },
+            Clinic: { icon: '🧪', color: '#00796b', label: 'Clinic' },
+            Other: { icon: '📍', color: '#546e7a', label: 'Other' }
+        };
+
+        const map = L.map('clientMap').setView([-28.5, 24.7], 5);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        const layers = {};   // sector -> L.layerGroup
+        let clients = [];
+        let selected = null;
+
+        function esc(s) {
+            const d = document.createElement('div');
+            d.textContent = s ?? '';
+            return d.innerHTML;
+        }
+
+        function pinIcon(sector) {
+            const s = vcSectors[sector] || vcSectors.Other;
+            return L.divIcon({
+                className: 'vc-pin',
+                html: `<span style="background:${s.color}">${s.icon}</span>`,
+                iconSize: [34, 34],
+                iconAnchor: [17, 17]
+            });
+        }
+
+        function renderLegend() {
+            const legend = document.getElementById('legend');
+            legend.innerHTML = '';
+            Object.keys(vcSectors).forEach(key => {
+                const count = clients.filter(c => c.hasLocation && c.sector === key).length;
+                if (count === 0) return;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'vc-legend-btn';
+                btn.innerHTML = `<span aria-hidden="true">${vcSectors[key].icon}</span> ${vcSectors[key].label} (${count})`;
+                btn.addEventListener('click', () => {
+                    const group = layers[key];
+                    if (map.hasLayer(group)) { map.removeLayer(group); btn.classList.add('off'); }
+                    else { map.addLayer(group); btn.classList.remove('off'); }
+                });
+                legend.appendChild(btn);
+            });
+        }
+
+        function renderUnmapped() {
+            const list = document.getElementById('unmappedList');
+            const unmapped = clients.filter(c => !c.hasLocation);
+            document.getElementById('unmappedHint').textContent = unmapped.length
+                ? `${unmapped.length} client(s) have no location yet.`
+                : 'Every client has a location.';
+            list.innerHTML = unmapped.map(c =>
+                `<div class="py-1 border-top"><a href="${vcProfileUrl}/${encodeURIComponent(c.id)}">${esc(c.name)}</a></div>`
+            ).join('');
+        }
+
+        function showClient(c, message) {
+            selected = c;
+            const s = vcSectors[c.sector] || vcSectors.Other;
+            const lastClass = c.isStale ? 'text-danger fw-semibold' : '';
+            document.getElementById('clientPanel').innerHTML = `
+                        <h3 class="vc-heading h6 mb-1">${esc(c.name)}</h3>
+                        <div class="vc-text-muted small mb-2">${s.icon} ${esc(s.label)} &middot; ${esc(c.status)}</div>
+                        <dl class="small mb-2">
+                            <dt class="vc-text-muted fw-normal">Assigned rep</dt><dd>${esc(c.assignedRep || 'Unassigned')}</dd>
+                            <dt class="vc-text-muted fw-normal">Last contact</dt><dd class="${lastClass}">${esc(c.lastContactText)}${c.isStale ? ' (Overdue!)' : ''}</dd>
+                        </dl>
+                        <label class="form-label small" for="visitNote">Visit note (optional)</label>
+                        <textarea id="visitNote" class="form-control form-control-sm mb-2" rows="2" maxlength="500"></textarea>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary btn-sm" id="logVisitBtn">Log visit</button>
+                            <a class="btn btn-outline-secondary btn-sm" href="${vcProfileUrl}/${encodeURIComponent(c.id)}">View client profile</a>
+                        </div>
+                        <div id="panelMessage" class="small mt-2" role="status">${message || ''}</div>`;
+            document.getElementById('logVisitBtn').addEventListener('click', logVisit);
+        }
+
+        async function logVisit() {
+            if (!selected) return;
+            const btn = document.getElementById('logVisitBtn');
+            const note = document.getElementById('visitNote').value;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+            btn.disabled = true;
+            try {
+                const res = await fetch(vcLogUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                    body: JSON.stringify({ clientId: selected.id, note })
+                });
+                if (!res.ok) throw new Error('Status ' + res.status);
+                selected.lastContactText = 'Today';
+                selected.isStale = false;
+                showClient(selected, '<span class="text-success">Visit logged.</span>');
+            } catch (err) {
+                btn.disabled = false;
+                document.getElementById('panelMessage').innerHTML =
+                    '<span class="text-danger">Couldn\'t log the visit. Please try again.</span>';
+            }
+        }
+
+        async function loadClients() {
+            try {
+                const res = await fetch(vcDataUrl + (vcDemo ? '?demo=true' : ''), { headers: { 'Accept': 'application/json' } });
+                if (!res.ok) throw new Error('Status ' + res.status);
+                clients = await res.json();
+            } catch (err) {
+                document.getElementById('clientPanel').innerHTML =
+                    '<div class="text-danger small">Couldn\'t load clients. Please refresh.</div>';
+                return;
+            }
+
+            Object.keys(vcSectors).forEach(k => layers[k] = L.layerGroup().addTo(map));
+
+            const bounds = [];
+            clients.filter(c => c.hasLocation).forEach(c => {
+                const key = vcSectors[c.sector] ? c.sector : 'Other';
+                const marker = L.marker([c.lat, c.lng], { icon: pinIcon(key), title: c.name });
+                marker.on('click', () => showClient(c));
+                marker.addTo(layers[key]);
+                bounds.push([c.lat, c.lng]);
+            });
+
+            if (bounds.length) map.fitBounds(bounds, { padding: [40, 40], maxZoom: 9 });
+
+            renderLegend();
+            renderUnmapped();
+        }
+
+        loadClients();
+    </script>
+}
