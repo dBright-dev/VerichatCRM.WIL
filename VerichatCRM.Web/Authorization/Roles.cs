@@ -15,14 +15,9 @@ namespace VerichatCRM.Web.Authorization
         public const string ClientUser = "Client User";
         public const string MedicalStudent = "Medical Student";
 
-        /// <summary>Roles a user may pick when self-registering on the web.</summary>
-        public static readonly string[] SelfRegisterable =
-        {
-            SalesRepresentative,
-            ProcurementManager,
-            FieldSupportEngineer,
-            Logistics,
-            ClientUser,
-        };
+        // There used to be a second SelfRegisterable list here. It disagreed with
+        // UserRoles.SelfRegisterable in Core (no Medical Student) and nothing read
+        // it, so validation and the sign-up form were checking different sets.
+        // Core's list is the only one - it is what the API enforces.
     }
 }

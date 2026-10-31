@@ -1,4 +1,5 @@
 @model List<VerichatCRM.Web.Services.Interfaces.UserListItem>
+@using VerichatCRM.Core.Entities
 @{
     ViewData["Title"] = "Users & Roles";
 }
@@ -8,7 +9,7 @@
 }
 <div class="card">
     <div class="card-title">All Users (@Model.Count)</div>
-    <p class="vc-text-muted">Only System Administrators can change roles or deactivate users.</p>
+    <p class="vc-text-muted">Only System Administrators can change roles or deactivate users. New accounts are created by the person who signs up, or by the bootstrap administrator on a first run; this screen changes existing ones.</p>
     <table class="data-table">
         <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Last login</th><th></th></tr></thead>
         <tbody>
@@ -22,7 +23,15 @@
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="userId" value="@u.UserId" />
                             <select name="role" class="form-select form-select-sm">
-                                @foreach (var r in new[] { "System Administrator", "Sales Representative", "Procurement Manager", "Field Support Engineer" })
+                                @* The list is UserRoles.All, not a copy typed into
+                                    this view: it used to offer four of the seven
+                                    roles, so Logistics, Client User and Medical
+                                    Student accounts existed in the database but
+                                    could never be granted or corrected here.
+                                    Saving to a client-audience role keeps the
+                                    person on the mobile app; they get no web
+                                    screens. *@
+                                @foreach (var r in UserRoles.All)
                                 {
                                     <option value="@r" selected="@(r == u.Role)">@r</option>
                                 }

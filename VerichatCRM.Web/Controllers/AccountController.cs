@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using VerichatCRM.Core.Entities;
 using VerichatCRM.Web.Authorization;
+using VerichatCRM.Web.Models;
 using VerichatCRM.Web.Models.Auth;
 using VerichatCRM.Web.Services.Interfaces;
 
@@ -78,9 +79,13 @@ namespace VerichatCRM.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterRequest request)
         {
-            // Never trust the posted role string: it must be one of the roles the
-            // application knows about, otherwise arbitrary values reach the database.
-            if (!UserRoles.All.Contains(request.Role))
+            // Never trust the posted role string. The set checked here has to be
+            // the set the API enforces (UserRoles.SelfRegisterable), not the full
+            // role list - otherwise the form accepts "System Administrator" and
+            // the server's refusal arrives as an opaque error instead of a field
+            // message. Client User and Medical Student are self-registerable for
+            // the mobile app but absent from this form's dropdown.
+            if (!UserRoles.SelfRegisterable.Contains(request.Role))
             {
                 ModelState.AddModelError("Role", "Select a valid role.");
             }
@@ -200,8 +205,16 @@ namespace VerichatCRM.Web.Controllers
             {
                 return RedirectToAction(nameof(Login));
             }
+
             Response.StatusCode = StatusCodes.Status403Forbidden;
-            return View();
+
+            // This used to be a bare View(), which searched for
+            // Views/Account/NoAccess.cshtml - a file that never existed - so every
+            // permission denial ended as "Invalid view name" / HTTP 500 instead of
+            // the 403 page. Views/Shared/Unauthorized.cshtml is the branded 403
+            // that the status-code pipeline already uses for the same code.
+            var role = HttpContext.Session.GetString("UserRole");
+            return View("Unauthorized", StatusPageViewModel.For(403, role, true));
         }
     }
 }
