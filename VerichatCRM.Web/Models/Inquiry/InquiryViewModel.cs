@@ -16,6 +16,8 @@ namespace VerichatCRM.Web.Models.Inquiry
         public string Source { get; set; } = "";
         public string Status { get; set; } = "";
         public int Score { get; set; }
+        public string? Urgency { get; set; }
+        public decimal? EstimatedValue { get; set; }
         public string? Notes { get; set; }
         public DateTime? ResponseDueAt { get; set; }
         public bool IsOverdue { get; set; }
@@ -53,7 +55,16 @@ namespace VerichatCRM.Web.Models.Inquiry
         public string? Description { get; set; }
         public string Source { get; set; } = "Website";
         public string Status { get; set; } = "New";
-        public int Score { get; set; } = 50;
+        public string? Urgency { get; set; }
+        public decimal? EstimatedValue { get; set; }
+
+        /// <summary>
+        /// Left blank, the API scores the enquiry from its sector, contract
+        /// status, value and urgency. A number typed here is stored as typed and
+        /// survives later edits to those factors, which is how the queue gets
+        /// ranked by hand.
+        /// </summary>
+        public int? Score { get; set; }
         public string? Notes { get; set; }
 
         public List<ClientViewModel> Clients { get; set; } = new();

@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using VerichatCRM.Core.Entities;
+using VerichatCRM.Core.Models.Inquiry;
 using VerichatCRM.Web.Authorization;
 using VerichatCRM.Web.Models.Inquiry;
 using VerichatCRM.Web.Services.Interfaces;
@@ -13,11 +15,11 @@ namespace VerichatCRM.Web.Controllers
     [RequirePermission(Perm.InquiryQueue)]
     public class InquiryController : Controller
     {
-        private static readonly string[] AllStatuses =
-            { "New", "Contacted", "Qualified", "Quoted", "Won", "Lost" };
-
-        private static readonly string[] AllSources =
-            { "Phone", "Email", "Website", "Walk-in", "Mobile App", "Referral" };
+        // Read from the same constants the API validates against, so a status or
+        // source added on the server appears in the dropdowns instead of drifting.
+        private static readonly string[] AllStatuses = InquiryStatuses.All;
+        private static readonly string[] AllSources = InquirySources.All;
+        private static readonly string[] AllUrgencies = InquiryUrgencies.All;
 
         private readonly IInquiryApiService _inquiries;
         private readonly IClientApiService _clients;
@@ -97,6 +99,8 @@ namespace VerichatCRM.Web.Controllers
                 Description = inquiry.Description,
                 Source = inquiry.Source,
                 Status = inquiry.Status,
+                Urgency = inquiry.Urgency,
+                EstimatedValue = inquiry.EstimatedValue,
                 Score = inquiry.Score,
                 Notes = inquiry.Notes,
             });
@@ -153,11 +157,12 @@ namespace VerichatCRM.Web.Controllers
 
             SetHeader(
                 isEdit ? "Edit Inquiry" : "New Inquiry",
-                "Enquiries are scored 0-100; the highest scores surface first in the queue.");
+                "Blank score means the system scores it; a score you type ranks the enquiry by hand.");
 
             ViewData["IsEdit"] = isEdit;
             ViewData["AllStatuses"] = AllStatuses;
             ViewData["AllSources"] = AllSources;
+            ViewData["AllUrgencies"] = AllUrgencies;
 
             return View("Form", model);
         }

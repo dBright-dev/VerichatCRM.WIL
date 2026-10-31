@@ -59,6 +59,8 @@ namespace VerichatCRM.Web.Services
                     model.ClientId,
                     model.Description,
                     model.Source,
+                    model.Urgency,
+                    model.EstimatedValue,
                     model.Score,
                 });
             }
@@ -83,6 +85,8 @@ namespace VerichatCRM.Web.Services
                     model.ClientId,
                     model.Notes,
                     model.Status,
+                    model.Urgency,
+                    model.EstimatedValue,
                     model.Score,
                 });
             }

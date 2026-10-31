@@ -4,6 +4,13 @@
     var isEdit = ViewData["IsEdit"] is true;
     var statuses = (string[])ViewData["AllStatuses"]!;
     var sources = (string[])ViewData["AllSources"]!;
+    var urgencies = (string[])ViewData["AllUrgencies"]!;
+    // Rendered invariantly on purpose: a number input only accepts a dot as the
+    // decimal separator, and this host renders under en-ZA, where decimals are
+    // written with a comma.
+    var estimatedValueText = Model.EstimatedValue.HasValue
+        ? Model.EstimatedValue.Value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)
+        : "";
     ViewData["Title"] = isEdit ? "Edit Inquiry" : "New Inquiry";
 }
 
@@ -108,6 +115,38 @@
             <span asp-validation-for="Source" class="text-critical"></span>
         </div>
 
+        <!-- How soon they need it, and what the job is worth: two of the four
+             factors the automatic score is built from. -->
+        <div class="form-group">
+            <label class="form-label" asp-for="Urgency">Urgency</label>
+
+            <select asp-for="Urgency" class="form-select">
+                <option value="">&mdash; not stated &mdash;</option>
+                @foreach (var u in urgencies)
+                {
+                    <option value="@u">@u</option>
+                }
+            </select>
+
+            <span asp-validation-for="Urgency" class="text-critical"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="EstimatedValue">Estimated value (rand)</label>
+
+            <input id="EstimatedValue"
+                   name="EstimatedValue"
+                   type="number"
+                   step="1"
+                   min="0"
+                   value="@estimatedValueText"
+                   class="form-input" />
+
+            <span class="form-hint">
+                Whole rand. Left blank, the client&rsquo;s most recent deal value is used.
+            </span>
+        </div>
+
         <!-- Status: only shown when editing -->
         @if (isEdit)
         {
@@ -137,10 +176,13 @@
                    type="number"
                    min="0"
                    max="100"
+                   placeholder="leave blank to score automatically"
                    class="form-input" />
 
             <span class="form-hint">
-                Higher scores are worked first.
+                Blank: worked out from sector, contract status, value and urgency.
+                A number here is used as given and is what re-ranks the queue &mdash;
+                it survives later edits to those four factors.
             </span>
 
             <span asp-validation-for="Score" class="text-critical"></span>
