@@ -96,15 +96,19 @@ public static class LandingContent
             "A nursing teaching laboratory with training mannequins on trolleys.")
     };
 
-    // Display names come from the repository's commit authorship. Before this page
-    // is published, replace each with the contributor's chosen name and a headshot.
+    // This page is published, so it names the functions that own the platform rather than
+    // the people who committed the code. Each entry is a company role and what that role is
+    // accountable for once the system is live.
     public static IReadOnlyList<TeamMember> Team { get; } = new[]
     {
-        new TeamMember("D", "Dorcas", "Project lead",
-            "Platform architecture, the CRM core and the reporting layer this analysis is built on."),
-        new TeamMember("R", "Raisibe", "Backend & data",
-            "API services, authentication, data access and the migration chain behind them."),
-        new TeamMember("S", "Add name", "Frontend & mobile",
-            "The client portal, the Expo mobile application and the design system they share.")
+        new TeamMember("E", "Chief Executive Officer", "Executive sponsor",
+            "Chooses the sectors the company serves, signs the client contracts and owns the "
+            + "roadmap the procurement platform is built to support."),
+        new TeamMember("O", "Procurement & Logistics Manager", "Supply chain",
+            "Owns the catalogue, the supplier records and the path from a warehouse alert to a "
+            + "purchase order the client can track."),
+        new TeamMember("C", "Client Support Manager", "Client services",
+            "Owns the ticket queue, the SLA commitments and the calibration calendar behind every "
+            + "asset installed on site.")
     };
 }
