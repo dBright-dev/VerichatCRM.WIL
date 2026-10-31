@@ -14,6 +14,15 @@ namespace VerichatCRM.Web.Authorization
         public const string SalesDashboard = "sales.dashboard";
         public const string AppointmentManagement = "appointments.manage";
 
+        // The generic /Dashboard workspace screen. It is not anyone's landing page -
+        // each staff role lands on its own dashboard - but it is a staff screen all
+        // the same, and it was the one controller in the web tier that checked only
+        // for a session. The API behind it refuses a client token, so what a Client
+        // User or Medical Student got by typing the URL was an empty staff shell
+        // titled after their own role. Every staff role holds this; neither client
+        // role does.
+        public const string Workspace = "workspace.dashboard";
+
         // Clients
         public const string ClientAssign = "clients.assign";
         public const string ClientDirectory = "clients.directory";
@@ -54,7 +63,7 @@ namespace VerichatCRM.Web.Authorization
         {
             [Roles.SystemAdministrator] = new[]
             {
-                AdminDashboard, ProcurementDashboard, SupportDashboard, SalesDashboard, AppointmentManagement,
+                AdminDashboard, ProcurementDashboard, SupportDashboard, SalesDashboard, Workspace, AppointmentManagement,
                 ClientDirectory, ClientProfile, ClientCreate, ClientAssign,
                 AssetTracking, LogisticsTracker,
                 PipelineBoard, InquiryQueue, SalesLeads, SalesMap, QuotationBuilder, ProductCatalog, ProductCreate, ProductEdit,
@@ -66,7 +75,7 @@ namespace VerichatCRM.Web.Authorization
             // quotation builder and product catalog. Cannot create clients.
             [Roles.SalesRepresentative] = new[]
             {
-                SalesDashboard, DashboardAnalytics, AppointmentManagement,
+                SalesDashboard, DashboardAnalytics, Workspace, AppointmentManagement,
                 ClientDirectory, ClientProfile,
                 AssetTracking,
                 PipelineBoard, InquiryQueue, SalesLeads, SalesMap, QuotationBuilder, ProductCatalog, ProductEdit,
@@ -78,7 +87,7 @@ namespace VerichatCRM.Web.Authorization
             // except the administrator, so the link walked straight into a 403.
             [Roles.ProcurementManager] = new[]
             {
-                ProcurementDashboard, AppointmentManagement,
+                ProcurementDashboard, Workspace, AppointmentManagement,
                 ClientDirectory, ClientProfile,
                 ProductCatalog,
                 TicketHub, LogisticsTracker, WarehouseAlerts,
@@ -87,7 +96,7 @@ namespace VerichatCRM.Web.Authorization
             // Ticket hub (resolve + assign) and asset tracking.
             [Roles.FieldSupportEngineer] = new[]
             {
-                SupportDashboard,
+                SupportDashboard, Workspace,
                 AssetTracking,
                 TicketHub, TicketUpdate, AppointmentManagement,
             },
@@ -95,7 +104,7 @@ namespace VerichatCRM.Web.Authorization
             // Delivery/logistics movements: tracker and asset movement.
             [Roles.Logistics] = new[]
             {
-                SupportDashboard,
+                SupportDashboard, Workspace,
                 AssetTracking,
                 LogisticsTracker,
                 TicketHub,

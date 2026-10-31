@@ -88,8 +88,9 @@ namespace VerichatCRM.Web.Controllers
             // the set the API enforces (UserRoles.SelfRegisterable), not the full
             // role list - otherwise the form accepts "System Administrator" and
             // the server's refusal arrives as an opaque error instead of a field
-            // message. Client User and Medical Student are self-registerable for
-            // the mobile app but absent from this form's dropdown.
+            // message. Client User and Medical Student are in this form's dropdown
+            // and in that set: they order from Verichat instead of working inside it,
+            // and the API opens their Clients row as part of registering them.
             if (!UserRoles.SelfRegisterable.Contains(request.Role))
             {
                 ModelState.AddModelError("Role", "Select a valid role.");
