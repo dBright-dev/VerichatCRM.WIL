@@ -1,0 +1,105 @@
+@{
+    // The public shell. Deliberately not _Layout: a marketing page should not
+    // carry the signed-in app chrome (sidebar, topbar, notification bell), and an
+    // anonymous visitor should not load SignalR or the hub poller.
+    var jwt = Context.Session.GetString("JwtToken");
+    var userName = Context.Session.GetString("UserName");
+    var isAuthed = !string.IsNullOrEmpty(jwt);
+}
+<!DOCTYPE html>
+<html lang="en" class="lnd-html">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Verichat</title>
+    <meta name="description" content="Verichat runs the medical supply chain for clinics, mine rescue stations and teaching laboratories - ranked enquiries, tracked deliveries and SLA-routed service in one portal." />
+    <meta name="theme-color" content="#070D1C" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/verichat-theme.css" />
+    <link rel="stylesheet" href="~/pages/landing.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="lnd">
+    <a class="vc-skip-link" href="#mainContent">Skip to main content</a>
+
+    <header class="lnd-nav" id="lndNav">
+        <div class="lnd-nav__inner">
+            <a class="lnd-brand" href="/" aria-label="Verichat home">
+                <span class="lnd-brand__mark" aria-hidden="true">V</span>
+                <span class="lnd-brand__text">VERICHAT</span>
+                <span class="lnd-brand__tag">Supply&nbsp;·&nbsp;Service&nbsp;·&nbsp;CRM</span>
+            </a>
+
+            <nav class="lnd-nav__links" id="lndNavLinks" aria-label="Sections">
+                <a href="#platform">Platform</a>
+                <a href="#catalogue">Catalogue</a>
+                <a href="#sectors">Sectors</a>
+                <a href="#team">Team</a>
+            </nav>
+
+            <div class="lnd-nav__actions">
+                @if (isAuthed)
+                {
+                    <span class="lnd-nav__user">@(string.IsNullOrWhiteSpace(userName) ? "Signed in" : userName)</span>
+                    <a class="lnd-btn lnd-btn--solid" href="/dashboard">Open dashboard</a>
+                }
+                else
+                {
+                    <a class="lnd-nav__signin" href="/account/login">Sign in</a>
+                    <a class="lnd-btn lnd-btn--solid" href="/account/register">Client portal</a>
+                }
+                <button class="lnd-nav__toggle" type="button" aria-controls="lndNavLinks" aria-expanded="false" aria-label="Open menu">
+                    <span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main id="mainContent">
+        @RenderBody()
+    </main>
+
+    <footer class="lnd-footer">
+        <div class="lnd-footer__top">
+            <div class="lnd-footer__brand">
+                <a class="lnd-brand" href="/" aria-label="Verichat home">
+                    <span class="lnd-brand__mark" aria-hidden="true">V</span>
+                    <span class="lnd-brand__text">VERICHAT</span>
+                </a>
+                <p>
+                    Medical equipment and consumables, supplied and serviced against a
+                    schedule you can see.
+                </p>
+            </div>
+
+            <div class="lnd-footer__col">
+                <h4>Platform</h4>
+                <a href="#platform">How it works</a>
+                <a href="#catalogue">Catalogue</a>
+                <a href="#sectors">Sectors</a>
+                <a href="#team">Team</a>
+            </div>
+
+            <div class="lnd-footer__col">
+                <h4>Portal</h4>
+                <a href="/account/login">Sign in</a>
+                <a href="/account/register">Request access</a>
+                <a href="/logistics/tracker">Track a delivery</a>
+                <a href="/support/tickethub">Raise a fault</a>
+                <a href="/Home/Privacy">Privacy notice</a>
+            </div>
+        </div>
+
+        <div class="lnd-footer__base">
+            <span>© @DateTime.Now.Year Verichat. All rights reserved.</span>
+            <span>Delivery, service and supply chain for clinical, mining and education institutions.</span>
+        </div>
+    </footer>
+
+    <script src="~/js/landing.js" defer></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

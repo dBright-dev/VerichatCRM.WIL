@@ -1,207 +1,272 @@
 ﻿@model VerichatCRM.Web.ViewModels.Home.HomeViewModel
 @{
-    ViewData["Title"] = "Home";
-    Layout = "_Layout";
+    Layout = "_LandingLayout";
+    ViewData["Title"] = "Medical supply, handled with precision";
+    var steps = Model.Workflow.ToList();
 }
 
-<!-- ============ HERO SECTION ============ -->
-<section class="home-hero">
-    <div class="home-hero-content">
-        <div class="home-hero-badge">Medical Logistics & CRM Platform</div>
-        <h1 class="home-hero-title">
-            Precision procurement for the <span class="accent">health sector</span>
+<!-- ============ HERO ============ -->
+<section class="lnd-hero">
+    <div class="lnd-hero__media">
+        <img class="lnd-hero__img" src="/images/landing/hero-supply-suite.jpg" alt="" fetchpriority="high" />
+    </div>
+    <div class="lnd-hero__scrim"></div>
+    <div class="lnd-hero__glow" aria-hidden="true"></div>
+
+    <div class="lnd-wrap lnd-hero__inner">
+        <p class="lnd-eyebrow">Clinical · Mining · Education</p>
+        <h1>
+            Medical supply,<br />
+            <span class="lnd-hero__accent">handled with precision.</span>
         </h1>
-        <p class="home-hero-subtitle">
-            Manage clinical, mining, education, and rehab supply chains from a single intelligent platform.
-            From ranked inquiries to delivered consumables — Verichat keeps every interaction tracked.
+        <p class="lnd-hero__lead">
+            Verichat runs the whole chain for institutions that cannot wait for a spreadsheet —
+            the enquiry, the quote, the purchase order, the truck, the calibration date on the unit
+            once it is installed.
         </p>
 
-        <div class="home-hero-actions">
+        <div class="lnd-hero__actions">
             @if (Model.IsAuthenticated)
             {
-                <a href="/procurement/dashboard" class="btn btn-primary">
-                    Go to Dashboard →
-                </a>
-                <a href="/procurement/productcatalog" class="btn btn-outline">
-                    Browse Catalog
-                </a>
+                <a class="lnd-btn lnd-btn--solid" href="/dashboard">Open my dashboard →</a>
+                <a class="lnd-btn lnd-btn--ghost" href="#catalogue">See the catalogue</a>
             }
             else
             {
-                <a href="/account/login" class="btn btn-primary">
-                    Sign In →
-                </a>
-                <a href="/account/register" class="btn btn-outline">
-                    Create Account
-                </a>
+                <a class="lnd-btn lnd-btn--solid" href="/account/login">Sign in →</a>
+                <a class="lnd-btn lnd-btn--ghost" href="#platform">How it works</a>
             }
         </div>
 
-        <div class="home-hero-stats">
-            <div class="hero-stat">
-                <div class="hero-stat-value">15+</div>
-                <div class="hero-stat-label">Catalog Items</div>
+        <p class="lnd-hero__note"><i></i> Built for clinics, mine rescue stations and teaching laboratories.</p>
+    </div>
+
+    <div class="lnd-hero__chips">
+        <div class="lnd-chip" data-reveal data-reveal-delay="200">
+            <span class="lnd-chip__dot" aria-hidden="true">◆</span>
+            <div>
+                <b>Ranked enquiry queue</b>
+                <span>Sector, contract status, value and urgency</span>
             </div>
-            <div class="hero-stat">
-                <div class="hero-stat-value">4</div>
-                <div class="hero-stat-label">Business Roles</div>
-            </div>
-            <div class="hero-stat">
-                <div class="hero-stat-value">99.9%</div>
-                <div class="hero-stat-label">Uptime Target</div>
-            </div>
-            <div class="hero-stat">
-                <div class="hero-stat-value">24/7</div>
-                <div class="hero-stat-label">Support SLA</div>
+        </div>
+        <div class="lnd-chip" data-reveal data-reveal-delay="320">
+            <span class="lnd-chip__dot" aria-hidden="true">◆</span>
+            <div>
+                <b>Deliveries the client can follow</b>
+                <span>Every consignment carries a tracking number</span>
             </div>
         </div>
     </div>
 
-    <div class="home-hero-visual">
-        <div class="hero-card-stack">
-            <div class="floating-card card-1">
-                <span class="float-icon">📊</span>
-                <div>
-                    <div class="float-title">12 Active Deals</div>
-                    <div class="float-sub">+18% this month</div>
-                </div>
-            </div>
-            <div class="floating-card card-2">
-                <span class="float-icon">🚚</span>
-                <div>
-                    <div class="float-title">4 In Transit</div>
-                    <div class="float-sub">ETA tracked live</div>
-                </div>
-            </div>
-            <div class="floating-card card-3">
-                <span class="float-icon">⚠</span>
-                <div>
-                    <div class="float-title">1 Critical Alert</div>
-                    <div class="float-sub">Surgical Mask IIR</div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="lnd-scrollcue" aria-hidden="true"><i></i><span>Scroll</span></div>
 </section>
 
-<!-- ============ QUICK ACTIONS ============ -->
-<section class="home-section">
-    <div class="home-section-header">
-        <h2>Quick Actions</h2>
-        <p>Jump straight into the tasks you need most.</p>
-    </div>
-
-    <div class="quick-actions-grid">
-        @foreach (var action in Model.QuickActions)
+<!-- ============ CATEGORY MARQUEE ============ -->
+<div class="lnd-strip" aria-hidden="true">
+    <div class="lnd-strip__track">
+        @for (var copy = 0; copy < 2; copy++)
         {
-            <a href="@action.Url" class="quick-action-card" data-color="@action.Color">
-                <div class="quick-action-icon">@action.Icon</div>
-                <div class="quick-action-body">
-                    <div class="quick-action-title">@action.Title</div>
-                    <div class="quick-action-desc">@action.Description</div>
-                </div>
-                <div class="quick-action-arrow">→</div>
-            </a>
-        }
-    </div>
-</section>
-
-<!-- ============ ROLES UNDER THE CRM ============ -->
-<section class="home-section home-roles">
-    <div class="home-section-header">
-        <h2>Built for every role under the CRM</h2>
-        <p>One platform, tailored experiences. Each role sees exactly what they need — nothing more.</p>
-    </div>
-
-    <div class="roles-grid">
-        @foreach (var role in Model.Roles)
-        {
-            <div class="role-card @role.Color">
-                <div class="role-card-header">
-                    <div class="role-card-icon">@role.Icon</div>
-                    <div class="role-card-tagline">@role.Tagline</div>
-                </div>
-                <h3 class="role-card-name">@role.Name</h3>
-                <p class="role-card-desc">@role.Description</p>
-
-                <ul class="role-card-features">
-                    @foreach (var feature in role.Features)
-                    {
-                        <li>
-                            <span class="feature-check">✓</span>
-                            @feature
-                        </li>
-                    }
-                </ul>
-
-                <a href="@role.DashboardUrl" class="role-card-link">
-                    Open Dashboard →
-                </a>
+            <div class="lnd-strip__list">
+                @foreach (var category in Model.Categories)
+                {
+                    <span class="lnd-strip__item">@category</span>
+                }
             </div>
         }
     </div>
+</div>
+
+<!-- ============ PLATFORM / WORKFLOW ============ -->
+<section class="lnd-section" id="platform">
+    <div class="lnd-wrap">
+        <div class="lnd-head" data-reveal>
+            <p class="lnd-kicker">01 — The platform</p>
+            <h2>Three movements, one record.</h2>
+            <p>
+                Nothing is re-keyed between them. The enquiry that opens a relationship, the order that
+                fills it and the service call that keeps the equipment honest are the same record,
+                seen differently by each role.
+            </p>
+        </div>
+
+        <div class="lnd-tabs" data-tabs data-reveal>
+            <div class="lnd-tabs__list" role="tablist" aria-label="How Verichat runs the supply chain">
+                @for (var i = 0; i < steps.Count; i++)
+                {
+                    <button class="lnd-tabs__btn" type="button" role="tab"
+                            id="lnd-tab-@i" aria-controls="lnd-panel-@i"
+                            aria-selected="@(i == 0 ? "true" : "false")" tabindex="@(i == 0 ? 0 : -1)">
+                        <i>@steps[i].Number</i>
+                        <span><b>@steps[i].Label</b></span>
+                    </button>
+                }
+            </div>
+
+            <div>
+                @for (var i = 0; i < steps.Count; i++)
+                {
+                    var step = steps[i];
+                    <div class="lnd-panel" role="tabpanel" id="lnd-panel-@i" aria-labelledby="lnd-tab-@i" hidden="@(i == 0 ? null : "hidden")">
+                        <div class="lnd-panel__media">
+                            <img src="@step.Image" alt="@step.Alt" loading="lazy" decoding="async" />
+                        </div>
+                        <div class="lnd-panel__body">
+                            <h3>@step.Heading</h3>
+                            <p>@step.Body</p>
+                            <div class="lnd-roles">
+                                @foreach (var role in step.Roles)
+                                {
+                                    <span>@role</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 </section>
 
-<!-- ============ FEATURE HIGHLIGHTS ============ -->
-<section class="home-section">
-    <div class="home-section-header">
-        <h2>Why teams choose Verichat</h2>
-        <p>Replacing fragmented spreadsheets with a single source of truth.</p>
-    </div>
+<hr class="lnd-hairline" />
 
-    <div class="feature-grid">
-        <div class="feature-block">
-            <div class="feature-icon-cyan">⚡</div>
-            <h4>One-Click Quotations</h4>
-            <p>Generate itemized, branded PDF quotes in seconds — pulling live pricing from your medical catalog.</p>
+<!-- ============ CATALOGUE SHOWCASE ============ -->
+<section class="lnd-section" id="catalogue">
+    <div class="lnd-wrap">
+        <div class="lnd-head" data-reveal>
+            <p class="lnd-kicker">02 — Catalogue</p>
+            <h2>A few of the things we move.</h2>
+            <p>
+                Consumables and equipment from the same shelf, photographed the way the warehouse keeps
+                them. Select any item to look closer.
+            </p>
         </div>
-        <div class="feature-block">
-            <div class="feature-icon-cyan">🔔</div>
-            <h4>Smart Stock Warnings</h4>
-            <p>Automated low-stock alerts fire the moment inventory dips below your configured thresholds.</p>
+
+        <div class="lnd-gallery">
+            @{ var cardIndex = 0; }
+            @foreach (var item in Model.Showcase)
+            {
+                <button class="lnd-card" type="button" data-lightbox
+                        data-full="@item.Image" data-alt="@item.Alt"
+                        data-name="@item.Name — @item.Variant" data-detail="@item.Detail"
+                        aria-label="Look closer at @item.Name @item.Variant"
+                        data-reveal data-reveal-delay="@(cardIndex * 90)">
+                    <span class="lnd-card__media">
+                        <img src="@item.Image" alt="@item.Alt" loading="lazy" decoding="async" width="900" height="900" />
+                        <span class="lnd-card__tag">@item.Category</span>
+                        <span class="lnd-card__zoom" aria-hidden="true">⤢</span>
+                    </span>
+                    <span class="lnd-card__body">
+                        <span class="lnd-card__name">@item.Name</span>
+                        <span class="lnd-card__variant">@item.Variant</span>
+                    </span>
+                </button>
+                cardIndex++;
+            }
         </div>
-        <div class="feature-block">
-            <div class="feature-icon-cyan">🎯</div>
-            <h4>Ranked Inquiry Scoring</h4>
-            <p>Every incoming lead is scored by urgency, deal size, and sector — so reps focus on what matters.</p>
+
+        <p class="lnd-fineprint">
+            Displayed for reference only — nothing is bought or ordered here. Quotes, purchase orders
+            and reorders are raised inside the portal against your organisation's account.
+        </p>
+    </div>
+</section>
+
+<!-- ============ SECTORS ============ -->
+<section class="lnd-section" id="sectors">
+    <div class="lnd-wrap">
+        <div class="lnd-head" data-reveal>
+            <p class="lnd-kicker">03 — Sectors</p>
+            <h2>Where the paperwork ends up.</h2>
+            <p>
+                The same platform serves a theatre list, a rescue station and a teaching laboratory —
+                what changes is the vocabulary, the reorder rhythm and who is allowed to see what.
+            </p>
         </div>
-        <div class="feature-block">
-            <div class="feature-icon-cyan">🚚</div>
-            <h4>Live Logistics Tracking</h4>
-            <p>From dispatch to delivery, track every shipment in real time with client-visible status updates.</p>
-        </div>
-        <div class="feature-block">
-            <div class="feature-icon-cyan">🔒</div>
-            <h4>Role-Based Security</h4>
-            <p>JWT authentication and Firestore rules ensure users only ever see data relevant to their role.</p>
-        </div>
-        <div class="feature-block">
-            <div class="feature-icon-cyan">📱</div>
-            <h4>Mobile-Ready</h4>
-            <p>Engineers update jobs from site. Procurement managers reorder on the go. Responsive by default.</p>
+
+        <div class="lnd-sectors">
+            @{ var sectorIndex = 0; }
+            @foreach (var sector in Model.Sectors)
+            {
+                sectorIndex++;
+                <article class="lnd-sector" data-reveal data-reveal-delay="@(sectorIndex * 110)">
+                    <img src="@sector.Image" alt="@sector.Alt" loading="lazy" decoding="async" />
+                    <span class="lnd-sector__veil"></span>
+                    <div class="lnd-sector__body">
+                        <p class="lnd-sector__num">0@(sectorIndex)</p>
+                        <h3>@sector.Name</h3>
+                        <p>@sector.Body</p>
+                    </div>
+                </article>
+            }
         </div>
     </div>
 </section>
 
-<!-- ============ CTA BANNER ============ -->
-<section class="home-cta">
-    <div class="home-cta-content">
-        <h2>Ready to streamline your supply chain?</h2>
-        <p>Join the organisations already using Verichat to manage medical procurement with precision.</p>
-        <div class="home-cta-actions">
+<!-- ============ MEET THE TEAM ============ -->
+<section class="lnd-section lnd-team" id="team">
+    <div class="lnd-team__media">
+        <img src="/images/landing/team-band-boardroom.jpg" alt="" loading="lazy" decoding="async" />
+    </div>
+
+    <div class="lnd-wrap">
+        <div class="lnd-head" data-reveal>
+            <p class="lnd-kicker">04 — The people</p>
+            <h2>Meet the team.</h2>
+            <p>
+                Small by design. Three people built this platform end to end — the schema, the API,
+                the portal and the mobile app — and each of them still answers their own support tickets.
+            </p>
+        </div>
+
+        <div class="lnd-team__grid">
+            @{ var personIndex = 0; }
+            @foreach (var person in Model.Team)
+            {
+                <article class="lnd-person" data-reveal data-reveal-delay="@(personIndex * 110)">
+                    <div class="lnd-person__mono" aria-hidden="true">@person.Initial</div>
+                    <h3>@person.Name</h3>
+                    <p class="lnd-person__role">@person.Role</p>
+                    <p>@person.Focus</p>
+                </article>
+                personIndex++;
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ============ CLOSING CALL ============ -->
+<section class="lnd-cta">
+    <div class="lnd-wrap" data-reveal>
+        <p class="lnd-eyebrow">Verichat CRM</p>
+        <h2>See your supply chain in one place.</h2>
+        <p>
+            Sign in to the portal for live stock, ranked enquiries and tracked consignments.
+            No account yet? Ask for one and we will scope it to your organisation.
+        </p>
+        <div class="lnd-cta__actions">
             @if (Model.IsAuthenticated)
             {
-                <a href="/procurement/dashboard" class="btn btn-primary">Open Dashboard</a>
+                <a class="lnd-btn lnd-btn--solid" href="/dashboard">Open my dashboard →</a>
+                <a class="lnd-btn lnd-btn--ghost" href="/procurement/productcatalog">Product catalogue</a>
             }
             else
             {
-                <a href="/account/register" class="btn btn-primary">Create Free Account</a>
-                <a href="/account/login" class="btn btn-outline">Sign In</a>
+                <a class="lnd-btn lnd-btn--solid" href="/account/login">Sign in →</a>
+                <a class="lnd-btn lnd-btn--ghost" href="/account/register">Request access</a>
             }
         </div>
     </div>
 </section>
 
-@section Styles {
-    <link rel="stylesheet" href="~/pages/home.css" />
-}
+<!-- ============ LIGHTBOX ============ -->
+<div class="lnd-lightbox" id="lndLightbox" role="dialog" aria-modal="true" aria-label="Catalogue item" hidden>
+    <button class="lnd-lightbox__close" type="button" aria-label="Close">✕</button>
+    <figure class="lnd-lightbox__figure">
+        <img class="lnd-lightbox__img" src="" alt="" />
+        <figcaption class="lnd-lightbox__cap">
+            <b></b>
+            <span class="lnd-lightbox__detail"></span>
+        </figcaption>
+        <p class="lnd-lightbox__hint">Click the image to zoom · Esc to close</p>
+    </figure>
+</div>
