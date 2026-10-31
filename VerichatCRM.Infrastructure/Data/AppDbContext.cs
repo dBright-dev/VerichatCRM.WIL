@@ -40,9 +40,15 @@ namespace VerichatCRM.Infrastructure.Data
         public DbSet<HealthMetric> HealthMetrics => Set<HealthMetric>();
         public DbSet<ClientTimelineNote> ClientTimelineNotes => Set<ClientTimelineNote>();
         public DbSet<Appointment> Appointments => Set<Appointment>();
-        public DbSet<SalesGoal> SalesGoals => Set<SalesGoal>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // The IEntityTypeConfiguration classes in Data/Configurations are applied
+            // first and the entity-specific blocks below afterwards, because EF lets the
+            // last call win per facet. Relationships and delete behaviour are therefore
+            // decided here, while column lengths, precision and indexes come from the
+            // configuration classes.
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
             modelBuilder.Entity<ClientTimelineNote>(entity =>
             {
                 entity.HasKey(note => note.NoteId);
@@ -192,20 +198,14 @@ namespace VerichatCRM.Infrastructure.Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<SalesGoal>(entity =>
-            {
-                entity.HasKey(e => e.GoalId);
-                entity.Property(e => e.UserId).IsRequired().HasMaxLength(64);
-                entity.Property(e => e.TargetAmount).HasPrecision(18, 2);
-                entity.Property(e => e.Type).IsRequired().HasMaxLength(20);
-                entity.HasIndex(e => new { e.UserId, e.StartDate, e.EndDate });
-
-                entity.HasOne(e => e.User)
-                      .WithMany()
-                      .HasForeignKey(e => e.UserId)
-                      .HasPrincipalKey(u => u.UserId)
-                      .OnDelete(DeleteBehavior.Cascade);
-            });
+            // The SalesGoal mapping lives in the block above, next to the other
+            // dashboard entities. This second block configured GoalId /
+            // TargetAmount / Type / StartDate / EndDate - properties of a second
+            // SalesGoal class that the merge which produced
+            // 20261030204733_AddTask3Features left in the same source file. The
+            // table that actually exists (20261025111000_AddSalesGoals) is
+            // Id / UserId / Title / Target / Achieved / Period / PeriodLabel, and
+            // SalesGoalsController is the only reader, so the extra block went.
 
             modelBuilder.Entity<Inquiry>(entity =>
             {

@@ -15,15 +15,9 @@ namespace VerichatCRM.Infrastructure.Data.Configurations
             builder.Property(c => c.ContactEmail).HasMaxLength(200);
             builder.Property(c => c.ContactPhone).HasMaxLength(30);
             builder.Property(c => c.ContractStatus).HasMaxLength(50);
+            builder.Property(c => c.Address).HasMaxLength(500);
             builder.HasIndex(c => c.Sector);
             builder.HasIndex(c => c.ContractStatus);
-
-            builder.OwnsMany(c => c.KeyPersonnel, kp =>
-            {
-                kp.ToTable("KeyPersonnel");
-                kp.WithOwner().HasForeignKey("ClientId");
-                kp.HasKey(x => x.Id);
-            });
         }
     }
 }
