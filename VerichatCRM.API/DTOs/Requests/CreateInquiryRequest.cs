@@ -26,8 +26,18 @@ namespace VerichatCRM.API.DTOs.Requests
 
         public string? Source { get; set; }
 
-        /// <summary>0-100. Defaults to 50 when the caller does not score it.</summary>
+        /// <summary>Immediate | High | Standard | Flexible.</summary>
+        [MaxLength(30)]
+        public string? Urgency { get; set; }
+
+        /// <summary>What the enquiry is worth if it closes, in rand.</summary>
+        public decimal? EstimatedValue { get; set; }
+
+        /// <summary>
+        /// 0-100. Left out, the enquiry is scored from its sector, contract
+        /// status, value and urgency; supplied, that number is stored as entered.
+        /// </summary>
         [Range(0, 100)]
-        public int Score { get; set; } = 50;
+        public int? Score { get; set; }
     }
 }

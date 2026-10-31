@@ -3,6 +3,7 @@ using VerichatCRM.API.DTOs.Requests;
 using VerichatCRM.API.DTOs.Responses;
 using VerichatCRM.API.Services.Interfaces;
 using VerichatCRM.Core.Entities;
+using VerichatCRM.Core.Models.Inquiry;
 using VerichatCRM.Infrastructure.Data;
 
 namespace VerichatCRM.API.Services
@@ -66,7 +67,10 @@ namespace VerichatCRM.API.Services
                 Description = Blank(request.Description),
                 ClientId = Blank(request.ClientId),
                 Source = source,
-                Score = Math.Clamp(request.Score, 0, 100),
+                Urgency = KnownUrgency(request.Urgency),
+                EstimatedValue = request.EstimatedValue,
+                // Set below, once the factors are known.
+                Score = 0,
                 Status = InquiryStatuses.New,
                 ResponseDueAt = DateTime.UtcNow.AddHours(ResponseSlaHours),
                 CreatedAt = DateTime.UtcNow,
@@ -74,11 +78,21 @@ namespace VerichatCRM.API.Services
 
             // Only keep the client link if that client actually exists, otherwise
             // the insert would fail on the foreign key.
-            if (inquiry.ClientId != null &&
-                !await _context.Clients.AnyAsync(c => c.ClientId == inquiry.ClientId))
+            Client? client = inquiry.ClientId == null
+                ? null
+                : await _context.Clients.FirstOrDefaultAsync(c => c.ClientId == inquiry.ClientId);
+            if (client == null)
             {
                 inquiry.ClientId = null;
             }
+
+            inquiry.Score = request.Score.HasValue
+                ? Math.Clamp(request.Score.Value, 0, 100)
+                : InquiryScoring.Calculate(
+                    client?.Sector,
+                    client?.ContractStatus,
+                    inquiry.EstimatedValue ?? await LatestDealValueAsync(inquiry.ClientId),
+                    inquiry.Urgency);
 
             _context.Inquiries.Add(inquiry);
             await _context.SaveChangesAsync();
@@ -101,8 +115,21 @@ namespace VerichatCRM.API.Services
             if (request.Notes != null) inquiry.Notes = Blank(request.Notes);
             if (request.OwnerUserId != null) inquiry.OwnerUserId = Blank(request.OwnerUserId);
 
-            if (request.Score.HasValue)
-                inquiry.Score = Math.Clamp(request.Score.Value, 0, 100);
+            // The score is only recomputed when the caller changes one of its
+            // inputs and does not state a score in the same request. A hand-set
+            // score is left alone by everything else, which is what lets the
+            // queue be ranked by hand rather than by formula.
+            var factorsChanged = false;
+            if (request.Urgency != null)
+            {
+                inquiry.Urgency = KnownUrgency(request.Urgency);
+                factorsChanged = true;
+            }
+            if (request.EstimatedValue.HasValue)
+            {
+                inquiry.EstimatedValue = request.EstimatedValue.Value;
+                factorsChanged = true;
+            }
 
             if (request.ClientId != null)
             {
@@ -111,6 +138,22 @@ namespace VerichatCRM.API.Services
                                    await _context.Clients.AnyAsync(c => c.ClientId == clientId)
                     ? clientId
                     : null;
+                factorsChanged = true;
+            }
+
+            if (request.Score.HasValue)
+                inquiry.Score = Math.Clamp(request.Score.Value, 0, 100);
+            else if (factorsChanged)
+            {
+                var client = inquiry.ClientId == null
+                    ? null
+                    : await _context.Clients.FirstOrDefaultAsync(c => c.ClientId == inquiry.ClientId);
+
+                inquiry.Score = InquiryScoring.Calculate(
+                    client?.Sector,
+                    client?.ContractStatus,
+                    inquiry.EstimatedValue ?? await LatestDealValueAsync(inquiry.ClientId),
+                    inquiry.Urgency);
             }
 
             if (!string.IsNullOrWhiteSpace(request.Status))
@@ -173,6 +216,33 @@ namespace VerichatCRM.API.Services
 
         private static string? Blank(string? value) =>
             string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+        /// <summary>
+        /// The value, or null when the text is not one of the four known
+        /// urgencies. An unrecognised urgency counts as "not stated" and scores
+        /// at the middle band, rather than guessing which band it was close to.
+        /// </summary>
+        private static string? KnownUrgency(string? urgency)
+        {
+            var trimmed = Blank(urgency);
+            return trimmed == null
+                ? null
+                : InquiryUrgencies.All
+                    .FirstOrDefault(u => string.Equals(u, trimmed, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// An enquiry rarely arrives with a price attached to it, so the value
+        /// falls back to what this client was last worth to us. Without that,
+        /// every enquiry from an existing account would score as worthless.
+        /// </summary>
+        private async Task<decimal?> LatestDealValueAsync(string? clientId) => clientId == null
+            ? null
+            : await _context.Deals
+                .Where(d => d.ClientId == clientId)
+                .OrderByDescending(d => d.CreatedAt)
+                .Select(d => (decimal?)d.Revenue)
+                .FirstOrDefaultAsync();
 
         private static InquiryResponse Map(Inquiry i) => new()
         {
