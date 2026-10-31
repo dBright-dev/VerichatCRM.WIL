@@ -53,7 +53,15 @@ namespace VerichatCRM.API.Controllers
         public async Task<IActionResult> GetById(string ticketId)
         {
             var t = await _ticketService.GetByIdAsync(ticketId);
-            return t == null ? NotFound() : Ok(t);
+            if (t == null) return NotFound();
+
+            // Clients may only open their own ticket; the id is not a capability.
+            if (User.IsInRole(UserRoles.ClientUser) || User.IsInRole(UserRoles.MedicalStudent))
+            {
+                if (t.ClientId != CurrentUserId) return Forbid();
+            }
+
+            return Ok(t);
         }
 
         [HttpPost]
