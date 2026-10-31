@@ -15,7 +15,9 @@ namespace VerichatCRM.Infrastructure.Data.Configurations
             builder.Property(d => d.Status).HasMaxLength(30);
             builder.Property(d => d.WeightKg).HasPrecision(10, 2);
 
-            builder.HasIndex(d => d.TrackingNumber).IsUnique();
+            // Filtered so legacy rows that never received a tracking number do not
+            // collide with each other; a real tracking number still has to be unique.
+            builder.HasIndex(d => d.TrackingNumber).IsUnique().HasFilter("[TrackingNumber] <> N''");
             builder.HasIndex(d => new { d.ClientId, d.Status });
         }
     }

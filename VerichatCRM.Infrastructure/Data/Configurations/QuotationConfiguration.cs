@@ -17,7 +17,9 @@ namespace VerichatCRM.Infrastructure.Data.Configurations
             builder.Property(q => q.VatAmount).HasPrecision(18, 2);
             builder.Property(q => q.GrandTotal).HasPrecision(18, 2);
 
-            builder.HasIndex(q => q.QuoteReference).IsUnique();
+            // Two quotations generated in the same second could previously share a
+            // reference; blanks are filtered so legacy drafts do not collide.
+            builder.HasIndex(q => q.QuoteReference).IsUnique().HasFilter("[QuoteReference] <> N''");
             builder.HasIndex(q => q.ClientId);
 
             // The Client / Deal / LineItems relationships are declared in

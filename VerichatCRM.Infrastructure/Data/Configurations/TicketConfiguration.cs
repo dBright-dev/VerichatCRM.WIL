@@ -22,7 +22,9 @@ namespace VerichatCRM.Infrastructure.Data.Configurations
             // Do not add the old semicolon value converter here: it would reinterpret
             // every existing JSON array as one long string.
 
-            builder.HasIndex(t => t.TrackingNumber).IsUnique();
+            // Tracking numbers are generated on create; the filter keeps any legacy
+            // blank rows out of the unique index rather than colliding with each other.
+            builder.HasIndex(t => t.TrackingNumber).IsUnique().HasFilter("[TrackingNumber] <> N''");
             builder.HasIndex(t => new { t.ClientId, t.Status });
             builder.HasIndex(t => new { t.AssignedToUserId, t.Status });
             builder.HasIndex(t => t.SlaDeadline);

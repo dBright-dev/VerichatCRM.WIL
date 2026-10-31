@@ -20,7 +20,9 @@ namespace VerichatCRM.Infrastructure.Data.Configurations
             builder.Property(a => a.Manufacturer).HasMaxLength(200);
             builder.Property(a => a.Status).HasMaxLength(30);
 
-            builder.HasIndex(a => a.SerialNumber).IsUnique();
+            // Assets are sometimes registered before the serial number is known, so
+            // blank rows are filtered out of the unique index instead of colliding.
+            builder.HasIndex(a => a.SerialNumber).IsUnique().HasFilter("[SerialNumber] <> N''");
             builder.HasIndex(a => a.ClientId);
             builder.HasIndex(a => a.WarrantyExpiry);
         }
