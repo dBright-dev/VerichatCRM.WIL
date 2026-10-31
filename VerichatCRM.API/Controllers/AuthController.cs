@@ -32,7 +32,7 @@ namespace VerichatCRM.API.Controllers
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             var result = await _auth.RegisterAsync(request);
-            if (!result.Success) return BadRequest(result);
+            if (!result.Success || result.User == null) return BadRequest(result);
 
             // Orders, quotations and the ticket queue are keyed on Clients.ClientId,
             // and for this audience that key is the UserId. Mobile sign-up opens the
