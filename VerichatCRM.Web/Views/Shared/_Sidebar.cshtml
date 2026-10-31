@@ -17,10 +17,12 @@
                 userRole = ViewContext.HttpContext.Session.GetString("UserRole");
             }
         }
-        <div class="vc-avatar">@(userName?.Substring(0, 1) ?? "V")</div>
+        <!-- Session values are absent before login, so test for empty as well as
+             null: Substring on the "" defaults below threw on every anonymous page. -->
+        <div class="vc-avatar">@(string.IsNullOrEmpty(userName) ? "V" : userName.Substring(0, 1))</div>
         <div>
-            <div class="vc-user-name">@(userName ?? "Verichat User")</div>
-            <div class="vc-user-role">@(userRole ?? "GUEST").ToUpper()</div>
+            <div class="vc-user-name">@(string.IsNullOrEmpty(userName) ? "Verichat User" : userName)</div>
+            <div class="vc-user-role">@(string.IsNullOrEmpty(userRole) ? "GUEST" : userRole.ToUpper())</div>
         </div>
     </div>
 
@@ -84,7 +86,7 @@
         {
             <a class="vc-sidebar__link" asp-controller="Clients" asp-action="Index"><span class="vc-sidebar__icon">👥</span> Client Directory</a>
         }
-        @if (isSales)
+        @if (Can(Perm.AssetTracking))
         {
             <a class="vc-sidebar__link" asp-controller="Logistics" asp-action="Assets"><span class="vc-sidebar__icon">🔧</span> Asset Tracking</a>
         }
@@ -113,7 +115,7 @@
             <a class="vc-sidebar__link" asp-controller="Quotation" asp-action="Index"><span class="vc-sidebar__icon">📄</span> Quotation Builder</a>
         }
 
-        @if (isProcurement || isSales)
+        @if (Can(Perm.ProductCatalog))
         {
             <div class="vc-sidebar__section-label">CATALOG</div>
             <a class="vc-sidebar__link" asp-controller="Procurement" asp-action="ProductCatalog"><span class="vc-sidebar__icon">📦</span> Product Catalog</a>
@@ -123,10 +125,20 @@
         {
             <div class="vc-sidebar__section-label">SUPPORT</div>
             <a class="vc-sidebar__link" asp-controller="Support" asp-action="TicketHub"><span class="vc-sidebar__icon">🎫</span> Ticket Hub</a>
-            <a class="vc-sidebar__link" asp-controller="Logistics" asp-action="Tracker"><span class="vc-sidebar__icon">🚚</span> Logistics Tracker</a>
+            @* Same rule as Warehouse Alerts below: a Field Support Engineer holds
+               support.dashboard, which is what put this section on their screen,
+               but not logistics.tracker - so the link was a guaranteed 403. *@
+            @if (Can(Perm.LogisticsTracker))
+            {
+                <a class="vc-sidebar__link" asp-controller="Logistics" asp-action="Tracker"><span class="vc-sidebar__icon">🚚</span> Logistics Tracker</a>
+            }
         }
 
-        @if (isProcurement)
+        @* Gated on the permission the action itself demands, not on the coarse
+           "is procurement" flag: the link used to appear for a Procurement
+           Manager who had never been granted warehouse.alerts, so clicking it
+           was a guaranteed 403. *@
+        @if (Can(Perm.WarehouseAlerts))
         {
             <div class="vc-sidebar__section-label">OPERATIONS</div>
             <a class="vc-sidebar__link" asp-controller="Procurement" asp-action="WarehouseAlerts"><span class="vc-sidebar__icon">🏭</span> Warehouse Alerts</a>

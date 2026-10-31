@@ -62,21 +62,22 @@ namespace VerichatCRM.Web.Authorization
             // quotation builder and product catalog. Cannot create clients.
             [Roles.SalesRepresentative] = new[]
             {
-                SalesDashboard, DashboardAnalytics,
-                SalesDashboard, AppointmentManagement,
+                SalesDashboard, DashboardAnalytics, AppointmentManagement,
                 ClientDirectory, ClientProfile,
                 AssetTracking,
                 PipelineBoard, InquiryQueue, SalesLeads, SalesMap, QuotationBuilder, ProductCatalog, ProductEdit,
             },
 
             // Client directory, product catalog, ticket hub and logistics tracker,
-            // monitored in real time.
+            // monitored in real time. Warehouse alerts are theirs: the sidebar has
+            // always offered it to them, but the permission was granted to nobody
+            // except the administrator, so the link walked straight into a 403.
             [Roles.ProcurementManager] = new[]
             {
                 ProcurementDashboard, AppointmentManagement,
                 ClientDirectory, ClientProfile,
                 ProductCatalog,
-                TicketHub, LogisticsTracker,
+                TicketHub, LogisticsTracker, WarehouseAlerts,
             },
 
             // Ticket hub (resolve + assign) and asset tracking.
@@ -103,7 +104,9 @@ namespace VerichatCRM.Web.Authorization
             [Roles.MedicalStudent] = Array.Empty<string>(),
         };
 
-        public static bool Has(string role, string permission)
+        // Nullable because the sidebar asks before anyone is signed in, and a
+        // missing UserRole is simply "no permissions" rather than an error.
+        public static bool Has(string? role, string permission)
         {
             return ByRole.TryGetValue(role ?? string.Empty, out var perms)
                 && perms.Contains(permission);
