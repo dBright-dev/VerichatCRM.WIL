@@ -14,7 +14,7 @@ import BrandLoader from '../components/ui/BrandLoader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ClientDashboard, fetchClientDashboard } from '../constants/dashboardService';
-import { api } from '../constants/api';
+import { api, getAuthRole } from '../constants/api';
 import { fetchMyQuotations, MobileQuotation } from '../constants/catalogueService';
 import { subscribeGlobalRefresh } from '../utils/refreshEvents';
 
@@ -42,6 +42,9 @@ const formatDate = (iso: string) => {
 }
 
 const ClientHomeScreen = () => {
+  // Mirrors Perm.ClientQuoteRespond on the web tier: the student audience browses,
+  // requests and tracks, but does not answer a quotation for the account.
+  const isTrainingAccount = getAuthRole() === 'Medical Student'
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const [data, setData] = useState<ClientDashboard | null>(null)
@@ -129,6 +132,12 @@ const ClientHomeScreen = () => {
             <Text style={styles.name} numberOfLines={2}>
               {data.fullName}
             </Text>
+            {isTrainingAccount ? (
+              <Text style={styles.role_tag}>
+                Training account — you can browse, request and track, but the buying
+                account answers a sent quote.
+              </Text>
+            ) : null}
           </View>
           <TouchableOpacity style={styles.avatar} onPress={() => router.push('/profileScreen')} accessibilityLabel="Open profile">
             <Text style={styles.avatar_text}>{getInitials(data.fullName)}</Text>
@@ -317,6 +326,13 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '900',
     marginTop: 4,
+  },
+  role_tag: {
+    color: CRMTheme.surfaceAlt,
+    fontSize: 12.5,
+    lineHeight: 18,
+    fontWeight: '600',
+    marginTop: 6,
   },
   avatar: {
     width: 52,
