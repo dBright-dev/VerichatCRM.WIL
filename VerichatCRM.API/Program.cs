@@ -20,7 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Fail fast with a clear message when it is missing, rather than surfacing an
 // obscure SQL error on the first request.
 // Supply it as ConnectionStrings__DefaultConnection, or via user-secrets in
-// local development. Hey, so if this is a problem,it's probably i didnt have enough storage
+// local development.
 // ---------------------------------------------------------------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrWhiteSpace(connectionString))
@@ -30,6 +30,26 @@ if (string.IsNullOrWhiteSpace(connectionString))
         "variable ConnectionStrings__DefaultConnection, or run: dotnet user-secrets set " +
         "\"ConnectionStrings:DefaultConnection\" \"<connection string>\"");
 }
+
+// Encrypt=False was committed alongside the real password for years, so a
+// missing or hostile default is rejected here instead of silently opening a
+// plaintext session to production SQL Server. Omitting Encrypt is fine: the
+// SqlClient default is encryption on.
+if (!builder.Environment.IsDevelopment() && RequestsNoEncryption(connectionString))
+{
+    throw new InvalidOperationException(
+        "ConnectionStrings:DefaultConnection sets Encrypt=False. Remove that key, or set " +
+        "Encrypt=True; TrustServerCertificate=True. See DEPLOYMENT.md.");
+}
+
+static bool RequestsNoEncryption(string sqlConnectionString) =>
+    sqlConnectionString
+        .Split(';', StringSplitOptions.RemoveEmptyEntries)
+        .Select(part => part.Split('=', 2))
+        .Any(kv => kv.Length == 2
+            && kv[0].Trim().Equals("encrypt", StringComparison.OrdinalIgnoreCase)
+            && (kv[1].Trim().Equals("false", StringComparison.OrdinalIgnoreCase)
+                || kv[1].Trim().Equals("no", StringComparison.OrdinalIgnoreCase)));
 
 // Database
 builder.Services.AddDbContext<AppDbContext>((sp, options) =>
