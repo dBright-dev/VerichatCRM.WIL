@@ -53,14 +53,9 @@ namespace VerichatCRM.Web.Controllers
                 HttpContext.Session.SetString("UserName", result.User.DisplayName);
                 HttpContext.Session.SetString("UserEmail", result.User.Email);
 
-                // Also set cookie for JavaScript access (used by notifications.js)
-                Response.Cookies.Append("JwtToken", result.Token, new CookieOptions
-                {
-                    HttpOnly = false,
-                    Secure = false,
-                    SameSite = SameSiteMode.Lax,
-                    Expires = DateTimeOffset.UtcNow.AddDays(7)
-                });
+                // The token also goes in a cookie so the SignalR handshake to the API
+                // can authenticate without the page ever reading it.
+                IssueHubCookie(result.Token);
             }
             catch
             {
@@ -107,14 +102,9 @@ namespace VerichatCRM.Web.Controllers
                 HttpContext.Session.SetString("UserName", result.User.DisplayName);
                 HttpContext.Session.SetString("UserEmail", result.User.Email);
 
-                // Also set cookie for JavaScript access (used by notifications.js)
-                Response.Cookies.Append("JwtToken", result.Token, new CookieOptions
-                {
-                    HttpOnly = false,
-                    Secure = false,
-                    SameSite = SameSiteMode.Lax,
-                    Expires = DateTimeOffset.UtcNow.AddDays(7)
-                });
+                // The token also goes in a cookie so the SignalR handshake to the API
+                // can authenticate without the page ever reading it.
+                IssueHubCookie(result.Token);
             }
             catch
             {
@@ -138,7 +128,43 @@ namespace VerichatCRM.Web.Controllers
             {
                 // Session may not be available
             }
+
+            // The session is gone but the bearer token in the hub cookie is valid
+            // for its full expiry, so it has to be withdrawn with the session or
+            // signing out leaves a usable credential in the browser.
+            Response.Cookies.Delete("JwtToken", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = HttpContext.Request.IsHttps,
+                SameSite = SameSiteMode.Lax
+            });
+
             return RedirectToAction("Login", "Account");
+        }
+
+        /// <summary>
+        /// Issues the HttpOnly cookie the SignalR handshake to the API presents.
+        /// The token never reaches page script, which is why the hub has to carry
+        /// it as a cookie instead of an Authorization header.
+        /// </summary>
+        private void IssueHubCookie(string token)
+        {
+            // The hub lives on another port, and for a non-registrable host such
+            // as localhost the port is part of the site - so even on a developer
+            // machine the request is cross-site and needs SameSite=None. Browsers
+            // only accept that with Secure, but they treat http://localhost as
+            // potentially trustworthy, so Secure is allowed there too.
+            var host = HttpContext.Request.Host.Host;
+            var isLocalhost = host is "localhost" or "127.0.0.1" or "[::1]";
+            var crossSiteSendable = HttpContext.Request.IsHttps || isLocalhost;
+
+            Response.Cookies.Append("JwtToken", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = crossSiteSendable,
+                SameSite = crossSiteSendable ? SameSiteMode.None : SameSiteMode.Lax,
+                Expires = DateTimeOffset.UtcNow.AddDays(7)
+            });
         }
 
         /// <summary>

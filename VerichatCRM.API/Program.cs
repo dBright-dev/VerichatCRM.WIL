@@ -122,9 +122,30 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnMessageReceived = context =>
             {
+                if (!context.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                    return Task.CompletedTask;
+
+                // SignalR's WebSocket and long-polling transports cannot set an
+                // Authorization header, so the token arrives either as the
+                // access_token query parameter or in the HttpOnly session cookie.
+                // Reading it from the cookie here is what lets the web app stop
+                // writing the JWT into page script.
+                if (!string.IsNullOrEmpty(context.Token))
+                    return Task.CompletedTask;
+
                 var token = context.Request.Query["access_token"];
-                if (!string.IsNullOrEmpty(token) && context.HttpContext.Request.Path.StartsWithSegments("/hubs/notifications"))
+                if (!string.IsNullOrEmpty(token))
+                {
                     context.Token = token;
+                    return Task.CompletedTask;
+                }
+
+                if (context.Request.Cookies.TryGetValue("JwtToken", out var cookieToken)
+                    && !string.IsNullOrEmpty(cookieToken))
+                {
+                    context.Token = cookieToken;
+                }
+
                 return Task.CompletedTask;
             }
         };
