@@ -1,26 +1,31 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Template plumbing for the Expo components in `src/components` (ThemedText,
+ * ThemedView, the tab bar) and the spacing scale the screens use.
+ *
+ * The colours are not a second palette: they are read from CRMTheme, the single
+ * source of brand colour shared with the web client. The dark column is the
+ * only place a colour is chosen here, and it is the same ink the brand uses.
  */
 
 import '@/global.css';
 
 import { Platform } from 'react-native';
+import { CRMTheme } from './crmTheme';
 
 export const Colors = {
   light: {
-    text: '#183650',
-    background: '#f3f6fa',
-    backgroundElement: '#ffffff',
-    backgroundSelected: '#edf6fb',
-    textSecondary: '#728398',
+    text: CRMTheme.text,
+    background: CRMTheme.background,
+    backgroundElement: CRMTheme.surface,
+    backgroundSelected: CRMTheme.surfaceAlt,
+    textSecondary: CRMTheme.muted,
   },
   dark: {
-    text: '#edf4f9',
-    background: '#101923',
-    backgroundElement: '#172636',
-    backgroundSelected: '#20364a',
-    textSecondary: '#a7b8c8',
+    text: '#EDF1F7',
+    background: CRMTheme.ink,
+    backgroundElement: '#1B2735',
+    backgroundSelected: '#253344',
+    textSecondary: '#9AA6B8',
   },
 } as const;
 

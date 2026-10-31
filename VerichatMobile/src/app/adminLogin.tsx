@@ -55,7 +55,7 @@ const AdminLoginScreen = () => {
         <View ref={contentRef} collapsable={false} style={styles.content}>
         <View style={styles.Logo}>
           <Image
-            source={require('../../assets/images/canva/design_pt.png')}
+            source={require('../../assets/images/brand/verichat-logo-light.png')}
             style={styles.logo_image}
           />
         </View>
@@ -133,8 +133,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logo_image: {
-    width: 150,
-    height: 150,
+    width: 220,
+    height: 134,
     resizeMode: 'contain',
   },
   welcome_text: {

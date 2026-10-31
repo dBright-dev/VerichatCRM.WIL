@@ -99,7 +99,7 @@ export default function ClientTimelineScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: CRMTheme.background },
-  heading: { paddingHorizontal: 18, paddingBottom: 14, color: '#172b4d', fontSize: 22, fontWeight: '700' },
+  heading: { paddingHorizontal: 18, paddingBottom: 14, color: CRMTheme.text, fontSize: 22, fontWeight: '700' },
   list: { flex: 1 },
   listContent: { paddingHorizontal: 16, paddingBottom: 20 },
   day: { alignSelf: 'center', marginVertical: 12, paddingHorizontal: 12, paddingVertical: 5, overflow: 'hidden', borderRadius: 12, backgroundColor: '#e1e8f0', color: '#53657b', fontSize: 12, fontWeight: '600' },
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   loader: { marginTop: 24 },
   error: { paddingHorizontal: 16, paddingVertical: 8, color: '#a02d2d' },
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, paddingHorizontal: 14, paddingTop: 10, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#e3e9f0' },
-  input: { flex: 1, maxHeight: 120, minHeight: 44, paddingHorizontal: 14, paddingVertical: 11, borderWidth: 1, borderColor: '#d5deea', borderRadius: 22, color: '#172b4d', backgroundColor: '#f9fbfd' },
+  input: { flex: 1, maxHeight: 120, minHeight: 44, paddingHorizontal: 14, paddingVertical: 11, borderWidth: 1, borderColor: CRMTheme.border, borderRadius: 22, color: CRMTheme.text, backgroundColor: '#f9fbfd' },
   send: { justifyContent: 'center', alignItems: 'center', height: 44, minWidth: 64, borderRadius: 22, backgroundColor: CRMTheme.primary },
   sendDisabled: { opacity: 0.5 },
   sendText: { color: '#fff', fontWeight: '700' },

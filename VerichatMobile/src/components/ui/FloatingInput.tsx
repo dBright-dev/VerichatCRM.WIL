@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { TextInput, TextInputProps, StyleProp, ViewStyle } from 'react-native'
 import type { RefObject } from 'react'
 import Animated, { interpolateColor, useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated'
+import { CRMTheme } from '../../constants/crmTheme'
 
 type Props = TextInputProps & {
   label: string
@@ -47,7 +48,7 @@ export default function FloatingInput({ label, error, value, defaultValue, onFoc
         onFocus={handleFocus}
         onBlur={handleBlur}
         placeholder=""
-        style={[{ minHeight: 54, color: '#172b4d', paddingTop: 19, paddingHorizontal: 0 }, style]}
+        style={[{ minHeight: 54, color: CRMTheme.text, paddingTop: 19, paddingHorizontal: 0 }, style]}
       />
     </Animated.View>
   )

@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native"
+import { CRMTheme } from '../constants/crmTheme'
 
 export const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f5f7fa" },
@@ -6,7 +7,7 @@ export const styles = StyleSheet.create({
   errorContainer: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
   errorBanner: { backgroundColor: "#fff0f0", padding: 12, margin: 12, borderRadius: 8 },
   errorText: { color: "#b3261e", fontSize: 14 },
-  retryButton: { marginTop: 8, backgroundColor: "#0057a8", paddingVertical: 8, paddingHorizontal: 16, borderRadius: 6 },
+  retryButton: { marginTop: 8, backgroundColor: CRMTheme.primary, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 6 },
   retryText: { color: "#fff", fontWeight: "bold" },
   header: { paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: "#e0e0e0" },
   headerTitle: { fontSize: 22, fontWeight: "900", color: "#0a2f55" },
@@ -21,7 +22,7 @@ export const styles = StyleSheet.create({
   modalTitle: { fontSize: 20, fontWeight: "900", color: "#0a2f55", marginBottom: 20, textAlign: "center" },
   modalLabel: { fontSize: 14, color: "#555", marginBottom: 12, fontWeight: "600" },
   modalActionButtons: { flexDirection: "row", justifyContent: "flex-end", marginTop: 16, gap: 8 },
-  modalSaveButton: { backgroundColor: "#0057a8", paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
+  modalSaveButton: { backgroundColor: CRMTheme.primary, paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
   modalSaveButtonText: { color: "#fff", fontWeight: "700", fontSize: 14 },
   modalCancelButton: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8, borderWidth: 1, borderColor: "#ccc" },
   modalCancelButtonText: { color: "#555", fontWeight: "700", fontSize: 14 },
@@ -29,12 +30,12 @@ export const styles = StyleSheet.create({
   modalCancelButtonText2: { color: "#555", fontWeight: "700", fontSize: 14 },
   datePicker: { marginBottom: 20 },
   dateButton: { width: "100%", backgroundColor: "#f0f4f8", padding: 12, borderRadius: 8, alignItems: "center", justifyContent: "center" },
-  dateButtonText: { color: "#0057a8", fontWeight: "700", fontSize: 14 },
+  dateButtonText: { color: CRMTheme.primary, fontWeight: "700", fontSize: 14 },
   emptyState: { flex: 1, alignItems: "center", justifyContent: "center", padding: 40, color: "#757575" },
   emptyText: { fontSize: 16, color: "#757575" },
   followUpInput: { backgroundColor: "#f8f9fa", borderRadius: 8, padding: 12, marginBottom: 16, minHeight: 80, textAlignVertical: "top" },
   actionButton: { paddingVertical: 12, paddingHorizontal: 20, borderRadius: 8, marginHorizontal: 20 },
   actionButtonText: { fontSize: 14, fontWeight: "700" },
-  scheduleButton: { backgroundColor: "#0057a8" },
+  scheduleButton: { backgroundColor: CRMTheme.primary },
   followUpButton: { backgroundColor: "#6c757d" },
 })

@@ -1,4 +1,4 @@
-import { CRMTheme } from '../constants/crmTheme'
+import { CRMTheme, CRMGradient } from '../constants/crmTheme'
 import { MaterialCommunityIcons } from '@expo/vector-icons'; //insert animated icons in expo.icon
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useState } from 'react';
@@ -118,7 +118,7 @@ const ClientHomeScreen = () => {
     <View style={styles.screen}>
       {/* Header */}
       <LinearGradient
-        colors={[CRMTheme.primaryDark, CRMTheme.primary]}
+        colors={[...CRMGradient]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.header, { paddingTop: insets.top + 20 }]}
@@ -187,7 +187,7 @@ const ClientHomeScreen = () => {
         <Text style={styles.box_empty}>{equipment.length === 0 ? 'No equipment is linked to this account yet.' : `${equipment.length} registered ${equipment.length === 1 ? 'asset' : 'assets'} · ${equipment.filter(asset => asset.nextServiceDue && new Date(asset.nextServiceDue).getTime() < today + 30 * 86400000).length} service due soon`}</Text>
         <TouchableOpacity activeOpacity={0.85} onPress={() => router.push('/EquipmentStatusScreen')}>
           <LinearGradient
-            colors={[CRMTheme.primaryDark, CRMTheme.primary]}
+            colors={[...CRMGradient]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.report_button}

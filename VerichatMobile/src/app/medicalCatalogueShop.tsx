@@ -1,4 +1,4 @@
-import { CRMTheme } from '../constants/crmTheme'
+import { CRMTheme, CRMGradient } from '../constants/crmTheme'
 import { MaterialCommunityIcons } from '@expo/vector-icons'; //insert animated icons in expo.icon
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -169,7 +169,7 @@ const MedicalCatalogScreen = () => {
 
         <AnimatedButton shimmer onPress={() => addCartItem({ sku: item.sku, productName: item.name, price: item.price })}>
           <LinearGradient
-            colors={[CRMTheme.primaryDark, CRMTheme.primary]}
+            colors={[...CRMGradient]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.add_button}
@@ -185,7 +185,7 @@ const MedicalCatalogScreen = () => {
     <View style={styles.screen}>
       {/* Header */}
       <LinearGradient
-        colors={[CRMTheme.primaryDark, CRMTheme.primary]}
+        colors={[...CRMGradient]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.header, { paddingTop: insets.top + 16 }]}

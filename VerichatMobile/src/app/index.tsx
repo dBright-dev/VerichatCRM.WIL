@@ -108,7 +108,7 @@ const HomeScreen = () => {
     <View style={styles.container}>
 
       <View style={styles.Logo}>
-          <Image source={require('../../assets/images/canva/design_pt.png')} style={styles.logo_image} />
+          <Image source={require('../../assets/images/brand/verichat-logo-light.png')} style={styles.logo_image} />
       </View>
 
       <View style={styles.login_section}>
@@ -208,8 +208,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   logo_image: {
-    width: 200,
-    height: 200,
+    width: 260,
+    height: 158,
     resizeMode: 'contain',
   },
 })

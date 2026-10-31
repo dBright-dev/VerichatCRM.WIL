@@ -1,4 +1,4 @@
-import { CRMTheme } from '../constants/crmTheme'
+import { CRMTheme, CRMGradient } from '../constants/crmTheme'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
@@ -152,7 +152,7 @@ export default function ProfileScreen() {
         contentContainerStyle={{ paddingBottom: insets.bottom + 28 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); void load() }} tintColor="#1167a8" />}
       >
-        <LinearGradient colors={['#123c61', '#17689b']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.hero, { paddingTop: insets.top + 18 }]}>
+        <LinearGradient colors={[...CRMGradient]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.hero, { paddingTop: insets.top + 18 }]}>
           <View style={styles.topline}>
             <View><Text style={styles.eyebrow}>ACCOUNT</Text><Text style={styles.pageTitle}>Your profile</Text></View>
             <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open settings" style={styles.settingsButton} onPress={() => router.push('/settingsScreen')}>
@@ -180,20 +180,20 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.card}>
             {accountRows.map((row, index) => <View key={row.label} style={[styles.detailRow, index > 0 && styles.divided]}>
-              <View style={styles.rowIcon}><MaterialCommunityIcons name={row.icon} size={19} color="#17689b" /></View>
+              <View style={styles.rowIcon}><MaterialCommunityIcons name={row.icon} size={19} color={CRMTheme.primary} /></View>
               <View style={styles.rowCopy}><Text style={styles.rowLabel}>{row.label}</Text><Text style={styles.rowValue}>{row.value}</Text></View>
             </View>)}
           </View>
 
           <SectionHeading title="Delivery address" subtitle="Used when preparing orders and quotations" />
           <View style={styles.addressCard}>
-            <View style={styles.addressIcon}><MaterialCommunityIcons name="map-marker-outline" size={22} color="#17689b" /></View>
+            <View style={styles.addressIcon}><MaterialCommunityIcons name="map-marker-outline" size={22} color={CRMTheme.primary} /></View>
             <View style={styles.addressCopy}>
               <Text style={styles.addressName}>{address?.name || 'No default address'}</Text>
               <Text style={styles.addressText}>{address ? `${address.street}, ${address.city}, ${address.country}` : 'Add your organisation’s delivery location.'}</Text>
             </View>
             <TouchableOpacity accessibilityRole="button" accessibilityLabel={address ? 'Edit delivery address' : 'Add delivery address'} onPress={editAddress} style={styles.editButton}>
-              <MaterialCommunityIcons name="pencil-outline" size={18} color="#17689b" />
+              <MaterialCommunityIcons name="pencil-outline" size={18} color={CRMTheme.primary} />
             </TouchableOpacity>
           </View>
 
@@ -246,7 +246,7 @@ function SectionHeading({ title, subtitle }: { title: string; subtitle: string }
 
 function ActionRow({ icon, title, subtitle, onPress }: { icon: 'cog-outline' | 'clipboard-list-outline'; title: string; subtitle: string; onPress: () => void }) {
   return <TouchableOpacity accessibilityRole="button" onPress={onPress} style={styles.actionRow}>
-    <View style={styles.rowIcon}><MaterialCommunityIcons name={icon} size={20} color="#17689b" /></View>
+    <View style={styles.rowIcon}><MaterialCommunityIcons name={icon} size={20} color={CRMTheme.primary} /></View>
     <View style={styles.rowCopy}><Text style={styles.actionTitle}>{title}</Text><Text style={styles.rowLabel}>{subtitle}</Text></View>
     <MaterialCommunityIcons name="chevron-right" size={23} color="#8b9bad" />
   </TouchableOpacity>
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: CRMTheme.background },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: CRMTheme.background },
   error: { textAlign: 'center', color: '#465a6e', marginBottom: 14 },
-  retry: { backgroundColor: '#17689b', paddingHorizontal: 22, paddingVertical: 11, borderRadius: 12 },
+  retry: { backgroundColor: CRMTheme.primary, paddingHorizontal: 22, paddingVertical: 11, borderRadius: 12 },
   retryText: { color: '#fff', fontWeight: '800' },
   hero: { paddingHorizontal: 22, paddingBottom: 22, borderBottomLeftRadius: 26, borderBottomRightRadius: 26 },
   topline: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
@@ -288,15 +288,15 @@ const styles = StyleSheet.create({
   rowIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: CRMTheme.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
   rowCopy: { flex: 1 },
   rowLabel: { color: '#7a8999', fontSize: 11, fontWeight: '600' },
-  rowValue: { color: '#243c53', fontSize: 14, fontWeight: '700', marginTop: 3 },
+  rowValue: { color: CRMTheme.text, fontSize: 14, fontWeight: '700', marginTop: 3 },
   addressCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff', borderRadius: 17, padding: 14, borderWidth: 1, borderColor: CRMTheme.border, marginBottom: 20 },
   addressIcon: { width: 42, height: 42, borderRadius: 13, backgroundColor: CRMTheme.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
   addressCopy: { flex: 1 },
-  addressName: { color: '#243c53', fontSize: 14, fontWeight: '800' },
+  addressName: { color: CRMTheme.text, fontSize: 14, fontWeight: '800' },
   addressText: { color: CRMTheme.muted, fontSize: 12, lineHeight: 18, marginTop: 3 },
   editButton: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 11, backgroundColor: '#f3f8fb' },
   actionRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 68 },
-  actionTitle: { color: '#243c53', fontSize: 14, fontWeight: '800', marginBottom: 3 },
+  actionTitle: { color: CRMTheme.text, fontSize: 14, fontWeight: '800', marginBottom: 3 },
   signOut: { minHeight: 50, borderRadius: 14, borderWidth: 1, borderColor: '#f0d6d3', backgroundColor: '#fff', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, marginTop: 1 },
   signOutText: { color: '#b42318', fontWeight: '800', fontSize: 14 },
   version: { textAlign: 'center', color: '#99a7b6', fontSize: 9, fontWeight: '800', letterSpacing: 1, marginTop: 20, marginBottom: 4 },
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   detailsForm: { gap: 11, paddingBottom: 4 },
   emailNote: { color: CRMTheme.muted, fontSize: 12, lineHeight: 17 },
   input: { minHeight: 48, borderRadius: 12, borderWidth: 1, borderColor: '#dce4ec', paddingHorizontal: 13, color: CRMTheme.text, backgroundColor: '#fbfcfd' },
-  saveButton: { minHeight: 49, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: '#17689b', marginTop: 4 },
+  saveButton: { minHeight: 49, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: CRMTheme.primary, marginTop: 4 },
   saveText: { color: '#fff', fontWeight: '900' },
   cancel: { color: '#66788b', textAlign: 'center', padding: 8, fontWeight: '700' },
 })

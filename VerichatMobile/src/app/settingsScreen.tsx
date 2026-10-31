@@ -1,4 +1,4 @@
-import { CRMTheme } from '../constants/crmTheme'
+import { CRMTheme, CRMGradient } from '../constants/crmTheme'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
@@ -196,7 +196,7 @@ const SettingsScreen = () => {
     <View style={styles.screen}>
       {/* Header */}
       <LinearGradient
-        colors={[CRMTheme.primaryDark, CRMTheme.primary]}
+        colors={[...CRMGradient]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.header, { paddingTop: insets.top + 16 }]}

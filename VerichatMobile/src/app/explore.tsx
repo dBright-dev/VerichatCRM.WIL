@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { CRMTheme } from '../constants/crmTheme'
 
 const ClientLoginPage = () => {
   const[email, setEmail] = useState('') 
@@ -27,7 +28,7 @@ const ClientLoginPage = () => {
        >
         <View style={styles.Logo}>
           <Image
-          source={require('../../assets/images/canva/design_pt.png')}
+          source={require('../../assets/images/brand/verichat-logo-light.png')}
           style={styles.logo_image}
           />
         </View>
@@ -91,8 +92,8 @@ const styles = StyleSheet.create({
   },
 
   logo_image: {
-    width: 150,
-    height: 150,
+    width: 220,
+    height: 134,
     resizeMode: 'contain',
   },
 
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   button: {
-    backgroundColor: '#0057a8',
+    backgroundColor: CRMTheme.primary,
     paddingVertical: 14,
     width: 170,
     alignSelf: 'center',

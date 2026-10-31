@@ -12,6 +12,7 @@ import { Pressable, View, StyleSheet, Text } from 'react-native';
 import { ThemedView } from './themed-view';
 
 import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { CRMTheme } from '../constants/crmTheme'
 
 /**
  * Web mirror of the native bar: Home, Catalogue, Consult, My Assets, Profile.
@@ -66,7 +67,7 @@ export function TabButton({ children, isFocused, icon, ...props }: TabButtonProp
       {...props}
       accessibilityRole="tab"
       style={({ pressed }) => [styles.tabButton, pressed && styles.pressed, isFocused && styles.focused]}>
-      <MaterialCommunityIcons name={icon} size={22} color={isFocused ? '#0057a8' : '#59636e'} />
+      <MaterialCommunityIcons name={icon} size={22} color={isFocused ? CRMTheme.primary : CRMTheme.muted} />
       <Text style={[styles.tabLabel, isFocused && styles.focusedLabel]} numberOfLines={1}>
         {children}
       </Text>
@@ -105,8 +106,8 @@ const styles = StyleSheet.create({
   },
   tabButton: { flex: 1, minWidth: 0, minHeight: 52, alignItems: 'center', justifyContent: 'center', gap: 2, borderRadius: Spacing.three },
   focused: { backgroundColor: '#e4eef8' },
-  tabLabel: { fontSize: 11, color: '#59636e', fontWeight: '600' },
-  focusedLabel: { color: '#0057a8', fontWeight: '800' },
+  tabLabel: { fontSize: 11, color: CRMTheme.muted, fontWeight: '600' },
+  focusedLabel: { color: CRMTheme.primary, fontWeight: '800' },
   pressed: {
     opacity: 0.7,
   },
