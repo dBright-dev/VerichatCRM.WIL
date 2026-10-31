@@ -27,7 +27,10 @@ namespace VerichatCRM.API.Controllers
         }
 
         [HttpPut("{id}/role")]
-        public async Task<IActionResult> UpdateRole(string id, [FromBody] UpdateRoleRequest request)
+        public async Task<IActionResult> UpdateRole(
+            string id,
+            [FromBody] UpdateRoleRequest request,
+            [FromServices] VerichatCRM.API.Services.Interfaces.IMobileService mobile)
         {
             if (!UserRoles.All.Contains(request.Role))
                 return BadRequest(new { message = "Invalid role specified." });
@@ -39,6 +42,14 @@ namespace VerichatCRM.API.Controllers
             // enforced here because this whole controller already requires that role.
             user.Role = request.Role;
             await _users.UpdateAsync(user);
+
+            // Moving someone into a client role is the one way an account can end
+            // up with no Clients row: mobile sign-up creates that row inside its
+            // own transaction, but a role change here does not. Without it the
+            // new client cannot place an order or request a quote on the phone.
+            if (UserRoles.ClientAudience.Contains(request.Role))
+                await mobile.EnsureClientAccountAsync(user.UserId);
+
             return Ok(new { message = "Role updated." });
         }
 
