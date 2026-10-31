@@ -80,8 +80,30 @@
                 Dashboard
             </a>
         }
+        else if (isClient)
+        {
+            @* The portal is the client audience's dashboard: their own quotations,
+               deliveries and tickets, and nothing belonging to anyone else. *@
+            <a class="vc-sidebar__link"
+               asp-controller="Portal"
+               asp-action="Index">
+                <span class="vc-sidebar__icon">▦</span>
+                My Verichat
+            </a>
+        }
 
-        <div class="vc-sidebar__section-label">CLIENTS</div>
+        @if (isClient)
+        {
+            <div class="vc-sidebar__section-label">MY ACCOUNT</div>
+            <a class="vc-sidebar__link" asp-controller="Portal" asp-action="Catalogue"><span class="vc-sidebar__icon">📦</span> Catalogue</a>
+            <a class="vc-sidebar__link" asp-controller="Portal" asp-action="Quotations"><span class="vc-sidebar__icon">📄</span> My Quotations</a>
+            <a class="vc-sidebar__link" asp-controller="Portal" asp-action="Tickets"><span class="vc-sidebar__icon">🎫</span> Support</a>
+        }
+
+        @if (Can(Perm.ClientDirectory) || Can(Perm.AssetTracking) || Can(Perm.AppointmentManagement))
+        {
+            <div class="vc-sidebar__section-label">CLIENTS</div>
+        }
         @if (Can(Perm.ClientDirectory))
         {
             <a class="vc-sidebar__link" asp-controller="Clients" asp-action="Index"><span class="vc-sidebar__icon">👥</span> Client Directory</a>

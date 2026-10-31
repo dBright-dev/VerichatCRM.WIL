@@ -1,0 +1,11 @@
+@* One flash area for every portal screen. The controller writes TempData["Success"]
+   or TempData["Error"] after a redirect, so a message can never be re-sent on
+   refresh the way a query-string notice would. *@
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success" role="status">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger" role="alert">@TempData["Error"]</div>
+}

@@ -1,0 +1,122 @@
+@model VerichatCRM.Web.ViewModels.Portal.PortalQuotationsViewModel
+@{
+    ViewData["Title"] = "My Quotations";
+    ViewData["Subtitle"] = $"{Model.Quotations.Count} shown · {Model.AwaitingResponse} awaiting your answer";
+
+    string Badge(string status) => status switch
+    {
+        "Sent" => "vc-badge vc-badge--accent",
+        "Accepted" => "vc-badge vc-badge--success",
+        "Rejected" or "Expired" => "vc-badge vc-badge--danger",
+        _ => "vc-badge"
+    };
+}
+
+<partial name="_PortalAlert" />
+
+<div class="chip-row">
+    @foreach (var status in Model.StatusFilters)
+    {
+        <a class="chip @(status == Model.ActiveStatus ? "active" : "")"
+           asp-action="Quotations" asp-route-status="@status">@status</a>
+    }
+</div>
+
+@if (Model.Quotations.Count == 0)
+{
+    <div class="vc-portal-panel">
+        <div class="vc-portal-panel__body">
+            <div class="vc-portal-empty">
+                Nothing here yet. Build a request in the
+                <a asp-action="Catalogue">catalogue</a> and the quote comes back to this page.
+            </div>
+        </div>
+    </div>
+}
+
+@foreach (var q in Model.Quotations)
+{
+    <div class="vc-quote-card">
+        <div class="vc-quote-card__head">
+            <div>
+                <div class="vc-portal-row__title">@q.QuoteReference</div>
+                <div class="vc-portal-row__meta">
+                    Raised @q.DateGenerated.ToLocalTime().ToString("dd MMM yyyy")
+                    · valid until @q.ValidUntil.ToLocalTime().ToString("dd MMM yyyy")
+                </div>
+            </div>
+            <span class="@Badge(q.Status)">@q.Status</span>
+        </div>
+
+        <div class="vc-quote-card__totals">
+            <div><strong>R @q.Subtotal.ToString("N2")</strong>Subtotal</div>
+            <div><strong>R @q.VatAmount.ToString("N2")</strong>VAT @(q.VatRate.ToString("P0"))</div>
+            <div><strong>R @q.GrandTotal.ToString("N2")</strong>Total incl. VAT</div>
+        </div>
+
+        <details @(q.Status == "Sent" ? "open" : "")>
+            <summary>@q.LineItems.Count line item(s)</summary>
+            <div class="vc-table-wrap">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr><th>Product</th><th>SKU</th><th style="text-align:right;">Qty</th><th style="text-align:right;">Unit</th><th style="text-align:right;">Line total</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var li in q.LineItems)
+                        {
+                            <tr>
+                                <td>@li.ProductName</td>
+                                <td class="vc-portal-ref">@li.SKU</td>
+                                <td style="text-align:right;">@li.Quantity</td>
+                                <td style="text-align:right;">R @li.UnitPrice.ToString("N2")</td>
+                                <td style="text-align:right;">R @li.LineTotal.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </details>
+
+        @if (!string.IsNullOrWhiteSpace(q.Terms))
+        {
+            <p class="vc-portal-note">@q.Terms</p>
+        }
+
+        <div class="vc-quote-card__actions" style="margin-top:12px;">
+            <a class="btn btn-outline btn-sm" asp-action="Pdf" asp-route-id="@q.QuotationId">Download PDF</a>
+
+            @if (Model.CanRespond && q.Status == "Sent")
+            {
+                <form asp-action="Respond" method="post" style="display:inline-flex;gap:8px;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@q.QuotationId" />
+                    <input type="hidden" name="decision" value="Accepted" />
+                    <button type="submit" class="btn btn-primary btn-sm">Accept</button>
+                </form>
+                <form asp-action="Respond" method="post" style="display:inline-flex;gap:8px;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@q.QuotationId" />
+                    <input type="hidden" name="decision" value="Rejected" />
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Decline</button>
+                </form>
+            }
+            else if (q.Status == "Draft" || q.Status == "Reviewed")
+            {
+                <span class="vc-portal-row__meta">A sales representative is still verifying this one.</span>
+            }
+        </div>
+    </div>
+}
+
+@if (!Model.CanRespond && Model.AwaitingResponse > 0)
+{
+    <p class="vc-portal-note">
+        Training accounts can browse the catalogue and ask for a quote, but only a
+        Client User accepts or declines a sent quotation - so these are for study,
+        not signature.
+    </p>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/pages/portal.css" />
+}

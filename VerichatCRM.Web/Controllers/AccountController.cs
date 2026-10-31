@@ -54,6 +54,11 @@ namespace VerichatCRM.Web.Controllers
                 HttpContext.Session.SetString("UserName", result.User.DisplayName);
                 HttpContext.Session.SetString("UserEmail", result.User.Email);
 
+                // The client portal is scoped to the signed-in client, and every
+                // client-facing API route is keyed on this id rather than on the
+                // token, so the web layer has to carry it too.
+                HttpContext.Session.SetString("UserId", result.User.UserId);
+
                 // The token also goes in a cookie so the SignalR handshake to the API
                 // can authenticate without the page ever reading it.
                 IssueHubCookie(result.Token);
@@ -106,6 +111,11 @@ namespace VerichatCRM.Web.Controllers
                 HttpContext.Session.SetString("UserRole", result.User.Role);
                 HttpContext.Session.SetString("UserName", result.User.DisplayName);
                 HttpContext.Session.SetString("UserEmail", result.User.Email);
+
+                // The client portal is scoped to the signed-in client, and every
+                // client-facing API route is keyed on this id rather than on the
+                // token, so the web layer has to carry it too.
+                HttpContext.Session.SetString("UserId", result.User.UserId);
 
                 // The token also goes in a cookie so the SignalR handshake to the API
                 // can authenticate without the page ever reading it.
@@ -187,8 +197,12 @@ namespace VerichatCRM.Web.Controllers
                 Roles.FieldSupportEngineer => RedirectToAction("Dashboard", "Support"),
                 Roles.Logistics => RedirectToAction("Dashboard", "Support"),
 
-                // Client and student accounts have no staff screens in this
-                // application; they sign in through the mobile app instead.
+                // Client and student accounts have no staff screens. They land on the
+                // self-service portal, which shows only their own catalogue access,
+                // quotations, deliveries and tickets - the same data the mobile app
+                // reads, through the same server-side ownership rules.
+                Roles.ClientUser or Roles.MedicalStudent => RedirectToAction("Index", "Portal"),
+
                 _ => RedirectToAction("NoAccess", "Account"),
             };
         }

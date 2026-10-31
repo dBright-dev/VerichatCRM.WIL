@@ -1,0 +1,305 @@
+/* Client portal
+   The screens a Client User or Medical Student lands on after signing in.
+   Everything here uses the theme tokens from verichat-theme.css - the portal is
+   the same product, so it is not a second design system. */
+
+.vc-portal-hero {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--vc-navy);
+    color: var(--vc-text-inverse);
+    border-radius: var(--vc-radius);
+    padding: 20px 22px;
+    margin-bottom: 18px;
+}
+
+.vc-portal-hero h2 {
+    color: #fff;
+    margin: 0 0 4px;
+    font-size: 1.25rem;
+}
+
+.vc-portal-hero p {
+    margin: 0;
+    color: var(--vc-text-inverse-muted);
+    font-size: .875rem;
+    max-width: 58ch;
+}
+
+.vc-portal-hero__actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.vc-portal-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.vc-portal-kpi {
+    background: var(--vc-surface);
+    border: 1px solid var(--vc-border);
+    border-radius: var(--vc-radius);
+    box-shadow: var(--vc-shadow);
+    padding: 15px 17px;
+}
+
+.vc-portal-kpi__value {
+    font-family: var(--vc-font-heading);
+    font-size: 1.6rem;
+    font-weight: 600;
+    line-height: 1.1;
+}
+
+.vc-portal-kpi__label {
+    font-size: .72rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--vc-text-muted);
+    margin-bottom: 6px;
+}
+
+.vc-portal-kpi__hint {
+    font-size: .78rem;
+    color: var(--vc-text-muted);
+    margin-top: 4px;
+}
+
+.vc-portal-columns {
+    display: grid;
+    grid-template-columns: 1.15fr .85fr;
+    gap: 18px;
+    align-items: start;
+    margin-bottom: 18px;
+}
+
+.vc-portal-panel {
+    background: var(--vc-surface);
+    border: 1px solid var(--vc-border);
+    border-radius: var(--vc-radius);
+    box-shadow: var(--vc-shadow);
+}
+
+.vc-portal-panel__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--vc-border);
+}
+
+.vc-portal-panel__head h3 {
+    margin: 0;
+    font-size: .98rem;
+}
+
+.vc-portal-panel__body { padding: 6px 18px 16px; }
+
+.vc-portal-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--vc-border);
+}
+
+.vc-portal-row:last-child { border-bottom: 0; }
+
+.vc-portal-row__main { min-width: 0; }
+
+.vc-portal-row__title {
+    font-weight: 600;
+    font-size: .9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vc-portal-row__meta {
+    font-size: .78rem;
+    color: var(--vc-text-muted);
+    margin-top: 2px;
+}
+
+.vc-portal-ref {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: .78rem;
+    color: var(--vc-text-muted);
+}
+
+.vc-portal-empty {
+    padding: 28px 6px;
+    text-align: center;
+    color: var(--vc-text-muted);
+    font-size: .875rem;
+}
+
+.vc-portal-note {
+    font-size: .8rem;
+    color: var(--vc-text-muted);
+    margin: 14px 0 0;
+}
+
+/* Catalogue: the quantity box turns a browsed product into a quote line. */
+a.chip {
+    /* The theme styles .chip for a <button>; the portal filters navigate, so the
+       same chip has to look like a chip and not like a link. */
+    color: var(--vc-text);
+    text-decoration: none;
+    display: inline-block;
+}
+
+a.chip.active, a.chip:hover { color: #fff; }
+
+.vc-qty {
+    width: 84px;
+    text-align: center;
+}
+
+.vc-quote-bar {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 14px;
+    justify-content: space-between;
+    background: var(--vc-surface);
+    border: 1px solid var(--vc-border);
+    border-left: 4px solid var(--vc-accent);
+    border-radius: var(--vc-radius);
+    box-shadow: 0 -6px 22px rgba(16, 27, 51, .10);
+    padding: 14px 18px;
+    margin-top: 18px;
+}
+
+.vc-quote-bar__fields { flex: 1 1 320px; }
+
+.vc-quote-bar__fields .form-input { background: var(--vc-surface); }
+
+/* Quotation cards */
+.vc-quote-card {
+    border: 1px solid var(--vc-border);
+    border-radius: var(--vc-radius);
+    background: var(--vc-surface);
+    box-shadow: var(--vc-shadow);
+    padding: 16px 18px;
+    margin-bottom: 14px;
+}
+
+.vc-quote-card__head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.vc-quote-card__totals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    font-size: .82rem;
+    color: var(--vc-text-muted);
+    margin: 10px 0;
+}
+
+.vc-quote-card__totals strong {
+    display: block;
+    color: var(--vc-text);
+    font-size: .95rem;
+}
+
+.vc-quote-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.vc-quote-card details summary {
+    cursor: pointer;
+    font-size: .82rem;
+    color: var(--vc-accent);
+    margin-bottom: 8px;
+}
+
+/* Ticket timeline */
+.vc-ticket-card {
+    border: 1px solid var(--vc-border);
+    border-radius: var(--vc-radius);
+    background: var(--vc-surface);
+    box-shadow: var(--vc-shadow);
+    padding: 15px 18px;
+    margin-bottom: 13px;
+}
+
+.vc-ticket-card__head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.vc-ticket-card__title { font-weight: 600; font-size: .92rem; }
+
+.vc-ticket-card__body {
+    font-size: .85rem;
+    color: var(--vc-text-muted);
+    margin: 8px 0 0;
+    white-space: pre-wrap;
+}
+
+.vc-ticket-card__foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--vc-border);
+    font-size: .78rem;
+    color: var(--vc-text-muted);
+}
+
+.vc-portal-raise {
+    border: 1px solid var(--vc-border);
+    border-radius: var(--vc-radius);
+    background: var(--vc-surface);
+    box-shadow: var(--vc-shadow);
+    padding: 0 18px;
+    margin-bottom: 18px;
+}
+
+.vc-portal-raise > summary {
+    cursor: pointer;
+    padding: 14px 0;
+    font-weight: 600;
+    font-family: var(--vc-font-heading);
+    font-size: .95rem;
+}
+
+.vc-portal-raise[open] > summary { border-bottom: 1px solid var(--vc-border); }
+
+.vc-portal-raise__form { padding: 16px 0 18px; }
+
+.vc-portal-raise__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0 16px;
+}
+
+@media (max-width: 1000px) {
+    .vc-portal-columns { grid-template-columns: 1fr; }
+}

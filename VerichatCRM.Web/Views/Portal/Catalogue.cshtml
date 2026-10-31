@@ -1,0 +1,89 @@
+@model VerichatCRM.Web.ViewModels.Portal.PortalCatalogueViewModel
+@{
+    ViewData["Title"] = "Catalogue";
+    ViewData["Subtitle"] = $"{Model.Products.Count} products";
+}
+
+<partial name="_PortalAlert" />
+
+<div class="chip-row">
+    @foreach (var cat in Model.Categories)
+    {
+        <a class="chip @(cat == Model.ActiveCategory ? "active" : "")"
+           asp-action="Catalogue" asp-route-category="@cat"
+           asp-route-search="@Model.SearchQuery">@cat</a>
+    }
+</div>
+
+<form asp-action="Catalogue" method="get" class="catalog-toolbar">
+    <div class="search-bar">
+        <input type="text" name="search" value="@Model.SearchQuery" placeholder="Search products or SKU..." />
+    </div>
+    <input type="hidden" name="category" value="@Model.ActiveCategory" />
+    <button type="submit" class="btn btn-outline btn-sm">Search</button>
+</form>
+
+<form asp-action="RequestQuote" method="post">
+    @Html.AntiForgeryToken()
+
+    @if (Model.Products.Count == 0)
+    {
+        <div class="vc-portal-empty" style="padding:56px 24px;">
+            <h2 class="auth-title" style="font-size:1.25rem;">
+                @(string.IsNullOrWhiteSpace(Model.SearchQuery) ? "No products in this category" : "No products match your search")
+            </h2>
+            <p class="auth-subtitle">Products published by the procurement team appear here and in the mobile app.</p>
+        </div>
+    }
+    else
+    {
+        <div class="product-grid">
+            @foreach (var p in Model.Products)
+            {
+                <div class="product-card">
+                    <div class="product-image">
+                        @if (!string.IsNullOrWhiteSpace(p.ImageUrl))
+                        {
+                            <img src="@p.ImageUrl" alt="@p.ProductName" onerror="this.style.display='none'; this.parentElement.classList.add('placeholder')" />
+                        }
+                    </div>
+                    <div class="product-body">
+                        <div class="product-name">@p.ProductName</div>
+                        <div class="vc-portal-ref">@p.SKU · @p.Category</div>
+                        <div class="product-price">R @p.Price.ToString("N0")</div>
+                        <div class="product-footer">
+                            <span class="badge @(p.StockQty == 0 ? "badge-critical" : p.IsLowStock ? "badge-warning" : "badge-success")">
+                                @(p.StockQty == 0 ? "Out of stock" : p.IsLowStock ? "Low stock" : $"{p.StockQty} in stock")
+                            </span>
+                            <input class="form-input vc-qty" type="number" min="0" max="10000" step="1" value="0"
+                                   name="qty-@p.SKU" aria-label="Quantity to request for @p.ProductName" />
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="vc-quote-bar">
+            <div class="vc-quote-bar__fields">
+                <label class="form-label" for="portalQuoteNotes">Notes for the sales team (optional)</label>
+                <textarea class="form-input" id="portalQuoteNotes" name="notes" rows="2" maxlength="4000"
+                          placeholder="Delivery address, required certification, when you need it…"></textarea>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Request a quote</button>
+                <p class="vc-portal-note" style="margin-top:6px;">Prices shown are indicative.</p>
+            </div>
+        </div>
+    }
+</form>
+
+<p class="vc-portal-note">
+    Entering a quantity does not place an order. It raises a draft quotation on your
+    account, a sales representative verifies stock and pricing, and only the quote they
+    send back can be accepted. @Model.OutOfStock product(s) are currently out of stock -
+    request them anyway and procurement will confirm a lead time.
+</p>
+
+@section Styles {
+    <link rel="stylesheet" href="~/pages/portal.css" />
+}

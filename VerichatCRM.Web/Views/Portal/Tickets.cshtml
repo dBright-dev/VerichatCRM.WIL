@@ -1,0 +1,145 @@
+@model VerichatCRM.Web.ViewModels.Portal.PortalTicketsViewModel
+@{
+    var priorities = (string[])ViewData["Priorities"]!;
+    var categories = new[] { "General", "Equipment fault", "Delivery", "Billing", "Training query" };
+
+    string Badge(string status) => status switch
+    {
+        "Escalated" => "vc-badge vc-badge--danger",
+        "Resolved" or "Closed" => "vc-badge vc-badge--success",
+        "Action Taken" => "vc-badge vc-badge--accent",
+        _ => "vc-badge"
+    };
+}
+
+<partial name="_PortalAlert" />
+
+<details class="vc-portal-raise">
+    <summary>Raise a support request</summary>
+    <form asp-action="CreateTicket" method="post" class="vc-portal-raise__form">
+        @Html.AntiForgeryToken()
+
+        <div class="vc-portal-raise__grid">
+            <div class="form-group">
+                <label class="form-label" for="portalTicketTitle">Subject</label>
+                <input class="form-input" id="portalTicketTitle" name="Title" maxlength="200" required
+                       placeholder="e.g. Autoclave not holding temperature" />
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="portalTicketPriority">Priority</label>
+                <select class="form-select" id="portalTicketPriority" name="Priority">
+                    @foreach (var p in priorities)
+                    {
+                        <option value="@p" selected="@(p == "Medium")">@p</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="portalTicketCategory">Category</label>
+                <select class="form-select" id="portalTicketCategory" name="Category">
+                    @foreach (var c in categories)
+                    {
+                        <option value="@c">@c</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="portalTicketDescription">What is happening?</label>
+            <textarea class="form-input" id="portalTicketDescription" name="Description" rows="4" maxlength="4000" required
+                      placeholder="Describe the device or delivery, what you expected and what happened instead."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit request</button>
+        <p class="vc-portal-note">
+            Priority sets how long the response takes: Critical 4 hours, High 12, Medium
+            24, Low 48. It is raised on your own account - you cannot file it for another
+            client, and the ticket appears below the moment it is saved.
+        </p>
+    </form>
+</details>
+
+<div class="vc-portal-kpis" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
+    <div class="vc-portal-kpi">
+        <div class="vc-portal-kpi__label">Open</div>
+        <div class="vc-portal-kpi__value vc-accent">@Model.OpenCount</div>
+    </div>
+    <div class="vc-portal-kpi">
+        <div class="vc-portal-kpi__label">Past SLA</div>
+        <div class="vc-portal-kpi__value">@Model.BreachedCount</div>
+    </div>
+    <div class="vc-portal-kpi">
+        <div class="vc-portal-kpi__label">Total raised</div>
+        <div class="vc-portal-kpi__value">@Model.Tickets.Count</div>
+    </div>
+</div>
+
+@if (Model.Tickets.Count == 0)
+{
+    <div class="vc-portal-panel">
+        <div class="vc-portal-panel__body">
+            <div class="vc-portal-empty">You have not raised a support request yet.</div>
+        </div>
+    </div>
+}
+
+@foreach (var t in Model.Tickets)
+{
+    <div class="vc-ticket-card">
+        <div class="vc-ticket-card__head">
+            <div>
+                <div class="vc-ticket-card__title">@t.Title</div>
+                <div class="vc-portal-row__meta vc-portal-ref">@t.TrackingNumber · @t.Category</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <span class="badge @(t.Priority == "Critical" ? "badge-critical" : t.Priority == "High" ? "badge-warning" : "badge-neutral")">@t.Priority</span>
+                <span class="@Badge(t.Status)">@t.Status</span>
+            </div>
+        </div>
+
+        <p class="vc-ticket-card__body">@t.Description</p>
+
+        @if (t.Activities.Count > 0)
+        {
+            <details style="margin-top:10px;">
+                <summary style="cursor:pointer;font-size:.82rem;color:var(--vc-accent);">@t.Activities.Count update(s)</summary>
+                <ul style="margin:.6rem 0 0;padding-left:1.1rem;font-size:.82rem;color:var(--vc-text-muted);">
+                    @foreach (var a in t.Activities.OrderByDescending(a => a.PerformedAt))
+                    {
+                        <li>
+                            @a.PerformedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm") · @a.Action
+                            @if (!string.IsNullOrWhiteSpace(a.FromValue) || !string.IsNullOrWhiteSpace(a.ToValue))
+                            {
+                                <text>: @(a.FromValue ?? "none") &rarr; @(a.ToValue ?? "none")</text>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(a.Notes))
+                            {
+                                <text> — @a.Notes</text>
+                            }
+                        </li>
+                    }
+                </ul>
+            </details>
+        }
+
+        <div class="vc-ticket-card__foot">
+            <span>Raised @t.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</span>
+            @if (t.ResolvedAt.HasValue)
+            {
+                <span>Resolved @t.ResolvedAt.Value.ToLocalTime().ToString("dd MMM yyyy HH:mm")</span>
+            }
+            else
+            {
+                <span class="@(t.IsSlaBreached ? "text-critical" : "")">
+                    SLA response by @t.SlaDeadline.ToLocalTime().ToString("dd MMM yyyy HH:mm")
+                    @(t.IsSlaBreached ? "(overdue)" : "")
+                </span>
+            }
+        </div>
+    </div>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/pages/portal.css" />
+}
