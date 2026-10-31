@@ -162,6 +162,20 @@ namespace VerichatCRM.Web.Controllers
             SetHeader("Warehouse Alerts", "Low-stock safeguard and reorder management.");
 
             var alerts = await _alerts.GetActiveAsync();
+            var products = await _products.GetAllAsync();
+            var purchaseOrders = await _api.GetAsync<List<PurchaseOrderSummary>>("/api/purchaseorder")
+                ?? new List<PurchaseOrderSummary>();
+
+            // There is no supplier master data in this system, so the only real
+            // answer to "who supplies this?" is whoever the last purchase order for
+            // that SKU went to. Anything else would be invented, and an invented
+            // supplier ends up printed on a purchase order.
+            string LastSupplierFor(string sku) => purchaseOrders
+                .Where(po => po.LineItems.Any(li => string.Equals(li.SKU, sku, StringComparison.OrdinalIgnoreCase)))
+                .OrderByDescending(po => po.CreatedAt)
+                .Select(po => po.SupplierName)
+                .FirstOrDefault(string.Empty);
+
             var vm = new WarehouseAlertsViewModel
             {
                 Alerts = alerts.Select(a => new StockAlertRow
@@ -171,7 +185,9 @@ namespace VerichatCRM.Web.Controllers
                     CurrentStock = a.CurrentStock,
                     MinStock = a.Threshold,
                     ReorderQty = Math.Max(a.Threshold * 2 - a.CurrentStock, 0),
-                    Supplier = string.Empty,
+                    Supplier = LastSupplierFor(a.SKU),
+                    SuggestedUnitCost = products
+                        .FirstOrDefault(p => string.Equals(p.SKU, a.SKU, StringComparison.OrdinalIgnoreCase))?.Price ?? 0m,
                     Status = a.Severity == "Critical" ? "Critical" : "Low"
                 }).ToList()
             };
@@ -180,5 +196,79 @@ namespace VerichatCRM.Web.Controllers
             vm.CriticalItemName = vm.Alerts.FirstOrDefault(a => a.Status == "Critical")?.ProductName ?? string.Empty;
             return View(vm);
         }
+
+        /// <summary>
+        /// Creates the purchase order for one low-stock row. This is a form POST
+        /// rather than page script calling the API: the JWT lives in the session,
+        /// not in the browser, so only this server can authenticate to the API.
+        /// </summary>
+        [HttpPost, ValidateAntiForgeryToken]
+        [RequirePermission(Perm.WarehouseAlerts)]
+        public async Task<IActionResult> Reorder(string? sku, string? supplier, decimal unitCost)
+        {
+            if (!IsAuthenticated) return RedirectToAction("Login", "Account");
+
+            var trimmedSupplier = (supplier ?? string.Empty).Trim();
+            var problem = trimmedSupplier.Length switch
+            {
+                0 => "Choose the supplier this order goes to.",
+                > 200 => "The supplier name must be 200 characters or fewer.",
+                _ when unitCost <= 0m => "Enter the purchase cost per unit; it cannot be zero.",
+                _ => null
+            };
+
+            if (problem != null || string.IsNullOrWhiteSpace(sku))
+            {
+                TempData["ReorderMessage"] = problem ?? "Pick a product to reorder.";
+                return RedirectToAction(nameof(WarehouseAlerts));
+            }
+
+            sku = sku.Trim();
+            var alert = (await _alerts.GetActiveAsync())
+                .FirstOrDefault(a => string.Equals(a.SKU, sku, StringComparison.OrdinalIgnoreCase));
+            var product = (await _products.GetAllAsync())
+                .FirstOrDefault(p => string.Equals(p.SKU, sku, StringComparison.OrdinalIgnoreCase));
+
+            if (product == null)
+            {
+                TempData["ReorderMessage"] = $"{sku} is no longer in the catalogue, so it cannot be reordered.";
+                return RedirectToAction(nameof(WarehouseAlerts));
+            }
+
+            // The quantity is recomputed here instead of trusted from the form: it
+            // is the replenishment rule the page shows, and a tampered value would
+            // order stock nobody asked for.
+            var quantity = alert == null
+                ? product.LowStockThreshold
+                : Math.Max(alert.Threshold * 2 - alert.CurrentStock, 1);
+
+            var created = await _api.PostAsync<CreatePurchaseOrderBody, PurchaseOrderSummary>(
+                "/api/purchaseorder",
+                new CreatePurchaseOrderBody(trimmedSupplier,
+                    new[] { new PurchaseOrderLineBody(product.SKU, quantity, unitCost) }));
+
+            // The confirmation quotes the supplier the API stored, not the string
+            // that arrived: markup is stripped on the way in, so echoing the input
+            // would name a supplier that no order was raised against.
+            TempData["ReorderMessage"] = created == null
+                ? _api.LastError ?? $"The reorder for {product.ProductName} could not be created."
+                : $"Purchase order raised: {quantity} × {product.ProductName} from {created.SupplierName}.";
+
+            return RedirectToAction(nameof(WarehouseAlerts));
+        }
+
+        private sealed record CreatePurchaseOrderBody(string SupplierName, IEnumerable<PurchaseOrderLineBody> LineItems);
+
+        private sealed record PurchaseOrderLineBody(string SKU, int Quantity, decimal UnitCost);
+
+        private sealed record PurchaseOrderSummary(
+            string PurchaseOrderId,
+            string SupplierName,
+            List<PurchaseOrderLineSummary> LineItems,
+            decimal TotalCost,
+            string Status,
+            DateTime CreatedAt);
+
+        private sealed record PurchaseOrderLineSummary(string SKU, int Quantity, decimal UnitCost);
     }
 }

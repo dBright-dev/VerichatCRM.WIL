@@ -1,19 +1,6 @@
 ﻿document.addEventListener('DOMContentLoaded', () => {
-    // Reorder buttons
-    document.querySelectorAll('[data-sku]').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            if (!confirm(`Create a reorder for ${btn.dataset.sku}?`)) return;
-            try {
-                await api.post('/api/purchaseorder', {
-                    supplierName: 'Auto-Reorder',
-                    lineItems: [{ sku: btn.dataset.sku, quantity: 1, unitCost: 0 }]
-                });
-                alert('Reorder created successfully.');
-            } catch (err) {
-                alert('Failed to create reorder: ' + err.message);
-            }
-        });
-    });
+    // Reordering is a server-side form POST (ProcurementController.Reorder): the
+    // JWT is only in the session now, so page script cannot call the API itself.
 
     // Stock level chart
     const canvas = document.getElementById('stockLevelChart');

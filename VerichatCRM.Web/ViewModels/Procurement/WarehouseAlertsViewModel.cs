@@ -17,6 +17,15 @@
         public int MinStock { get; set; }
         public int ReorderQty { get; set; }
         public string Supplier { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Starting value for the purchase-order line cost. The catalogue holds a
+        /// selling price and no purchase cost, so the buyer confirms or corrects
+        /// this rather than the system implying a margin.
+        /// </summary>
+        public decimal SuggestedUnitCost { get; set; }
+
+        public bool CanReorder => ReorderQty > 0 && Status != "OK";
         public string Status { get; set; } = "OK"; // OK, Low, Critical
     }
 
