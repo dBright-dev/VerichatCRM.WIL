@@ -32,10 +32,13 @@ namespace VerichatCRM.API.Controllers
             => Ok(await _ticketService.GetAllAsync());
 
         [HttpGet("client/{clientId}")]
-        [Authorize(Roles = "System Administrator,Field Support Engineer,Sales Representative,Client User")]
+        [Authorize(Roles = "System Administrator,Field Support Engineer,Sales Representative,Client User,Medical Student")]
         public async Task<IActionResult> GetByClient(string clientId)
         {
-            if (User.IsInRole(UserRoles.ClientUser) && clientId != CurrentUserId) return Forbid();
+            // Either account in the client audience may read this queue, but only its
+            // own: for both of them the Clients row is keyed on the UserId.
+            if (UserRoles.ClientAudience.Any(User.IsInRole) && clientId != CurrentUserId)
+                return Forbid();
             return Ok(await _ticketService.GetByClientAsync(clientId));
         }
 
@@ -65,10 +68,13 @@ namespace VerichatCRM.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "System Administrator,Sales Representative,Procurement Manager,Client User")]
+        [Authorize(Roles = "System Administrator,Sales Representative,Procurement Manager,Client User,Medical Student")]
         public async Task<IActionResult> Create([FromBody] CreateTicketRequest request)
         {
-            if (User.IsInRole(UserRoles.ClientUser))
+            // Both client roles raise tickets for their own account, and neither may
+            // raise one on someone else's behalf: the Clients row is keyed on the
+            // UserId, so the id is overwritten rather than validated.
+            if (UserRoles.ClientAudience.Any(User.IsInRole))
             {
                 request.ClientId = CurrentUserId;
                 if (!string.IsNullOrWhiteSpace(request.EquipmentId))

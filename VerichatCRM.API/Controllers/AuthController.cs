@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using VerichatCRM.API.DTOs.Requests;
 using VerichatCRM.API.Services.Interfaces;
+using VerichatCRM.Core.Entities;
 
 namespace VerichatCRM.API.Controllers
 {
@@ -10,10 +11,12 @@ namespace VerichatCRM.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _auth;
+        private readonly IMobileService _mobile;
 
-        public AuthController(IAuthService auth)
+        public AuthController(IAuthService auth, IMobileService mobile)
         {
             _auth = auth;
+            _mobile = mobile;
         }
 
         [HttpPost("login")]
@@ -29,7 +32,17 @@ namespace VerichatCRM.API.Controllers
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             var result = await _auth.RegisterAsync(request);
-            return result.Success ? Ok(result) : BadRequest(result);
+            if (!result.Success) return BadRequest(result);
+
+            // Orders, quotations and the ticket queue are keyed on Clients.ClientId,
+            // and for this audience that key is the UserId. Mobile sign-up opens the
+            // row inside its own transaction; a web sign-up used to stop short of it,
+            // leaving the new client account able to sign in but unable to request a
+            // quote. Same rule, applied on both registration paths.
+            if (UserRoles.ClientAudience.Contains(request.Role))
+                await _mobile.EnsureClientAccountAsync(result.User.UserId);
+
+            return Ok(result);
         }
 
         [HttpGet("me")]

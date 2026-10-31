@@ -51,7 +51,9 @@ namespace VerichatCRM.API.Controllers
         [HttpGet("client/{clientId}")]
         public async Task<IActionResult> GetByClient(string clientId)
         {
-            if (User.IsInRole(UserRoles.ClientUser) && clientId != CurrentUserId()) return Forbid();
+            // Either account in the client audience may read its own queue, and only
+            // its own: the Clients row is keyed on the UserId.
+            if (UserRoles.ClientAudience.Any(User.IsInRole) && clientId != CurrentUserId()) return Forbid();
             return Ok(await _quotations.GetByClientAsync(clientId));
         }
 
@@ -68,7 +70,7 @@ namespace VerichatCRM.API.Controllers
         public async Task<IActionResult> GetById(string id)
         {
             var q = await _quotations.GetByIdAsync(id);
-            if (q != null && User.IsInRole(UserRoles.ClientUser) && q.ClientId != CurrentUserId()) return Forbid();
+            if (q != null && UserRoles.ClientAudience.Any(User.IsInRole) && q.ClientId != CurrentUserId()) return Forbid();
             return q == null ? NotFound() : Ok(q);
         }
 
@@ -81,7 +83,7 @@ namespace VerichatCRM.API.Controllers
             var quotation = await _quotationRepo.GetByIdAsync(id);
             if (quotation == null) return NotFound(new { message = "Quotation not found." });
 
-            if (User.IsInRole(UserRoles.ClientUser) && quotation.ClientId != CurrentUserId()) return Forbid();
+            if (UserRoles.ClientAudience.Any(User.IsInRole) && quotation.ClientId != CurrentUserId()) return Forbid();
 
             var client = await _clientRepo.GetByIdAsync(quotation.ClientId);
             if (client == null) return NotFound(new { message = "Client for this quotation not found." });
