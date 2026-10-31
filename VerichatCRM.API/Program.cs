@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using VerichatCRM.API.Helpers;
 using VerichatCRM.API.Middleware;
 using VerichatCRM.API.Services;
@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using VerichatCRM.Infrastructure.Data.Repositories;
 using VerichatCRM.Infrastructure.Services;
 using VerichatCRM.Infrastructure.Repositories;
+using VerichatCRM.API.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,13 +32,14 @@ if (string.IsNullOrWhiteSpace(connectionString))
 }
 
 // Database
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContext<AppDbContext>((sp, options) =>
     options.UseSqlServer(
         connectionString,
         sqlServerOptions => sqlServerOptions.EnableRetryOnFailure(
             maxRetryCount: 3,
             maxRetryDelay: TimeSpan.FromSeconds(10),
-            errorNumbersToAdd: null)));
+            errorNumbersToAdd: null))
+    .AddInterceptors(sp.GetRequiredService<VerichatCRM.Infrastructure.Data.Interceptors.AuditSaveChangesInterceptor>()));
 
 // Register services
 // Repositories
@@ -67,6 +69,19 @@ builder.Services.AddScoped<IQuotationService, QuotationService>();
 
 // Infrastructure Services
 builder.Services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
+    builder.Services.AddScoped<VerichatCRM.Infrastructure.Data.External.IPdfGenerator,
+                               VerichatCRM.Infrastructure.Data.External.PdfGenerator>();
+    builder.Services.AddScoped<VerichatCRM.Infrastructure.Data.External.IEmailService,
+                               VerichatCRM.Infrastructure.Data.External.EmailService>();
+
+    // Real-time notifications (SLA escalations, ticket assignment)
+    builder.Services.AddSignalR();
+
+    // Audit trail: every Added/Modified/Deleted entity is recorded with the
+    // acting user and IP. Secrets (password hash + reset token) are filtered.
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped<VerichatCRM.Infrastructure.Data.Interceptors.AuditSaveChangesInterceptor>();
+    builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
 
 // Background service
@@ -83,6 +98,16 @@ if (string.IsNullOrWhiteSpace(jwtKey))
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var token = context.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(token) && context.HttpContext.Request.Path.StartsWithSegments("/hubs/notifications"))
+                    context.Token = token;
+                return Task.CompletedTask;
+            }
+        };
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -181,5 +206,8 @@ app.UseCors("VerichatWeb");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+    // SignalR notification hub
+    app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.Run();

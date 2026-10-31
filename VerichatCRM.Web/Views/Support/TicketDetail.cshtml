@@ -1,0 +1,228 @@
+﻿@model VerichatCRM.Web.Models.Support.TicketDto
+@using VerichatCRM.Core.Enums
+@{
+    var canUpdate = ViewData["CanUpdate"] is true;
+    var canViewClient = ViewData["CanViewClient"] is true;
+    var isClosed = Model.Status == TicketStatuses.Closed;
+    var isDone = Model.Status == TicketStatuses.Resolved || isClosed;
+
+    var photos = Model.PhotoUrls
+        .Where(u => Uri.TryCreate(u, UriKind.Absolute, out var uri)
+                    && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+        .ToList();
+    var activities = Model.Activities.OrderByDescending(a => a.PerformedAt).ToList();
+}
+
+@section Styles {
+    <style>
+        .vc-timeline { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 2px solid var(--vc-border, #e5e7eb); }
+        .vc-timeline li { position: relative; padding: 0 0 16px 14px; }
+        .vc-timeline li::before { content: ""; position: absolute; left: -24px; top: 5px; width: 10px; height: 10px;
+                                  border-radius: 50%; background: var(--vc-accent, #5B5BD6); }
+        .vc-photo-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .vc-photo-grid img { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; border: 1px solid var(--vc-border, #e5e7eb); }
+    </style>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success" role="status">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger" role="alert">@TempData["Error"]</div>
+}
+
+<div class="mb-3">
+    <a asp-action="TicketHub" class="btn btn-outline btn-sm">&larr; Ticket Hub</a>
+</div>
+
+<div class="card mb-3">
+    <div class="d-flex justify-content-between flex-wrap gap-2">
+        <div>
+            <span class="ticket-ref">@Model.TrackingNumber</span>
+            <span class="badge @PriorityBadge(Model.Priority)">@Model.Priority</span>
+            @if (Model.EscalationLevel > 0)
+            {
+                <span class="badge badge-critical">Escalated L@(Model.EscalationLevel)</span>
+            }
+        </div>
+        <span class="status-text @StatusClass(Model.Status)">@Model.Status</span>
+    </div>
+    <h2 class="card-title mt-2 mb-1">@Model.Title</h2>
+    <div class="vc-text-muted small">@Model.Category &middot; Opened @Utc(Model.CreatedAt)</div>
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-8">
+        <div class="card mb-3">
+            <div class="card-title">Description</div>
+            <p class="mb-0" style="white-space:pre-wrap;">@Model.Description</p>
+        </div>
+
+        @if (photos.Count > 0)
+        {
+            <div class="card mb-3">
+                <div class="card-title">Photos</div>
+                <div class="vc-photo-grid">
+                    @for (var i = 0; i < photos.Count; i++)
+                    {
+                        <a href="@photos[i]" target="_blank" rel="noopener noreferrer">
+                            <img src="@photos[i]" alt="Ticket photo @(i + 1)" loading="lazy" />
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.ResolutionNotes))
+        {
+            <div class="card mb-3">
+                <div class="card-title">Resolution notes</div>
+                <p class="mb-0" style="white-space:pre-wrap;">@Model.ResolutionNotes</p>
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-title">Activity</div>
+            <ul class="vc-timeline">
+                @foreach (var a in activities)
+                {
+                    <li>
+                        <div class="fw-semibold small">@Humanize(a.Action)</div>
+                        @if (!string.IsNullOrWhiteSpace(a.FromValue) || !string.IsNullOrWhiteSpace(a.ToValue))
+                        {
+                            <div class="small">@(a.FromValue ?? "—") &rarr; @(a.ToValue ?? "—")</div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(a.Notes))
+                        {
+                            <div class="vc-text-muted small" style="white-space:pre-wrap;">@a.Notes</div>
+                        }
+                        <div class="vc-text-muted small">@Utc(a.PerformedAt)</div>
+                    </li>
+                }
+                <li>
+                    <div class="fw-semibold small">Ticket received</div>
+                    <div class="vc-text-muted small">@Utc(Model.CreatedAt)</div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="card mb-3">
+            <div class="card-title">SLA</div>
+            @if (isDone && Model.ResolvedAt.HasValue)
+            {
+                <div class="small">Resolved @Utc(Model.ResolvedAt.Value)</div>
+                @if (Model.IsSlaBreached)
+                {
+                    <div class="text-critical small mt-1">&#9888; SLA was breached</div>
+                }
+                else
+                {
+                    <div class="small mt-1" style="color:var(--vc-success, #1D9E75);">Resolved within SLA</div>
+                }
+            }
+            else
+            {
+                var overdue = Model.SlaDeadline < DateTime.UtcNow;
+                <div class="@(overdue ? "text-critical" : "") fw-semibold">@SlaText(Model.SlaDeadline)</div>
+                <div class="vc-text-muted small">Deadline @Utc(Model.SlaDeadline)</div>
+            }
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-title">Details</div>
+            <dl class="small mb-0">
+                <dt class="vc-text-muted fw-normal">Assigned</dt>
+                <dd>@(string.IsNullOrEmpty(Model.AssignedToUserId) ? "Unassigned" : "Assigned")</dd>
+                @if (!string.IsNullOrEmpty(Model.EquipmentId))
+                {
+                    <dt class="vc-text-muted fw-normal">Equipment ref</dt>
+                    <dd>@Model.EquipmentId</dd>
+                }
+                <dt class="vc-text-muted fw-normal">Escalation level</dt>
+                <dd>@Model.EscalationLevel</dd>
+            </dl>
+            @if (canViewClient && !string.IsNullOrEmpty(Model.ClientId))
+            {
+                <a asp-controller="Clients" asp-action="Profile" asp-route-id="@Model.ClientId" class="btn btn-outline btn-sm w-100 mt-2">View client profile</a>
+            }
+        </div>
+
+        @if (canUpdate && !isClosed)
+        {
+            <div class="card">
+                <div class="card-title">Update status</div>
+                <form asp-action="UpdateStatus" method="post">
+                    <input type="hidden" name="ticketId" value="@Model.TicketId" />
+
+                    <label for="newStatus" class="form-label small">New status</label>
+                    <select id="newStatus" name="newStatus" class="form-select form-select-sm mb-2" required>
+                        <option value="">Choose&hellip;</option>
+                        @foreach (var s in TicketStatuses.All.Where(s => s != Model.Status))
+                        {
+                            <option value="@s">@s</option>
+                        }
+                    </select>
+
+                    <label for="statusNotes" class="form-label small">Notes <span id="notesHint" class="vc-text-muted">(optional)</span></label>
+                    <textarea id="statusNotes" name="notes" rows="3" maxlength="1000" class="form-control form-control-sm mb-2"></textarea>
+
+                    <button type="submit" class="btn btn-primary btn-sm w-100">Update status</button>
+                </form>
+            </div>
+        }
+    </div>
+</div>
+
+@functions {
+    string Utc(DateTime d) => d.ToString("dd MMM yyyy HH:mm") + " UTC";
+
+    string SlaText(DateTime deadline)
+    {
+        var span = deadline - DateTime.UtcNow;
+        var abs = span.Duration();
+        var text = abs.TotalHours >= 24 ? $"{(int)abs.TotalDays}d {abs.Hours}h"
+                 : abs.TotalHours >= 1 ? $"{(int)abs.TotalHours}h {abs.Minutes}m"
+                 : $"{(int)abs.TotalMinutes}m";
+        return span < TimeSpan.Zero ? $"Overdue by {text}" : $"Due in {text}";
+    }
+
+    string Humanize(string action) =>
+        System.Text.RegularExpressions.Regex.Replace(action ?? "", "(?<=[a-z])(?=[A-Z])", " ");
+
+    string PriorityBadge(string p) => p switch
+    {
+        "Critical" => "badge-critical",
+        "High" => "badge-warning",
+        "Medium" => "badge-info",
+        _ => "badge-neutral"
+    };
+
+    string StatusClass(string s) => s switch
+    {
+        "Resolved" => "status-ok",
+        "Escalated" => "status-critical",
+        "Under Review" => "status-warning",
+        _ => ""
+    };
+}
+
+@section Scripts {
+    <script>
+        (function() {
+            const status = document.getElementById('newStatus');
+            const notes = document.getElementById('statusNotes');
+            const hint = document.getElementById('notesHint');
+            if (!status || !notes) return;
+
+            status.addEventListener('change', function() {
+                const resolving = status.value === 'Resolved';
+                notes.required = resolving;
+                hint.textContent = resolving ? '(required to resolve)' : '(optional)';
+            });
+        })();
+    </script>
+}

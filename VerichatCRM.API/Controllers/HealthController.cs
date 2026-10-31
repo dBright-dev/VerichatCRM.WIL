@@ -62,8 +62,23 @@ namespace VerichatCRM.API.Controllers
         public async Task<IActionResult> Health()
         {
             var (dbOk, dbDetail, latencyMs) = await CheckDatabaseAsync();
+            var pendingMigrations = Array.Empty<string>();
+            string? migrationCheckError = null;
+            if (dbOk)
+            {
+                try
+                {
+                    pendingMigrations = (await _db.Database.GetPendingMigrationsAsync()).ToArray();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Health migration check failed.");
+                    migrationCheckError = "Unable to inspect applied database migrations.";
+                }
+            }
+            var schemaOk = dbOk && migrationCheckError == null && pendingMigrations.Length == 0;
             var jwtConfigured = !string.IsNullOrWhiteSpace(_config["Jwt:Key"]);
-            var status = dbOk ? "Healthy" : "Degraded";
+            var status = schemaOk && jwtConfigured ? "Healthy" : "Degraded";
 
             var payload = new
             {
@@ -74,11 +89,22 @@ namespace VerichatCRM.API.Controllers
                 environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
                 checks = new
                 {
-                    database = new { status = dbOk ? "Healthy" : "Unhealthy", detail = dbDetail, latencyMs },
+                    database = new
+                    {
+                        status = !dbOk ? "Unhealthy"
+                            : migrationCheckError != null ? "MigrationCheckFailed"
+                            : pendingMigrations.Length > 0 ? "MigrationsPending" : "Healthy",
+                        detail = migrationCheckError ?? (pendingMigrations.Length > 0
+                            ? $"Database reachable; {pendingMigrations.Length} migration(s) pending: {string.Join(", ", pendingMigrations)}"
+                            : dbDetail),
+                        latencyMs
+                    },
                     jwt = new { status = jwtConfigured ? "Healthy" : "Unhealthy", detail = jwtConfigured ? "Jwt:Key present." : "Jwt:Key MISSING — auth will fail." }
                 }
             };
-            return dbOk ? Ok(payload) : StatusCode(StatusCodes.Status503ServiceUnavailable, payload);
+            return schemaOk && jwtConfigured
+                ? Ok(payload)
+                : StatusCode(StatusCodes.Status503ServiceUnavailable, payload);
         }
 
         /// <summary>Machine-readable list of every API route. Handy when Swagger UI is disabled in production.</summary>

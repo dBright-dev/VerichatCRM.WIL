@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using VerichatCRM.Core.Enums;
 using VerichatCRM.Web.Authorization;
 using VerichatCRM.Web.Services.Interfaces;
 using VerichatCRM.Web.ViewModels.Support;
@@ -42,15 +43,38 @@ namespace VerichatCRM.Web.Controllers
             if (!IsAuthenticated) return RedirectToAction("Login", "Account");
             var ticket = await _support.GetTicketAsync(id);
             if (ticket == null) return NotFound();
+
+            var role = HttpContext.Session.GetString("UserRole") ?? "";
+            ViewData["Title"] = ticket.TrackingNumber;
+            ViewData["Subtitle"] = ticket.Title;
+            ViewData["CanUpdate"] = Perm.Has(role, Perm.TicketUpdate);
+            ViewData["CanViewClient"] = Perm.Has(role, Perm.ClientProfile);
             return View(ticket);
         }
 
         [HttpPost]
-        [RequirePermission(Perm.TicketHub)]
+        [ValidateAntiForgeryToken]
+        [RequirePermission(Perm.TicketUpdate)]
         public async Task<IActionResult> UpdateStatus(string ticketId, string newStatus, string? notes)
         {
             if (!IsAuthenticated) return RedirectToAction("Login", "Account");
-            await _support.UpdateTicketStatusAsync(ticketId, newStatus, notes);
+
+            if (!TicketStatuses.All.Contains(newStatus))
+            {
+                TempData["Error"] = "Choose a valid status.";
+                return RedirectToAction(nameof(TicketDetail), new { id = ticketId });
+            }
+
+            if (newStatus == TicketStatuses.Resolved && string.IsNullOrWhiteSpace(notes))
+            {
+                TempData["Error"] = "Add resolution notes before marking a ticket resolved.";
+                return RedirectToAction(nameof(TicketDetail), new { id = ticketId });
+            }
+
+            var updated = await _support.UpdateTicketStatusAsync(ticketId, newStatus, notes?.Trim());
+            if (updated is null) TempData["Error"] = "Couldn't update the ticket. Please try again.";
+            else TempData["Success"] = $"Status updated to {newStatus}.";
+
             return RedirectToAction(nameof(TicketDetail), new { id = ticketId });
         }
 

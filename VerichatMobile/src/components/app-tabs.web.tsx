@@ -14,7 +14,7 @@ import { ThemedView } from './themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 
 /**
- * Web mirror of the native bottom bar: Home, Shop, Telehealth, Vitals, Profile.
+ * Web mirror of the native bar: Home, Catalogue, Consult, My Assets, Profile.
  */
 export default function AppTabs() {
   return (
@@ -26,13 +26,13 @@ export default function AppTabs() {
             <TabButton icon="home">Home</TabButton>
           </TabTrigger>
           <TabTrigger name="shop" href="/medicalCatalogueShop" asChild>
-            <TabButton icon="shopping">Shop</TabButton>
+            <TabButton icon="shopping">Catalogue</TabButton>
           </TabTrigger>
-          <TabTrigger name="telehealth" href="/telehealthScreen" asChild>
-            <TabButton icon="video-outline">Health</TabButton>
+          <TabTrigger name="consult" href="/BookAppointmentScreen" asChild>
+            <TabButton icon="calendar-clock">Consult</TabButton>
           </TabTrigger>
-          <TabTrigger name="vitals" href="/wellnessTrackingScreen" asChild>
-            <TabButton icon="heart-pulse">Vitals</TabButton>
+          <TabTrigger name="equipment" href="/EquipmentStatusScreen" asChild>
+            <TabButton icon="medical-cotton-swab">My Assets</TabButton>
           </TabTrigger>
           <TabTrigger name="profile" href="/profileScreen" asChild>
             <TabButton icon="account-circle">Profile</TabButton>

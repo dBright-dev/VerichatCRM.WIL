@@ -11,11 +11,13 @@ namespace VerichatCRM.Web.Controllers
     {
         private readonly IQuotationApiService _quotations;
         private readonly IClientApiService _clients;
+        private readonly IApiClient _api;
 
-        public QuotationController(IQuotationApiService quotations, IClientApiService clients)
+        public QuotationController(IQuotationApiService quotations, IClientApiService clients, IApiClient api)
         {
             _quotations = quotations;
             _clients = clients;
+            _api = api;
         }
 
         public async Task<IActionResult> Index(string? clientId)
@@ -55,6 +57,18 @@ namespace VerichatCRM.Web.Controllers
             if (model == null) return BadRequest();
             var saved = await _quotations.CreateAsync(model);
             return saved == null ? StatusCode(500) : Ok(new { saved.QuotationId, saved.QuoteReference });
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdvanceMobileRequest(string quotationId, string status)
+        {
+            if (HttpContext.Session.GetString("JwtToken") == null) return RedirectToAction("Login", "Account");
+            var updated = await _api.PatchAsync<object, object>(
+                $"/api/quotation/{Uri.EscapeDataString(quotationId)}/status", new { status });
+            TempData["MobileQuoteMessage"] = updated == null
+                ? "The quotation could not be updated. Check your access and the current review stage."
+                : status == "Reviewed" ? "Request marked as reviewed." : "Verified quotation sent to the client.";
+            return RedirectToAction("Index", "Pipeline");
         }
     }
 }

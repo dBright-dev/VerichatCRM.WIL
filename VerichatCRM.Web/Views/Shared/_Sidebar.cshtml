@@ -5,18 +5,31 @@
     </a>
 
     <div class="vc-sidebar__user">
-        <div class="vc-avatar">@(Context.Session.GetString("UserName")?.Substring(0, 1) ?? "V")</div>
+        @{
+            string? userName = "";
+            string? userRole = "";
+            if (ViewContext.HttpContext.Session != null && ViewContext.HttpContext.Session.Keys.Contains("UserName"))
+            {
+                userName = ViewContext.HttpContext.Session.GetString("UserName");
+            }
+            if (ViewContext.HttpContext.Session != null && ViewContext.HttpContext.Session.Keys.Contains("UserRole"))
+            {
+                userRole = ViewContext.HttpContext.Session.GetString("UserRole");
+            }
+        }
+        <div class="vc-avatar">@(userName?.Substring(0, 1) ?? "V")</div>
         <div>
-            <div class="vc-user-name">@(Context.Session.GetString("UserName") ?? "Verichat User")</div>
-            <div class="vc-user-role">@((Context.Session.GetString("UserRole") ?? "GUEST").ToUpper())</div>
+            <div class="vc-user-name">@(userName ?? "Verichat User")</div>
+            <div class="vc-user-role">@(userRole ?? "GUEST").ToUpper()</div>
         </div>
     </div>
 
     @{
-        // Mirrors the server-side permission map in Authorization/Perm.cs. Hiding
-        // a link is only cosmetic - the RequirePermission filter is what actually
-        // stops a user reaching a screen by typing its URL.
-        var role = Context.Session.GetString("UserRole") ?? "";
+        string? role = "";
+        if (ViewContext.HttpContext.Session != null && ViewContext.HttpContext.Session.Keys.Contains("UserRole"))
+        {
+            role = ViewContext.HttpContext.Session.GetString("UserRole");
+        }
         bool Can(string permission) => Perm.Has(role, permission);
 
         var isAdmin = Can(Perm.AdminDashboard);
@@ -75,12 +88,28 @@
         {
             <a class="vc-sidebar__link" asp-controller="Logistics" asp-action="Assets"><span class="vc-sidebar__icon">🔧</span> Asset Tracking</a>
         }
+        @if (Can(Perm.AppointmentManagement))
+        {
+            <a class="vc-sidebar__link" asp-controller="Telehealth" asp-action="Appointments"><span class="vc-sidebar__icon">📅</span> Client Appointments</a>
+        }
 
         @if (isSales)
         {
             <div class="vc-sidebar__section-label">SALES</div>
             <a class="vc-sidebar__link" asp-controller="Inquiry" asp-action="Index"><span class="vc-sidebar__icon">📥</span> Inquiry Queue</a>
+            @if (Can(Perm.SalesLeads))
+            {
+                <a class="vc-sidebar__link" asp-controller="Sales" asp-action="Leads"><span class="vc-sidebar__icon">🎯</span> Lead Tracker</a>
+            }
+            @if (Can(Perm.SalesMap))
+            {
+                <a class="vc-sidebar__link" asp-controller="Sales" asp-action="Map"><span class="vc-sidebar__icon">🗺</span> Client Map</a>
+            }
             <a class="vc-sidebar__link" asp-controller="Pipeline" asp-action="Index"><span class="vc-sidebar__icon">📊</span> Pipeline Board</a>
+            @if (Can(Perm.DashboardAnalytics))
+            {
+                <a class="vc-sidebar__link" asp-controller="Analytics" asp-action="Index"><span class="vc-sidebar__icon">📈</span> Analytics</a>
+            }
             <a class="vc-sidebar__link" asp-controller="Quotation" asp-action="Index"><span class="vc-sidebar__icon">📄</span> Quotation Builder</a>
         }
 
@@ -107,7 +136,6 @@
         {
             <div class="vc-sidebar__section-label">ADMIN</div>
             <a class="vc-sidebar__link" asp-controller="Admin" asp-action="Users"><span class="vc-sidebar__icon">👤</span> Users &amp; Roles</a>
-            <a class="vc-sidebar__link" asp-controller="Admin" asp-action="Analytics"><span class="vc-sidebar__icon">📈</span> Analytics</a>
             <a class="vc-sidebar__link" asp-controller="Admin" asp-action="Rules"><span class="vc-sidebar__icon">⚙</span> Rules Engine</a>
         }
     </nav>

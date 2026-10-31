@@ -1,15 +1,22 @@
+import { CRMTheme } from '../constants/crmTheme'
 import { useRouter } from 'expo-router'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
     Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native'
 import { login } from '../constants/authService'
+import FloatingInput from '../components/ui/FloatingInput'
+import AnimatedButton from '../components/ui/AnimatedButton'
+import { useKeyboardAutoScroll } from '../hooks/useKeyboardAutoScroll'
 
 const ClientLoginScreen = () => {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
+  const emailInput = useRef<TextInput>(null)
+  const passwordInput = useRef<TextInput>(null)
+  const { scrollRef, contentRef, onFieldFocus } = useKeyboardAutoScroll()
 
   const handleLogin = async () => {
     if (!email.trim() || !password) {
@@ -31,13 +38,15 @@ const ClientLoginScreen = () => {
   return (
     <KeyboardAvoidingView
       style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        <View ref={contentRef} collapsable={false} style={styles.content}>
         <View style={styles.Logo}>
           <Image
             source={require('../../assets/images/canva/design_pt.png')}
@@ -49,9 +58,10 @@ const ClientLoginScreen = () => {
         <Text style={styles.title}>Client Log in</Text>
 
         <View style={styles.card}>
-          <Text style={styles.label}>Email address</Text>
-          <TextInput
-            style={styles.input}
+          <FloatingInput
+            label="Email address"
+            containerStyle={{ marginBottom: 0 }}
+            style={{ fontSize: 16 }}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -59,11 +69,14 @@ const ClientLoginScreen = () => {
             autoCorrect={false}
             autoComplete="email"
             textContentType="emailAddress"
+            inputRef={emailInput}
+            onFocus={() => onFieldFocus(emailInput.current)}
           />
 
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
+          <FloatingInput
+            label="Password"
+            containerStyle={{ marginBottom: 0 }}
+            style={{ fontSize: 16 }}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -71,15 +84,18 @@ const ClientLoginScreen = () => {
             autoCorrect={false}
             autoComplete="password"
             textContentType="password"
+            inputRef={passwordInput}
+            onFocus={() => onFieldFocus(passwordInput.current)}
           />
 
-          <TouchableOpacity
+          <AnimatedButton
             style={[styles.button, styles.first_button, busy && styles.button_disabled]}
             onPress={handleLogin}
             disabled={busy}
+            loading={busy}
           >
-            <Text style={styles.button_text}>{busy ? 'Signing in…' : 'Sign In'}</Text>
-          </TouchableOpacity>
+            <Text style={styles.button_text}>Sign In</Text>
+          </AnimatedButton>
 
           <TouchableOpacity style={styles.button} onPress={() => router.replace('/newUserAccount')}>
             <Text style={styles.button_text}>Create account</Text>
@@ -89,6 +105,7 @@ const ClientLoginScreen = () => {
             <Text style={styles.back_text}>← Back</Text>
           </TouchableOpacity>
         </View>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   )
@@ -97,14 +114,15 @@ const ClientLoginScreen = () => {
 export default ClientLoginScreen
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#004e7a' },
+  flex: { flex: 1, backgroundColor: CRMTheme.primaryDark },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#004e7a',
+    backgroundColor: CRMTheme.primaryDark,
     paddingVertical: 40,
   },
+  content: { width: '100%', alignItems: 'center' },
   Logo: { marginBottom: 20 },
   logo_image: { width: 150, height: 150, resizeMode: 'contain' },
   welcome_text: {
@@ -138,7 +156,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   button: {
-    backgroundColor: '#0057a8',
+    backgroundColor: CRMTheme.primary,
     paddingVertical: 14,
     width: 190,
     alignSelf: 'center',

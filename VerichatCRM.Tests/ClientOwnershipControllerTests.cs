@@ -6,6 +6,8 @@ using VerichatCRM.API.DTOs.Requests;
 using VerichatCRM.API.DTOs.Responses;
 using VerichatCRM.API.Services.Interfaces;
 using VerichatCRM.Core.Entities;
+using VerichatCRM.Core.Interfaces;
+using VerichatCRM.Infrastructure.Data.External;
 using Xunit;
 
 namespace VerichatCRM.Tests;
@@ -25,7 +27,11 @@ public class ClientOwnershipControllerTests
     public async Task ClientCannotReadAnotherClientsQuotation()
     {
         var service = new FakeQuotationService();
-        var controller = AsClient(new QuotationController(service), "client-owned");
+        var controller = AsClient(new QuotationController(
+            service,
+            new FakeQuotationRepository(),
+            new FakeClientRepository(),
+            new FakePdfGenerator()), "client-owned");
         var result = await controller.GetById("quote-1");
         Assert.IsType<ForbidResult>(result);
     }
@@ -60,5 +66,30 @@ public class ClientOwnershipControllerTests
         public Task<IEnumerable<QuotationDto>> GetByClientAsync(string clientId) => Task.FromResult<IEnumerable<QuotationDto>>([]);
         public Task<QuotationDto?> GetByIdAsync(string quotationId) => Task.FromResult<QuotationDto?>(new QuotationDto { QuotationId = quotationId, ClientId = "another-client" });
         public Task<QuotationDto> CreateAsync(CreateQuotationRequest request) => Task.FromResult(new QuotationDto());
+    }
+
+    private sealed class FakeQuotationRepository : IQuotationRepository
+    {
+        public Task<IEnumerable<Quotation>> GetAllAsync() => Task.FromResult<IEnumerable<Quotation>>([]);
+        public Task<Quotation?> GetByIdAsync(string quotationId) => Task.FromResult<Quotation?>(null);
+        public Task<IEnumerable<Quotation>> GetByClientAsync(string clientId) => Task.FromResult<IEnumerable<Quotation>>([]);
+        public Task<Quotation> AddAsync(Quotation quotation) => Task.FromResult(quotation);
+        public Task UpdateAsync(Quotation quotation) => Task.CompletedTask;
+        public Task<string> GenerateNextReferenceAsync() => Task.FromResult("Q-001");
+    }
+
+    private sealed class FakeClientRepository : IClientRepository
+    {
+        public Task<IEnumerable<Client>> GetAllAsync() => Task.FromResult<IEnumerable<Client>>([]);
+        public Task<Client?> GetByIdAsync(string clientId) => Task.FromResult<Client?>(null);
+        public Task<Client> AddAsync(Client client) => Task.FromResult(client);
+        public Task UpdateAsync(Client client) => Task.CompletedTask;
+        public Task DeleteAsync(string clientId) => Task.CompletedTask;
+        public Task<decimal> GetTotalDealsValueAsync(string clientId) => Task.FromResult((decimal)0);
+    }
+
+    private sealed class FakePdfGenerator : IPdfGenerator
+    {
+        public byte[] GenerateQuotationPdf(Quotation quotation, Client client) => [];
     }
 }

@@ -34,7 +34,7 @@
                     <span class="text-critical">⚠ SLA breached</span>
                 }
             </div>
-            <a href="/support/ticket-detail/@ticket.TicketId" class="btn btn-outline btn-xs">View Details</a>
+            <a asp-controller="Support" asp-action="TicketDetail" asp-route-id="@ticket.TicketId" class="btn btn-outline btn-xs">View Details</a>
         </div>
     }
 </div>

@@ -56,5 +56,8 @@ public class AuthServiceTests
         public Task<bool> EmailExistsAsync(string email) => Task.FromResult(Users.Any(u => u.Email.Equals(email, StringComparison.OrdinalIgnoreCase)));
         public Task<User> AddAsync(User user) { Users.Add(user); return Task.FromResult(user); }
         public Task UpdateAsync(User user) => Task.CompletedTask;
+        public Task<IEnumerable<User>> GetAllAsync() => Task.FromResult<IEnumerable<User>>(Users);
+        public Task<User?> GetByResetTokenAsync(string token) => Task.FromResult<User?>(null);
+        public Task<int> CountByRoleAsync(string role) => Task.FromResult(0);
     }
 }

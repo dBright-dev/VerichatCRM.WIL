@@ -1,4 +1,5 @@
-﻿using VerichatCRM.API.DTOs.Responses;
+﻿using VerichatCRM.API.DTOs.Requests;
+using VerichatCRM.API.DTOs.Responses;
 using VerichatCRM.Core.Entities;
 using VerichatCRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -9,8 +10,8 @@ namespace VerichatCRM.API.Services.Interfaces
     {
         Task<ClientDashboardResponse> GetDashboardAsync(string userId);
         Task<IEnumerable<MobileDeviceResponse>> GetDevicesAsync(string userId);
-        Task<MobileDeviceResponse?> RegisterDeviceAsync(string userId, string name, string type);
-        Task<MobileDeviceResponse?> SyncDeviceAsync(string userId, string deviceId);
+        Task<MobileDeviceResponse?> RegisterDeviceAsync(string userId, string name, string type, string? externalId);
+        Task<MobileDeviceResponse?> SyncDeviceAsync(string userId, string deviceId, IReadOnlyList<DeviceSyncReadingDto>? readings);
         Task<MobileDeviceResponse?> ReconnectDeviceAsync(string userId, string deviceId);
         Task<bool> RemoveDeviceAsync(string userId, string deviceId);
         Task<WellnessSummaryResponse> GetWellnessSummaryAsync(string userId);
@@ -28,5 +29,8 @@ namespace VerichatCRM.API.Services.Interfaces
         Task<MobileSettingsResponse> GetSettingsAsync(string userId);
         Task<MobileSettingsResponse> UpdateSettingsAsync(string userId, bool? push, bool? biometric, bool? dark);
         Task EnsureClientAccountAsync(string userId);
+
+        /// <summary>Persists a health metric reading posted from a paired IoT device.</summary>
+        Task<LogHealthMetricResponse> LogHealthMetricAsync(string userId, LogHealthMetricRequest request);
     }
 }

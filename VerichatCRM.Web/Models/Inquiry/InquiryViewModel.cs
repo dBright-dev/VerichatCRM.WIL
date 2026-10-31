@@ -20,6 +20,15 @@ namespace VerichatCRM.Web.Models.Inquiry
         public DateTime? ResponseDueAt { get; set; }
         public bool IsOverdue { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? RespondedAt { get; set; }
+
+        // Supplied by the API once the follow-up tracking endpoints ship.
+        public DateTime? LastContactDate { get; set; }
+        public DateTime? NextFollowUpDate { get; set; }
+        public string? FollowUpStatus { get; set; }
+
+        // Falls back to the SLA response time until LastContactDate exists.
+        public DateTime? EffectiveLastContact => LastContactDate ?? RespondedAt;
     }
 
     public class InquirySummaryViewModel

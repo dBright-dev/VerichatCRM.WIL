@@ -1,9 +1,8 @@
+import { CRMTheme } from '../constants/crmTheme'
 import { MaterialCommunityIcons } from '@expo/vector-icons'; //insert animated icons in expo.icon
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -11,13 +10,15 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import BrandLoader from '../components/ui/BrandLoader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ClientDashboard, fetchClientDashboard } from '../constants/dashboardService';
-import { fetchWellnessSummary, WellnessSummary } from '../constants/wellnessService';
+import { api } from '../constants/api';
 import { fetchMyQuotations, MobileQuotation } from '../constants/catalogueService';
+import { subscribeGlobalRefresh } from '../utils/refreshEvents';
 
-const SERIF = Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' })
+type AppointmentSummary = { id: string; topic: string; scheduledDate: string; status: string }
 
 const getGreeting = () => {
   const hour = new Date().getHours()
@@ -44,23 +45,27 @@ const ClientHomeScreen = () => {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const [data, setData] = useState<ClientDashboard | null>(null)
-  const [wellness, setWellness] = useState<WellnessSummary | null>(null)
+  const [equipment, setEquipment] = useState<{ assetId: string; model: string; serialNumber: string; status: string; nextServiceDue?: string | null }[]>([])
   const [quotations, setQuotations] = useState<MobileQuotation[]>([])
+  const [appointments, setAppointments] = useState<AppointmentSummary[]>([])
   const [loading, setLoading] = useState(true)
+  const [today] = useState(() => Date.now())
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     try {
-      const [data, wellness, quotations] = await Promise.all([
+      const [data, equipment, quotations, appointments] = await Promise.all([
         fetchClientDashboard(),
-        fetchWellnessSummary().catch(() => null),
+        api<{ assetId: string; model: string; serialNumber: string; status: string; nextServiceDue?: string | null }[]>('/api/asset/mine').catch(() => []),
         fetchMyQuotations().catch(() => []),
+        api<AppointmentSummary[]>('/api/appointments').catch(() => []),
       ])
       setError(null)
       setData(data)
-      setWellness(wellness)
+      setEquipment(equipment)
       setQuotations(quotations)
+      setAppointments(appointments)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong.')
     } finally {
@@ -79,6 +84,8 @@ const ClientHomeScreen = () => {
     return () => clearInterval(timer)
   }, [load])
 
+  useEffect(() => subscribeGlobalRefresh(() => { void load(); }), [load])
+
   const onRefresh = async () => {
     setRefreshing(true)
     await load()
@@ -88,7 +95,7 @@ const ClientHomeScreen = () => {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#004e7a" />
+        <BrandLoader label="Loading your dashboard…" />
       </View>
     )
   }
@@ -104,28 +111,14 @@ const ClientHomeScreen = () => {
     )
   }
 
-  const { vitals, nextRecurringOrder } = data
+  const { nextRecurringOrder } = data
   const trackingOrders = data.trackingOrders ?? []
-
-  const heartRate = vitals?.heartRate != null ? `${vitals.heartRate} bpm` : '--'
-  const temperature = vitals?.temperature != null ? `${vitals.temperature}°C` : '--'
-  const bloodPressure =
-    vitals?.systolic != null && vitals?.diastolic != null
-      ? `${vitals.systolic}/${vitals.diastolic} mmHg`
-      : '--'
-  const glucose = wellness?.metrics.find((metric) => metric.type === 'bloodGlucose')
-  const glucoseValue = glucose?.value ? `${glucose.value} ${glucose.unit}` : '--'
-  const metricColor = (type: string) => {
-    const metric = wellness?.metrics.find((item) => item.type === type)
-    if (!metric || metric.value === null) return '#7c8792'
-    return metric.inRange ? '#2e7d32' : '#c62828'
-  }
 
   return (
     <View style={styles.screen}>
       {/* Header */}
       <LinearGradient
-        colors={['#1f5f8b', '#3d7bd9']}
+        colors={[CRMTheme.primaryDark, CRMTheme.primary]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.header, { paddingTop: insets.top + 20 }]}
@@ -170,77 +163,36 @@ const ClientHomeScreen = () => {
         <Text style={styles.quick_actions_title}>Quick actions</Text>
         <View style={styles.quick_actions_grid}>
           <TouchableOpacity style={styles.quick_action} onPress={() => router.push('/medicalCatalogueShop')}>
-            <MaterialCommunityIcons name="medical-bag" size={24} color="#0057a8" />
-            <Text style={styles.quick_action_text}>Order PPE</Text>
+            <MaterialCommunityIcons name="medical-bag" size={24} color={CRMTheme.primary} />
+            <Text style={styles.quick_action_text}>Product Catalogue</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.quick_action} onPress={() => router.push('/telehealthScreen')}>
-            <MaterialCommunityIcons name="video-outline" size={24} color="#0057a8" />
-            <Text style={styles.quick_action_text}>Book telemedicine</Text>
+          <TouchableOpacity style={styles.quick_action} onPress={() => router.push('/BookAppointmentScreen')}>
+            <MaterialCommunityIcons name="video-outline" size={24} color={CRMTheme.primary} />
+            <Text style={styles.quick_action_text}>Book consultation</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.quick_action} onPress={() => router.push('/wellnessTrackingScreen')}>
-            <MaterialCommunityIcons name="heart-pulse" size={24} color="#0057a8" />
-            <Text style={styles.quick_action_text}>Log health check</Text>
+          <TouchableOpacity style={styles.quick_action} onPress={() => router.push('/EquipmentStatusScreen')}>
+            <MaterialCommunityIcons name="medical-cotton-swab" size={24} color={CRMTheme.primary} />
+            <Text style={styles.quick_action_text}>My equipment</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.quick_action} onPress={() => router.push('/telehealthScreen?tab=ePrescription')}>
-            <MaterialCommunityIcons name="pill" size={24} color="#0057a8" />
-            <Text style={styles.quick_action_text}>Prescriptions</Text>
+          <TouchableOpacity style={styles.quick_action} onPress={() => router.push('/cartScreen')}>
+            <MaterialCommunityIcons name="file-document-edit-outline" size={24} color={CRMTheme.primary} />
+            <Text style={styles.quick_action_text}>Quote requests</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Quick Vitals */}
+      {/* Account equipment */}
       <View style={styles.vitals_card}>
-        <Text style={styles.vitals_title}>Quick Vitals Profile</Text>
-
-        <View style={styles.vitals_row}>
-          <View style={styles.vital}>
-            <MaterialCommunityIcons name="heart-pulse" size={40} color={metricColor('heartRate')} />
-            <View>
-              <Text style={styles.vital_label}>Heart Rate</Text>
-              <Text style={styles.vital_value}>{heartRate}</Text>
-            </View>
-          </View>
-
-          <View style={styles.vital}>
-            <MaterialCommunityIcons name="gauge" size={40} color={metricColor('bloodPressure')} />
-            <View>
-              <Text style={styles.vital_label}>Blood Pressure</Text>
-              <Text style={styles.vital_value}>{bloodPressure}</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.vitals_row}>
-          <View style={styles.vital}>
-            <MaterialCommunityIcons name="water" size={40} color={metricColor('bloodGlucose')} />
-            <View>
-              <Text style={styles.vital_label}>Blood Glucose</Text>
-              <Text style={styles.vital_value}>{glucoseValue}</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.vitals_row}>
-          <View style={styles.vital}>
-            <MaterialCommunityIcons name="thermometer" size={40} color={metricColor('temperature')} />
-            <View>
-              <Text style={styles.vital_label}>Temperature</Text>
-              <Text style={styles.vital_value}>{temperature}</Text>
-            </View>
-          </View>
-        </View>
-
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={() => router.push('/wellnessTrackingScreen')}
-        >
+        <Text style={styles.vitals_title}>My Assets</Text>
+        <Text style={styles.box_empty}>{equipment.length === 0 ? 'No equipment is linked to this account yet.' : `${equipment.length} registered ${equipment.length === 1 ? 'asset' : 'assets'} · ${equipment.filter(asset => asset.nextServiceDue && new Date(asset.nextServiceDue).getTime() < today + 30 * 86400000).length} service due soon`}</Text>
+        <TouchableOpacity activeOpacity={0.85} onPress={() => router.push('/EquipmentStatusScreen')}>
           <LinearGradient
-            colors={['#004e7a', '#2f7be0']}
+            colors={[CRMTheme.primaryDark, CRMTheme.primary]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.report_button}
           >
-            <Text style={styles.report_button_text}>View Vitals Report</Text>
+            <Text style={styles.report_button_text}>View My Assets</Text>
             <MaterialCommunityIcons name="arrow-right" size={26} color="#ffffff" />
           </LinearGradient>
         </TouchableOpacity>
@@ -249,7 +201,7 @@ const ClientHomeScreen = () => {
       {/* Bottom boxes */}
       <View style={styles.boxes_row}>
         <View style={[styles.box, styles.recurring_box]}>
-          <MaterialCommunityIcons name="autorenew" size={44} color="#2196f3" />
+          <MaterialCommunityIcons name="autorenew" size={36} color={CRMTheme.primary} />
           <Text style={styles.box_title}>Recurring order</Text>
           {nextRecurringOrder ? (
             <Text style={styles.box_text}>
@@ -261,7 +213,7 @@ const ClientHomeScreen = () => {
         </View>
 
         <View style={[styles.box, styles.tracking_box]}>
-          <MaterialCommunityIcons name="truck-delivery" size={44} color="#d32f2f" />
+          <MaterialCommunityIcons name="truck-delivery" size={36} color={CRMTheme.primary} />
           <Text style={styles.box_title}>Tracking order/s</Text>
           {trackingOrders.length > 0 ? (
             <>
@@ -288,6 +240,11 @@ const ClientHomeScreen = () => {
           </View>
         ))}
       </View>
+      <View style={styles.consultation_section}>
+        <View style={styles.consultation_heading}><View><Text style={styles.quote_heading}>Consultations</Text><Text style={styles.consultation_subtitle}>Follow requests sent to your account team</Text></View><TouchableOpacity onPress={() => router.push('/BookAppointmentScreen')} accessibilityRole="button" accessibilityLabel="Book a consultation"><MaterialCommunityIcons name="plus-circle" size={27} color={CRMTheme.primary}/></TouchableOpacity></View>
+        {appointments.length === 0 ? <Text style={styles.quote_empty}>No consultations requested yet.</Text> : appointments.slice(0, 3).map(appointment => <View key={appointment.id} style={styles.consultation_card}><View style={styles.quote_row}><Text style={styles.quote_ref}>{appointment.topic}</Text><Text style={styles.quote_status}>{appointment.status}</Text></View><Text style={styles.quote_meta}>{new Date(appointment.scheduledDate).toLocaleString()}</Text></View>)}
+        <Text style={styles.consultation_note}>Approval confirms the request. Your representative will contact you to coordinate the meeting; no video call is created automatically.</Text>
+      </View>
       </ScrollView>
     </View>
   )
@@ -298,31 +255,31 @@ export default ClientHomeScreen
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: CRMTheme.background,
   },
   content: {
     paddingBottom: 30,
   },
   quick_actions: { paddingHorizontal: 16, paddingTop: 18 },
-  quick_actions_title: { color: '#0a2f55', fontWeight: '900', fontSize: 18, marginBottom: 10 },
+  quick_actions_title: { color: CRMTheme.primaryDark, fontWeight: '900', fontSize: 18, marginBottom: 10 },
   quick_actions_grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  quick_action: { width: '48%', minHeight: 76, borderRadius: 14, backgroundColor: '#f1f6fa', padding: 12, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  quick_action_text: { flexShrink: 1, color: '#0a2f55', fontWeight: '700', fontSize: 13 },
+  quick_action: { width: '48%', minHeight: 76, borderRadius: 14, backgroundColor: CRMTheme.surfaceAlt, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  quick_action_text: { flexShrink: 1, color: CRMTheme.primaryDark, fontWeight: '700', fontSize: 13 },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: CRMTheme.background,
     padding: 24,
     gap: 16,
   },
   error_text: {
     fontSize: 16,
-    color: '#333333',
+    color: CRMTheme.text,
     textAlign: 'center',
   },
   retry_button: {
-    backgroundColor: '#0057a8',
+    backgroundColor: CRMTheme.primary,
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 20,
@@ -356,35 +313,30 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   name: {
-    fontSize: 32,
+    fontSize: 28,
     color: '#ffffff',
-    fontStyle: 'italic',
-    fontWeight: '700',
-    fontFamily: SERIF,
+    fontWeight: '900',
     marginTop: 4,
-    textShadowColor: 'rgba(255,255,255,0.45)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 8,
   },
   avatar: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#004e9a',
-    borderWidth: 2,
-    borderColor: '#0a2f55',
+    backgroundColor: CRMTheme.surfaceAlt,
+    borderWidth: 1,
+    borderColor: '#ffffff70',
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatar_text: {
-    color: '#ffffff',
+    color: CRMTheme.primaryDark,
     fontWeight: 'bold',
     fontSize: 18,
   },
   orders_panel: {
-    backgroundColor: '#0057a8',
-    borderWidth: 2,
-    borderColor: '#7db3ff',
+    backgroundColor: CRMTheme.primary,
+    borderWidth: 1,
+    borderColor: '#ffffff40',
     borderRadius: 18,
     paddingVertical: 12,
     paddingHorizontal: 10,
@@ -392,9 +344,7 @@ const styles = StyleSheet.create({
   orders_title: {
     color: '#ffffff',
     fontSize: 18,
-    fontStyle: 'italic',
     fontWeight: '900',
-    fontFamily: SERIF,
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -419,8 +369,10 @@ const styles = StyleSheet.create({
 
   // Vitals
   vitals_card: {
-    backgroundColor: '#efefef',
-    borderRadius: 25,
+    backgroundColor: CRMTheme.surface,
+    borderWidth: 1,
+    borderColor: CRMTheme.border,
+    borderRadius: 18,
     marginHorizontal: 16,
     marginTop: 18,
     padding: 18,
@@ -428,11 +380,8 @@ const styles = StyleSheet.create({
   },
   vitals_title: {
     fontSize: 18,
-    fontStyle: 'italic',
     fontWeight: '900',
-    fontFamily: SERIF,
-    textAlign: 'center',
-    color: '#000000',
+    color: CRMTheme.text,
   },
   vitals_row: {
     flexDirection: 'row',
@@ -447,13 +396,12 @@ const styles = StyleSheet.create({
   vital_label: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#000000',
+    color: CRMTheme.muted,
   },
   vital_value: {
     fontSize: 14,
     fontWeight: '700',
-    fontStyle: 'italic',
-    color: '#000000',
+    color: CRMTheme.text,
   },
   report_button: {
     flexDirection: 'row',
@@ -488,41 +436,50 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   recurring_box: {
-    backgroundColor: '#cfe2ff',
+    backgroundColor: CRMTheme.surfaceAlt,
   },
   tracking_box: {
-    backgroundColor: '#ffe0e0',
+    backgroundColor: CRMTheme.surfaceAlt,
   },
   quote_section: { marginHorizontal: 16, marginTop: 20, gap: 10 },
-  quote_heading: { color: '#0a2f55', fontSize: 18, fontWeight: '900' },
+  quote_heading: { color: CRMTheme.primaryDark, fontSize: 18, fontWeight: '900' },
   quote_empty: { color: '#68737d', paddingVertical: 8 },
-  quote_card: { backgroundColor: '#f1f6fa', borderRadius: 14, padding: 14, gap: 5 },
+  quote_card: { backgroundColor: CRMTheme.surfaceAlt, borderRadius: 14, padding: 14, gap: 5 },
   quote_row: { flexDirection: 'row', justifyContent: 'space-between' },
-  quote_ref: { color: '#0a2f55', fontWeight: '800' },
-  quote_status: { color: '#0057a8', fontWeight: '700' },
-  quote_total: { color: '#111', fontSize: 18, fontWeight: '900' },
-  quote_meta: { color: '#68737d', fontSize: 12 },
+  quote_ref: { color: CRMTheme.primaryDark, fontWeight: '800' },
+  quote_status: { color: CRMTheme.primary, fontWeight: '700' },
+  quote_total: { color: CRMTheme.text, fontSize: 18, fontWeight: '900' },
+  quote_meta: { color: CRMTheme.muted, fontSize: 12 },
   box_title: {
     fontSize: 13,
     fontWeight: '900',
-    color: '#000000',
+    color: CRMTheme.text,
     textAlign: 'center',
   },
   box_text: {
     fontSize: 13,
     fontWeight: 'bold',
-    color: '#000000',
+    color: CRMTheme.text,
     textAlign: 'center',
   },
   box_empty: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#555555',
+    color: CRMTheme.muted,
     textAlign: 'center',
   },
   box_more: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#555555',
+    color: CRMTheme.muted,
   },
+  consultation_section: { marginHorizontal: 16, marginTop: 20, gap: 9, paddingBottom: 18 },
+  consultation_heading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  consultation_subtitle: { color: CRMTheme.muted, fontSize: 12, marginTop: 3 },
+  consultation_card: { backgroundColor: CRMTheme.surface, borderWidth: 1, borderColor: CRMTheme.border, borderRadius: 14, padding: 14, gap: 6 },
+  consultation_note: { color: CRMTheme.muted, fontSize: 11, lineHeight: 16, marginTop: 2 },
 })
+
+
+
+
