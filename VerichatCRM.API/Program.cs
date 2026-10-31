@@ -20,7 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Fail fast with a clear message when it is missing, rather than surfacing an
 // obscure SQL error on the first request.
 // Supply it as ConnectionStrings__DefaultConnection, or via user-secrets in
-// local development.
+// local development. Hey, so if this is a problem,it's probably i didnt have enough storage
 // ---------------------------------------------------------------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrWhiteSpace(connectionString))
@@ -86,6 +86,7 @@ builder.Services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
 
 // Background service
 builder.Services.AddHostedService<SlaEscalationService>();
+builder.Services.AddHostedService<FollowUpBackgroundService>();
 
 // JWT Auth
 var jwtKey = builder.Configuration["Jwt:Key"];

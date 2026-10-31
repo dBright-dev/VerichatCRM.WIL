@@ -34,6 +34,15 @@ namespace VerichatCRM.Core.Entities
         public static readonly string[] All = { New, Contacted, Qualified, Quoted, Won, Lost };
     }
 
+    public static class InquiryFollowUpStatuses
+    {
+        public const string Due = "Due";
+        public const string Overdue = "Overdue";
+        public const string Completed = "Completed";
+
+        public static readonly string[] All = { Due, Overdue, Completed };
+    }
+
     /// <summary>
     /// An inbound sales enquiry. Sits in front of the pipeline: an enquiry is
     /// qualified and scored first, then converted into a <see cref="Deal"/>.
@@ -65,6 +74,9 @@ namespace VerichatCRM.Core.Entities
         /// <summary>SLA target for first response.</summary>
         public DateTime? ResponseDueAt { get; set; }
         public DateTime? RespondedAt { get; set; }
+        public DateTime? LastContactDate { get; set; }
+        public DateTime? NextFollowUpDate { get; set; }
+        public string FollowUpStatus { get; set; } = InquiryFollowUpStatuses.Due;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
