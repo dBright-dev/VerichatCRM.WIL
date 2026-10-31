@@ -262,6 +262,12 @@ app.UseHttpsRedirection();
 app.UseCors("VerichatWeb");
 app.UseAuthentication();
 app.UseAuthorization();
+// Ahead of the controllers, so binding and validation work on markup-free values;
+// behind authorization, so a request that was going to be rejected never pays for
+// a JSON parse. The HtmlSanitizer package has been referenced since the start but
+// nothing ever called it - the "sanitisation" in the validators was a substring
+// test on data that reached the database intact.
+app.UseMiddleware<RequestBodySanitisationMiddleware>();
 app.MapControllers();
 
     // SignalR notification hub
