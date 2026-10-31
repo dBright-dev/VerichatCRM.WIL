@@ -10,8 +10,8 @@ Every screen, button, field, validation message and permission in this guide was
 | Marker | Meaning |
 |---|---|
 | **▷ Screen name** | A page you can see; the URL is given the first time it appears. |
-| `[SG-nn]` | Screenshot frame — see Appendix B for the full shot list, the state to capture and the annotations to draw. |
-| ⚠️ | A behaviour that surprises people, or a limitation that will cost you time if you do not know it. |
+| `[SG-nn]` | A screenshot **frame still to be captured**, not an image in this document. Appendix B lists all 52, the state to capture and the annotations to draw. |
+| **Note:** | A behaviour that surprises people, or a limitation that will cost you time if you do not know it. |
 | **Role tag** | A step marked *(Admin only)*, *(Sales)*, etc. is enforced by the server; another role gets the 403 page described in §6.4. |
 
 ---
@@ -104,7 +104,7 @@ Say this out loud in any demo, because §18 lists it in detail and an assessor w
 | Git | any recent version | `git --version` |
 | Expo CLI | via `npx expo`, nothing installed globally | `npx expo --version` in `VerichatMobile` |
 
-⚠️ The mobile project declares **no `engines` field and there is no `.nvmrc` anywhere in the repository** — nothing enforces the Node version. If `npx expo start` fails with a syntax or module-resolution error, check Node first.
+**Note:** The mobile project declares **no `engines` field and there is no `.nvmrc` anywhere in the repository** — nothing enforces the Node version. If `npx expo start` fails with a syntax or module-resolution error, check Node first.
 
 You also need:
 
@@ -123,7 +123,7 @@ You also need:
 | Health probe | `GET {api}/api/health` | `HealthController` — use this to tell "the API is down" from "the database is down" |
 | Notification hub | `{api}/hubs/notifications` | SignalR, cookie-authenticated |
 
-⚠️ Two numbers in the mobile app's own comments are stale and will waste your afternoon if you copy them: `VerichatMobile/.env` suggests `http://localhost:5000` for local development, and the API's fallback constant is `https://verichat-crm-api.runasp.net` (HTTPS). The API actually listens on **5184** locally, and the comment's own Android-emulator address (`10.0.2.2:5000`) is therefore also wrong for this build. §5.6 gives the values to use.
+**Note:** Two numbers in the mobile app's own comments are stale and will waste your afternoon if you copy them: `VerichatMobile/.env` suggests `http://localhost:5000` for local development, and the API's fallback constant is `https://verichat-crm-api.runasp.net` (HTTPS). The API actually listens on **5184** locally, and the comment's own Android-emulator address (`10.0.2.2:5000`) is therefore also wrong for this build. §5.6 gives the values to use.
 
 ---
 
@@ -189,7 +189,7 @@ On success you are signed in immediately and sent to **your own** home: a staff 
 dashboard, a client role to the client portal at `/Portal` (§12.8). Signing up as Client User
 or Medical Student also creates the client record your quotes, orders and tickets hang off —
 the API opens a `Clients` row keyed to your new user id, so nothing has to be typed twice.
-⚠️ The password placeholder reads *At least 8 characters* but **nothing in the web or API code
+**Note:** The password placeholder reads *At least 8 characters* but **nothing in the web or API code
 enforces a minimum length** (§18) — choose sensibly; the system will not stop you.
 
 Rejections you will see: `Email is already registered.` and `Select a valid role.` (posted
@@ -220,7 +220,7 @@ Tapping the wrong door tells you so plainly: *"This account is for staff…"* or
 
 **Sign out** is the last item in the web sidebar footer; it posts to `/Account/Logout`, clears the session and withdraws the hub cookie, so nobody who uses your browser inherits a live token.
 
-Your API token lasts **120 minutes** (`Jwt:ExpiryMinutes`). The web session does not expire with it. ⚠️ The visible symptom of an expired token is not a login prompt: pages keep their headings and sidebar but **every number reads 0 and every list is empty**, because the API answered 401 and the web layer showed a blank result. Sign out and back in; if it recurs on a schedule, that is why.
+Your API token lasts **120 minutes** (`Jwt:ExpiryMinutes`). The web session does not expire with it. **Note:** The visible symptom of an expired token is not a login prompt: pages keep their headings and sidebar but **every number reads 0 and every list is empty**, because the API answered 401 and the web layer showed a blank result. Sign out and back in; if it recurs on a schedule, that is why.
 
 `[SG-07]` — a dashboard mid-failure: layout intact, all KPI cards at zero.
 
@@ -360,23 +360,24 @@ Work down this list; each line has a screen behind it in this guide.
 Every signed-in web page uses the same frame (`_Layout` → `_Sidebar` + `_Topbar`):
 
 ```
-┌───────────────┬──────────────────────────────────────────────┐
-│               │  Page title                                   │
-│  Verichat     │  Subtitle line                                 │
-│  ◈ MEDICAL    │                                       🔔  ⚙   │
-│  PROCUREMENT  ├──────────────────────────────────────────────┤
-│               │                                               │
-│  YOUR NAME    │   the page content                            │
-│  ROLE         │                                               │
-│               │                                               │
-│  OVERVIEW     │                                               │
-│  CLIENTS      │                                               │
-│  SALES        │                                               │
-│  …            │                                               │
-│               │                                               │
-│  → Sign out   │                                               │
-└───────────────┴──────────────────────────────────────────────┘
+┌──────────────────┬──────────────────────────────────────────────────┐
+│ [logo] Verichat  │ Page title                                       │
+│ MEDICAL          │ Subtitle line                                    │
+│ PROCUREMENT      │                                                  │
+│                  │        topbar:  [bell]   [gear]                  │
+│ YOUR NAME        ├──────────────────────────────────────────────────┤
+│ ROLE             │   the page content                               │
+│                  │                                                  │
+│ OVERVIEW         │                                                  │
+│ CLIENTS          │                                                  │
+│ SALES            │                                                  │
+│ ...              │                                                  │
+│                  │                                                  │
+│ > Sign out       │                                                  │
+└──────────────────┴──────────────────────────────────────────────────┘
 ```
+
+The diagram above is drawn with single-width characters on purpose so that its borders line up in any monospace font. Where it says `[logo]`, `[bell]` and `[gear]`, the running app shows real icons: the Verichat wordmark from `~/images/logo.png`, the 🔔 Notifications button and the ⚙ Settings button.
 
 - **Avatar + name + role** at the top of the sidebar is read from your session; the role is shown in capitals. Before anyone signs in it reads `Verichat User` / `GUEST`.
 - **Page title and subtitle** come from the screen, not from you. The subtitle usually carries the live count ("3 enquiries", "4 open • 1 escalated • 2 SLA breaches").
@@ -412,7 +413,7 @@ A Client User or Medical Student signing in to the web app gets the **MY ACCOUNT
 
 Two controls:
 
-- **🔔 Notifications** — present on every page. ⚠️ It is currently **decorative**: nothing is wired to the button or its badge counter. Live notifications arrive as a **toast in the top-right corner** instead (§6.5). Do not tell users to click the bell.
+- **🔔 Notifications** — present on every page. **Note:** It is currently **decorative**: nothing is wired to the button or its badge counter. Live notifications arrive as a **toast in the top-right corner** instead (§6.5). Do not tell users to click the bell.
 - **⚙ Settings** — rendered disabled with the title *Settings coming soon*.
 
 ### 6.4 The three status pages
@@ -431,7 +432,7 @@ Anything requiring a screen sends an **unsigned** visitor to the login page rath
 
 `notifications.js` is loaded on every page and connects to `{ApiBaseUrl}/hubs/notifications` with your HttpOnly cookie. On an event:
 
-1. A toast slides in top-right: title, message, a ✕ that hides it, auto-hides after 6 seconds.
+1. A toast slides in top-right: title, message, a × that hides it, auto-hides after 6 seconds.
 2. If the title contains `Appointment`, `Quote Request` or `Quotation`, **the page reloads after 0.9 s** so the new record is on screen. That reload is intentional; it is not a crash.
 3. Reconnection: automatic with backoff, capped at 5 attempts, then it gives up quietly for that page load. A refresh restarts it.
 
@@ -470,7 +471,7 @@ Two conditions stop the hub from connecting at all, both silent by design: `ApiB
 | **Last login** | `yyyy-MM-dd HH:mm`, or `—` if the account never signed in |
 | | **Deactivate** (active accounts only) |
 
-⚠️ **Three things to know before you use this screen.**
+**Note:** Three things to know before you use this screen.
 
 1. **There is no "add user" button here**, despite what older notes say. Accounts appear by self-registration (§4.3 web, §12.2 mobile) or from the bootstrap. Your job on this screen is to *correct* a role, not to create people.
 2. **Deactivate has no opposite.** The button appears on active accounts; once a person is inactive the row offers nothing, and they are told `Invalid credentials.` at sign-in. Until an "activate" path exists, re-activating someone is a database edit (§18).
@@ -493,7 +494,7 @@ The card at the bottom of ▷ Users & Roles, *"Manually trigger the SLA escalati
 | Role-based pipeline access | Pipeline — screen-level only; deals are not filtered per representative | Active |
 | Low-stock reorder alerts | Warehouse | Monitored |
 
-⚠️ There are no inputs here. You cannot change SLA hours, thresholds, scoring weights or role grants from this screen — those live in code (`TicketPriorities.GetSlaHours`, `InquiryScoring`, `Perm.ByRole`). If you were promised a rules console, this is not it (§18).
+**Note:** There are no inputs here. You cannot change SLA hours, thresholds, scoring weights or role grants from this screen — those live in code (`TicketPriorities.GetSlaHours`, `InquiryScoring`, `Perm.ByRole`). If you were promised a rules console, this is not it (§18).
 
 `[SG-19]` — the Rules Engine table.
 
@@ -523,7 +524,7 @@ Top to bottom:
 
 **Moving a deal:** drag the card into another column, **or** use its dropdown. The move is applied optimistically and, if the API rejects it, the card flies back to its column and a red banner says *"Could not move that deal. It was returned to its previous stage."* — that banner is the only failure signal, so watch for it.
 
-⚠️ **You cannot create a deal on this screen.** Cards appear when a quotation is saved for a client that has no deal yet (the API opens an `Initial Inquiry` deal from the quoted value — same rule for a mobile quote request). So the honest way to get your first card is §8.8.
+**Note:** You cannot create a deal on this screen. Cards appear when a quotation is saved for a client that has no deal yet (the API opens an `Initial Inquiry` deal from the quoted value — same rule for a mobile quote request). So the honest way to get your first card is §8.8.
 
 `[SG-20]` — the board mid-drag with the pointer over *Proposal Review*; annotate the goal card, KPIs, a stale card's red border, the dropdown alternative, and the toast/banner area.
 `[SG-21]` — the *Mobile quote requests* panel with one Draft row, before and after **Mark reviewed**.
@@ -555,7 +556,7 @@ Top to bottom:
 | **Email / Phone** | populated from the client record |
 | **Source** | `Phone, Email, Website, Walk-in, Mobile App, Referral` |
 | **Urgency** | `— not stated —, Immediate, High, Standard, Flexible` — one of the four scoring factors |
-| **Estimated value (rand)** | whole rand, dot as the decimal separator ⚠️ (a comma is rejected by the number input even though this is a South African install). **Leave it blank and the client's most recent deal value is used.** |
+| **Estimated value (rand)** | whole rand, dot as the decimal separator. **Note:** a comma is rejected by the number input even though this is a South African install. **Leave it blank and the client's most recent deal value is used.** |
 | **Score (0–100)** | **leave blank to score automatically.** Typing a number wins, permanently: §8.5 |
 | **Details** | free text |
 | | **Add to queue** — or **Cancel** back to the list |
@@ -577,7 +578,7 @@ Verified in `InquiryScoring`: **four weighted factors, 100 points**.
 
 A hand-entered score is **never recalculated** — editing the sector, value or urgency afterwards will not move it. Re-rank an enquiry by editing its score. Unknown values score at the middle band on purpose: a blank field is not evidence of a cold lead.
 
-⚠️ The *mechanism* is documented above; the *house threshold* — what Verichat calls a 70 versus a 30 — is a business decision nobody has written down yet. Ask your manager before you start trusting the number over your own judgement.
+**Note:** The *mechanism* is documented above; the *house threshold* — what Verichat calls a 70 versus a 30 — is a business decision nobody has written down yet. Ask your manager before you start trusting the number over your own judgement.
 
 ### 8.6 Lead Tracker
 
@@ -602,7 +603,7 @@ Leads here **are enquiries** in an open status — there is no separate lead obj
 - **Not mapped** lists clients with no coordinates — if a client is missing from the map, they are in this list because nobody has recorded an address with coordinates yet.
 - `?demo=true` shows sample pins in Development only, clearly badged *Showing demo data (Development only)*.
 
-⚠️ Tiles come from `tile.openstreetmap.org`. No network to that host = a blank grey box with working pins and panel.
+**Note:** Tiles come from `tile.openstreetmap.org`. No network to that host = a blank grey box with working pins and panel.
 
 `[SG-26]` — the map with pins, a selected client panel and the not-mapped list.
 
@@ -612,7 +613,7 @@ Leads here **are enquiries** in an open status — there is no separate lead obj
 
 | Action | Result |
 |---|---|
-| **+ Add Row** | a new line item; **Product**, **SKU**, **Qty** (min 1), **Unit Price**, live **Total**, and ✕ to remove |
+| **+ Add Row** | a new line item; **Product**, **SKU**, **Qty** (min 1), **Unit Price**, live **Total**, and × to remove |
 | editing any qty or price | line total, Subtotal, `VAT (15%)` and **Grand Total** recalculate instantly, in the browser's locale/currency, matching the server's arithmetic |
 | **Save Quotation** | `POST /Quotation/Save` with the anti-forgery header; on success the status line reads `Saved as VC-QT-<date>-<6 chars>. Editing the items and saving again creates a new draft.` and the PDF button unlocks |
 | **Generate PDF Quote** | downloads the PDF — **enabled only after the first save**, greyed until then because there is no quotation id to render |
@@ -622,7 +623,7 @@ The right-hand **Client Summary** shows client, sector badge, reference, *Valid 
 
 Save refuses, in this order, with the reason in the status line: no client (`Attach a client first: open the client and choose Quote.`), no items (`Add at least one line item with a product or SKU.`), and any row missing a SKU or with qty < 1 (`Every line item needs a SKU and a quantity of at least 1.`).
 
-⚠️ Two behaviours people trip on: **a second save creates a new draft** rather than updating the first; and saving a quotation for a client with no deal **creates** that deal card on the board (§8.1). VAT is fixed at 15 % per quotation and is not editable from this screen.
+**Note:** Two behaviours people trip on: **a second save creates a new draft** rather than updating the first; and saving a quotation for a client with no deal **creates** that deal card on the board (§8.1). VAT is fixed at 15 % per quotation and is not editable from this screen.
 
 `[SG-27]` — the builder with three line items, totals visible, a client attached, PDF still disabled. `[SG-28]` — after **Save Quotation**: status line + enabled PDF button. `[SG-29]` — the generated PDF.
 
@@ -632,7 +633,7 @@ Save refuses, in this order, with the reason in the status line: no client (`Att
 
 ### 8.10 Client Directory and profiles
 
-- ▷ `/Clients/Index` — **Search clients** (name or contact person) + **Sector** filter + **Filter**. Columns: Client, Sector, Contact (person + email), Status badge, Assigned Rep, **Total Deals Value** (currency), **View**. ⚠️ **+ Add Client is admin-only**; you will not see that button.
+- ▷ `/Clients/Index` — **Search clients** (name or contact person) + **Sector** filter + **Filter**. Columns: Client, Sector, Contact (person + email), Status badge, Assigned Rep, **Total Deals Value** (currency), **View**. **Note:** **+ Add Client** is admin-only; you will not see that button.
 - ▷ `/Clients/Profile/{id}` — contact block, Total Deals Value card, **Start a Quotation** (your main route into §8.8 with the client pre-attached), **View in Pipeline**, and two live lists: **Mobile orders** and **Quotations**. Clients who have never been quoted show *No quotations have been issued.*
 
 ### 8.11 Client Appointments
@@ -655,7 +656,7 @@ Save refuses, in this order, with the reason in the status line: no client (`Att
 
 - **Category chips**, a **search box** (matches name or SKU, live as you type) and a **sort** select: *Name A-Z / Name Z-A / Price Low-High / Price High-Low / Stock Low-High*.
 - Cards show name, `R price` (whole rand), an **In Stock** / **Low Stock** badge and the unit count.
-- ⚠️ **You have read-only access.** There is no **+ New product** button for your role (product creation is admin-only by design, and it is stated on the Rules Engine page), and no **Edit** link (that needs `products.edit`, held by Admin and Sales). If a product needs changing, §7 or Sales.
+- **Note:** You have read-only access. There is no **+ New product** button for your role (product creation is admin-only by design, and it is stated on the Rules Engine page), and no **Edit** link (that needs `products.edit`, held by Admin and Sales). If a product needs changing, §7 or Sales.
 
 `[SG-30]` — the catalog with the search box holding text and one card annotated with a Low Stock badge; capture it **twice**, as a Procurement Manager and as an Admin, so the button differences are visible.
 
@@ -668,7 +669,7 @@ Save refuses, in this order, with the reason in the status line: no client (`Att
 - Where stock is at or below the threshold you get two inputs and a button: **Supplier** (required, up to 200 characters — it is pre-filled with the product's existing supplier when one is known) and a **unit cost** number (min 0.01), then **Reorder**. That creates a purchase order for `Reorder Qty` units. Everything else reads *"Stock is above the reorder point."*
 - Below the table, **Stock Level vs Minimum Required** chart.
 
-⚠️ Reorder is a **record of intent**, not an integration: no purchase order is emailed or sent to a supplier portal, and the alert does not clear itself when the goods arrive — someone must add the stock (§18). There is no "acknowledge" or "resolve alert" control on this screen; the `Admin/ResolveAlert` endpoint exists but is not wired to any button.
+**Note:** Reorder is a **record of intent**, not an integration: no purchase order is emailed or sent to a supplier portal, and the alert does not clear itself when the goods arrive — someone must add the stock (§18). There is no "acknowledge" or "resolve alert" control on this screen; the `Admin/ResolveAlert` endpoint exists but is not wired to any button.
 
 `[SG-31]` — the alerts page with one Critical and one Low row, the supplier + cost fields filled, before pressing Reorder; `[SG-32]` — the confirmation banner after.
 
@@ -694,7 +695,7 @@ Read-only for you in practice: no **+ Add Client** (admin only), and the profile
 - Each row: tracking reference, **priority badge** (Critical red / High amber / Medium blue / Low neutral), an `Escalated L<n>` badge when the SLA has been blown, the status on the right, the title, and **`SLA: <deadline>`** in universal `yyyy-MM-dd HH:mm:ss` form plus **⚠ SLA breached** when past.
 - **View Details** opens the ticket.
 
-⚠️ **Tickets cannot be created in the web app.** They arrive from a client's mobile app (*Log Service Ticket*, §12.5) or through `POST /api/supportticket`. If you take a fault over the phone, someone with the mobile app — or the API — has to raise it (§18).
+**Note:** Tickets cannot be created in the web app. They arrive from a client's mobile app (*Log Service Ticket*, §12.5) or through `POST /api/supportticket`. If you take a fault over the phone, someone with the mobile app — or the API — has to raise it (§18).
 
 `[SG-33]` — the hub with at least one Escalated, one breached and one Resolved row; annotate the chips, the priority badge and the SLA line.
 
@@ -713,9 +714,9 @@ Right column: **SLA** — live countdown in human units (*"Due in 4h 12m"*, *"Ov
 | anything except `Resolved` | *(optional)* |
 | **`Resolved`** | **(required to resolve)** — enforced in the browser and again on the server: *"Add resolution notes before marking a ticket resolved."* |
 
-⚠️ **Closed is terminal.** The Update-status card disappears on a Closed ticket, so it cannot be reopened from the UI. Move a ticket to Closed only when you mean it.
+**Note:** Closed is terminal. The Update-status card disappears on a Closed ticket, so it cannot be reopened from the UI. Move a ticket to Closed only when you mean it.
 
-⚠️ Selecting `Escalated` by hand competes with the background job, which sets `Escalated` and raises `EscalationLevel` on its own whenever a deadline passes.
+**Note:** Selecting `Escalated` by hand competes with the background job, which sets `Escalated` and raises `EscalationLevel` on its own whenever a deadline passes.
 
 `[SG-34]` — a ticket mid-work: photos visible, timeline ≥3 entries, SLA countdown in the "Due in" state. `[SG-35]` — the same card with **Resolved** chosen, showing *(required to resolve)*.
 
@@ -723,7 +724,7 @@ Right column: **SLA** — live countdown in human units (*"Due in 4h 12m"*, *"Ov
 
 ▷ `/Logistics/Assets` — KPI tiles **TOTAL ASSETS / CALIBRATION OVERDUE / DUE THIS MONTH / WARRANTY EXPIRING**; a table of SERIAL #, ASSET NAME, CLIENT, LAST SERVICE, NEXT DUE, WARRANTY and STATUS, with rows tinted red (Overdue) or amber (Due Soon); the serial number opens **▷ Asset detail** (*Service History* log + *Asset Details*).
 
-- **Schedule Service** in the last column is **a link to the Ticket Hub**, not a per-asset action: it does not carry the serial number with you, so you reference the equipment yourself in the ticket the client raises. ⚠️ Say that to users in training or they will file tickets against the wrong asset.
+- **Schedule Service** in the last column is **a link to the Ticket Hub**, not a per-asset action: it does not carry the serial number with you, so you reference the equipment yourself in the ticket the client raises. **Note:** Say that to users in training or they will file tickets against the wrong asset.
 - Assets and their service logs are created from the mobile side (§12.5) or through the API; there is no "add asset" form in the web app.
 
 `[SG-36]` — the assets table with one Overdue row and the detail panel for it.
@@ -744,7 +745,7 @@ You may open the list (your role holds `appointments.manage`) but you are not in
 
 Status vocabulary (from the API): `Processing`, `Dispatched`, `In Transit`, `Delivered`, `Failed`, `Returned`.
 
-⚠️ **"Route management" is in the subtitle; the controls are not in the screen.** This page is read-only for every role, including the administrator. Status changes happen through `PATCH /api/delivery/{id}` / the order path on the API side, not through a button here (§18). The realistic desk procedure is: watch this board, and raise a ticket when a delivery fails.
+**Note:** "Route management" is in the subtitle; the controls are not in the screen. This page is read-only for every role, including the administrator. Status changes happen through `PATCH /api/delivery/{id}` / the order path on the API side, not through a button here (§18). The realistic desk procedure is: watch this board, and raise a ticket when a delivery fails.
 
 `[SG-37]` — the tracker with at least three cards in three different statuses.
 
@@ -772,7 +773,7 @@ Greeting, **Your Orders** split into Active / Pending / Recurring, four **Quick 
 
 **Cart** (*Quote Request Cart*, reached from the tab bar or Profile): **+ / −** on quantities, then **Request a Quote** → `POST /api/quotation/request`. What you have sent is a **request**, not an order: nothing is charged and no stock is reserved. A sales representative (§8.1) reviews it, and when it has been sent back to you it appears here with **Accept quotation** / **Decline**.
 
-⚠️ There is no checkout, no payment and no invoice path in the app. The proposal's e-commerce flow was scoped out; the quotation workflow replaced it.
+**Note:** There is no checkout, no payment and no invoice path in the app. The proposal's e-commerce flow was scoped out; the quotation workflow replaced it.
 
 `[SG-38]` — the catalogue with a search applied; `[SG-39]` — the cart with two items and the **Request a Quote** button; `[SG-40]` — a sent quotation with **Accept** / **Decline**.
 
@@ -788,7 +789,7 @@ A date in the past is refused with *"Choose a future date"*. Your request appear
 
 **My Assets** tab lists each item's **model, serial, status, location, next service and warranty expiry**, with a scan filter. Tap an asset → **Log Service Ticket**: *Issue summary* (≤200 chars) and *Describe the fault or service needed* (≤4000 chars), both required → submit.
 
-⚠️ Two things the app does not let you choose: **priority is fixed at `Medium`** and **category at `Technical`** regardless of the fault, so an urgent machine must be flagged to Support by other means. The scanner's filter compares literally — a code that matches nothing shows *"No equipment matches that QR code."* rather than an error.
+**Note:** Two things the app does not let you choose: **priority is fixed at `Medium`** and **category at `Technical`** regardless of the fault, so an urgent machine must be flagged to Support by other means. The scanner's filter compares literally — a code that matches nothing shows *"No equipment matches that QR code."* rather than an error.
 
 `[SG-42]` — My Assets with three assets, one Due Soon; `[SG-43]` — the Log Service Ticket sheet with both fields filled.
 
@@ -799,7 +800,7 @@ A date in the past is refused with *"Choose a future date"*. Your request appear
 **Settings**: switches for **Push Notifications** *(Orders, SLA alerts & promotions)*, **Biometric Login** *(Sign in with fingerprint or Face ID)* and **Dark Mode** *(Reduce eye strain)*, saved to `PATCH /api/mobile/settings`; and *Purchase History & Reports*, *Privacy*, *Terms and Conditions*, *About Verichat*.
 
 - **Biometric sign-in is real**: it works with the device's own authentication, is opt-in, and once enabled the app requires it at cold start. Turning it on demands a live fingerprint/Face ID prompt, so it cannot be enabled from a screenshot.
-- **Push Notifications is a stored preference, nothing more.** No device token is ever registered, so no push will arrive; the app's freshness comes from polling and the offline queue. ⚠️ Say this in demos — the switch looks like a feature (§18).
+- **Push Notifications is a stored preference, nothing more.** No device token is ever registered, so no push will arrive; the app's freshness comes from polling and the offline queue. **Note:** Say this in demos — the switch looks like a feature (§18).
 - **Privacy / Terms / About** currently answer *"This information is not available in the mobile API yet."*
 
 **Staff mobile dashboard** (System Administrator, Sales Representative, Procurement Manager, Field Support Engineer, Logistics): an **Operations dashboard** with Assets / Service due / Open tickets metrics, the asset list, **Scan** (QR and 13 barcode types via the camera), support tickets and deliveries, and the **sales goal ring card** where *Update achieved* posts progress. Staff do not see the Catalogue, Consult or My Assets tabs.
@@ -837,7 +838,7 @@ per product with its photo, price, stock and a quantity box.
 
 You get a reference back — `Quote VC-QT-20261031-248836 requested. A sales representative
 will confirm pricing and availability.` — and the quote appears in **My Quotations** as
-*Draft*. ⚠️ A request is not an order: no stock is reserved, no price is agreed, and the
+*Draft*. **Note:** A request is not an order: no stock is reserved, no price is agreed, and the
 price shown on the card is an indication. A person in sales sets the real figures and sends
 it back to you.
 
@@ -911,7 +912,7 @@ Use these four in training and in the EXPO demo; each step names the role, the s
 1. *Admin:* ▷ Product Catalog → **+ New product** → set **Low-stock threshold** (§14) `[SG-47]`.
 2. *Procurement:* stock falls to the threshold → ▷ Warehouse Alerts, red critical banner + row status `Critical` `[SG-31]`.
 3. *Procurement:* confirm **Supplier** and **unit cost**, press **Reorder** → a purchase order for the suggested quantity is recorded `[SG-32]`.
-4. *Admin:* correct the stock level through the product edit form. ⚠️ The alert does not clear itself, and nothing is sent to the supplier.
+4. *Admin:* correct the stock level through the product edit form. **Note:** The alert does not clear itself, and nothing is sent to the supplier.
 
 ### 13.5 A client does the whole thing themselves, on the web
 
@@ -923,7 +924,7 @@ No staff action is needed to start or finish this one, which is the point of the
 4. *Client:* ▷ My Quotations → **PDF** to read the offer → **Accept** `[SG-50]`. A Medical Student at this step gets the 403 page instead — requesting is allowed, answering is not `[SG-52]`.
 5. *Client:* ▷ Support → raise a fault against a delivery or an asset → the ticket lands in the staff Ticket Hub with its SLA clock already running `[SG-51]`.
 
-⚠️ Steps 2 and 4 are still not a purchase order. Nothing is reserved at request time and no
+**Note:** Steps 2 and 4 are still not a purchase order. Nothing is reserved at request time and no
 payment exists anywhere in the product (§2.3); acceptance is a recorded decision that a
 person in sales converts.
 
@@ -1133,43 +1134,43 @@ The honest page. Give this to every new user with the training pack; the system 
 
 ## 20. Appendix A — role × screen access matrix
 
-Verified against `VerichatCRM.Web/Authorization/Perm.cs` and the actions' `[RequirePermission]` attributes. ✅ open · — refused (403) · *link hidden*.
+Verified against `VerichatCRM.Web/Authorization/Perm.cs` and the actions' `[RequirePermission]` attributes. **Y** = open · **—** = refused (403) · *link hidden*.
 
 | Screen | Admin | Sales | Procurement | Field Support | Logistics | Client / Student |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|
-| Landing page, Privacy | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Sign in / Register | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ self-register (§4.3) |
-| Dashboard (workspace, `/Dashboard`) | ✅ | ✅ | ✅ | ✅ | ✅ | — 403 |
-| **Client portal — My Verichat** (`/Portal`) | — | — | — | — | — | ✅ |
-| **Client portal — Catalogue + Request quote** | — | — | — | — | — | ✅ |
-| **Client portal — My Quotations + PDF** | — | — | — | — | — | ✅ |
-| **Client portal — Accept / decline a sent quote** | — | — | — | — | — | ✅ Client · — Student |
-| **Client portal — Support (list + raise)** | — | — | — | — | — | ✅ |
-| Client Directory | ✅ | ✅ | ✅ | — | — | — |
-| Client Profile | ✅ | ✅ | ✅ | — | — | — |
-| Add Client | ✅ | — | — | — | — | — |
-| Assign sales rep | ✅ | — | — | — | — | — |
-| Asset Tracking | ✅ | ✅ | — | ✅ | ✅ | — |
-| Client Appointments (view) | ✅ | ✅ | ✅ | ✅ | — | — |
-| Appointments (manage) | ✅ | ✅ | ✅ | — | — | — |
-| Inquiry Queue | ✅ | ✅ | — | — | — | — |
-| Lead Tracker | ✅ | ✅ | — | — | — | — |
-| Client Map | ✅ | ✅ | — | — | — | — |
-| Pipeline Board | ✅ | ✅ | — | — | — | — |
-| Quotation Builder / Save / PDF | ✅ | ✅ | — | — | — | — |
-| Product Catalog (read) | ✅ | ✅ | ✅ | — | — | — |
-| Product create | ✅ | — | — | — | — | — |
-| Product edit | ✅ | ✅ | — | — | — | — |
-| Warehouse Alerts | ✅ | — | ✅ | — | — | — |
-| Reorder | ✅ | — | ✅ | — | — | — |
-| Ticket Hub (read) | ✅ | — | ✅ | ✅ | ✅ | — |
-| Ticket update status | ✅ | — | — | ✅ | — | — |
-| Logistics Tracker | ✅ | — | ✅ | — | ✅ | — |
-| Analytics | ✅ | ✅ | — | — | — | — |
-| Users & Roles, Rules Engine | ✅ | — | — | — | — | — |
-| Sign out | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Mobile tabs (Catalogue, Consult, My Assets) | — | — | — | — | — | ✅ |
-| Mobile staff dashboard + scanner | ✅ | ✅ | ✅ | ✅ | ✅ | — |
+| Landing page, Privacy | Y | Y | Y | Y | Y | Y |
+| Sign in / Register | Y | Y | Y | Y | Y | Y self-register (§4.3) |
+| Dashboard (workspace, `/Dashboard`) | Y | Y | Y | Y | Y | — 403 |
+| **Client portal — My Verichat** (`/Portal`) | — | — | — | — | — | Y |
+| **Client portal — Catalogue + Request quote** | — | — | — | — | — | Y |
+| **Client portal — My Quotations + PDF** | — | — | — | — | — | Y |
+| **Client portal — Accept / decline a sent quote** | — | — | — | — | — | Y Client · — Student |
+| **Client portal — Support (list + raise)** | — | — | — | — | — | Y |
+| Client Directory | Y | Y | Y | — | — | — |
+| Client Profile | Y | Y | Y | — | — | — |
+| Add Client | Y | — | — | — | — | — |
+| Assign sales rep | Y | — | — | — | — | — |
+| Asset Tracking | Y | Y | — | Y | Y | — |
+| Client Appointments (view) | Y | Y | Y | Y | — | — |
+| Appointments (manage) | Y | Y | Y | — | — | — |
+| Inquiry Queue | Y | Y | — | — | — | — |
+| Lead Tracker | Y | Y | — | — | — | — |
+| Client Map | Y | Y | — | — | — | — |
+| Pipeline Board | Y | Y | — | — | — | — |
+| Quotation Builder / Save / PDF | Y | Y | — | — | — | — |
+| Product Catalog (read) | Y | Y | Y | — | — | — |
+| Product create | Y | — | — | — | — | — |
+| Product edit | Y | Y | — | — | — | — |
+| Warehouse Alerts | Y | — | Y | — | — | — |
+| Reorder | Y | — | Y | — | — | — |
+| Ticket Hub (read) | Y | — | Y | Y | Y | — |
+| Ticket update status | Y | — | — | Y | — | — |
+| Logistics Tracker | Y | — | Y | — | Y | — |
+| Analytics | Y | Y | — | — | — | — |
+| Users & Roles, Rules Engine | Y | — | — | — | — | — |
+| Sign out | Y | Y | Y | Y | Y | Y |
+| Mobile tabs (Catalogue, Consult, My Assets) | — | — | — | — | — | Y |
+| Mobile staff dashboard + scanner | Y | Y | Y | Y | Y | — |
 
 The one difference between the two client roles is in this table: accepting or declining a
 sent quotation needs `client.quote.respond`, which Client User holds and Medical Student does
@@ -1184,54 +1185,56 @@ not. Everything else in the client column is shared. Refusals are decided by the
 
 The rubric requires a high-quality annotated screenshot for **every major step**. `[SG-nn]` markers throughout this guide are placed at exactly those steps. Frames are 1600×1000, browser zoom 100 %, real signed-in data (not lorem ipsum), with numbered red callouts matching the caption underneath.
 
+**No image files ship with this guide:** it was written from the shipped source, so the screens themselves can only be photographed from a running instance with a real account for each role — the table below is the shot list, in capture order, and each row is a frame that is still to be taken.
+
 | Frame | Screen | State to capture | Annotate |
 |---|---|---|---|
-| SG-01 | `/Account/Login` | empty | ① email ② password ③ Sign In ④ *Create one* |
-| SG-02 | `/Account/Login` | failed attempt | ① validation summary `Invalid credentials.` |
-| SG-03 | `/Account/Register` | dropdown open | ① full name ② email ③ password hint ④ the six roles, in their two groups ⑤ *System Administrator is not on this list* ⑥ Create Account |
-| SG-04 | mobile *Choose your account* | cold start | ① Client ② Staff / Admin ③ New User |
-| SG-05 | mobile client login | empty | ① email ② password ③ Sign In ④ Create account |
-| SG-06 | mobile New User | mid-entry | ①–⑤ the five fields ⑥ Sign up |
-| SG-07 | any dashboard | token expired | ① KPIs at 0 ② the sign-out path |
-| SG-08 | any page, full shell | signed in | ① brand ② user/role ③ sections ④ topbar ⑤ content ⑥ Sign out |
-| SG-09…13 | sidebar only, Admin / Sales / Procurement / Field Support / Logistics | one role each | ① the links that differ from the previous frame |
-| SG-14 | `/Account/NoAccess` | Client User typing `/Dashboard` | ① the role it shows ② the link back to `/Portal` |
-| SG-15 | 404 page | any bad id | ① return link |
-| SG-16 | any page + toast | live event | ① toast ② its ✕ ③ the unwired bell |
-| SG-17 | `/Admin/Dashboard` | populated | ① KPIs ② three charts ③ Timeline ④ Recent activity |
-| SG-18 | `/Admin/Users` | 3 users | ① role dropdown ② Save ③ Status badge ④ Last login ⑤ Deactivate ⑥ SLA Control |
-| SG-19 | `/Admin/Rules` | as is | ① four rules ② the "no editing here" note |
-| SG-20 | `/Pipeline` | mid-drag | ① goal card ② KPI trio ③ column header totals ④ stale red card ⑤ dropdown ⑥ banner area |
-| SG-21 | `/Pipeline` mobile requests | one Draft | ① items ② estimate ③ **Mark reviewed** |
-| SG-22 | `/Inquiry/Index` | mixed statuses | ① six KPIs ② chips ③ score badge colours ④ Overdue badge ⑤ Edit |
-| SG-23 | `/Inquiry/Create` | empty | ① all fields labelled |
-| SG-24 | `/Inquiry/Create` | client chosen | ① company dropdown ② the four auto-filled fields ③ urgency ④ value hint ⑤ blank score ⑥ Add to queue |
-| SG-25 | `/Sales/Leads` | one overdue + dialog | ① KPIs ② chips ③ overdue row ④ Mark contacted ⑤ dialog fields |
-| SG-26 | `/Sales/Map` | pins + selection | ① legend chips ② pin ③ client panel ④ Log visit ⑤ Not mapped list |
-| SG-27 | `/Quotation/Index` | 3 items | ① rows ② live totals ③ VAT 15 % ④ client summary ⑤ grey PDF |
-| SG-28 | same | after save | ① status line ② enabled PDF ③ reference |
-| SG-29 | the PDF | — | ① reference ② line items ③ rand totals ④ validity |
-| SG-30 | `/Procurement/ProductCatalog` | search applied | ① chips ② search ③ sort ④ Low Stock badge ⑤ *no* create/edit for this role |
-| SG-31 | `/Procurement/WarehouseAlerts` | Critical + Low | ① banner ② row colours ③ supplier ④ cost ⑤ Reorder ⑥ chart |
-| SG-32 | same | after Reorder | ① confirmation banner |
-| SG-33 | `/Support/TicketHub` | mixed | ① subtitle counts ② chips ③ priority badges ④ Escalated L1 ⑤ ⚠ breached |
-| SG-34 | `/Support/TicketDetail/{id}` | mid-work | ① ref + priority ② description ③ photos ④ activity ⑤ SLA countdown ⑥ status form |
-| SG-35 | same | Resolved chosen | ① *(required to resolve)* ② notes box ③ Update status |
-| SG-36 | `/Logistics/Assets` | one overdue + detail | ① four KPI tiles ② tinted row ③ serial link ④ Schedule Service |
-| SG-37 | `/Logistics/Tracker` | 3 statuses | ① ref + badge ② origin→destination ③ ETA/weight/order ④ "no controls here" |
-| SG-38…40 | mobile catalogue / cart / sent quote | live data | ① search ② Add to cart ③ qty +/− ④ Request a Quote ⑤ Accept / Decline |
-| SG-41 | mobile book appointment | calendar open | ① topics ② date ③ time ④ details ⑤ Send |
-| SG-42 | mobile My Assets | 3 assets | ① serial/status/service ② Scan |
-| SG-43 | mobile ticket sheet | filled | ① summary ② description ③ submit |
-| SG-44 | mobile Settings | prompt showing | ① Push ② Biometric ③ Dark ④ the three stub rows |
-| SG-45 | mobile staff dashboard | scanner open | ① metrics ② Scan ③ goal ring |
-| SG-46 | mobile, airplane mode | queued | ① offline banner ② pending count |
-| SG-47 | `/Procurement/ProductForm` (Admin) | new product | ① name ② category datalist ③ price ④ opening stock ⑤ threshold ⑥ image URL |
-| SG-48 | `/Portal` | signed in as Client User | ① *MY ACCOUNT* sidebar ② quotations ③ tickets ④ deliveries |
-| SG-49 | `/Portal/Catalogue` | quantities set | ① category chips ② search ③ price + stock ④ the qty boxes ⑤ note ⑥ Request quote |
-| SG-50 | `/Portal/Quotations` | one Sent | ① status chips ② badge ③ PDF ④ Accept ⑤ Decline |
-| SG-51 | `/Portal/Tickets` | after raising | ① subject ② priority ③ category ④ description ⑤ tracking number ⑥ the SLA confirmation |
-| SG-52 | `/Portal/Respond` as Medical Student | 403 | ① the refusal ② that accept/decline is Client User only |
+| SG-01 | `/Account/Login` | empty | (1) email (2) password (3) Sign In (4) *Create one* |
+| SG-02 | `/Account/Login` | failed attempt | (1) validation summary `Invalid credentials.` |
+| SG-03 | `/Account/Register` | dropdown open | (1) full name (2) email (3) password hint (4) the six roles, in their two groups (5) *System Administrator is not on this list* (6) Create Account |
+| SG-04 | mobile *Choose your account* | cold start | (1) Client (2) Staff / Admin (3) New User |
+| SG-05 | mobile client login | empty | (1) email (2) password (3) Sign In (4) Create account |
+| SG-06 | mobile New User | mid-entry | (1)–(5) the five fields (6) Sign up |
+| SG-07 | any dashboard | token expired | (1) KPIs at 0 (2) the sign-out path |
+| SG-08 | any page, full shell | signed in | (1) brand (2) user/role (3) sections (4) topbar (5) content (6) Sign out |
+| SG-09…13 | sidebar only, Admin / Sales / Procurement / Field Support / Logistics | one role each | (1) the links that differ from the previous frame |
+| SG-14 | `/Account/NoAccess` | Client User typing `/Dashboard` | (1) the role it shows (2) the link back to `/Portal` |
+| SG-15 | 404 page | any bad id | (1) return link |
+| SG-16 | any page + toast | live event | (1) toast (2) its × (3) the unwired bell |
+| SG-17 | `/Admin/Dashboard` | populated | (1) KPIs (2) three charts (3) Timeline (4) Recent activity |
+| SG-18 | `/Admin/Users` | 3 users | (1) role dropdown (2) Save (3) Status badge (4) Last login (5) Deactivate (6) SLA Control |
+| SG-19 | `/Admin/Rules` | as is | (1) four rules (2) the "no editing here" note |
+| SG-20 | `/Pipeline` | mid-drag | (1) goal card (2) KPI trio (3) column header totals (4) stale red card (5) dropdown (6) banner area |
+| SG-21 | `/Pipeline` mobile requests | one Draft | (1) items (2) estimate (3) **Mark reviewed** |
+| SG-22 | `/Inquiry/Index` | mixed statuses | (1) six KPIs (2) chips (3) score badge colours (4) Overdue badge (5) Edit |
+| SG-23 | `/Inquiry/Create` | empty | (1) all fields labelled |
+| SG-24 | `/Inquiry/Create` | client chosen | (1) company dropdown (2) the four auto-filled fields (3) urgency (4) value hint (5) blank score (6) Add to queue |
+| SG-25 | `/Sales/Leads` | one overdue + dialog | (1) KPIs (2) chips (3) overdue row (4) Mark contacted (5) dialog fields |
+| SG-26 | `/Sales/Map` | pins + selection | (1) legend chips (2) pin (3) client panel (4) Log visit (5) Not mapped list |
+| SG-27 | `/Quotation/Index` | 3 items | (1) rows (2) live totals (3) VAT 15 % (4) client summary (5) grey PDF |
+| SG-28 | same | after save | (1) status line (2) enabled PDF (3) reference |
+| SG-29 | the PDF | — | (1) reference (2) line items (3) rand totals (4) validity |
+| SG-30 | `/Procurement/ProductCatalog` | search applied | (1) chips (2) search (3) sort (4) Low Stock badge (5) *no* create/edit for this role |
+| SG-31 | `/Procurement/WarehouseAlerts` | Critical + Low | (1) banner (2) row colours (3) supplier (4) cost (5) Reorder (6) chart |
+| SG-32 | same | after Reorder | (1) confirmation banner |
+| SG-33 | `/Support/TicketHub` | mixed | (1) subtitle counts (2) chips (3) priority badges (4) Escalated L1 (5) ⚠ breached |
+| SG-34 | `/Support/TicketDetail/{id}` | mid-work | (1) ref + priority (2) description (3) photos (4) activity (5) SLA countdown (6) status form |
+| SG-35 | same | Resolved chosen | (1) *(required to resolve)* (2) notes box (3) Update status |
+| SG-36 | `/Logistics/Assets` | one overdue + detail | (1) four KPI tiles (2) tinted row (3) serial link (4) Schedule Service |
+| SG-37 | `/Logistics/Tracker` | 3 statuses | (1) ref + badge (2) origin→destination (3) ETA/weight/order (4) "no controls here" |
+| SG-38…40 | mobile catalogue / cart / sent quote | live data | (1) search (2) Add to cart (3) qty +/− (4) Request a Quote (5) Accept / Decline |
+| SG-41 | mobile book appointment | calendar open | (1) topics (2) date (3) time (4) details (5) Send |
+| SG-42 | mobile My Assets | 3 assets | (1) serial/status/service (2) Scan |
+| SG-43 | mobile ticket sheet | filled | (1) summary (2) description (3) submit |
+| SG-44 | mobile Settings | prompt showing | (1) Push (2) Biometric (3) Dark (4) the three stub rows |
+| SG-45 | mobile staff dashboard | scanner open | (1) metrics (2) Scan (3) goal ring |
+| SG-46 | mobile, airplane mode | queued | (1) offline banner (2) pending count |
+| SG-47 | `/Procurement/ProductForm` (Admin) | new product | (1) name (2) category datalist (3) price (4) opening stock (5) threshold (6) image URL |
+| SG-48 | `/Portal` | signed in as Client User | (1) *MY ACCOUNT* sidebar (2) quotations (3) tickets (4) deliveries |
+| SG-49 | `/Portal/Catalogue` | quantities set | (1) category chips (2) search (3) price + stock (4) the qty boxes (5) note (6) Request quote |
+| SG-50 | `/Portal/Quotations` | one Sent | (1) status chips (2) badge (3) PDF (4) Accept (5) Decline |
+| SG-51 | `/Portal/Tickets` | after raising | (1) subject (2) priority (3) category (4) description (5) tracking number (6) the SLA confirmation |
+| SG-52 | `/Portal/Respond` as Medical Student | 403 | (1) the refusal (2) that accept/decline is Client User only |
 
 **To replace the frames with real captures:** the live portal URL plus one test account per role (System Administrator, Sales Representative, Procurement Manager, Field Support Engineer, Logistics, Client User) is enough for SG-01…SG-37 and SG-47…SG-52; SG-38…SG-46 need a device or an Expo Web session. Credentials will not be written into any file in this repository, including this one.
 
