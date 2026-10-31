@@ -132,7 +132,7 @@ Then: delete the rules file, ask GitHub to clear cached views and detached objec
 | Check | Expected |
 | --- | --- |
 | `GET /api/health` | 200 and database ready |
-| API starts with `ConnectionStrings__DefaultConnection` unset | Throws the "not configured" `InvalidOperationException`, not HTTP 500.30 |
+| API starts with `ConnectionStrings__DefaultConnection` unset | Dies at `Program.cs:30` with the "not configured" `InvalidOperationException`. Run from the console and that message is printed; behind IIS the same crash is what produces HTTP 500.30 — see §7.1 |
 | API starts with `Encrypt=False` outside Development | Throws the encryption guard from §4 |
 | API starts with `Jwt__Key` unset | Throws "Jwt:Key is missing" |
 | `view-source:` on any staff page | No JWT anywhere in the markup; one `<meta name="request-verification-token">` present |
@@ -141,6 +141,64 @@ Then: delete the rules file, ask GitHub to clear cached views and detached objec
 | Live toast | Appears when a ticket is assigned; if it does not, re-read §5 before debugging the JavaScript |
 | A user who signed in before the PBKDF2 change | `Users.PasswordHash` now starts with `pbkdf2-sha256$` |
 | `GET /health` | 200. It returned 500 (`AmbiguousMatchException`) while both `Program.cs` and `HealthController` claimed the route |
+
+### 7.1 The deployed API answers HTTP 500.30
+
+Observed on `http://verichat-crm-api.runasp.net/` (every path, including `/api/health`):
+
+```
+HTTP Error 500.30 - ASP.NET Core app failed to start
+```
+
+500.30 means the process was started and `Program.cs` threw before the app could
+serve a request. It is not an IIS configuration error (that would be 500.19), and
+it is not a missing runtime (500.31) — the sibling web site
+`verichat-crm-web.runasp.net` is the same .NET target on the same host family and
+returns 200, so the stack is installed and healthy.
+
+Reproduced locally against the published output, with no environment variables:
+
+```
+Unhandled exception. System.InvalidOperationException:
+ConnectionStrings:DefaultConnection is not configured. Set the environment variable
+ConnectionStrings__DefaultConnection, or run: dotnet user-secrets set ...
+   at Program.<Main>$(String[] args) in .../VerichatCRM.API/Program.cs:line 30
+```
+
+That is the whole of it. The credential and the signing key used to be read from
+`appsettings.json`; they were removed from git (§1, §2) and the file now ships
+both values empty. An app that is deployed without being *configured* cannot
+start, and there are exactly three checks in front of the first request, in this
+order:
+
+| Order | `Program.cs` | Throws when |
+| --- | --- | --- |
+| 1 | line 28 | no `ConnectionStrings:DefaultConnection` from any source |
+| 2 | line 40 | the string says `Encrypt=False` and the environment is not Development |
+| 3 | line 115 | `Jwt:Key` is blank |
+
+So the fix is in the hosting panel, not in the code:
+
+1. Open the API site's application settings and add
+   `ConnectionStrings__DefaultConnection` with the value from §4 — rotated
+   password, `Encrypt=True; TrustServerCertificate=True`. The string that used to
+   sit in `appsettings.json` will not work even if it is re-added verbatim,
+   because it ends in `Encrypt=False` and check 2 now refuses it.
+2. Add `Jwt__Key` with a fresh 64-character random value (§2). Do not reuse the
+   one that was in git: every token signed with it must be treated as forgeable.
+3. Restart the site, then `GET /api/health`.
+
+If it still fails, read the log rather than guessing. `VerichatCRM.API/web.config`
+turns `stdoutLogEnabled` on, so ANCM writes the startup exception to
+`logs\stdout_<date>_<time>.txt` inside the site folder — open it in the host's file
+manager. The folder is created by the module; if it is empty after a failed start,
+the site is not reading this `web.config` (the deploy is publishing without it, or
+the host injected its own).
+
+Two things that are *not* the cause, because both are caught and logged and the app
+continues in degraded mode: a migration that fails at startup (§8) and seeding the
+starter catalogue. Those make `/api/health` report a problem; they do not produce
+500.30.
 
 ## 8. Pre-flight checks before migrating an existing database
 
