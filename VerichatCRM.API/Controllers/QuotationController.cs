@@ -103,7 +103,9 @@ namespace VerichatCRM.API.Controllers
 
         /// <summary>Creates a CRM draft quote from live catalogue prices for the signed-in client.</summary>
         [HttpPost("request")]
-        [Authorize(Roles = "Client User")]
+        // Medical Student is the training account for this same flow: the quick
+        // cart, the catalogue and a quote request, with no staff screens behind it.
+        [Authorize(Roles = "Client User,Medical Student")]
         public async Task<IActionResult> RequestQuote([FromBody] QuoteRequestBody request)
         {
             var clientId = CurrentUserId();
