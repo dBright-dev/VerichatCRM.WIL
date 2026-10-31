@@ -1,7 +1,11 @@
 ﻿@model VerichatCRM.Core.Models.Clients.ClientDirectoryViewModel
 @{
     var role = Context.Session.GetString("UserRole") ?? "";
-    var canCreate = role == "System Administrator" || role == "Sales Representative";
+    // Gated on the permission Clients/Create actually demands. This used to read
+    // "Admin or Sales Representative", so a Sales Representative - who holds
+    // clients.directory and clients.profile but not clients.create - was shown
+    // "+ Add Client" and sent to /Account/NoAccess by the server when they used it.
+    var canCreate = Perm.Has(role, Perm.ClientCreate);
 }
 
 @if (TempData["SuccessMessage"] != null)

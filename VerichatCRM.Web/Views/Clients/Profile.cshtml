@@ -63,8 +63,18 @@
                     }
                 </div>
             }
-            <a class="btn btn-primary btn-sm" asp-controller="Quotation" asp-action="Index" asp-route-clientId="@client.Id">Start a Quotation</a>
-            <a class="btn btn-outline-primary btn-sm" asp-controller="Pipeline" asp-action="Index">View in Pipeline</a>
+            @* Both buttons lead to screens with their own permission. A
+               Procurement Manager holds clients.profile but neither
+               quotation.builder nor pipeline.board, so until now this card
+               offered them two buttons that both ended on /Account/NoAccess. *@
+            @if (Perm.Has(Context.Session.GetString("UserRole") ?? "", Perm.QuotationBuilder))
+            {
+                <a class="btn btn-primary btn-sm" asp-controller="Quotation" asp-action="Index" asp-route-clientId="@client.Id">Start a Quotation</a>
+            }
+            @if (Perm.Has(Context.Session.GetString("UserRole") ?? "", Perm.PipelineBoard))
+            {
+                <a class="btn btn-outline-primary btn-sm" asp-controller="Pipeline" asp-action="Index">View in Pipeline</a>
+            }
         </div></div>
     </div>
 </div>
