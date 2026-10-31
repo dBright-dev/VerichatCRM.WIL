@@ -31,14 +31,16 @@ namespace VerichatCRM.Infrastructure.Data.Interceptors
 
         public override int SavedChanges(SaveChangesCompletedEventData eventData, int result)
         {
-            if (eventData is not null) WriteEntries(eventData.Context);
+            // eventData itself is not optional in EF's contract - only Context is,
+            // and WriteEntries already handles that.
+            WriteEntries(eventData.Context);
             return base.SavedChanges(eventData, result);
         }
 
         public override async ValueTask<int> SavedChangesAsync(
             SaveChangesCompletedEventData eventData, int result, CancellationToken cancellationToken = default)
         {
-            if (eventData is not null) await WriteEntriesAsync(eventData.Context, cancellationToken);
+            await WriteEntriesAsync(eventData.Context, cancellationToken);
             return await base.SavedChangesAsync(eventData, result, cancellationToken);
         }
 
