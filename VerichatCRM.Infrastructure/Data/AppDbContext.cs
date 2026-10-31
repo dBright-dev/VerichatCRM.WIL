@@ -73,7 +73,7 @@ namespace VerichatCRM.Infrastructure.Data
             modelBuilder.Entity<SalesGoal>(entity =>
             {
                 entity.HasKey(goal => goal.Id);
-                entity.Property(goal => goal.UserId).IsRequired();
+                entity.Property(goal => goal.UserId).IsRequired().HasMaxLength(450);
                 entity.Property(goal => goal.Title).IsRequired().HasMaxLength(160);
                 entity.Property(goal => goal.Period).IsRequired().HasMaxLength(24);
                 entity.Property(goal => goal.PeriodLabel).HasMaxLength(80);
@@ -156,7 +156,12 @@ namespace VerichatCRM.Infrastructure.Data
             modelBuilder.Entity<ClientAssignment>(entity =>
             {
                 entity.HasKey(e => e.ClientAssignmentId);
-                entity.Property(e => e.SalesRepId).IsRequired().HasMaxLength(64);
+                // No max length here on purpose. SQL Server requires a foreign key
+                // column to be declared with exactly the same width as the principal
+                // it points at, Users.UserId is an unbounded string key and so
+                // reaches nvarchar(450), and a 64-wide child column aborts the whole
+                // CREATE TABLE. The same rule holds for the two columns below.
+                entity.Property(e => e.SalesRepId).IsRequired();
                 entity.HasIndex(e => new { e.ClientId, e.SalesRepId, e.AssignedDate });
 
                 entity.HasOne(e => e.Client)
@@ -174,8 +179,8 @@ namespace VerichatCRM.Infrastructure.Data
             modelBuilder.Entity<CalibrationSchedule>(entity =>
             {
                 entity.HasKey(e => e.ScheduleId);
-                entity.Property(e => e.EquipmentId).IsRequired().HasMaxLength(64);
-                entity.Property(e => e.AssignedTechId).IsRequired().HasMaxLength(64);
+                entity.Property(e => e.EquipmentId).IsRequired();
+                entity.Property(e => e.AssignedTechId).IsRequired();
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
                 entity.HasIndex(e => new { e.ClientId, e.ScheduledDate });
                 entity.HasIndex(e => e.Status);

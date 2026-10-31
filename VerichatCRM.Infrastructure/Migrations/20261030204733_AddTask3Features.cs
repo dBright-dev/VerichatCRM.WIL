@@ -94,10 +94,10 @@ namespace VerichatCRM.Infrastructure.Migrations
                     ScheduleId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ClientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    EquipmentId = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    EquipmentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ScheduledDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    AssignedTechId = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false)
+                    AssignedTechId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -129,7 +129,7 @@ namespace VerichatCRM.Infrastructure.Migrations
                     ClientAssignmentId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ClientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    SalesRepId = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    SalesRepId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     AssignedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -149,28 +149,15 @@ namespace VerichatCRM.Infrastructure.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "SalesGoals",
-                columns: table => new
-                {
-                    GoalId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
-                    TargetAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SalesGoals", x => x.GoalId);
-                    table.ForeignKey(
-                        name: "FK_SalesGoals_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
-                });
+            // No SalesGoals table here. This migration was scaffolded while
+            // AppDbContext still carried a second SalesGoal mapping (GoalId /
+            // TargetAmount / Type / StartDate / EndDate), so its Up() emitted a
+            // CREATE TABLE for a shape that is not the entity and for a table that
+            // 20261025111000_AddSalesGoals had already created five days earlier.
+            // On every database that migration aborts with
+            // "There is already an object named 'SalesGoals'", which is why this
+            // file had never been applied anywhere. The mapping that produced it is
+            // gone from the context, so the table is not this migration's business.
 
             migrationBuilder.CreateIndex(
                 name: "IX_Inquiries_FollowUpStatus",
@@ -216,11 +203,6 @@ namespace VerichatCRM.Infrastructure.Migrations
                 name: "IX_ClientAssignments_SalesRepId",
                 table: "ClientAssignments",
                 column: "SalesRepId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SalesGoals_UserId_StartDate_EndDate",
-                table: "SalesGoals",
-                columns: new[] { "UserId", "StartDate", "EndDate" });
         }
 
         /// <inheritdoc />
@@ -232,8 +214,8 @@ namespace VerichatCRM.Infrastructure.Migrations
             migrationBuilder.DropTable(
                 name: "ClientAssignments");
 
-            migrationBuilder.DropTable(
-                name: "SalesGoals");
+            // SalesGoals is not dropped: this migration no longer creates it, and
+            // rolling back must not destroy the table 20261025111000_AddSalesGoals owns.
 
             migrationBuilder.DropIndex(
                 name: "IX_Inquiries_FollowUpStatus",
