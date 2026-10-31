@@ -148,9 +148,15 @@ builder.Services.AddOpenApi();
 // CORS for browser-hosted front ends. Server-side MVC calls do not need CORS,
 // but Expo Web does. Production origins are supplied through configuration.
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
-if (builder.Environment.IsDevelopment() && allowedOrigins.Length == 0)
+if (builder.Environment.IsDevelopment())
 {
-    allowedOrigins = ["https://localhost:7266", "http://localhost:5253", "http://localhost:8081", "http://localhost:8082"];
+    // Extended, not replaced: appsettings.json carries the hosted origins, and a
+    // developer's local staff app and Expo Web must be able to reach the hub and
+    // the API from their own ports without editing shared config.
+    allowedOrigins = allowedOrigins
+        .Concat(["https://localhost:7266", "http://localhost:5253", "http://localhost:8081", "http://localhost:8082"])
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToArray();
 }
 builder.Services.AddCors(options =>
 {
@@ -162,6 +168,14 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+if (!app.Environment.IsDevelopment() && allowedOrigins.Length == 0)
+{
+    app.Logger.LogWarning(
+        "Cors:AllowedOrigins is empty. The staff web app and Expo Web run on a different " +
+        "origin, so their credentialed fetch() and SignalR connections will be rejected. " +
+        "Set Cors__AllowedOrigins__0=https://<staff-web-origin>.");
+}
 
 
 // ---------------------------------------------------------------------------
@@ -219,7 +233,9 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.MapGet("/", () => Results.Redirect("/api/health")).ExcludeFromDescription();
-app.MapGet("/health", () => Results.Ok(new { status = "Alive", service = "VerichatCRM.API", timestamp = DateTime.UtcNow })).ExcludeFromDescription();
+// The controller owns /health (HealthController.Live); this second registration
+// made every request to it an AmbiguousMatchException, i.e. HTTP 500 on the one
+// endpoint a host's uptime monitor calls.
 app.MapOpenApi();
 app.UseHttpsRedirection();
 app.UseCors("VerichatWeb");
