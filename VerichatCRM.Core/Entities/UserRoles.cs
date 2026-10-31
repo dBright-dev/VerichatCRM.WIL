@@ -38,7 +38,24 @@ namespace VerichatCRM.Core.Entities
             ProcurementManager,
             FieldSupportEngineer,
             Logistics,
-            ClientUser
+            ClientUser,
+            // Students sign themselves up to use the mobile catalogue and quick
+            // cart. They get no staff screens, so the risk this would otherwise
+            // open - claiming a role with permissions from a public form - is nil.
+            MedicalStudent
+        };
+
+        /// <summary>
+        /// Roles whose holder orders consumables through the mobile app. Both of
+        /// them need a row in Clients, because orders, quotations and the enquiry
+        /// queue are keyed on Clients.ClientId - and that row uses the UserId as
+        /// its key, so it has to be created whenever an account becomes one of
+        /// these roles, not only at mobile sign-up.
+        /// </summary>
+        public static readonly string[] ClientAudience =
+        {
+            ClientUser,
+            MedicalStudent
         };
     }
 }
