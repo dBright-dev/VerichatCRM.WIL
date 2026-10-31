@@ -232,6 +232,42 @@ namespace VerichatCRM.API.Controllers
         [Authorize(Roles = "System Administrator,Sales Representative")]
         public async Task<IActionResult> Create([FromBody] CreateQuotationRequest request)
         {
+            if (string.IsNullOrWhiteSpace(request.ClientId))
+                return BadRequest(new { message = "A quotation needs a client." });
+            if (request.LineItems.Count == 0)
+                return BadRequest(new { message = "A quotation needs at least one line item." });
+            if (await _clientRepo.GetByIdAsync(request.ClientId) == null)
+                return NotFound(new { message = "Client not found." });
+
+            // Quotation.DealId is a required foreign key, so a draft raised in the
+            // builder has to hang off a Deal. Reuse the client's most recent deal,
+            // otherwise open an Initial Inquiry one from the quoted value - the same
+            // rule the mobile request path applies. Both are persisted by the single
+            // SaveChanges inside the repository's AddAsync.
+            if (string.IsNullOrWhiteSpace(request.DealId))
+            {
+                var subtotal = request.LineItems.Sum(li => li.Quantity * li.UnitPrice);
+                var deal = await _db.Deals
+                    .Where(d => d.ClientId == request.ClientId)
+                    .OrderByDescending(d => d.CreatedAt)
+                    .FirstOrDefaultAsync();
+
+                if (deal == null)
+                {
+                    deal = new Deal
+                    {
+                        ClientId = request.ClientId,
+                        Stage = "Initial Inquiry",
+                        Revenue = subtotal,
+                        Notes = "Created from the quotation builder.",
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _db.Deals.Add(deal);
+                }
+
+                request.DealId = deal.DealId;
+            }
+
             var q = await _quotations.CreateAsync(request);
             return CreatedAtAction(nameof(GetById), new { id = q.QuotationId }, q);
         }
