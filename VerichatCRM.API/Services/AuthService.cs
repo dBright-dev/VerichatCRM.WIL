@@ -28,6 +28,11 @@ namespace VerichatCRM.API.Services
             if (!PasswordHasher.Verify(request.Password, user.PasswordHash))
                 return new AuthResponse { Success = false, Message = "Invalid credentials." };
 
+            // Passwords predating PBKDF2 are rewritten now that we know the
+            // plaintext is correct; each legacy account upgrades on first login.
+            if (PasswordHasher.NeedsUpgrade(user.PasswordHash))
+                user.PasswordHash = PasswordHasher.Hash(request.Password);
+
             user.LastLoginAt = DateTime.UtcNow;
             await _users.UpdateAsync(user);
 
