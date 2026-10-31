@@ -59,6 +59,9 @@ VerichatMobile/src/app/            Expo Router screens
 VerichatMobile/src/constants/      API clients and mobile state helpers
 VerichatCRM.Tests/                 xUnit automated tests
 .github/workflows/ci.yml           Pull request and branch CI checks
+documentation.md                   Proposal-versus-implementation gap analysis
+userguide.md                       Role-by-role operator guide and training plan
+DEPLOYMENT.md                      Secret placement, credential rotation, TLS prerequisites
 ```
 
 ### Projects and dependencies
@@ -94,7 +97,7 @@ Set-Location VerichatCRM.WIL
 
 ### Configure secrets
 
-The JWT signing key is intentionally blank in checked-in settings. Configure it and a database connection outside source control. From the repository root, initialize and set API user secrets:
+The JWT signing key and the database connection string are intentionally blank in checked-in settings. Configure both outside source control. From the repository root, set API user secrets (`init` is optional — the project already carries a `UserSecretsId`):
 
 ```powershell
 dotnet user-secrets init --project VerichatCRM.API
@@ -102,9 +105,9 @@ dotnet user-secrets set "Jwt:Key" "<a newly generated random signing key of at l
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<your SQL Server connection string>" --project VerichatCRM.API
 ```
 
-For a hosted API, set `Jwt__Key`, `ConnectionStrings__DefaultConnection`, and `Cors__AllowedOrigins__0` in the hosting provider's secret/configuration store. The CORS origin must be the exact HTTPS origin serving a browser client; do not add a trailing path. The web app's API target is configured by `ApiBaseUrl`. The mobile app accepts `EXPO_PUBLIC_API_URL` and otherwise uses the configured Verichat API host.
+For a hosted API, set `Jwt__Key`, `ConnectionStrings__DefaultConnection`, and `Cors__AllowedOrigins__0` in the hosting provider's secret/configuration store. The CORS origin must be the exact HTTPS origin serving a browser client; do not add a trailing path. Outside Development the API also refuses to start when the connection string says `Encrypt=False`. The web app's API target is configured by `ApiBaseUrl`. The mobile app accepts `EXPO_PUBLIC_API_URL` and otherwise uses the configured Verichat API host.
 
-> A signing key was previously present in repository configuration. Removing it from current files does not remove it from Git history. Rotate the key in every running environment and invalidate tokens signed with the old key before deployment.
+> A database password and two JWT signing keys were previously committed across several revisions of `VerichatCRM.API/appsettings.json`. Removing them from current files does not remove them from Git history. Rotate the database credential, replace the signing key in every running environment, and invalidate tokens signed with the old key before deployment. `DEPLOYMENT.md` is the runbook for that, including the history-scrub commands (which are destructive and deliberately not run).
 
 EF Core migration-script generation during publish uses `DesignTimeAppDbContextFactory` and does not start the API host, so publish can build its database script without a JWT secret. The running API still requires both the JWT key and a real database connection string from its environment or secret store.
 
@@ -166,7 +169,7 @@ npx expo lint
 npx tsc --noEmit
 ```
 
-The current xUnit suite covers eleven authentication, ownership, order, stock, role-dashboard, and EF design-time context cases. It is not a complete integration or end-to-end suite.
+The current xUnit suite covers 71 authentication, ownership, order, stock, permission-matrix, inquiry-scoring, role-dashboard, and EF design-time context cases across seven test files. It is not a complete integration or end-to-end suite: there are no API contract tests, and the Expo client has no test runner configured (`VerichatMobile/package.json` defines no `test` script), so mobile behaviour is verified by `expo lint` and `tsc` only.
 
 ## GitHub Actions
 
