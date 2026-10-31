@@ -75,7 +75,7 @@ a {
 /* Sidebar */
 .vc-sidebar { width: var(--vc-sidebar-width); background: var(--vc-navy); color: var(--vc-text-inverse); min-height: 100vh; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 20; overflow-y: auto; }
 .vc-sidebar__brand { display: flex; align-items: center; gap: .6rem; padding: 1.25rem; border-bottom: 1px solid var(--vc-navy-border); text-decoration: none; }
-.vc-brand-mark { width: 32px; height: 32px; border-radius: var(--vc-radius-sm); background: var(--vc-accent); display: inline-flex; align-items: center; justify-content: center; font-family: var(--vc-font-heading); font-weight: 700; color: #fff; }
+.vc-brand-logo { width: 32px; height: 32px; border-radius: var(--vc-radius-sm); background: #F4F3EF; object-fit: contain; padding: 2px; flex: none; }
 .vc-brand-text { font-family: var(--vc-font-heading); font-weight: 600; font-size: 1.05rem; color: var(--vc-text-inverse); }
 .vc-sidebar__nav { flex: 1; padding: .75rem; }
 .vc-sidebar__section-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--vc-text-inverse-muted); padding: .9rem .75rem .35rem; }

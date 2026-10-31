@@ -104,18 +104,15 @@ body.lnd {
 
 .lnd-brand { display: flex; align-items: center; gap: .6rem; margin-right: auto; }
 
-.lnd-brand__mark {
+.lnd-brand__logo {
     width: 34px;
     height: 34px;
     border-radius: 11px;
-    display: grid;
-    place-items: center;
-    font-family: var(--vc-font-heading);
-    font-weight: 700;
-    font-size: .95rem;
-    color: #fff;
-    background: linear-gradient(140deg, var(--lnd-blue), var(--lnd-cyan));
-    box-shadow: 0 6px 22px rgba(47, 111, 237, .45);
+    background: #F4F3EF;
+    object-fit: contain;
+    padding: 2px;
+    box-shadow: 0 6px 22px rgba(47, 111, 237, .28);
+    flex: none;
 }
 
 .lnd-brand__text {
