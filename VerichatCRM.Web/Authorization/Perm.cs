@@ -45,6 +45,10 @@ namespace VerichatCRM.Web.Authorization
         public const string AdminRules = "admin.rules";
         public const string RoleAssignments = "admin.roles";
 
+        // Client audience (the accounts that order rather than fulfil)
+        public const string ClientPortal = "client.portal";
+        public const string ClientQuoteRespond = "client.quote.respond";
+
         // Permissions granted to each role.
         public static readonly Dictionary<string, string[]> ByRole = new()
         {
@@ -97,11 +101,21 @@ namespace VerichatCRM.Web.Authorization
                 TicketHub,
             },
 
-            // Client accounts sign in through the mobile app; they have no staff
-            // screens in the web application.
-            [Roles.ClientUser] = Array.Empty<string>(),
+            // The client audience signs in on the web as well as on the phone. What
+            // they get is the self-service portal, not a staff screen: catalogue,
+            // their own tickets and their own quotations. Accepting or declining a
+            // sent quotation is the one thing the two roles differ on, because the
+            // API only lets a Client User answer - a training account can browse and
+            // request, but it never signs the company up to a purchase.
+            [Roles.ClientUser] = new[]
+            {
+                ClientPortal, ClientQuoteRespond,
+            },
 
-            [Roles.MedicalStudent] = Array.Empty<string>(),
+            [Roles.MedicalStudent] = new[]
+            {
+                ClientPortal,
+            },
         };
 
         // Nullable because the sidebar asks before anyone is signed in, and a
