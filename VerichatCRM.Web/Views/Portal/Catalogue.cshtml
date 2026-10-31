@@ -46,6 +46,11 @@
                         {
                             <img src="@p.ImageUrl" alt="@p.ProductName" onerror="this.style.display='none'; this.parentElement.classList.add('placeholder')" />
                         }
+                        else if (CatalogueArt.ImageFor(p.Category) is { } art)
+                        {
+                            // Stands in for the grey box most cards would otherwise show.
+                            <img src="@art" alt="" aria-hidden="true" onerror="this.style.display='none'; this.parentElement.classList.add('placeholder')" />
+                        }
                     </div>
                     <div class="product-body">
                         <div class="product-name">@p.ProductName</div>

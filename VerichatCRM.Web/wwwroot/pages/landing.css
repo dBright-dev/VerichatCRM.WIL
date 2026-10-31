@@ -122,6 +122,8 @@ body.lnd {
     letter-spacing: .34em;
 }
 
+.lnd-brand--wordmark img { height: auto; width: 176px; max-width: 100%; opacity: .92; }
+
 .lnd-brand__tag {
     font-size: .62rem;
     letter-spacing: .16em;
