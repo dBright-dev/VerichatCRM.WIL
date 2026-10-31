@@ -19,9 +19,10 @@ namespace VerichatCRM.Web.Services
 
         public async Task<QuotationViewModel?> CreateAsync(QuotationViewModel m)
         {
+            // No DealId: Quotation.DealId is a required foreign key, and the API
+            // attaches the client's current deal or opens one from the quoted value.
             var request = new
             {
-                DealId = (string?)null,
                 ClientId = m.ClientId,
                 ValidUntil = m.ValidUntil,
                 VatRate = m.VatRate,

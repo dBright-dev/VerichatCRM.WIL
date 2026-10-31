@@ -29,23 +29,23 @@
                             <tr class="quote-row" data-row-id="@item.RowId">
                                 <td>
                                     <label class="visually-hidden" for="product-@item.RowId">Product name</label>
-                                    <input type="text" id="product-@item.RowId" class="form-control form-control-sm"
+                                    <input type="text" id="product-@item.RowId" class="form-control form-control-sm quote-product"
                                            value="@item.ProductName" oninput="vcRecalculate()" />
                                 </td>
                                 <td>
                                     <label class="visually-hidden" for="sku-@item.RowId">SKU</label>
-                                    <input type="text" id="sku-@item.RowId" class="form-control form-control-sm"
+                                    <input type="text" id="sku-@item.RowId" class="form-control form-control-sm quote-sku"
                                            value="@item.Sku" oninput="vcRecalculate()" />
                                 </td>
                                 <td>
                                     <label class="visually-hidden" for="qty-@item.RowId">Quantity</label>
                                     <input type="number" id="qty-@item.RowId" min="1" class="form-control form-control-sm quote-qty"
-                                           value="@item.Quantity" oninput="vcRecalculate()" />
+                                           value="@item.Quantity.ToString(System.Globalization.CultureInfo.InvariantCulture)" oninput="vcRecalculate()" />
                                 </td>
                                 <td>
                                     <label class="visually-hidden" for="price-@item.RowId">Unit price</label>
                                     <input type="number" id="price-@item.RowId" min="0" step="0.01" class="form-control form-control-sm quote-price"
-                                           value="@item.UnitPrice" oninput="vcRecalculate()" />
+                                           value="@item.UnitPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)" oninput="vcRecalculate()" />
                                 </td>
                                 <td class="text-end quote-line-total" data-role="line-total">
                                     @item.LineTotal.ToString("C2")
@@ -103,27 +103,74 @@
                 <dd class="mb-0">@Model.Terms</dd>
             </dl>
 
+            @if (string.IsNullOrEmpty(Model.ClientId))
+            {
+                <p class="vc-text-muted small mb-3">
+                    No client is attached yet. Open a client from the pipeline or the
+                    client directory and choose <strong>Quote</strong> to start a quotation
+                    for them.
+                </p>
+            }
+
             <div class="d-grid gap-2">
-                <button type="button" class="btn btn-primary btn-sm" disabled title="Enabled once the backend workstream is wired up">
-                    Generate PDF Quote
+                <button type="button" class="btn btn-primary btn-sm" id="vcSaveQuote" onclick="vcSaveQuotation(this)">
+                    Save Quotation
                 </button>
+                <a class="btn btn-success btn-sm @(string.IsNullOrEmpty(Model.QuotationId) ? "disabled" : "")"
+                   id="vcPdfLink"
+                   href="@(string.IsNullOrEmpty(Model.QuotationId) ? "#" : Url.Action("Pdf", new { id = Model.QuotationId }))"
+                   aria-disabled="@(string.IsNullOrEmpty(Model.QuotationId) ? "true" : null)">
+                    Generate PDF Quote
+                </a>
                 <a class="btn btn-outline-secondary btn-sm" asp-controller="Pipeline" asp-action="Index">
                     Back to Pipeline
                 </a>
             </div>
+
+            <p class="small mt-2 mb-0" id="vcQuoteStatus" role="status" aria-live="polite"></p>
         </div>
     </div>
 </div>
 
+@{
+    // Html.Raw is required: Razor would HTML-encode the JSON and browsers do not
+    // decode entities inside <script>, so the whole block would fail to parse.
+    // The culture and currency travel with the page because nothing in this app
+    // pins CultureInfo, so ToString("C2") above follows the host's locale. The
+    // script must format with the same locale or the totals visibly change
+    // currency the moment an item is edited.
+    var quoteSeed = System.Text.Json.JsonSerializer.Serialize(new
+    {
+        quotationId = Model.QuotationId,
+        clientId = Model.ClientId,
+        validUntil = Model.ValidUntil,
+        vatRate = Model.VatRate,
+        terms = Model.Terms,
+        culture = System.Globalization.CultureInfo.CurrentCulture.Name,
+        currency = System.Globalization.RegionInfo.CurrentRegion.ISOCurrencySymbol
+    });
+}
+
 @section Scripts {
     <script>
-        // Client-side only for now — mirrors the C# computed properties on
+        // Client-side recalculation mirrors the C# computed properties on
         // QuotationViewModel (Subtotal / VatAmount / GrandTotal) so the page
         // matches on first load and after every edit.
 
-        
-        const VC_VAT_RATE = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VatRate));
+        const VC_QUOTE = @Html.Raw(quoteSeed);
+
         let vcNextRowId = @(Model.LineItems.Count > 0 ? Model.LineItems.Max(i => i.RowId) + 1 : 1);
+
+        function vcMoney(value) {
+            return value.toLocaleString(VC_QUOTE.culture, { style: 'currency', currency: VC_QUOTE.currency });
+        }
+
+        function vcQuoteStatus(message, isError) {
+            const status = document.getElementById('vcQuoteStatus');
+            status.textContent = message;
+            status.classList.toggle('vc-text-muted', !isError);
+            status.classList.toggle('text-danger', isError);
+        }
 
         function vcRecalculate() {
             let subtotal = 0;
@@ -133,24 +180,82 @@
                 const price = parseFloat(row.querySelector('.quote-price').value) || 0;
                 const lineTotal = qty * price;
 
-                row.querySelector('[data-role="line-total"]').textContent =
-                    lineTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+                row.querySelector('[data-role="line-total"]').textContent = vcMoney(lineTotal);
 
                 subtotal += lineTotal;
             });
 
-            const vat = subtotal * VC_VAT_RATE;
+            const vat = subtotal * VC_QUOTE.vatRate;
             const grandTotal = subtotal + vat;
 
-            document.getElementById('quoteSubtotal').textContent =
-                subtotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-            document.getElementById('quoteVat').textContent =
-                vat.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-            document.getElementById('quoteGrandTotal').textContent =
-                grandTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            document.getElementById('quoteSubtotal').textContent = vcMoney(subtotal);
+            document.getElementById('quoteVat').textContent = vcMoney(vat);
+            document.getElementById('quoteGrandTotal').textContent = vcMoney(grandTotal);
         }
 
-        
+        // Reads the table as it stands now, including rows added since the page
+        // loaded, because the saved quotation must match what the user reviewed.
+        function vcCollectLineItems() {
+            return [...document.querySelectorAll('#quoteTableBody .quote-row')]
+                .map(row => ({
+                    productName: row.querySelector('.quote-product').value.trim(),
+                    sku: row.querySelector('.quote-sku').value.trim(),
+                    quantity: parseInt(row.querySelector('.quote-qty').value, 10) || 0,
+                    unitPrice: parseFloat(row.querySelector('.quote-price').value) || 0
+                }))
+                .filter(item => item.productName || item.sku);
+        }
+
+        async function vcSaveQuotation(button) {
+            if (!VC_QUOTE.clientId) {
+                vcQuoteStatus('Attach a client first: open the client and choose Quote.', true);
+                return;
+            }
+
+            const lineItems = vcCollectLineItems();
+            if (lineItems.length === 0) {
+                vcQuoteStatus('Add at least one line item with a product or SKU.', true);
+                return;
+            }
+            if (lineItems.some(item => !item.sku || item.quantity < 1)) {
+                vcQuoteStatus('Every line item needs a SKU and a quantity of at least 1.', true);
+                return;
+            }
+
+            button.disabled = true;
+            vcQuoteStatus('Saving…', false);
+
+            try {
+                const response = await fetch('@Url.Action("Save")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': vcRequestToken()
+                    },
+                    body: JSON.stringify({ ...VC_QUOTE, lineItems })
+                });
+
+                if (!response.ok) {
+                    const detail = await response.text();
+                    throw new Error(detail.trim() || `The API rejected the quotation (HTTP ${response.status}).`);
+                }
+
+                const saved = await response.json();
+                VC_QUOTE.quotationId = saved.quotationId;
+
+                const pdfLink = document.getElementById('vcPdfLink');
+                pdfLink.href = '@Url.Action("Pdf")/' + encodeURIComponent(saved.quotationId);
+                pdfLink.classList.remove('disabled');
+                pdfLink.removeAttribute('aria-disabled');
+
+                vcQuoteStatus(`Saved as ${saved.quoteReference}. Editing the items and saving again creates a new draft.`, false);
+            } catch (error) {
+                vcQuoteStatus(error.message || 'The quotation could not be saved.', true);
+            } finally {
+                button.disabled = false;
+            }
+        }
+
         function vcAddRow() {
             const tbody = document.getElementById('quoteTableBody');
 
@@ -169,13 +274,13 @@
                 <td>
                     <label class="visually-hidden" for="product-${rowId}">Product name</label>
                     <input type="text" id="product-${rowId}"
-                           class="form-control form-control-sm"
+                           class="form-control form-control-sm quote-product"
                            oninput="vcRecalculate()" />
                 </td>
                 <td>
                     <label class="visually-hidden" for="sku-${rowId}">SKU</label>
                     <input type="text" id="sku-${rowId}"
-                           class="form-control form-control-sm"
+                           class="form-control form-control-sm quote-sku"
                            oninput="vcRecalculate()" />
                 </td>
                 <td>
@@ -191,7 +296,6 @@
                            value="0" oninput="vcRecalculate()" />
                 </td>
                 <td class="text-end quote-line-total" data-role="line-total">
-                    $0.00
                 </td>
                 <td class="text-end">
                     <button type="button"
