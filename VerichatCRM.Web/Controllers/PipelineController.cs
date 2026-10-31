@@ -38,7 +38,7 @@ namespace VerichatCRM.Web.Controllers
             return View(model);
         }
 
-        [HttpPost]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> MoveDeal([FromBody] MoveDealRequest request)
         {
             if (HttpContext.Session.GetString("JwtToken") == null) return Unauthorized();

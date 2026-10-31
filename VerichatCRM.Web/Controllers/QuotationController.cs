@@ -51,7 +51,7 @@ namespace VerichatCRM.Web.Controllers
             return View(model);
         }
 
-        [HttpPost]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Save([FromBody] QuotationViewModel model)
         {
             if (HttpContext.Session.GetString("JwtToken") == null) return Unauthorized();

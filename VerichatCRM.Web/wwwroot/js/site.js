@@ -1,4 +1,9 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿// Shared helpers for the staff web app.
 
-// Write your JavaScript code.
+/**
+ * The antiforgery token published by _Layout, for JSON POSTs that carry
+ * [ValidateAntiForgeryToken] on the server.
+ */
+function vcRequestToken() {
+  return document.querySelector('meta[name="request-verification-token"]')?.content || '';
+}

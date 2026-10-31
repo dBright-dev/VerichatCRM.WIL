@@ -159,7 +159,10 @@
             try {
                 const res = await fetch(vcMoveUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': vcRequestToken()
+                    },
                     body: JSON.stringify({ dealId, newStage: targetStage })
                 });
                 if (!res.ok) throw new Error('Status ' + res.status);

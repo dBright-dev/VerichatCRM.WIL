@@ -1,8 +1,16 @@
-﻿<!DOCTYPE html>
+﻿@inject IConfiguration Config
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    // JSON POSTs (pipeline drag, quotation save) send this as the
+    // RequestVerificationToken header so [ValidateAntiForgeryToken] can protect them.
+    var antiforgery = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="request-verification-token" content="@antiforgery" />
     <title>@ViewData["Title"] - Verichat CRM</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
