@@ -29,7 +29,28 @@ namespace VerichatCRM.API.Hubs
             await base.OnConnectedAsync();
         }
 
-        /// <summary>Client -> server ping used to prove the socket is live.</summary>
-        public Task Subscribe(string role) => Groups.AddToGroupAsync(Context.ConnectionId, role);
+        /// <summary>
+        /// Joins a notification group. The requested group is checked against the
+        /// authenticated principal instead of being trusted: without this, any signed-in
+        /// client could join "System Administrator" and receive internal alerts.
+        /// Personal groups ("user:id") are accepted only when they name the caller.
+        /// </summary>
+        public async Task Subscribe(string group)
+        {
+            if (string.IsNullOrWhiteSpace(group))
+                throw new HubException("A group name is required.");
+
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                         ?? Context.User?.FindFirst("sub")?.Value;
+
+            var allowed = group.StartsWith("user:", StringComparison.Ordinal)
+                ? group == "user:" + userId
+                : Context.User?.IsInRole(group) == true;
+
+            if (!allowed)
+                throw new HubException("You are not permitted to subscribe to that group.");
+
+            await Groups.AddToGroupAsync(Context.ConnectionId, group);
+        }
     }
 }
