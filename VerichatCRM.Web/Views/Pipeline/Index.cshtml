@@ -175,6 +175,5 @@
         }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js" referrerpolicy="no-referrer"></script>
-    <script>window.verichatSignalR={baseUrl:@Html.Raw(System.Text.Json.JsonSerializer.Serialize((string?)ViewBag.ApiBaseUrl)),token:@Html.Raw((string)ViewBag.ApiToken)};</script>
     <script src="~/js/signalr.js" asp-append-version="true"></script>
 }

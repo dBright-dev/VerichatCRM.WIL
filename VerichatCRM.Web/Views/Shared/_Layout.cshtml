@@ -35,6 +35,15 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    @{
+        // One shared origin for every client script. Without this, notifications.js
+        // fell back to the web app's own origin and the hub path 404'd forever.
+        var apiBaseUrl = Config["ApiBaseUrl"]?.TrimEnd('/') ?? string.Empty;
+    }
+    @* Razor HTML-encodes a bare @expression, and browsers do not decode entities
+       inside <script>, so the value must be emitted with Html.Raw. The JSON
+       default encoder escapes < > & instead, which keeps this XSS-safe. *@
+    <script>window.verichatApiUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(apiBaseUrl));</script>
     <script src="~/js/site.js"></script>
     <script src="~/js/notifications.js"></script>
     @await RenderSectionAsync("Scripts", required: false)

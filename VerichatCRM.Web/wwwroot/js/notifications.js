@@ -1,13 +1,19 @@
 (() => {
   // ---------------------------------------------------------------------------
-  // Configure SignalR connection details.
-  // Read JWT from localStorage (set during login) or fall back to cookie.
+  // Global live-notification client, loaded on every page by _Layout.
+  //
+  // Origin: window.verichatApiUrl (emitted by _Layout from the server's
+  // ApiBaseUrl). It used to fall back to window.location.origin, which meant the
+  // hub path was requested from the web app - a host that runs no hub - and the
+  // socket retried against a 404 every five seconds for the whole session.
+  //
+  // Auth: the HttpOnly JwtToken cookie, forwarded by withCredentials and read
+  // server-side by the API's bearer events. Reading the token from
+  // localStorage/document.cookie is gone, because the cookie is no longer
+  // script-readable.
   // ---------------------------------------------------------------------------
-  const API_BASE = (window.verichatApiUrl || '').replace(/\/$/, '') || window.location.origin;
-  const storedToken = localStorage.getItem('verichat_jwt_token') || document.cookie.match(/(?:^|; )JwtToken=([^;]*)/)?.[1];
-  const TOKEN = storedToken;
-
-  if (!TOKEN || !window.signalR) return;
+  const API_BASE = (window.verichatApiUrl || '').replace(/\/$/, '');
+  if (!API_BASE || !window.signalR) return;
 
   // ---------------------------------------------------------------------------
   // Toast notification markup
@@ -45,11 +51,8 @@
   // Connect to SignalR Notification Hub
   // ---------------------------------------------------------------------------
   const connection = new signalR.HubConnectionBuilder()
-    .withUrl(`${API_BASE}/hubs/notifications`, {
-      accessTokenFactory: () => TOKEN,
-      withCredentials: true,
-    })
-    .withAutomaticReconnect()
+    .withUrl(`${API_BASE}/hubs/notifications`, { withCredentials: true })
+    .withAutomaticReconnect({ nextRetryDelayInMilliseconds: (c) => (c.previousRetryCount < 5 ? 2000 * (c.previousRetryCount + 1) : null) })
     .build();
 
   connection.on('notification', (notice) => {
@@ -68,21 +71,27 @@
     }
   });
 
-  connection.on('reconnecting', () => {
-    console.log('[SignalR] Reconnecting...');
-  });
+  connection.on('reconnecting', () => console.log('[SignalR] Reconnecting...'));
+  connection.on('reconnected', (connectionId) => console.log('[SignalR] Reconnected:', connectionId));
 
-  connection.on('reconnected', (connectionId) => {
-    console.log('[SignalR] Reconnected:', connectionId);
-  });
+  // Initial connect: retry a bounded number of times with backoff, then stop.
+  // The previous implementation re-scheduled itself every 5 seconds forever, so a
+  // misconfigured origin produced an endless request loop on every staff session.
+  const MAX_ATTEMPTS = 5;
+  let attempts = 0;
 
-  const start = () =>
-    connection.start()
+  const start = () => {
+    attempts += 1;
+    return connection.start()
       .then(() => console.log('[SignalR] Connected to notification hub'))
       .catch((err) => {
-        console.error('[SignalR] Connection failed:', err);
-        setTimeout(start, 5000);
+        if (attempts >= MAX_ATTEMPTS) {
+          console.warn('[SignalR] Giving up after ' + attempts + ' attempts:', err);
+          return;
+        }
+        window.setTimeout(start, 2000 * attempts);
       });
+  };
 
   void start();
 

@@ -1,10 +1,15 @@
 (() => {
-  const options = window.verichatSignalR;
-  if (!options?.baseUrl || !options?.token || !window.signalR) return;
+  // SignalR for pages that show a live toast (pipeline board, appointments).
+  // The origin comes from window.verichatApiUrl, emitted by _Layout from the
+  // server's ApiBaseUrl setting. Authentication is the HttpOnly JwtToken cookie,
+  // forwarded by withCredentials and read server-side in the API's bearer events,
+  // so the JWT is never written into page script.
+  const API_BASE = (window.verichatApiUrl || '').replace(/\/$/, '');
+  if (!API_BASE || !window.signalR) return;
 
   const toast = document.getElementById('appointmentToast');
   const connection = new signalR.HubConnectionBuilder()
-    .withUrl(`${options.baseUrl}/hubs/notifications`, { accessTokenFactory: () => options.token })
+    .withUrl(`${API_BASE}/hubs/notifications`, { withCredentials: true })
     .withAutomaticReconnect()
     .build();
 
@@ -19,6 +24,8 @@
     }
   });
 
-  const start = () => connection.start().catch(() => window.setTimeout(start, 5000));
-  void start();
+  void connection.start().catch(() => {
+    // A dead socket should not spam the network; the page still works without it.
+    console.warn('[SignalR] Notification hub unavailable at ' + API_BASE);
+  });
 })();

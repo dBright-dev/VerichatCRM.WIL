@@ -20,8 +20,6 @@ public class TelehealthController(IApiClient api) : Controller
         ViewData["CurrentRole"] = HttpContext.Session.GetString("UserRole") ?? "Sales Representative";
         var role = HttpContext.Session.GetString("UserRole") ?? string.Empty;
         ViewBag.CanManageAppointments = role is Roles.SystemAdministrator or Roles.SalesRepresentative or Roles.ProcurementManager;
-        ViewBag.ApiBaseUrl = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["ApiBaseUrl"]?.TrimEnd('/');
-        ViewBag.ApiToken = JsonSerializer.Serialize(HttpContext.Session.GetString("JwtToken") ?? string.Empty);
         var appointments = await api.GetAsync<List<TelehealthAppointmentViewModel>>("/api/appointments") ?? new();
         ViewBag.Assignees = (bool)ViewBag.CanManageAppointments
             ? await api.GetAsync<List<TelehealthAssigneeViewModel>>("/api/appointments/assignees") ?? new()
