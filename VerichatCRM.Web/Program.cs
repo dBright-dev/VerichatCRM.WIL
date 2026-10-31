@@ -1,10 +1,16 @@
+using VerichatCRM.Web.ModelBinding;
 using VerichatCRM.Web.Services;
 using VerichatCRM.Web.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    // Numeric inputs post a dot separator on every locale; binding it with the
+    // host culture turned "2400.00" into 0 on an en-ZA server.
+    options.ModelBinderProviders.Insert(0, new InvariantDecimalModelBinderProvider());
+});
 
 // Session
 builder.Services.AddDistributedMemoryCache();
