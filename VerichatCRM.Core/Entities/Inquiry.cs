@@ -65,8 +65,18 @@ namespace VerichatCRM.Core.Entities
         public string Source { get; set; } = InquirySources.Website;
         public string Status { get; set; } = InquiryStatuses.New;
 
-        /// <summary>Qualification score, 0-100. Higher sorts to the top of the queue.</summary>
+        /// <summary>
+        /// Qualification score, 0-100. Higher sorts to the top of the queue.
+        /// Computed by <see cref="VerichatCRM.Core.Models.Inquiry.InquiryScoring"/> when the
+        /// enquiry is captured without one, and changed by hand afterwards.
+        /// </summary>
         public int Score { get; set; }
+
+        /// <summary>How soon the prospect needs the goods; see InquiryUrgencies.</summary>
+        public string? Urgency { get; set; }
+
+        /// <summary>The value the enquiry is worth if it closes, in rand.</summary>
+        public decimal? EstimatedValue { get; set; }
 
         public string? OwnerUserId { get; set; }
         public string? Notes { get; set; }
