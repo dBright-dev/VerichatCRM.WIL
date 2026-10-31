@@ -29,7 +29,7 @@ Every screen, button, field, validation message and permission in this guide was
 9. [Role guide — Procurement Manager](#9-role-guide--procurement-manager)
 10. [Role guide — Field Support Engineer](#10-role-guide--field-support-engineer)
 11. [Role guide — Logistics](#11-role-guide--logistics)
-12. [Role guide — Client User and Medical Student (mobile)](#12-role-guide--client-user-and-medical-student-mobile)
+12. [Role guide — Client User and Medical Student (mobile and web portal)](#12-role-guide--client-user-and-medical-student-mobile-and-web-portal)
 13. [End-to-end workflows](#13-end-to-end-workflows)
 14. [Form-by-form data entry reference](#14-form-by-form-data-entry-reference)
 15. [Read-only screens](#15-read-only-screens)
@@ -47,11 +47,11 @@ Every screen, button, field, validation message and permission in this guide was
 
 **You are a staff user and someone has already installed the system.** Go to §4.2, sign in, and read the one section of §7–§11 that matches your role. You do not need §3 or §5.
 
-**You are a client using the app.** Install or open the app, tap **Client**, sign in, and work through §12. The five tabs at the bottom of the screen are the whole product for you.
+**You are a client.** On the phone: open the app, tap **Client**, sign in, and work through §12 — the five tabs are the whole product there. In a browser: sign in at `/Account/Login` the way staff do and you get the **client portal**, four screens of your own (§12.8). Neither path shows you a staff screen, and typing one gets you the 403 page, not somebody else's data.
 
 **You are installing the software to run it yourself.** §3 for what you need, then §5 for the ordered procedure. Budget 30–45 minutes for a clean machine; the four configuration values in §5.3 are where most people lose time.
 
-**You are assessing or demonstrating the system.** §13 gives four complete stories that cross both applications; §21 lists one annotated screenshot per major step.
+**You are assessing or demonstrating the system.** §13 gives five complete stories that cross both applications; §21 lists one annotated screenshot per major step, and [VerichatCRM_FeatureWalkthrough.md](VerichatCRM_FeatureWalkthrough.md) walks the same features with the commands behind each claim.
 
 ---
 
@@ -73,7 +73,7 @@ The web app never touches the database. The mobile app never touches the databas
 ### 2.2 The two audiences
 
 - **Staff** (System Administrator, Sales Representative, Procurement Manager, Field Support Engineer, Logistics) live in the web app. Five of the seven roles also use the mobile app for field work.
-- **Clients** (Client User, Medical Student) live in the mobile app. If a client account signs in to the web app it is sent to the "no access" page on purpose (§6.4) — there is nothing for them there.
+- **Clients** (Client User, Medical Student) work in the mobile app and in their own part of the web app — the **client portal** at `/Portal`, reached by signing in the same way staff do (§12.8). They see four screens and no staff screen: a client who types a staff URL is refused on the server, not by a hidden menu.
 
 ### 2.3 What the system does *not* do
 
@@ -163,33 +163,44 @@ Rules, all verified in `AdminBootstrapper`:
 | Procurement Manager | ▷ Dashboard — `/Procurement/Dashboard` |
 | Field Support Engineer | ▷ Dashboard — `/Support/Dashboard` |
 | Logistics | ▷ Dashboard — `/Support/Dashboard` |
-| Client User, Medical Student | ▷ the 403 "no access" page — `/Account/NoAccess` (correct behaviour; use the mobile app) |
+| Client User | ▷ **My Verichat** — `/Portal`, the client portal (§12.8) |
+| Medical Student | ▷ **My Verichat** — `/Portal`, the client portal (§12.8) |
+| Anyone, by typing a URL they do not hold | ▷ the 403 "no access" page — `/Account/NoAccess`, with a link back to their own home (§6.4) |
 
 Errors appear above the form, not in a popup. A wrong password, an unknown address and a **deactivated** account all say the same thing — `Invalid credentials.` — deliberately, so the form cannot be used to discover which addresses have accounts. If you are sure the password is right, the account is probably deactivated (§17).
 
 `[SG-01]` — the sign-in form, empty, with the brand panel visible.
 `[SG-02]` — the same form after a bad password, showing `Invalid credentials.` in the validation summary.
 
-### 4.3 Creating a staff account (self-service)
+### 4.3 Creating your own account (self-service)
 
-▷ **Create Account** — `/Account/Register`, linked from the sign-in page as *Create one*.
+▷ **Create account** — `/Account/Register`, linked from the sign-in card as *Create one*.
 
-Fields: **Full Name**, **Email Address**, **Password**, **Role**.
+Fields: **Full name**, **Email address**, **Password**, and **What will you do here?** — the
+role select, laid out as two labelled groups:
 
-The role dropdown offers exactly four choices:
+- *Order from Verichat* — `Client User — buy, request quotes, raise support`, `Medical Student — browse and request, no purchasing`
+- *Work inside Verichat* — `Sales Representative — revenue engine`, `Procurement Manager — supply & logistics`, `Field Support Engineer — on-site resolution`, `Logistics — delivery & transport`
 
-- `Sales Representative — Revenue Engine`
-- `Procurement Manager — Supply & Logistics`
-- `Field Support Engineer — On-Site Resolution`
-- `Logistics — Delivery & Transport`
+Below the select the form says the one thing it will not do: *System Administrator is not on
+this list. It is granted by an existing administrator, never claimed from a public form.*
 
-On success you are signed in immediately and sent to that role's dashboard. ⚠️ The password hint reads *Min. 8 characters* but **nothing in the web or API code enforces a minimum length** (§18) — choose sensibly; the system will not stop you.
+On success you are signed in immediately and sent to **your own** home: a staff role to its
+dashboard, a client role to the client portal at `/Portal` (§12.8). Signing up as Client User
+or Medical Student also creates the client record your quotes, orders and tickets hang off —
+the API opens a `Clients` row keyed to your new user id, so nothing has to be typed twice.
+⚠️ The password placeholder reads *At least 8 characters* but **nothing in the web or API code
+enforces a minimum length** (§18) — choose sensibly; the system will not stop you.
 
-Rejections you will see: `Email is already registered.` and `That role cannot be self-assigned. Ask an administrator to create the account.` (the second is reachable only if someone posts a role the form does not offer).
+Rejections you will see: `Email is already registered.` and `Select a valid role.` (posted
+from the form that is unreachable — the dropdown only offers the six — but it is what stops
+someone editing the HTML and posting `System Administrator`).
 
-⚠️ Self-registration creates a **staff** account only. A person who needs the client app signs up from the mobile app's **New User** button, which registers them as a `Client User` (§12.2).
+Both client roles can also sign up from the mobile app's **New User** button (§12.1); the two
+paths produce the same account, and the same client record.
 
-`[SG-03]` — the registration form with the role dropdown open, showing the four choices.
+`[SG-03]` — the registration form with the role dropdown open, showing the six choices in
+their two groups.
 
 ### 4.4 Signing in on mobile
 
@@ -379,7 +390,8 @@ This is the single most important navigation fact in the product: **the links yo
 
 | Section | Links | Who sees them |
 |---|---|---|
-| **OVERVIEW** | *Admin Dashboard* (Admin) / *Dashboard* (everyone else with a dashboard) | each role's own landing screen |
+| **OVERVIEW** | *Admin Dashboard* (Admin) / *Dashboard* (Sales) / *My Verichat* (the two client roles) | each role's own landing screen |
+| **MY ACCOUNT** | *Catalogue*, *My Quotations*, *Support* | Client User, Medical Student — and nobody else |
 | **CLIENTS** | *Client Directory* | Admin, Sales, Procurement |
 | | *Asset Tracking* | Admin, Sales, Field Support, Logistics |
 | | *Client Appointments* | Admin, Sales, Procurement, Field Support |
@@ -392,7 +404,7 @@ This is the single most important navigation fact in the product: **the links yo
 | **ADMIN** | *Users & Roles*, *Rules Engine* | Admin |
 | footer | *→ Sign out* | everyone |
 
-A Client User or Medical Student signing in to the web app sees an empty sidebar and the 403 page. That is the design, not a fault.
+A Client User or Medical Student signing in to the web app gets the **MY ACCOUNT** sidebar and the four portal screens — that is the client portal, §12.8 — and no staff link. The reverse holds too, and this build closed the one hole in it: the generic workspace at `/Dashboard` used to check only that a session existed, so a signed-in client who typed the URL reached a staff shell. It is now gated on `workspace.dashboard`, which every staff role holds and neither client role does, so the client gets ▷ *no access* with a link back to their own home.
 
 `[SG-09]`…`[SG-13]` — one sidebar-only crop per staff role (Admin, Sales, Procurement, Field Support, Logistics) so the difference is visible side by side.
 
@@ -407,13 +419,13 @@ Two controls:
 
 | Page | URL | When you get it | What it tells you |
 |---|---|---|---|
-| **403 — no access** | `/Account/NoAccess` | Your role lacks the permission the screen demands, or a client-role account opened the web app | Your role, and that you need a different account |
+| **403 — no access** | `/Account/NoAccess` | Your role lacks the permission the screen demands — e.g. a client-role account opens a staff screen, or a Medical Student posts the accept/decline form | Your role, and a way back to a screen you are allowed to use |
 | **404 — not found** | `/Home/StatusPage?code=404` | A record was deleted under you, or you typed a bad URL | link back to the dashboard |
 | **500 — error** | `/Home/Error` | An unhandled failure | nothing sensitive; the detail is in the server log |
 
 Anything requiring a screen sends an **unsigned** visitor to the login page rather than to 403 — so "it keeps sending me to sign in" means your session is gone, not that you lost permission.
 
-`[SG-14]` — the 403 page as a Client User; `[SG-15]` — the 404 page.
+`[SG-14]` — the 403 page, reached by a Client User typing a staff URL such as `/Dashboard`; `[SG-15]` — the 404 page.
 
 ### 6.5 Live notifications
 
@@ -462,7 +474,7 @@ Two conditions stop the hub from connecting at all, both silent by design: `ApiB
 
 1. **There is no "add user" button here**, despite what older notes say. Accounts appear by self-registration (§4.3 web, §12.2 mobile) or from the bootstrap. Your job on this screen is to *correct* a role, not to create people.
 2. **Deactivate has no opposite.** The button appears on active accounts; once a person is inactive the row offers nothing, and they are told `Invalid credentials.` at sign-in. Until an "activate" path exists, re-activating someone is a database edit (§18).
-3. **Changing someone to `Client User` or `Medical Student` moves them out of the web app entirely** and onto the mobile client path — the API creates the `Clients` row that path needs when the role changes. Warn them first.
+3. **Changing someone to `Client User` or `Medical Student` moves them off the staff console and onto the client path** — four portal screens on the web (§12.8) and the client tabs on the phone. The API creates the `Clients` row that path needs when the role changes, keyed to that person's user id. Warn them first: every staff link they had disappears at once.
 
 ### 7.3 SLA Control
 
@@ -742,9 +754,9 @@ As described in §10.3 and §10.1. You can **open** tickets but not change them 
 
 ---
 
-## 12. Role guide — Client User and Medical Student (mobile)
+## 12. Role guide — Client User and Medical Student (mobile and web portal)
 
-Everything in this section is the shipped `VerichatMobile` app, five tabs at the bottom: **Home · Catalogue · Consult · My Assets · Profile**. Staff accounts see a different tab bar (§12.6).
+Most of this section is the shipped `VerichatMobile` app, five tabs at the bottom: **Home · Catalogue · Consult · My Assets · Profile**. Staff accounts see a different tab bar (§12.6). §12.8 is the part they get on the web — the client portal, which the same two accounts open in a browser.
 
 ### 12.1 First launch
 
@@ -805,6 +817,59 @@ This is the most technically interesting thing the app does, and it works:
 
 `[SG-46]` — the offline banner with a queued change count (airplane mode is the reliable way to capture it).
 
+### 12.8 The client portal on the web
+
+The same two roles get their own corner of the web app — not a stripped-down staff screen,
+and nothing that belongs to anybody else. Sign in at `/Account/Login` the way staff do, and
+you land on `/Portal`. The sidebar shows **OVERVIEW ▸ My Verichat** and **MY ACCOUNT ▸
+Catalogue · My Quotations · Support**. Those four are the whole of it.
+
+▷ **My Verichat** — `/Portal`. Your name, then three lists: quotations raised for your
+account, your support tickets, your deliveries. Empty on day one, which is correct.
+
+▷ **Catalogue** — `/Portal/Catalogue`. Category chips across the top (only categories that
+actually contain products appear), a search box that matches product name or SKU, and a card
+per product with its photo, price, stock and a quantity box.
+
+1. Type a quantity on the products you want — the number goes in the box, not a cart.
+2. Add a note if the order has a deadline ("needed before the 15th").
+3. **Request quote.**
+
+You get a reference back — `Quote VC-QT-20261031-248836 requested. A sales representative
+will confirm pricing and availability.` — and the quote appears in **My Quotations** as
+*Draft*. ⚠️ A request is not an order: no stock is reserved, no price is agreed, and the
+price shown on the card is an indication. A person in sales sets the real figures and sends
+it back to you.
+
+▷ **My Quotations** — `/Portal/Quotations`. Filter chips: *All · Draft · Reviewed · Sent ·
+Accepted · Rejected · Expired*. A **PDF** button downloads the branded document for anything
+that has been priced. When the status is *Sent*, a Client User sees **Accept** and **Decline**;
+answering is what turns your acceptance into a record the sales pipeline picks up. A
+*Draft* cannot be answered, and the screen tells you so in the API's own words: *Only a sent
+quotation can be accepted or declined.*
+
+▷ **Support** — `/Portal/Tickets`. Your tickets with their tracking numbers, and a form to
+raise another: **Subject**, **Priority** (*Low · Medium · High · Critical*), **Category**
+(*General · Equipment fault · Delivery · Billing · Training query*), **Description**, and an
+optional equipment reference. Raised against your own account, always — the account is taken
+from your session, so the form cannot be edited to file a fault on someone else's. A new
+ticket reads *Ticket VC-TCK-261031-6414 was raised. We respond within the SLA for its
+priority*, and the support team sees it in their Ticket Hub immediately.
+
+**Medical Student is the same four screens, minus one thing.** Students can browse, request
+and follow support, but they cannot accept or decline a quotation: the buttons are not
+rendered, and posting the URL anyway reaches the 403 page. That difference is one row in the
+permission table (`client.quote.respond`), not a special case in a view.
+
+**What the web portal does not do.** Bookings, the health record, the quick cart with
+offline queueing and biometric sign-in are mobile-only (§12.4, §12.6, §12.7). Use the app for
+those; the portal is for reading quotes and raising faults from a keyboard.
+
+`[SG-48]` — the portal home with the three lists. `[SG-49]` — Catalogue with quantities set
+and the note filled in. `[SG-50]` — My Quotations showing a *Sent* quote with Accept/Decline.
+`[SG-51]` — the Support form with a ticket and its tracking number below it.
+`[SG-52]` — the 403 page reached by a Medical Student posting the respond URL.
+
 ---
 
 ## 13. End-to-end workflows
@@ -829,7 +894,7 @@ Use these four in training and in the EXPO demo; each step names the role, the s
 1. *Client, mobile:* Catalogue → add items → **Request a Quote** `[SG-39]`.
 2. *Sales, web:* ▷ Pipeline Board, **Mobile quote requests** panel → **Mark reviewed** `[SG-21]`.
 3. *Sales:* price it in the builder, save, **Send to client**.
-4. *Client, mobile:* the quotation appears in the cart screen → **Accept quotation** `[SG-40]`; a toast fires on staff web and the page reloads (§6.5) `[SG-16]`.
+4. *Client, mobile or web:* the quotation appears in the cart screen (§12.3) or in **My Quotations** on the portal (§12.8) → **Accept quotation** `[SG-40]` `[SG-50]`; a toast fires on staff web and the page reloads (§6.5) `[SG-16]`.
 5. *Sales, web:* drag the card to **Closed Won**.
 
 ### 13.3 Fault on a client's asset → SLA → escalation → resolution
@@ -847,6 +912,20 @@ Use these four in training and in the EXPO demo; each step names the role, the s
 2. *Procurement:* stock falls to the threshold → ▷ Warehouse Alerts, red critical banner + row status `Critical` `[SG-31]`.
 3. *Procurement:* confirm **Supplier** and **unit cost**, press **Reorder** → a purchase order for the suggested quantity is recorded `[SG-32]`.
 4. *Admin:* correct the stock level through the product edit form. ⚠️ The alert does not clear itself, and nothing is sent to the supplier.
+
+### 13.5 A client does the whole thing themselves, on the web
+
+No staff action is needed to start or finish this one, which is the point of the portal.
+
+1. *Client:* ▷ **Create one** from the sign-in card → *Order from Verichat* → **Client User** → the account and its client record are created in one step, and you land on `/Portal` `[SG-03]` `[SG-48]`.
+2. *Client:* ▷ Catalogue → quantities and a note → **Request quote** → a *Draft* quotation appears under your own reference `[SG-49]`.
+3. *Sales, web:* the draft is in the Pipeline Board's mobile-quote panel → reviewed, priced, saved, **sent** (§13.1).
+4. *Client:* ▷ My Quotations → **PDF** to read the offer → **Accept** `[SG-50]`. A Medical Student at this step gets the 403 page instead — requesting is allowed, answering is not `[SG-52]`.
+5. *Client:* ▷ Support → raise a fault against a delivery or an asset → the ticket lands in the staff Ticket Hub with its SLA clock already running `[SG-51]`.
+
+⚠️ Steps 2 and 4 are still not a purchase order. Nothing is reserved at request time and no
+payment exists anywhere in the product (§2.3); acceptance is a recorded decision that a
+person in sales converts.
 
 ---
 
@@ -896,7 +975,7 @@ Screens you open for information and cannot change from, whatever your role: **L
 1. *I typed the right password and it says* `Invalid credentials.` — Wrong password, unknown address, or a **deactivated** account: all three answer identically. Ask an administrator to check ▷ Users & Roles.
 2. *There is no "forgot password" link.* Correct — there is no password reset anywhere in the product (§18). An administrator must set it for you, today by direct database action.
 3. *I signed up and chose System Administrator.* The form does not offer it, and posting it anyway is refused on purpose. Only an existing administrator can grant it.
-4. *My client account signs in on the phone but the web says "no access".* By design — Client Users and Medical Students have no web screens.
+4. *My client account signs in on the phone and gets "no access" on the web.* You are on a staff URL. Client roles have their own four screens — ▷ *My Verichat*, *Catalogue*, *My Quotations*, *Support* — reached from `/Portal` (§12.8); a client who types `/Pipeline` is refused on purpose, and the 403 page links back to `/Portal`.
 5. *I changed someone's role and their menu changed instantly.* Menus are built per request from the role; that is the expected behaviour, and it is why the sidebar is the best indicator of what you are allowed to do.
 6. *Everything on my dashboard is 0 or empty.* Usually an expired 120-minute token (§4.5): sign out and back in. Otherwise the API or the database is down — §17.
 
@@ -988,9 +1067,9 @@ The honest page. Give this to every new user with the training pack; the system 
 **Access and accounts**
 
 1. **No password reset or password change** anywhere, web or mobile. Only direct database access can fix a forgotten password.
-2. **No minimum password length is enforced.** The *Min. 8 characters* hint is advisory only; the web `RegisterRequest` carries no validation attributes and the API checks none.
+2. **No minimum password length is enforced.** The *At least 8 characters* placeholder is advisory only; the web `RegisterRequest` carries no validation attributes and the API checks none.
 3. **Deactivate has no Activate.** A deactivated account cannot be restored from ▷ Users & Roles.
-4. **No user creation in the web UI** — self-registration (four staff roles) and the bootstrap admin are the only paths; there is no "create a colleague" form despite what some older notes claim.
+4. **No user creation in the web UI by an administrator** — self-registration (the four self-assignable staff roles, or either client role) and the bootstrap admin are the only paths; there is no "create a colleague" form on ▷ Users & Roles despite what some older notes claim. An administrator can *change* an existing person's role, which is how staff accounts become client accounts.
 5. The 403 page does not tell you **which permission** was missing.
 
 **Screen and data behaviour**
@@ -998,7 +1077,7 @@ The honest page. Give this to every new user with the training pack; the system 
 6. **The notification bell and its badge are not wired.** Live updates come as toasts only (§6.3).
 7. **Settings (⚙) in the topbar is disabled** — *Settings coming soon*.
 8. **Logistics Tracker is read-only for every role**, including the administrator, and its own subtitle promises route management. Status changes require the API.
-9. **No ticket creation in the web app**; tickets originate on mobile or through the API.
+9. **Staff cannot create a ticket from the web app** — ▷ Ticket Hub is read-and-work only, so a fault logged on someone's behalf has to be raised on mobile or through the API. The client portal can raise one (§12.8): that is the client's own ticket on the client's own account, which is the case the form was written for. The portal itself stays deliberately small — four screens, no appointment booking, no health record, no offline cart; those remain mobile-only (§12.4, §12.6, §12.7), and deliveries are listed on *My Verichat* rather than tracked page by page.
 10. **Warehouse Alerts has no acknowledge/resolve control.** The `Admin/ResolveAlert` endpoint exists but no button reaches it, and alerts persist until the stock number changes.
 11. **`Assets › Schedule Service` is a plain link to the Ticket Hub.** It does not carry the asset, and it creates no ticket.
 12. **Two Razor views are dead files** — `Views/Procurement/Dashboard.cshtml` and `Views/Support/Dashboard.cshtml` are not rendered by any action; all four dashboards share `Views/Dashboard/Index.cshtml`.
@@ -1059,8 +1138,13 @@ Verified against `VerichatCRM.Web/Authorization/Perm.cs` and the actions' `[Requ
 | Screen | Admin | Sales | Procurement | Field Support | Logistics | Client / Student |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|
 | Landing page, Privacy | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Sign in / Register | ✅ | ✅ | ✅ | ✅ | ✅ | web register refused → mobile |
-| Dashboard (shared analytics) | ✅ | ✅ | ✅ | ✅ | ✅ | — |
+| Sign in / Register | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ self-register (§4.3) |
+| Dashboard (workspace, `/Dashboard`) | ✅ | ✅ | ✅ | ✅ | ✅ | — 403 |
+| **Client portal — My Verichat** (`/Portal`) | — | — | — | — | — | ✅ |
+| **Client portal — Catalogue + Request quote** | — | — | — | — | — | ✅ |
+| **Client portal — My Quotations + PDF** | — | — | — | — | — | ✅ |
+| **Client portal — Accept / decline a sent quote** | — | — | — | — | — | ✅ Client · — Student |
+| **Client portal — Support (list + raise)** | — | — | — | — | — | ✅ |
 | Client Directory | ✅ | ✅ | ✅ | — | — | — |
 | Client Profile | ✅ | ✅ | ✅ | — | — | — |
 | Add Client | ✅ | — | — | — | — | — |
@@ -1087,6 +1171,13 @@ Verified against `VerichatCRM.Web/Authorization/Perm.cs` and the actions' `[Requ
 | Mobile tabs (Catalogue, Consult, My Assets) | — | — | — | — | — | ✅ |
 | Mobile staff dashboard + scanner | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 
+The one difference between the two client roles is in this table: accepting or declining a
+sent quotation needs `client.quote.respond`, which Client User holds and Medical Student does
+not. Everything else in the client column is shared. Refusals are decided by the
+`[RequirePermission]` attribute on the controller or action, so the *link hidden* and the
+*403* columns in this table are the same fact measured twice — which is the point of
+§6.2.
+
 ---
 
 ## 21. Appendix B — annotated screenshot inventory
@@ -1097,14 +1188,14 @@ The rubric requires a high-quality annotated screenshot for **every major step**
 |---|---|---|---|
 | SG-01 | `/Account/Login` | empty | ① email ② password ③ Sign In ④ *Create one* |
 | SG-02 | `/Account/Login` | failed attempt | ① validation summary `Invalid credentials.` |
-| SG-03 | `/Account/Register` | dropdown open | ① full name ② email ③ password hint ④ the four roles ⑤ Create Account |
+| SG-03 | `/Account/Register` | dropdown open | ① full name ② email ③ password hint ④ the six roles, in their two groups ⑤ *System Administrator is not on this list* ⑥ Create Account |
 | SG-04 | mobile *Choose your account* | cold start | ① Client ② Staff / Admin ③ New User |
 | SG-05 | mobile client login | empty | ① email ② password ③ Sign In ④ Create account |
 | SG-06 | mobile New User | mid-entry | ①–⑤ the five fields ⑥ Sign up |
 | SG-07 | any dashboard | token expired | ① KPIs at 0 ② the sign-out path |
 | SG-08 | any page, full shell | signed in | ① brand ② user/role ③ sections ④ topbar ⑤ content ⑥ Sign out |
 | SG-09…13 | sidebar only, Admin / Sales / Procurement / Field Support / Logistics | one role each | ① the links that differ from the previous frame |
-| SG-14 | `/Account/NoAccess` | Client User in web | ① the role it shows ② what to do instead |
+| SG-14 | `/Account/NoAccess` | Client User typing `/Dashboard` | ① the role it shows ② the link back to `/Portal` |
 | SG-15 | 404 page | any bad id | ① return link |
 | SG-16 | any page + toast | live event | ① toast ② its ✕ ③ the unwired bell |
 | SG-17 | `/Admin/Dashboard` | populated | ① KPIs ② three charts ③ Timeline ④ Recent activity |
@@ -1136,8 +1227,13 @@ The rubric requires a high-quality annotated screenshot for **every major step**
 | SG-45 | mobile staff dashboard | scanner open | ① metrics ② Scan ③ goal ring |
 | SG-46 | mobile, airplane mode | queued | ① offline banner ② pending count |
 | SG-47 | `/Procurement/ProductForm` (Admin) | new product | ① name ② category datalist ③ price ④ opening stock ⑤ threshold ⑥ image URL |
+| SG-48 | `/Portal` | signed in as Client User | ① *MY ACCOUNT* sidebar ② quotations ③ tickets ④ deliveries |
+| SG-49 | `/Portal/Catalogue` | quantities set | ① category chips ② search ③ price + stock ④ the qty boxes ⑤ note ⑥ Request quote |
+| SG-50 | `/Portal/Quotations` | one Sent | ① status chips ② badge ③ PDF ④ Accept ⑤ Decline |
+| SG-51 | `/Portal/Tickets` | after raising | ① subject ② priority ③ category ④ description ⑤ tracking number ⑥ the SLA confirmation |
+| SG-52 | `/Portal/Respond` as Medical Student | 403 | ① the refusal ② that accept/decline is Client User only |
 
-**To replace the frames with real captures:** the live portal URL plus one test account per role (System Administrator, Sales Representative, Procurement Manager, Field Support Engineer, Logistics, Client User) is enough for SG-01…SG-37 and SG-47; SG-38…SG-46 need a device or an Expo Web session. Credentials will not be written into any file in this repository, including this one.
+**To replace the frames with real captures:** the live portal URL plus one test account per role (System Administrator, Sales Representative, Procurement Manager, Field Support Engineer, Logistics, Client User) is enough for SG-01…SG-37 and SG-47…SG-52; SG-38…SG-46 need a device or an Expo Web session. Credentials will not be written into any file in this repository, including this one.
 
 ---
 
