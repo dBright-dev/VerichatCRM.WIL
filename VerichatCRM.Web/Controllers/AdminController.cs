@@ -41,7 +41,7 @@ namespace VerichatCRM.Web.Controllers
         public async Task<IActionResult> Users()
         {
             ViewData["Title"] = "Users & Roles";
-            ViewData["Subtitle"] = "View, create, edit, deactivate all users";
+            ViewData["Subtitle"] = "Change roles and deactivate accounts";
             var users = await _admin.GetUsersAsync();
             return View(users);
         }
