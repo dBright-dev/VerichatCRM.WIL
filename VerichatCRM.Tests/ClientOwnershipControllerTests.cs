@@ -1,12 +1,15 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using VerichatCRM.API.Controllers;
 using VerichatCRM.API.DTOs.Requests;
 using VerichatCRM.API.DTOs.Responses;
 using VerichatCRM.API.Services.Interfaces;
 using VerichatCRM.Core.Entities;
 using VerichatCRM.Core.Interfaces;
+using VerichatCRM.Infrastructure.Data;
 using VerichatCRM.Infrastructure.Data.External;
 using Xunit;
 
@@ -14,6 +17,9 @@ namespace VerichatCRM.Tests;
 
 public class ClientOwnershipControllerTests
 {
+    private static AppDbContext CreateDb() => new(new DbContextOptionsBuilder<AppDbContext>()
+        .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+
     [Fact]
     public async Task ClientOrder_AlwaysUsesAuthenticatedClientId()
     {
@@ -31,7 +37,12 @@ public class ClientOwnershipControllerTests
             service,
             new FakeQuotationRepository(),
             new FakeClientRepository(),
-            new FakePdfGenerator()), "client-owned");
+            new FakePdfGenerator(),
+            CreateDb(),
+            // GetById is an read-only ownership check and emits no notification, so the
+            // hub is deliberately absent here. Add a recording hub when a test needs one.
+            null!,
+            NullLogger<QuotationController>.Instance), "client-owned");
         var result = await controller.GetById("quote-1");
         Assert.IsType<ForbidResult>(result);
     }
