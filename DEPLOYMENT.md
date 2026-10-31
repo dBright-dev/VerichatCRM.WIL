@@ -200,17 +200,89 @@ continues in degraded mode: a migration that fails at startup (§8) and seeding 
 starter catalogue. Those make `/api/health` report a problem; they do not produce
 500.30.
 
+**One that was, until `c909aa6`, and is worth reading because it survives step 1 and
+step 2 above.** `Program.cs` also calls `MigrateAsync()` at startup, and on this
+repository that call threw before applying a single migration:
+
+```
+System.InvalidOperationException: An error was generated for warning
+'Microsoft.EntityFrameworkCore.Migrations.PendingModelChangesWarning': The model for
+context 'AppDbContext' has pending changes. Add a new migration before updating the
+database.
+```
+
+EF compares the live model against `AppDbContextModelSnapshot.cs` *before* it touches
+the database, and the snapshot is missing four entity types the context maps —
+`AuditLog`, `HealthMetric`, `ClientTimelineNote`, `Appointment` — because their tables
+came from hand-written migrations, which update nobody's snapshot (§8.2). So the
+sequence on a fresh deployment was: configure the panel correctly, the app starts, the
+migration throws, the catch logs it and continues, and the site comes up against an
+empty database. If that database exists but holds no tables — the hosted case, where
+the panel created it — `/api/health` still reports Healthy, because its database check
+only proves a connection opens. The fix downgrades this one warning to a log line, so the
+migrations run; the snapshot drift itself is still open and is what §8 is about.
+
 ## 8. Pre-flight checks before migrating an existing database
 
-**One new migration ships in this working copy:** `20261031160000_AddInquiryScoringInputs`. It does three things and nothing else —
+**Three migrations are new or rewritten in this working copy.** Read §8.1 before
+running any of them against a database that holds real data.
 
-- narrows `Inquiries.Status` from `nvarchar(max)` to `nvarchar(30)`, because SQL Server cannot build an index on a `max` column and the queue sorts on `Status` (the values come from `InquiryStatuses`; the longest is nine characters);
-- adds the two nullable inputs the automatic enquiry score reads: `Inquiries.Urgency` (`nvarchar(30)`) and `Inquiries.EstimatedValue` (`decimal(18,2)`);
-- creates the composite index `IX_Inquiries_Status_Score`.
+- `20261031160000_AddInquiryScoringInputs` does three things and nothing else —
+  it narrows `Inquiries.Status` from `nvarchar(max)` to `nvarchar(30)`, because SQL Server cannot build an index on a `max` column and the queue sorts on `Status` (the values come from `InquiryStatuses`; the longest is nine characters); it adds the two nullable inputs the automatic enquiry score reads, `Inquiries.Urgency` (`nvarchar(30)`) and `Inquiries.EstimatedValue` (`decimal(18,2)`); and it creates the composite index `IX_Inquiries_Status_Score`.
+- `20261030204733_AddTask3Features` was **rewritten**, not added (`113d04d`). It had never run successfully anywhere: three of its foreign-key columns were declared `nvarchar(64)` against `nvarchar(450)` principals, which aborts the whole `CREATE TABLE` with Msg 1753, and its `Up()` also emitted a second `CREATE TABLE SalesGoals` with a shape belonging to no entity in the solution, five days after `20261025111000_AddSalesGoals` had already created that table. Both defects, and the stale `AppDbContextModelSnapshot.cs` / `.Designer.cs` entries that carried them, are corrected. The `HasMaxLength(64)` calls are gone from `AppDbContext` on purpose — the values stored in those columns are `Guid.ToString()` (36 characters), so nothing about the data changed; only the declaration now agrees with the principal it points at.
+- `20261031210000_AddTicketActivityAndDeliveryStatusHistory` is new and hand-written (`f327007`). It creates `TicketActivity` and `DeliveryStatusUpdate` — two tables the model declares, the context maps, and the application writes to, and which **no migration in the chain had ever emitted**. Raising a support ticket therefore died on save with `Invalid object name 'TicketActivity'`, and every delivery status write with the same error. They could not be scaffolded either: both entities are already in the model snapshot, so the differ compares the current model against a snapshot that agrees with it, finds nothing, and prints nothing. A hand-written migration is the only way to add them.
 
-It was written by hand rather than scaffolded, and the reason is recorded in §12.4 of the technical report: `20261030204733_AddTask3Features` recreates the `SalesGoals` table that `20261025111000_AddSalesGoals` already created, and the model snapshot inherits that contradiction, so `dotnet ef migrations add` produced a migration that rebuilt `SalesGoals` and re-added columns the earlier hand-written migrations had already applied. A migration that fails on the first database it touches is worse than no migration, so only the three changes above were kept.
+`IX_ClientAssignments_ClientId_SalesRepId_AssignedDate` now emits a create-time
+warning — 1808 theoretical key bytes against SQL Server's 1700 limit, because two
+`nvarchar(450)` columns sit in one key. It is a warning, not an error: the index is
+created, and the rows that actually go through it are GUIDs and dates, about 152 bytes.
+It is listed here because the message appears in the migration output and the next
+person to read it will otherwise look for a failure.
 
-Pre-flight is short, because nothing is dropped and nothing is made unique:
+**Two tooling traps on this chain.** `dotnet ef migrations add` still starts from a
+snapshot that is missing four mapped entity types (§7.1), so anything scaffolded today
+begins by proposing `CREATE TABLE` for `Appointments`, `AuditLogs`,
+`ClientTimelineNotes` and `HealthMetrics` — tables every migrated database already has,
+which aborts the script with "There is already an object named …" — and it stays silent
+about genuine gaps the snapshot already describes. Read a scaffolded migration line by
+line before shipping it, or write it by hand the way the other nine were. And do not run
+`dotnet ef migrations remove --force` on this chain: it rebuilds
+`AppDbContextModelSnapshot.cs` from the previous migration's `.Designer.cs`, the
+previous migration (`20261031160000_AddInquiryScoringInputs`) is hand-written and has
+none, and the snapshot came out as a 21-line stub with an empty `BuildModel`. It was
+restored from the commit.
+
+To apply the chain to a database that already exists and already has history, generate
+and run the idempotent script rather than relying on startup, and read the queries below
+first:
+
+```powershell
+dotnet ef migrations script --idempotent `
+  --project VerichatCRM.Infrastructure --startup-project VerichatCRM.API `
+  --output ApplyAllMigrations.sql
+sqlcmd -S <tcp:server> -d <database> -U <login> -i ApplyAllMigrations.sql
+```
+
+Build first — `--no-build` silently reuses the assemblies already on disk, so a fix to a
+migration or to the snapshot will not appear in the regenerated script and the same
+error comes back unchanged, which reads as the fix not working.
+
+`sqlcmd` takes the password interactively when `-U` is given without `-P`, which is how
+it should be run: the credential then reaches neither the script file, the command line,
+nor the shell history. Run it from the directory holding `ApplyAllMigrations.sql` and
+pass that plain relative name — a quoted absolute path with forward slashes is mangled
+into `Error occurred while opening or operating on file C:`. `--idempotent` makes the
+script safe to re-run: it reads `__EFMigrationsHistory` and emits only the migrations the
+database has not recorded, so a partially applied chain finishes rather than repeats.
+
+A database that does not exist yet needs none of this: since `c909aa6` the API creates
+and migrates it at startup. Verified against a scratch LocalDB database pointed at by an
+environment variable in a Production run — 38 tables, 19 rows in
+`__EFMigrationsHistory`, and `Appointments`, `AuditLogs`, `ClientTimelineNotes`,
+`HealthMetrics`, `TicketActivity` and `DeliveryStatusUpdate` all present, with
+`SalesGoals` created exactly once.
+
+Pre-flight on an existing database is short, because nothing is dropped and nothing is made unique:
 
 ```sql
 -- The only narrowed column, narrowed to 30. Should return no rows.
@@ -226,7 +298,7 @@ SELECT Urgency, COUNT(*) FROM Inquiries WHERE Urgency IS NOT NULL GROUP BY Urgen
 
 ### 8.1 The deferred index-and-precision migration
 
-`20261031091951_ApplyEntityConfigurationsAndIndexes` was scaffolded, reviewed and **then deleted from this working copy, because the SalesGoals problem above made it unsafe to ship.** The `IEntityTypeConfiguration` classes it was meant to apply are live — `ApplyConfigurationsFromAssembly` runs at startup — which means **the unique indexes on `Users.Email`, the two tracking numbers, `Assets.SerialNumber` and `Quotations.QuoteReference`, and the `decimal(5,4)` precision on `VatRate` are declared in code but do not exist in the database.** Nothing enforces them until someone adds that migration back.
+`20261031091951_ApplyEntityConfigurationsAndIndexes` was scaffolded, reviewed and **then deleted from this working copy, because it proposed changes that would have failed on the first database it touched.** Two of the reasons it was written that way are now fixed — the duplicate `SalesGoals` rebuild is gone (§8), so a fresh scaffold no longer tries to recreate that table — and one is not: the snapshot still omits the four tables that came from hand-written migrations, so a scaffold today opens with `CREATE TABLE Appointments / AuditLogs / ClientTimelineNotes / HealthMetrics`. Its purpose is unchanged and still outstanding. The `IEntityTypeConfiguration` classes it was meant to apply are live — `ApplyConfigurationsFromAssembly` runs at startup — which means **the unique indexes on `Users.Email`, the two tracking numbers, `Assets.SerialNumber` and `Quotations.QuoteReference`, and the `decimal(5,4)` precision on `VatRate` are declared in code but do not exist in the database.** Nothing enforces them until someone adds that migration back. Confirmed on the scratch database built from the whole chain by the API at startup: 187 unique indexes, every one of them a key, none of them a `UI_…`; `Quotations.VatRate` is `decimal(18,2)`.
 
 When you do, run this checklist against the live database first. On an empty or newly created database it applies without complaint; on a database that has been used, any row that violates the new shape aborts the whole migration, and because the API calls `MigrateAsync()` at startup the app then comes up in degraded mode with the schema half-changed.
 
@@ -287,21 +359,26 @@ INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion)
 VALUES (N'20261023000000_AddHealthMetricTable', N'10.0.12');
 ```
 
-**On the missing `.Designer.cs` files.** Eight of the migrations are hand-written:
-the seven listed in §12.4 of the technical report (`AddHealthMetricTable`,
-`AddClientTimelineNotes`, `AddB2BAppointments`, `AddSalesGoals`,
-`AddUserPasswordResetFields`, `AddAuditLogs`, `AddUserDeviceToken`), plus
-`20261031160000_AddInquiryScoringInputs` added in this pass. They carry
-`[DbContext]` and `[Migration]` inline instead of having generated Designer files.
-That is not a defect: the Designer exists to hold
-those two attributes plus a `TargetModel` snapshot, and the attributes are what EF
-actually needs to discover and order a migration. `dotnet ef migrations list` shows
-all eighteen in timestamp order and `MigrateAsync()` applies them cleanly. A
-fabricated `TargetModel` would be worse than none — it would assert a database
-state nobody observed, and `dotnet ef migrations remove` would then restore the
-wrong model. Leave them as they are and write new migrations with `dotnet ef` so
-they arrive with a real Designer — but note that `AddInquiryScoringInputs` was
-written by hand for the same reason `ApplyEntityConfigurationsAndIndexes` was
-withdrawn: the snapshot in `AddTask3Features` contradicts the database it claims to
-describe, so anything scaffolded from it today inherits that contradiction and has
-to be checked line by line before it can ship.
+**On the missing `.Designer.cs` files.** Nine of the nineteen migrations are
+hand-written: the seven listed in §12.4 of the technical report
+(`AddHealthMetricTable`, `AddClientTimelineNotes`, `AddB2BAppointments`,
+`AddSalesGoals`, `AddUserPasswordResetFields`, `AddAuditLogs`,
+`AddUserDeviceToken`), plus `20261031160000_AddInquiryScoringInputs` and
+`20261031210000_AddTicketActivityAndDeliveryStatusHistory` added in this pass. They
+carry `[DbContext]` and `[Migration]` inline instead of having generated Designer files.
+That is not a defect: the Designer exists to hold those two attributes plus a
+`TargetModel` snapshot, and the attributes are what EF actually needs to discover and
+order a migration. `dotnet ef migrations list` shows all nineteen in timestamp order and
+`MigrateAsync()` applies them cleanly — which it only started doing at `c909aa6`; before
+that the same call aborted on the pending-model-changes check without running any of
+them (§7.1). A fabricated `TargetModel` would be worse than none — it would assert a
+database state nobody observed, and `dotnet ef migrations remove` would then restore the
+wrong model, which is precisely the trap described in §8.
+
+What the nine do cost is the snapshot drift behind all of this: a hand-written migration
+updates no snapshot, so `AppDbContextModelSnapshot.cs` describes a database that does not
+exist. Write new migrations by hand the way those nine were, or scaffold one and delete
+the `CREATE TABLE` lines for the four tables the snapshot has never seen — and check
+every remaining line, because the differ's other blind spot is a table that is *in* the
+snapshot but was never emitted by any migration, which is exactly how `TicketActivity`
+and `DeliveryStatusUpdate` went missing for a whole release.
