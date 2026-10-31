@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using VerichatCRM.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using VerichatCRM.Infrastructure.Data.Repositories;
 using VerichatCRM.Infrastructure.Services;
 using VerichatCRM.Infrastructure.Repositories;
@@ -54,6 +55,23 @@ static bool RequestsNoEncryption(string sqlConnectionString) =>
                 || kv[1].Trim().Equals("no", StringComparison.OrdinalIgnoreCase)));
 
 // Database
+// PendingModelChangesWarning is logged instead of thrown, and the reason is a
+// detail of this repository's history rather than a preference. Nine of the
+// nineteen migrations were written by hand (DEPLOYMENT.md 8.2), so
+// AppDbContextModelSnapshot.cs does not describe the database the chain
+// actually builds: four mapped entities - AuditLog, HealthMetric,
+// ClientTimelineNote, Appointment - have tables created by hand-written
+// migrations that the snapshot has never seen. EF checks the snapshot before
+// it applies anything and, on a mismatch, throws this warning out of
+// MigrateAsync() without running a single migration. Left at the default, the
+// API therefore cannot create or update a schema on any environment, ever,
+// including a fresh deployment where no tables exist yet; startup swallows the
+// exception, the app comes up with no database, and every request 500s.
+// Downgrading it to a log line lets the migration run and still reports the
+// drift. The drift itself is the real defect and is tracked in DEPLOYMENT.md 8;
+// repairing the snapshot is deliberately not done here, because scaffolding
+// from the current model would also propose the unique indexes and the
+// decimal(5,4) VatRate that exist in code but not in any database (8.1).
 builder.Services.AddDbContext<AppDbContext>((sp, options) =>
     options.UseSqlServer(
         connectionString,
@@ -61,7 +79,8 @@ builder.Services.AddDbContext<AppDbContext>((sp, options) =>
             maxRetryCount: 3,
             maxRetryDelay: TimeSpan.FromSeconds(10),
             errorNumbersToAdd: null))
-    .AddInterceptors(sp.GetRequiredService<VerichatCRM.Infrastructure.Data.Interceptors.AuditSaveChangesInterceptor>()));
+    .AddInterceptors(sp.GetRequiredService<VerichatCRM.Infrastructure.Data.Interceptors.AuditSaveChangesInterceptor>())
+    .ConfigureWarnings(warnings => warnings.Log(RelationalEventId.PendingModelChangesWarning)));
 
 // Register services
 // Repositories
