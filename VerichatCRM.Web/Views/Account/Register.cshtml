@@ -1,30 +1,31 @@
 ﻿@model VerichatCRM.Web.Models.Auth.RegisterRequest
 @{
     ViewData["Title"] = "Register";
-    Layout = "_Layout";
+    Layout = "_AuthLayout";
 }
 
 <section class="vc-auth">
     <aside class="vc-auth-side">
         <div class="vc-auth-brand">
-            <span class="vc-auth-logo">★</span>
+            <img class="vc-auth-logo" src="~/images/logo.png" width="40" height="40" alt="Verichat logo" />
             <div>
                 <div class="vc-auth-brand-name">Verichat</div>
                 <div class="vc-auth-brand-sub">MEDICAL PROCUREMENT</div>
             </div>
         </div>
-        <h2 class="vc-auth-headline">Precision procurement<br />for the health sector.</h2>
-        <p class="vc-auth-lede">Create your account to access the Verichat CRM platform — role-based dashboards for Admin, Sales, Procurement and Support.</p>
+        <h2 class="vc-auth-headline">Create an account<br />and get to work.</h2>
+        <p class="vc-auth-lede">Choose how you use Verichat. Staff roles run the supply chain from the console; client roles order from it and follow their own quotes, deliveries and support.</p>
         <ul class="vc-auth-points">
-            <li><span class="vc-check">✓</span> AI-scored inquiry queue</li>
-            <li><span class="vc-check">✓</span> SLA-tracked ticket resolution</li>
+            <li><span class="vc-check">✓</span> Staff consoles for sales, procurement, support and logistics</li>
+            <li><span class="vc-check">✓</span> A self-service portal for clients and students</li>
+            <li><span class="vc-check">✓</span> One login for the web app and the mobile app</li>
         </ul>
     </aside>
 
     <div class="vc-auth-main">
-        <div class="auth-card vc-auth-card">
-            <h1 class="auth-title">Create Account</h1>
-            <p class="auth-subtitle">Join the Verichat CRM platform</p>
+        <div class="vc-auth-card">
+            <h1 class="vc-auth-title">Create account</h1>
+            <p class="vc-auth-sub">All fields are required except where marked.</p>
 
             <form asp-action="Register" method="post">
                 @Html.AntiForgeryToken()
@@ -32,66 +33,53 @@
                 <div asp-validation-summary="ModelOnly" class="text-critical"></div>
 
                 <div class="form-group">
-                    <label class="form-label" asp-for="DisplayName">Full Name</label>
-                    <input asp-for="DisplayName" class="form-input" placeholder="e.g. Thabo Nkosi" autocomplete="name" />
+                    <label class="form-label" asp-for="DisplayName">Full name</label>
+                    <input asp-for="DisplayName" class="form-input" placeholder="e.g. Thabo Nkosi" autocomplete="name" autofocus />
                     <span asp-validation-for="DisplayName" class="text-critical"></span>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" asp-for="Email">Email Address</label>
+                    <label class="form-label" asp-for="Email">Email address</label>
                     <input asp-for="Email" type="email" class="form-input" placeholder="you@verichat.co.za" autocomplete="email" />
                     <span asp-validation-for="Email" class="text-critical"></span>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" asp-for="Password">Password</label>
-                    <input asp-for="Password" type="password" class="form-input" placeholder="Min. 8 characters" autocomplete="new-password" />
+                    <input asp-for="Password" type="password" class="form-input" placeholder="At least 8 characters" autocomplete="new-password" />
                     <span asp-validation-for="Password" class="text-critical"></span>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" asp-for="Role">Role</label>
+                    <label class="form-label" asp-for="Role">What will you do here?</label>
                     <select asp-for="Role" class="form-select">
-                        <option value="Sales Representative">Sales Representative — Revenue Engine</option>
-                        <option value="Procurement Manager">Procurement Manager — Supply &amp; Logistics</option>
-                        <option value="Field Support Engineer">Field Support Engineer — On-Site Resolution</option>
-                <option value="Logistics">Logistics — Delivery &amp; Transport</option>
-                <option value="Client User">Client User — Orders &amp; Quotes</option>
-                <option value="Medical Student">Medical Student — Browse &amp; Learn</option>
+                        <optgroup label="Order from Verichat">
+                            <option value="Client User">Client User — buy, request quotes, raise support</option>
+                            <option value="Medical Student">Medical Student — browse and request, no purchasing</option>
+                        </optgroup>
+                        <optgroup label="Work inside Verichat">
+                            <option value="Sales Representative">Sales Representative — revenue engine</option>
+                            <option value="Procurement Manager">Procurement Manager — supply &amp; logistics</option>
+                            <option value="Field Support Engineer">Field Support Engineer — on-site resolution</option>
+                            <option value="Logistics">Logistics — delivery &amp; transport</option>
+                        </optgroup>
                     </select>
                     <span asp-validation-for="Role" class="text-critical"></span>
+                    <p class="vc-auth-sub" style="margin:.5rem 0 0;">
+                        System Administrator is not on this list. It is granted by an
+                        existing administrator, never claimed from a public form.
+                    </p>
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-block">Create Account</button>
-            </form>
+                <button type="submit" class="btn btn-primary btn-block">Create account</button>
 
-            <p style="text-align:center; margin-top: 1rem; font-size: 13px;">
-                Already have an account? <a asp-action="Login">Sign in</a>
-            </p>
+                <p class="vc-auth-switch">
+                    Already have an account? <a asp-action="Login">Sign in</a>
+                </p>
+            </form>
         </div>
     </div>
 </section>
-
-@section Styles {
-    <style>
-        .vc-public-nav, .vc-public-footer { display: none; }
-        .vc-public main { padding: 0; }
-        .vc-auth { display: grid; grid-template-columns: 1fr 1.6fr; min-height: calc(100vh - 0px); }
-        .vc-auth-side { background: #101E33; color: #fff; padding: 3rem 2.5rem; display: flex; flex-direction: column; justify-content: center; }
-        .vc-auth-brand { display: flex; gap: .7rem; align-items: center; margin-bottom: 2.5rem; }
-        .vc-auth-logo { width: 38px; height: 38px; border-radius: 8px; background: #1A9BB8; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; }
-        .vc-auth-brand-name { font-family: var(--vc-font-heading); font-weight: 700; font-size: 1.05rem; }
-        .vc-auth-brand-sub { font-size: .65rem; letter-spacing: .12em; color: #8A97B0; }
-        .vc-auth-headline { font-size: 1.9rem; line-height: 1.25; color: #fff; margin-bottom: .8rem; }
-        .vc-auth-lede { color: #9AA6C0; font-size: .9rem; margin-bottom: 2rem; max-width: 340px; }
-        .vc-auth-points { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .6rem; font-size: .85rem; color: #C4CDDF; }
-        .vc-check { color: #1A9BB8; font-weight: 700; margin-right: .4rem; }
-        .vc-auth-main { background: #F4F3EF; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
-        .vc-auth-card { width: 100%; max-width: 430px; border: none; box-shadow: none; background: transparent; padding: 0; }
-        .vc-auth-card .form-input, .vc-auth-card .form-select { background: #fff; }
-        @@media (max-width: 900px) { .vc-auth { grid-template-columns: 1fr; } .vc-auth-side { display: none; } }
-    </style>
-}
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

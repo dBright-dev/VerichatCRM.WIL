@@ -1,0 +1,145 @@
+/* Sign-in and sign-up
+   Both screens share this file - the panel used to be duplicated inside a <style>
+   block in each view, with its own copy of the palette. The colours are the theme
+   tokens now, so the auth screen follows the rest of the product when they change. */
+
+.vc-auth {
+    display: grid;
+    grid-template-columns: minmax(360px, 1fr) minmax(420px, 1.35fr);
+    min-height: 100vh;
+}
+
+.vc-auth-side {
+    background: linear-gradient(160deg, var(--vc-navy) 0%, var(--vc-navy-light) 100%);
+    color: var(--vc-text-inverse);
+    padding: 3rem 2.75rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: .35rem;
+}
+
+.vc-auth-brand {
+    display: flex;
+    gap: .7rem;
+    align-items: center;
+    margin-bottom: 2.4rem;
+}
+
+.vc-auth-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--vc-radius-sm);
+    background: #F4F3EF;
+    object-fit: contain;
+    padding: 3px;
+    flex: none;
+}
+
+.vc-auth-brand-name {
+    font-family: var(--vc-font-heading);
+    font-weight: 700;
+    font-size: 1.05rem;
+    line-height: 1.1;
+}
+
+.vc-auth-brand-sub {
+    font-size: .62rem;
+    letter-spacing: .14em;
+    color: var(--vc-text-inverse-muted);
+}
+
+.vc-auth-headline {
+    font-size: clamp(1.5rem, 2.4vw, 1.95rem);
+    line-height: 1.25;
+    color: #fff;
+    margin: 0 0 .8rem;
+}
+
+.vc-auth-lede {
+    color: var(--vc-text-inverse-muted);
+    font-size: .9rem;
+    line-height: 1.6;
+    margin: 0 0 1.8rem;
+    max-width: 38ch;
+}
+
+.vc-auth-points {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    font-size: .85rem;
+    color: #C4CDDF;
+}
+
+.vc-check {
+    color: var(--vc-accent);
+    font-weight: 700;
+    margin-right: .45rem;
+}
+
+.vc-auth-main {
+    background: var(--vc-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+}
+
+.vc-auth-card {
+    width: 100%;
+    max-width: 430px;
+    background: var(--vc-surface);
+    border: 1px solid var(--vc-border);
+    border-radius: var(--vc-radius);
+    box-shadow: var(--vc-shadow);
+    padding: 2rem;
+}
+
+.vc-auth-card .form-input,
+.vc-auth-card .form-select {
+    background: var(--vc-surface);
+}
+
+.vc-auth-title {
+    font-family: var(--vc-font-heading);
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0 0 .25rem;
+}
+
+.vc-auth-sub {
+    color: var(--vc-text-muted);
+    font-size: .85rem;
+    margin: 0 0 1.6rem;
+}
+
+.vc-auth-switch {
+    text-align: center;
+    font-size: .82rem;
+    color: var(--vc-text-muted);
+    margin: 1.4rem 0 0;
+}
+
+/* The validation summary sits above the fields; without this it renders as
+   unstyled text and reads as part of the form's copy. */
+.vc-auth-card .text-critical ul {
+    padding-left: 1.1rem;
+    margin: 0 0 1rem;
+}
+
+@media (max-width: 900px) {
+    /* The marketing panel is the part a phone cannot show, but the brand line
+       still belongs - so it collapses to a strip rather than disappearing and
+       leaving an unbranded form. */
+    .vc-auth { grid-template-columns: 1fr; min-height: 100vh; }
+    .vc-auth-side { padding: 1.1rem 1.25rem; gap: .2rem; }
+    .vc-auth-brand { margin-bottom: .5rem; }
+    .vc-auth-headline { font-size: 1.1rem; margin-bottom: 0; }
+    .vc-auth-lede, .vc-auth-points { display: none; }
+    .vc-auth-main { padding: 1.75rem 1.25rem 2.5rem; }
+    .vc-auth-card { padding: 1.4rem; box-shadow: none; }
+}
