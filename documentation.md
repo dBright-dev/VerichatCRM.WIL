@@ -56,11 +56,11 @@ Nothing in the shipped code references Firebase — a repo-wide search for `fire
 | Client / account management | **[Built]** + extended | Unified profile, key personnel, timeline, rep assignment, client map |
 | Ranked inquiry scoring | **[Built]** — Computed, overridable | `InquiryScoring` derives the score from sector, contract status, estimated value and urgency when the rep does not type one; a typed score wins and is never overwritten (§8) |
 | Visual sales pipeline + forecasting | **[Built]** | Kanban with drag-and-drop, weighted forecast, monthly goal widget |
-| One-click PDF quotation | **[Partial]** | PDF generation is fully built server-side but **the button is disabled in the staff UI** |
+| One-click PDF quotation | **[Built]** | PDF generation is fully built server-side and now wired to the UI: the save handler at `Views/Quotation/Index.cshtml:246` sets the button's href to `GET /Quotation/Pdf/{id}` and drops its `disabled` state as soon as a save returns an id, and `QuotationController.Save` is posted from the same screen. An unsaved draft still shows the link greyed — that is the only remaining condition, and it is the correct one. |
 | E-commerce / self-service portal | **[Built]** (no payments) | Catalogue, cart, multi-line checkout, stock deduction, reordering |
 | Complaint & issue hub | **[Built]** + extended | SLA deadlines, auto-escalation background service, activity timeline, photos |
 | Equipment lifecycle & 60-day alerts | **[Built]** | Warranty/calibration expiry query, service logs |
-| Quick-Cart for medical students | **[Not built]** | No student role path, no discount engine |
+| Quick-Cart for medical students | **[Partial]** | The student role path is built as of this pass: the web client portal and `POST /api/Quotation/request` both admit Medical Student (`QuotationController.cs:110`), so a student can raise a real quote request end to end. **Still missing is the discount half** of what the proposal described — a repo-wide search for discount code returns nothing outside `node_modules`. |
 | Digital Health / Telemedicine / RPM | **[Partial]** | Mobile screens exist; no video calling, no LIMS/HMS integration |
 | Bluetooth device syncing | **[Not built]** | Zero references; vitals are typed in manually |
 | Secure checkout / digital invoicing | **[Not built]** | No payment gateway, no invoice entity |
