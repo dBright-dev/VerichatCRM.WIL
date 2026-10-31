@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using VerichatCRM.API.Helpers;
 using VerichatCRM.API.Middleware;
 using VerichatCRM.API.Services;
@@ -163,6 +165,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
+// Registered as a model validator against the service collection, not as a
+// controller option: the 11.3.1 overload only accepts IServiceCollection. This
+// is what makes the validators in API/Validators run at all - before it they
+// were resolved by nobody and every request reached the services unchecked.
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
