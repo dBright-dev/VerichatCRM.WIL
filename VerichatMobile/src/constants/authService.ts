@@ -31,11 +31,14 @@ export async function login(email: string, password: string, audience?: 'client'
   if (!data.success) fail(data)
   if (!data.token) throw new Error('The server did not return a sign-in token.')
   const role = data.user?.role
-  if (audience === 'client' && role !== 'Client User') {
+  // The client audience is the catalogue, the quick cart and a quote request.
+  // A Medical Student trains on exactly that flow, so they sign in here too;
+  // they are not staff and get no staff screens.
+  if (audience === 'client' && role !== 'Client User' && role !== 'Medical Student') {
     throw new Error('This account is for staff. Choose Staff sign-in instead.')
   }
   if (audience === 'staff' && (!role || !(STAFF_MOBILE_ROLES as readonly string[]).includes(role))) {
-    throw new Error('Staff sign-in is limited to System Administrators, Sales Representatives, Procurement Managers, and Field Support Engineers. Client accounts must use Client sign-in.')
+    throw new Error(`Staff sign-in is limited to ${STAFF_MOBILE_ROLES.join(', ')}. Client accounts must use Client sign-in.`)
   }
   setAuthToken(data.token)
   return data

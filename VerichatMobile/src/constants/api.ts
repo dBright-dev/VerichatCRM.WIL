@@ -307,11 +307,16 @@ export function getAuthRole(): string | null {
   }
 }
 
+// Logistics was missing from this list, which locked the role out of the app
+// completely: the client audience refused them (they are not a Client User or
+// Medical Student) and the staff audience refused them too. On the web they are
+// staff, with the ticket hub and logistics tracker.
 export const STAFF_MOBILE_ROLES = [
   'System Administrator',
   'Sales Representative',
   'Procurement Manager',
   'Field Support Engineer',
+  'Logistics',
 ] as const
 
 export function isStaffMobileRole(role: string | null): boolean {
