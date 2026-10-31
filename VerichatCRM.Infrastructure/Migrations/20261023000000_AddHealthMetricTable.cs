@@ -1,11 +1,22 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using VerichatCRM.Infrastructure.Data;
 
 #nullable disable
 
 namespace VerichatCRM.Infrastructure.Migrations
 {
+    // The [DbContext] + [Migration] pair is what makes a migration discoverable:
+    // EF's assembly scans for MigrationAttribute, so when this file was written by
+    // hand without it the class compiled, looked sequenced, and was never
+    // collected. dbo.HealthMetrics therefore did not exist on any database built
+    // by Migrate(), and POST /api/healthmetrics failed with "Invalid object name
+    // 'HealthMetrics'". The timestamp keeps it ordered before the migrations that
+    // followed it.
     /// <inheritdoc />
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20261023000000_AddHealthMetricTable")]
     public partial class AddHealthMetricTable : Migration
     {
         /// <inheritdoc />
