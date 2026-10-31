@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using VerichatCRM.Web.Services.Interfaces;
@@ -13,6 +14,16 @@ namespace VerichatCRM.Web.Services
         {
             PropertyNameCaseInsensitive = true
         };
+
+        /// <inheritdoc />
+        /// <remarks>
+        /// The typed client is transient, so this describes the failures of the
+        /// calls this controller made - it never carries a message from another
+        /// request. A call routed through a service uses that service's own
+        /// instance, so those failures stay unreported here and the caller keeps
+        /// its generic wording rather than showing someone else's error.
+        /// </remarks>
+        public string? LastError { get; private set; }
 
         public ApiClient(HttpClient http, IHttpContextAccessor httpContext)
         {
@@ -39,10 +50,30 @@ namespace VerichatCRM.Web.Services
         {
             EnsureToken();
             var response = await _http.GetAsync(endpoint);
-            if (!response.IsSuccessStatusCode) return default;
+            if (!response.IsSuccessStatusCode)
+            {
+                RecordFailure(endpoint, response.StatusCode, await response.Content.ReadAsStringAsync());
+                return default;
+            }
 
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<T>(json, _jsonOpts);
+        }
+
+        public async Task<ApiFile?> GetFileAsync(string endpoint)
+        {
+            EnsureToken();
+            var response = await _http.GetAsync(endpoint);
+            if (!response.IsSuccessStatusCode)
+            {
+                RecordFailure(endpoint, response.StatusCode, await response.Content.ReadAsStringAsync());
+                return null;
+            }
+
+            return new ApiFile(
+                await response.Content.ReadAsByteArrayAsync(),
+                response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream",
+                response.Content.Headers.ContentDisposition?.FileName?.Trim('"', '\'') ?? "download.pdf");
         }
 
         public async Task<TResponse?> PostAsync<TRequest, TResponse>(string endpoint, TRequest body)
@@ -82,7 +113,7 @@ namespace VerichatCRM.Web.Services
             return await ReadAsync<TResponse>(endpoint, response);
         }
 
-        private static async Task<TResponse?> ReadAsync<TResponse>(string endpoint, HttpResponseMessage response)
+        private async Task<TResponse?> ReadAsync<TResponse>(string endpoint, HttpResponseMessage response)
         {
             if (response.IsSuccessStatusCode)
             {
@@ -91,9 +122,71 @@ namespace VerichatCRM.Web.Services
                 return JsonSerializer.Deserialize<TResponse>(respJson, _jsonOpts);
             }
 
-            var body = await response.Content.ReadAsStringAsync();
-            System.Diagnostics.Debug.WriteLine($"API {(int)response.StatusCode} {endpoint}: {body}");
+            RecordFailure(endpoint, response.StatusCode, await response.Content.ReadAsStringAsync());
             return default;
+        }
+
+        private void RecordFailure(string endpoint, HttpStatusCode status, string body)
+        {
+            System.Diagnostics.Debug.WriteLine($"API {(int)status} {endpoint}: {body}");
+            LastError = MessageFrom(body) ?? status switch
+            {
+                HttpStatusCode.BadRequest => "The server rejected the values that were sent.",
+                HttpStatusCode.Unauthorized => "The session is no longer valid; sign in again.",
+                HttpStatusCode.Forbidden => "You are not allowed to perform this action.",
+                HttpStatusCode.NotFound => "The record this refers to no longer exists.",
+                HttpStatusCode.Conflict => "Another record already uses one of these values.",
+                _ => $"The request failed (HTTP {(int)status})."
+            };
+        }
+
+        /// <summary>
+        /// Pulls the first human-readable message out of an ASP.NET Core error
+        /// body. FluentValidation's auto-validation answers with
+        /// ValidationProblemDetails, whose field messages live under "errors" as
+        /// arrays; a hand-built BadRequestObject(new { message }) puts it under
+        /// "message" instead, and ProblemDetails uses "detail".
+        /// </summary>
+        private static string? MessageFrom(string body)
+        {
+            if (string.IsNullOrWhiteSpace(body) || body[0] != '{') return null;
+            try
+            {
+                using var document = JsonDocument.Parse(body);
+                var root = document.RootElement;
+
+                if (root.TryGetProperty("errors", out var errors)
+                    && errors.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (var field in errors.EnumerateObject())
+                    {
+                        if (field.Value.ValueKind == JsonValueKind.Array && field.Value.GetArrayLength() > 0)
+                        {
+                            var message = field.Value[0].GetString();
+                            if (!string.IsNullOrWhiteSpace(message)) return message;
+                        }
+                        else if (field.Value.ValueKind == JsonValueKind.String)
+                        {
+                            var message = field.Value.GetString();
+                            if (!string.IsNullOrWhiteSpace(message)) return message;
+                        }
+                    }
+                }
+
+                foreach (var name in new[] { "message", "detail", "title" })
+                {
+                    if (root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String)
+                    {
+                        var text = value.GetString();
+                        if (!string.IsNullOrWhiteSpace(text)) return text;
+                    }
+                }
+            }
+            catch (JsonException)
+            {
+                // Not JSON after all - the caller falls back to the status code.
+            }
+            return null;
         }
     }
 }
