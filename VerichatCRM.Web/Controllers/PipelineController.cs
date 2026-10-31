@@ -9,15 +9,21 @@ namespace VerichatCRM.Web.Controllers
     {
         private readonly IPipelineApiService _pipeline;
         private readonly ISalesGoalApiService _goals;
+        private readonly IApiClient _api;
 
-        public PipelineController(IPipelineApiService pipeline, ISalesGoalApiService goals)
+        // Two constructors used to compete here, one taking _goals and one taking
+        // _api, so the container could satisfy either and leave the other field
+        // null - and Index() reads both. Whichever candidate it picked wasn't
+        // defined, so the pipeline board was a coin-flip 500.
+        public PipelineController(
+            IPipelineApiService pipeline,
+            ISalesGoalApiService goals,
+            IApiClient api)
         {
             _pipeline = pipeline;
             _goals = goals;
+            _api = api;
         }
-        private readonly IApiClient _api;
-
-        public PipelineController(IPipelineApiService pipeline, IApiClient api) { _pipeline = pipeline; _api = api; }
 
         public async Task<IActionResult> Index()
         {
