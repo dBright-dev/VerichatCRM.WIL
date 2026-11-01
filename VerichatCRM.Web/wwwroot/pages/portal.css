@@ -17,7 +17,7 @@
 }
 
 .vc-portal-hero h2 {
-    color: #fff;
+    color: var(--vc-surface);
     margin: 0 0 4px;
     font-size: 1.25rem;
 }
@@ -35,41 +35,8 @@
     flex-wrap: wrap;
 }
 
-.vc-portal-kpis {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    gap: 14px;
-    margin-bottom: 20px;
-}
-
-.vc-portal-kpi {
-    background: var(--vc-surface);
-    border: 1px solid var(--vc-border);
-    border-radius: var(--vc-radius);
-    box-shadow: var(--vc-shadow);
-    padding: 15px 17px;
-}
-
-.vc-portal-kpi__value {
-    font-family: var(--vc-font-heading);
-    font-size: 1.6rem;
-    font-weight: 600;
-    line-height: 1.1;
-}
-
-.vc-portal-kpi__label {
-    font-size: .72rem;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: var(--vc-text-muted);
-    margin-bottom: 6px;
-}
-
-.vc-portal-kpi__hint {
-    font-size: .78rem;
-    color: var(--vc-text-muted);
-    margin-top: 4px;
-}
+/* The KPI tile itself is the theme's: .vc-portal-kpis / .vc-portal-kpi join the
+   .stat-grid / .stat-card / .vc-kpi-card__* aliases in verichat-theme.css. */
 
 .vc-portal-columns {
     display: grid;
@@ -77,13 +44,6 @@
     gap: 18px;
     align-items: start;
     margin-bottom: 18px;
-}
-
-.vc-portal-panel {
-    background: var(--vc-surface);
-    border: 1px solid var(--vc-border);
-    border-radius: var(--vc-radius);
-    box-shadow: var(--vc-shadow);
 }
 
 .vc-portal-panel__head {
@@ -157,7 +117,7 @@ a.chip {
     display: inline-block;
 }
 
-a.chip.active, a.chip:hover { color: #fff; }
+a.chip.active, a.chip:hover { color: var(--vc-surface); }
 
 .vc-qty {
     width: 84px;
@@ -186,15 +146,6 @@ a.chip.active, a.chip:hover { color: #fff; }
 .vc-quote-bar__fields .form-input { background: var(--vc-surface); }
 
 /* Quotation cards */
-.vc-quote-card {
-    border: 1px solid var(--vc-border);
-    border-radius: var(--vc-radius);
-    background: var(--vc-surface);
-    box-shadow: var(--vc-shadow);
-    padding: 16px 18px;
-    margin-bottom: 14px;
-}
-
 .vc-quote-card__head {
     display: flex;
     flex-wrap: wrap;
@@ -234,15 +185,6 @@ a.chip.active, a.chip:hover { color: #fff; }
 }
 
 /* Ticket timeline */
-.vc-ticket-card {
-    border: 1px solid var(--vc-border);
-    border-radius: var(--vc-radius);
-    background: var(--vc-surface);
-    box-shadow: var(--vc-shadow);
-    padding: 15px 18px;
-    margin-bottom: 13px;
-}
-
 .vc-ticket-card__head {
     display: flex;
     flex-wrap: wrap;
@@ -271,15 +213,6 @@ a.chip.active, a.chip:hover { color: #fff; }
     border-top: 1px dashed var(--vc-border);
     font-size: .78rem;
     color: var(--vc-text-muted);
-}
-
-.vc-portal-raise {
-    border: 1px solid var(--vc-border);
-    border-radius: var(--vc-radius);
-    background: var(--vc-surface);
-    box-shadow: var(--vc-shadow);
-    padding: 0 18px;
-    margin-bottom: 18px;
 }
 
 .vc-portal-raise > summary {

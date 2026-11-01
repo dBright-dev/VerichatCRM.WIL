@@ -24,12 +24,31 @@
     --vc-warning-soft: #FDF1DC;
     --vc-danger: #E24C4C;
     --vc-danger-soft: #FBE6E6;
+    /* .badge-info was written against these two and they were never declared, so
+       every Medium-priority badge rendered with no background at all. */
+    --vc-info: #3182CE;
+    --vc-info-soft: #E8F2FC;
+    --vc-neutral: #4A5568;
+    --vc-neutral-soft: #E9EDF3;
+
+    /* The second half of every primary-button gradient, and the origin dot on a
+       shipment route. It lived in six rules as a literal. */
+    --vc-cyan: #00B4D8;
+
+    /* Warm off-white behind the logo mark: its hairline serifs disappear against
+       pure --vc-surface at 32px. DESIGN-SYSTEM.md 1.3. */
+    --vc-plate: #F4F3EF;
+
+    /* The only light blue that reads on --vc-navy; used for the sidebar logout. */
+    --vc-navy-link: #9AB8FF;
 
     /* Layout */
 
     --vc-sidebar-width: 248px;
     --vc-radius: 10px;
     --vc-radius-sm: 6px;
+    --vc-radius-lg: 12px;
+    --vc-radius-pill: 999px;
     --vc-shadow: 0 1px 3px rgba(16, 27, 51, 0.06), 0 1px 2px rgba(16, 27, 51, 0.08);
     --vc-font-heading: "Poppins", "Segoe UI", sans-serif;
     --vc-font-body: "Inter", "Segoe UI", sans-serif;
@@ -58,7 +77,7 @@ a {
     top: auto;
     z-index: 1050;
     background: var(--vc-accent);
-    color: #fff;
+    color: var(--vc-surface);
     padding: 0.5rem 1rem;
     border-radius: var(--vc-radius-sm);
 }
@@ -75,105 +94,206 @@ a {
 /* Sidebar */
 .vc-sidebar { width: var(--vc-sidebar-width); background: var(--vc-navy); color: var(--vc-text-inverse); min-height: 100vh; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 20; overflow-y: auto; }
 .vc-sidebar__brand { display: flex; align-items: center; gap: .6rem; padding: 1.25rem; border-bottom: 1px solid var(--vc-navy-border); text-decoration: none; }
-.vc-brand-logo { width: 32px; height: 32px; border-radius: var(--vc-radius-sm); background: #F4F3EF; object-fit: contain; padding: 2px; flex: none; }
+.vc-sidebar__user { display: flex; align-items: center; gap: .6rem; padding: .9rem 1.25rem; border-bottom: 1px solid var(--vc-navy-border); }
+.vc-brand-logo { width: 32px; height: 32px; border-radius: var(--vc-radius-sm); background: var(--vc-plate); object-fit: contain; padding: 2px; flex: none; }
 .vc-brand-text { font-family: var(--vc-font-heading); font-weight: 600; font-size: 1.05rem; color: var(--vc-text-inverse); }
+.vc-brand-sub { display: block; font-size: .62rem; letter-spacing: .14em; color: var(--vc-text-inverse-muted); }
 .vc-sidebar__nav { flex: 1; padding: .75rem; }
 .vc-sidebar__section-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--vc-text-inverse-muted); padding: .9rem .75rem .35rem; }
 .vc-sidebar__link { display: flex; align-items: center; gap: .65rem; padding: .55rem .75rem; border-radius: var(--vc-radius-sm); color: var(--vc-text-inverse-muted); font-size: .92rem; margin-bottom: .15rem; border-left: 3px solid transparent; text-decoration: none; }
 .vc-sidebar__link:hover { background: var(--vc-navy-light); color: var(--vc-text-inverse); text-decoration: none; }
-.vc-sidebar__link.active, .vc-sidebar__link[aria-current="page"] { background: var(--vc-navy-light); color: #fff; box-shadow: inset 3px 0 0 var(--vc-accent); font-weight: 500; }
+.vc-sidebar__link.active, .vc-sidebar__link[aria-current="page"] { background: var(--vc-navy-light); color: var(--vc-surface); box-shadow: inset 3px 0 0 var(--vc-accent); font-weight: 500; }
 .vc-sidebar__icon { font-style: normal; width: 20px; text-align: center; }
 .vc-sidebar__footer { padding: 1rem 1.25rem; border-top: 1px solid var(--vc-navy-border); font-size: .85rem; color: var(--vc-text-inverse-muted); }
 .vc-user { display: flex; align-items: center; gap: .6rem; margin-bottom: .5rem; }
-.vc-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,#2F6FED,#00B4D8); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; }
-.vc-user-name { font-size: 13px; font-weight: 600; color: #fff; }
+.vc-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,var(--vc-accent),var(--vc-cyan)); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--vc-surface); }
+.vc-user-name { font-size: 13px; font-weight: 600; color: var(--vc-surface); }
 .vc-user-role { font-size: 11px; color: var(--vc-text-inverse-muted); }
-.vc-logout { color: #9AB8FF; background: none; border: none; cursor: pointer; font-size: 13px; padding: 0; }
+.vc-logout { color: var(--vc-navy-link); background: none; border: none; cursor: pointer; font-size: 13px; padding: 0; }
 /* Topbar */
 .vc-topbar { background: var(--vc-surface); border-bottom: 1px solid var(--vc-border); padding: 1rem 1.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; position: sticky; top: 0; z-index: 10; }
 .vc-topbar__title { font-size: 1.3rem; margin: 0; }
 .vc-topbar__subtitle { color: var(--vc-text-muted); font-size: .88rem; margin: .1rem 0 0; }
 .vc-topbar__actions { display: flex; gap: .5rem; }
-.vc-icon-btn { width: 40px; height: 40px; border-radius: var(--vc-radius-sm); border: 1px solid var(--vc-border); background: var(--vc-surface); cursor: pointer; font-size: 16px; position: relative; }
-.vc-icon-btn:hover { border-color: var(--vc-accent); }
+/* One declaration. There used to be two, 200 lines apart, and the later one won —
+   so the bordered 40px square described first never applied to any button. This
+   is the shape that was actually rendering, kept pixel-for-pixel.
+   _Topbar.cshtml:10,15. */
+.vc-icon-btn { width: 40px; height: 40px; border-radius: var(--vc-radius-sm); background: none; border: none; color: var(--vc-text-muted); font-size: 1.5rem; line-height: 1; cursor: pointer; position: relative; }
+.vc-icon-btn:hover { color: var(--vc-accent); }
 .vc-dot { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--vc-danger); }
-/* Cards */
-.vc-card { background: var(--vc-surface); border: 1px solid var(--vc-border); border-radius: var(--vc-radius); box-shadow: var(--vc-shadow); padding: 1.1rem 1.25rem; }
-.vc-kpi-card__label { font-size: .82rem; color: var(--vc-text-muted); margin-bottom: .35rem; }
-.vc-kpi-card__value { font-family: var(--vc-font-heading); font-size: 1.6rem; font-weight: 600; }
-.vc-badge { display: inline-flex; align-items: center; padding: .2rem .6rem; border-radius: 999px; font-size: .76rem; font-weight: 600; }
-.vc-badge--success { background: var(--vc-success-soft); color: var(--vc-success); }
-.vc-badge--warning { background: var(--vc-warning-soft); color: var(--vc-warning); }
-.vc-badge--danger { background: var(--vc-danger-soft); color: var(--vc-danger); }
+/* Panels.
+   One surface recipe. It used to be written out thirteen times: .vc-card, .card,
+   .stat-card, .kpi-card, .shipment-card/.ticket-row, .auth-card, .vc-table-wrap
+   and .vc-status__card in this file, then .vc-portal-kpi, .vc-portal-panel,
+   .vc-quote-card, .vc-ticket-card and .vc-portal-raise in pages/portal.css and
+   .vc-auth-card in pages/auth.css — each copy drifting a pixel of padding, a
+   point of max-width or a literal #fff away from the last. Every name a view
+   already uses is an alias on this one rule; the aliases that need something
+   extra say so underneath. DESIGN-SYSTEM.md 4. */
+.vc-card,
+.card,
+.stat-card,
+.kpi-card,
+.shipment-card,
+.ticket-row,
+.auth-card,
+.vc-auth-card,
+.vc-table-wrap,
+.vc-status__card,
+.vc-portal-panel,
+.vc-portal-kpi,
+.vc-quote-card,
+.vc-ticket-card,
+.vc-portal-raise {
+    background: var(--vc-surface);
+    border: 1px solid var(--vc-border);
+    border-radius: var(--vc-radius);
+    box-shadow: var(--vc-shadow);
+    padding: 1.1rem 1.25rem;
+}
+.vc-table-wrap { padding: 0; overflow-x: auto; }
+.stat-card { position: relative; overflow: hidden; }
+.auth-card, .vc-auth-card { width: 100%; max-width: 440px; border-radius: var(--vc-radius-lg); padding: 2rem; }
+.vc-status__card { width: 100%; max-width: 480px; padding: 2.5rem 2rem; text-align: center; }
+/* The portal panels are boxes whose own head/body rows carry the padding. */
+.vc-portal-panel { padding: 0; }
+.vc-portal-raise { padding: 0 1.125rem; margin-bottom: 1.125rem; }
+.vc-quote-card { margin-bottom: .875rem; }
+.vc-ticket-card { margin-bottom: .8125rem; }
+.product-card { padding: 0; overflow: hidden; cursor: pointer; }
+.card-title { font-size: 1rem; font-weight: 600; margin-bottom: .5rem }
+.card-subtitle { font-size: .8rem; color: var(--vc-text-muted); margin-bottom: .9rem }
+/* KPI tiles. One label, one value, one grid — three dashboards used to each carry
+   their own: .vc-kpi-card__*/.stat-*/.kpi-* and the portal's
+   .vc-portal-kpi__*, with the labels half uppercase-tracked and half sentence
+   case. They all follow the micro-label pattern the rest of the product already
+   uses (.meta-label, .data-table th, .vc-sidebar__section-label).
+   .vc-accent used to hard-code #5B5BD6, a purple that is in no palette, while
+   --vc-accent is #2F6FED — so every KPI number on every dashboard rendered in a
+   colour the design system does not own. */
+.vc-accent { color: var(--vc-accent); }
+.vc-kpi-card__label, .stat-label, .kpi-label, .vc-portal-kpi__label { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--vc-text-muted); margin-bottom: .35rem; }
+.vc-kpi-card__value, .stat-value, .kpi-value, .vc-portal-kpi__value { font-family: var(--vc-font-heading); font-size: 1.6rem; font-weight: 600; line-height: 1.1; }
+.stat-meta, .vc-portal-kpi__hint { font-size: .78rem; color: var(--vc-text-muted); margin-top: .3rem }
+.stat-grid, .kpi-grid, .vc-portal-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .875rem; margin-bottom: 1.25rem }
+/* The coloured 4px strip down the left of a KPI tile (Procurement/Dashboard,
+   Support/Dashboard). */
+.stat-accent { position: absolute; top: 0; left: 0; width: 4px; height: 100% }
+.stat-accent.cyan { background: var(--vc-cyan) }
+.stat-accent.orange { background: var(--vc-warning) }
+.stat-accent.red { background: var(--vc-danger) }
+.stat-accent.green { background: var(--vc-success) }
+/* Charts. Neither class was ever declared, so the three canvases on the analytics
+   dashboard sat in unsized boxes and Chart.js (maintainAspectRatio:false) had no
+   height to fill. Dashboard/Index.cshtml:9-14. */
+.chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem }
+.chart-card-canvas, .vc-chart-box { position: relative; height: 260px }
+.vc-badge, .badge { display: inline-flex; align-items: center; padding: .2rem .6rem; border-radius: var(--vc-radius-pill); font-size: .76rem; font-weight: 600; }
+.vc-badge--success, .badge-success { background: var(--vc-success-soft); color: var(--vc-success); }
+.vc-badge--warning, .badge-warning { background: var(--vc-warning-soft); color: var(--vc-warning); }
+.vc-badge--danger, .badge-critical { background: var(--vc-danger-soft); color: var(--vc-danger); }
 .vc-badge--accent { background: var(--vc-accent-soft); color: var(--vc-accent); }
+.vc-badge--info, .badge-info { background: var(--vc-info-soft); color: var(--vc-info); }
+.badge-neutral { background: var(--vc-neutral-soft); color: var(--vc-neutral); }
 .vc-text-muted { color: var(--vc-text-muted); }
 .vc-divider { border-color: var(--vc-border); }
-/* Compat: old class names used across views */
+/* Text on a status, used beside a badge where a badge would be too loud
+   (Support/TicketHub.cshtml:27, Support/TicketDetail.cshtml:50). */
+.status-text { font-size: .78rem; color: var(--vc-text-muted); }
+/* The leading glyph of .alert-banner, which was markup with no rule behind it
+   (Admin/Users.cshtml:8, Procurement/WarehouseAlerts.cshtml:11,19). */
+.alert-icon { font-size: 1.1rem; line-height: 1; flex: none; }
+/* No .data-table rule existed anywhere and seven views use it, so admin, user,
+   asset, warehouse, support and enquiry tables rendered unstyled — the two that
+   looked right were holding themselves together with inline styles. */
+.data-table { width: 100%; border-collapse: collapse; font-size: .85rem }
+.data-table th { text-align: left; font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--vc-text-muted); padding: .6rem .75rem; border-bottom: 1px solid var(--vc-border) }
+.data-table td { padding: .6rem .75rem; border-bottom: 1px solid var(--vc-border); vertical-align: middle }
+.data-table tbody tr:last-child td { border-bottom: 0 }
+/* The reorder row in Procurement/WarehouseAlerts: supplier, cost and button side by
+   side inside one table cell. Neither class was ever declared, so the three
+   controls stacked and the cell grew to three times the height of its row. */
+.vc-reorder-form { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap }
+.vc-reorder-cost { width: 92px }
+.vc-row-danger { background: var(--vc-danger-soft); }
+.vc-row-warn { background: var(--vc-warning-soft); }
+/* A message shown where a list would be. It existed only as inline styles on two
+   divs. */
+.empty-state { padding: 2.5rem 1.5rem; text-align: center; color: var(--vc-text-muted); font-size: .88rem }
+/* Compat: the class names the views already use. */
 .catalog-toolbar{display:flex;justify-content:space-between;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap}
-.shipment-actions{display:flex;gap:.5rem}.map-placeholder{height:240px;background:linear-gradient(135deg,#BEE3F8,#90CDF4);border-radius:6px;position:relative;overflow:hidden}
-.map-pin{position:absolute;width:20px;height:20px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff}
-.pin-orange{background:var(--vc-warning)}.pin-blue{background:#3182CE}.pin-green{background:var(--vc-success)}
 .ticket-row{margin-bottom:.75rem}.ticket-title{font-weight:600;margin-bottom:.3rem}.ticket-meta{font-size:.78rem;color:var(--vc-text-muted);display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:.6rem}
-.alert-banner{display:flex;align-items:center;gap:.6rem;padding:.9rem 1rem;background:#FFF5F5;border-left:4px solid var(--vc-danger);border-radius:6px;margin-bottom:1.25rem}
+.alert-banner{display:flex;align-items:center;gap:.6rem;padding:.9rem 1rem;background:var(--vc-danger-soft);border-left:4px solid var(--vc-danger);border-radius:var(--vc-radius-sm);margin-bottom:1.25rem}
 .text-critical,.status-critical{color:var(--vc-danger);font-weight:600}.text-warning,.status-warning{color:var(--vc-warning);font-weight:600}.text-success,.status-ok{color:var(--vc-success);font-weight:600}
-.activity-list{display:flex;flex-direction:column}.activity-item{display:flex;align-items:center;gap:.65rem;padding:.65rem 0;border-bottom:1px solid var(--vc-border)}
-.activity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--vc-text-muted)}
-.activity-dot.info{background:#3182CE}.activity-dot.warning{background:var(--vc-warning)}.activity-dot.critical{background:var(--vc-danger)}.activity-dot.success{background:var(--vc-success)}
-.activity-body{flex:1}.activity-title{font-size:.83rem;font-weight:600}.activity-subtitle{font-size:.75rem;color:var(--vc-text-muted)}.activity-time{font-size:.7rem;color:var(--vc-text-muted)}
-.pipeline-column{background:#F8FAFD}.welcome-banner{margin-bottom:1.25rem}
-.vc-public{min-height:100vh;display:flex;flex-direction:column}.vc-public-nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.75rem;background:#fff;border-bottom:1px solid var(--vc-border);position:sticky;top:0;z-index:10}
-.vc-public-brand{display:flex;align-items:center;gap:.55rem;font-weight:700;color:#101B33}.vc-public-links{display:flex;align-items:center;gap:1rem}.vc-public-footer{text-align:center;padding:1.5rem;color:var(--vc-text-muted);font-size:.82rem}
-.vc-btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.6rem 1.2rem;border-radius:8px;font-size:.88rem;font-weight:600;text-decoration:none}
-.vc-btn-primary{background:linear-gradient(135deg,#2F6FED,#00B4D8);color:#fff}.vc-btn-sm{padding:.35rem .8rem;font-size:.8rem}
-.hero{display:grid;grid-template-columns:1.15fr 1fr;gap:2.5rem;align-items:center;padding:3rem 1.75rem;max-width:1280px;margin:0 auto;width:100%}
-.hero-left{background:var(--vc-navy);color:#fff;padding:3rem;border-radius:14px}.hero-tagline{color:#fff;letter-spacing:.08em}.hero-divider{width:56px;height:3px;background:#00B4D8;margin:1rem 0}.hero-subtext{color:rgba(255,255,255,.78)}
-.hero-right{display:flex;justify-content:center}.hero-brand img{height:40px}.auth-card{width:100%;max-width:440px;background:#fff;border:1px solid var(--vc-border);border-radius:12px;box-shadow:var(--vc-shadow);padding:2rem}
+/* The activity feed and the timeline are one component with two names:
+   .activity-* is used by Procurement/Dashboard and Logistics/AssetDetail,
+   .timeline-* by Dashboard/Index, and TicketDetail.cshtml grew a third copy in an
+   embedded <style> block. Both names are defined here; the third is retired. */
+.activity-list,.timeline{display:flex;flex-direction:column;list-style:none;margin:0;padding:0}
+.activity-item,.timeline-item{display:flex;align-items:flex-start;gap:.65rem;padding:.65rem 0;border-bottom:1px solid var(--vc-border);position:relative}
+.activity-item:last-child,.timeline-item:last-child{border-bottom:0}
+.activity-dot,.timeline-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:.35rem;background:var(--vc-text-muted)}
+.activity-dot.info,.timeline-dot.info{background:var(--vc-info)}
+.activity-dot.critical,.timeline-dot.danger{background:var(--vc-danger)}
+.activity-dot.warning,.timeline-dot.warning{background:var(--vc-warning)}
+.activity-dot.success,.timeline-dot.success{background:var(--vc-success)}
+.activity-dot.accent,.timeline-dot.accent{background:var(--vc-accent)}
+.activity-body{flex:1}
+.activity-title,.timeline-title{font-size:.83rem;font-weight:600}
+.activity-subtitle,.timeline-detail{font-size:.75rem;color:var(--vc-text-muted)}
+.activity-time,.timeline-time{font-size:.7rem;color:var(--vc-text-muted)}
+/* The rail variant Support/TicketDetail used to grow its own copy of in an
+   embedded <style> block: same items, dots hung off a vertical rule instead of a
+   per-row border. */
+.timeline--rail{padding-left:1.125rem;border-left:2px solid var(--vc-border)}
+.timeline--rail .timeline-item{padding:0 0 1rem .875rem;border-bottom:0}
+.timeline--rail .timeline-item::before{content:"";position:absolute;left:-30px;top:.4rem;width:10px;height:10px;border-radius:50%;background:var(--vc-accent)}
+/* Photo attachments on a ticket. */
+.vc-photo-grid{display:flex;flex-wrap:wrap;gap:.5rem}
+.vc-photo-grid img{width:96px;height:96px;object-fit:cover;border-radius:var(--vc-radius-sm);border:1px solid var(--vc-border)}
+/* Status pages. This whole component lived in an embedded <style> inside the
+   _StatusCard partial that Error, NotFound and Unauthorized share, restating the
+   panel recipe a twelfth time with a #5B5BD6 fallback that is in no palette. */
+.vc-status{min-height:60vh;display:flex;align-items:center;justify-content:center;padding:2rem 1rem}
+.vc-status__code{font-size:3.5rem;font-weight:700;line-height:1;margin-bottom:.25rem;color:var(--vc-accent)}
+.vc-status__icon{font-size:2.5rem;line-height:1;margin-bottom:.5rem}
+.vc-status__title{font-size:1.35rem;margin:.5rem 0}
+.vc-status__msg{color:var(--vc-text-muted);margin-bottom:1.5rem}
+.vc-status__actions{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap}
+.vc-status__req{margin-top:1.25rem;font-size:.8rem;color:var(--vc-text-muted)}
+.pipeline-column{background:var(--vc-bg)}.welcome-banner{margin-bottom:1.25rem}
+.vc-btn,.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.6rem 1.2rem;border-radius:var(--vc-radius-sm);font-size:.88rem;font-weight:600;text-decoration:none;border:1px solid transparent;cursor:pointer}
+.vc-btn-primary,.btn-primary{background:linear-gradient(135deg,var(--vc-accent),var(--vc-cyan));color:var(--vc-surface);border:none}
+.vc-btn-primary:hover,.btn-primary:hover{opacity:.92;color:var(--vc-surface);text-decoration:none}
+.vc-btn-sm,.btn-sm{padding:.35rem .8rem;font-size:.8rem}
+.btn-xs{padding:.25rem .6rem;font-size:.75rem;border-radius:var(--vc-radius-sm)}
+.btn-block{width:100%}
+.btn-outline,.btn-outline-primary{background:var(--vc-surface);border:1px solid var(--vc-border);color:var(--vc-navy)}
+.btn-outline:hover,.btn-outline-primary:hover{border-color:var(--vc-accent);color:var(--vc-accent);text-decoration:none}
+.btn-outline-danger{background:var(--vc-surface);border:1px solid var(--vc-danger-soft);color:var(--vc-danger)}
+.btn-danger{background:var(--vc-danger);color:var(--vc-surface)}
 .auth-title{font-size:1.7rem;margin-bottom:.25rem}.auth-subtitle{color:var(--vc-text-muted);margin-bottom:1.5rem}
-.vc-brand-sub { display: block; font-size: .62rem; letter-spacing: .14em; color: var(--vc-text-inverse-muted); }
-.vc-sidebar__user { display: flex; align-items: center; gap: .6rem; padding: .9rem 1.25rem; border-bottom: 1px solid var(--vc-navy-border); }
-.vc-admin-welcome { margin-bottom: 1.25rem; }
-.vc-admin-welcome h2 { font-size: 1.45rem; margin: 0; }
-.vc-accent { color: #5B5BD6; }
-.vc-table-wrap { overflow-x: auto; background: #fff; border: 1px solid var(--vc-border); border-radius: var(--vc-radius); box-shadow: var(--vc-shadow); }
-.vc-row-danger { background: #FEF2F2; }
-.vc-row-warn { background: #FFFBEB; }
-@media(max-width:1024px){.vc-sidebar{transform:translateX(-100%)}.vc-main{margin-left:0}.hero{grid-template-columns:1fr}.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}}
-@media(max-width:640px){.vc-content{padding:1rem}.shipment-meta{grid-template-columns:1fr 1fr}.catalog-toolbar{flex-direction:column}}
 .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
-.product-card{overflow:hidden;cursor:pointer;padding:0}
 .product-image{height:140px;background:var(--vc-bg);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .product-image img{max-width:100%;max-height:100%;object-fit:cover}
 .product-body{padding:1rem}.product-name{font-size:.85rem;font-weight:600;min-height:2.4em}.product-price{font-weight:700;color:var(--vc-accent);margin:.3rem 0 .6rem}
 .product-footer{display:flex;justify-content:space-between;align-items:center}.product-stock{font-size:.72rem;color:var(--vc-text-muted)}
 .shipment-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem}
-.shipment-card,.ticket-row{padding:1.1rem 1.25rem;background:#fff;border:1px solid var(--vc-border);border-radius:var(--vc-radius);box-shadow:var(--vc-shadow)}
 .shipment-header,.ticket-header{display:flex;justify-content:space-between;align-items:center;gap:.6rem;margin-bottom:.75rem}
 .shipment-ref,.ticket-ref{font-weight:700}.shipment-route{display:flex;align-items:center;gap:.6rem;margin-bottom:.9rem}
-.route-point{display:flex;align-items:center;gap:.4rem;font-size:.78rem}.route-dot{width:8px;height:8px;border-radius:50%}.route-dot.origin{background:#00B4D8}.route-dot.destination{background:var(--vc-danger)}
-.route-line{flex:1;height:2px;background:#E3E7EF}
+.route-point{display:flex;align-items:center;gap:.4rem;font-size:.78rem}.route-label{font-size:.78rem;font-weight:600}.route-dot{width:8px;height:8px;border-radius:50%}.route-dot.origin{background:var(--vc-cyan)}.route-dot.destination{background:var(--vc-danger)}
+.route-line{flex:1;height:2px;background:var(--vc-border)}
 .shipment-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;padding:.7rem 0;border-top:1px solid var(--vc-border);border-bottom:1px solid var(--vc-border);margin-bottom:.8rem}
 .meta-label{display:block;font-size:.65rem;text-transform:uppercase;color:var(--vc-text-muted)}.meta-value{display:block;font-size:.78rem;font-weight:600}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.6rem 1.2rem;border-radius:8px;font-size:.88rem;font-weight:600;border:1px solid transparent;cursor:pointer;text-decoration:none}
-.btn-primary{background:linear-gradient(135deg,#2F6FED,#00B4D8);color:#fff;border:none}
-.btn-primary:hover{opacity:.92;color:#fff;text-decoration:none}
-.btn-outline,.btn-outline-primary{background:#fff;border:1px solid var(--vc-border);color:#101B33}
-.btn-outline:hover,.btn-outline-primary:hover{border-color:var(--vc-accent);color:var(--vc-accent);text-decoration:none}
-.btn-outline-danger{background:#fff;border:1px solid #F2B8B8;color:var(--vc-danger)}
-.btn-danger{background:var(--vc-danger);color:#fff}
-.btn-sm{padding:.35rem .8rem;font-size:.8rem}.btn-xs{padding:.25rem .6rem;font-size:.75rem;border-radius:6px}
-.btn-block{width:100%}
-.card{background:#fff;border:1px solid var(--vc-border);border-radius:var(--vc-radius);box-shadow:var(--vc-shadow);padding:1.1rem 1.25rem}
-.card-title{font-size:1rem;font-weight:600;margin-bottom:.5rem}.card-subtitle{font-size:.8rem;color:var(--vc-text-muted);margin-bottom:.9rem}
-.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:1.5rem}
-.stat-card{position:relative;overflow:hidden;padding:1.1rem 1.25rem;background:#fff;border:1px solid var(--vc-border);border-radius:var(--vc-radius);box-shadow:var(--vc-shadow)}
-.stat-label{font-size:.82rem;color:var(--vc-text-muted);margin-bottom:.35rem}.stat-value{font-family:var(--vc-font-heading);font-size:1.6rem;font-weight:600}.stat-meta{font-size:.78rem;color:var(--vc-text-muted);margin-top:.3rem}
-.stat-accent{position:absolute;top:0;left:0;width:4px;height:100%}.stat-accent.cyan{background:#00B4D8}.stat-accent.orange{background:var(--vc-warning)}.stat-accent.red{background:var(--vc-danger)}.stat-accent.green{background:var(--vc-success)}
-.badge{display:inline-flex;align-items:center;padding:.2rem .6rem;border-radius:999px;font-size:.76rem;font-weight:600}
-.badge-success{background:var(--vc-success-soft);color:var(--vc-success)}.badge-warning{background:var(--vc-warning-soft);color:var(--vc-warning)}.badge-critical{background:var(--vc-danger-soft);color:var(--vc-danger)}.badge-info{background:var(--vc-info-soft);color:var(--vc-info)}.badge-neutral{background:#E9EDF3;color:#4A5568}
-.grid-2{display:grid;grid-template-columns:2fr 1fr;gap:1.25rem}.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
-.chip-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem}.chip{padding:.45rem 1rem;border-radius:20px;background:#fff;border:1px solid var(--vc-border);font-size:.82rem;cursor:pointer}.chip.active,.chip:hover{background:var(--vc-accent);color:#fff;border-color:var(--vc-accent)}
+.grid-2{display:grid;grid-template-columns:2fr 1fr;gap:1.25rem}
+.chip-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem}.chip{padding:.45rem 1rem;border-radius:var(--vc-radius-pill);background:var(--vc-surface);border:1px solid var(--vc-border);font-size:.82rem;cursor:pointer}.chip.active,.chip:hover{background:var(--vc-accent);color:var(--vc-surface);border-color:var(--vc-accent)}
 .search-bar{position:relative;flex:1;max-width:420px}.search-bar input{padding-left:2.4rem}.search-bar::before{content:"\1F50D";position:absolute;left:.85rem;top:50%;transform:translateY(-50%);opacity:.5}
-.form-input,.form-select{width:100%;padding:.6rem .85rem;border:1px solid var(--vc-border);border-radius:6px;font-size:.88rem;background:#fff}
+.form-input,.form-select{width:100%;padding:.6rem .85rem;border:1px solid var(--vc-border);border-radius:var(--vc-radius-sm);font-size:.88rem;background:var(--vc-surface)}
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:.8rem;font-weight:600;margin-bottom:.35rem}
+@media(max-width:1024px){.vc-sidebar{transform:translateX(-100%)}.vc-main{margin-left:0}.grid-2{grid-template-columns:1fr}}
+@media(max-width:640px){.vc-content{padding:1rem}.shipment-meta{grid-template-columns:1fr 1fr}.catalog-toolbar{flex-direction:column}}
 
 /* Toast notifications */
 .vc-notification-toast {
@@ -235,7 +355,7 @@ a {
   top: -6px;
   right: -6px;
   background: var(--vc-danger);
-  color: #fff;
+  color: var(--vc-surface);
   font-size: 0.65rem;
   font-weight: 700;
   min-width: 18px;
@@ -246,18 +366,3 @@ a {
   justify-content: center;
   padding: 0 4px;
 }
-
-/* Topbar icon button */
-.vc-icon-btn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--vc-text-muted);
-  margin-left: 1rem;
-  position: relative;
-}
-.vc-icon-btn:hover {
-  color: var(--vc-accent);
-}
-.form-group{margin-bottom:1rem}.form-label{display:block;font-size:.8rem;font-weight:600;margin-bottom:.35rem}.form-check{display:flex;align-items:center;gap:.45rem;margin:.8rem 0;font-size:.82rem;color:var(--vc-text-muted)}

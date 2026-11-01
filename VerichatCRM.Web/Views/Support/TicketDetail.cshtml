@@ -13,17 +13,6 @@
     var activities = Model.Activities.OrderByDescending(a => a.PerformedAt).ToList();
 }
 
-@section Styles {
-    <style>
-        .vc-timeline { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 2px solid var(--vc-border, #e5e7eb); }
-        .vc-timeline li { position: relative; padding: 0 0 16px 14px; }
-        .vc-timeline li::before { content: ""; position: absolute; left: -24px; top: 5px; width: 10px; height: 10px;
-                                  border-radius: 50%; background: var(--vc-accent, #5B5BD6); }
-        .vc-photo-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-        .vc-photo-grid img { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; border: 1px solid var(--vc-border, #e5e7eb); }
-    </style>
-}
-
 @if (TempData["Success"] != null)
 {
     <div class="alert alert-success" role="status">@TempData["Success"]</div>
@@ -85,10 +74,10 @@
 
         <div class="card">
             <div class="card-title">Activity</div>
-            <ul class="vc-timeline">
+            <ul class="timeline timeline--rail">
                 @foreach (var a in activities)
                 {
-                    <li>
+                    <li class="timeline-item">
                         <div class="fw-semibold small">@Humanize(a.Action)</div>
                         @if (!string.IsNullOrWhiteSpace(a.FromValue) || !string.IsNullOrWhiteSpace(a.ToValue))
                         {
@@ -101,7 +90,7 @@
                         <div class="vc-text-muted small">@Utc(a.PerformedAt)</div>
                     </li>
                 }
-                <li>
+                <li class="timeline-item">
                     <div class="fw-semibold small">Ticket received</div>
                     <div class="vc-text-muted small">@Utc(Model.CreatedAt)</div>
                 </li>
@@ -121,7 +110,7 @@
                 }
                 else
                 {
-                    <div class="small mt-1" style="color:var(--vc-success, #1D9E75);">Resolved within SLA</div>
+                    <div class="small mt-1" style="color:var(--vc-success);">Resolved within SLA</div>
                 }
             }
             else
