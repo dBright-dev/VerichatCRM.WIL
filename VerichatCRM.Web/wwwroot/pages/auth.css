@@ -121,6 +121,17 @@
     margin: 1.1rem 0 0;
 }
 
+/* Honeypot field: off the layout rather than display:none, because a stylesheet
+   rule is the first thing a spam script is written to ignore, and a hidden-by-
+   position input still has to be filled in by a human who somehow reaches it. */
+.vc-auth-honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
 /* The notice screen leads with a banner instead of a heading, so it needs the
    card's own rhythm rather than the dashboard's page-level margins. */
 .vc-auth-card .alert-banner {

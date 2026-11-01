@@ -1,0 +1,90 @@
+@model List<VerichatCRM.Web.Models.Auth.HelpRequestItem>
+@{
+    ViewData["Title"] = "Sign-in Help";
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert-banner alert-banner--success" role="status"><span class="alert-icon">✓</span><span>@TempData["SuccessMessage"]</span></div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert-banner" role="alert"><span class="alert-icon">!</span><span>@TempData["ErrorMessage"]</span></div>
+}
+
+<div class="card">
+    <div class="card-title">Notes nobody can get past (@Model.Count)</div>
+    <p class="vc-text-muted">
+        These arrived from the "I cannot get in" link on the sign-in screens. Each one is also
+        emailed to every System Administrator the moment it is sent; this list is the copy that
+        survives a mail server being down. Closing a note says you have dealt with it - it does
+        not approve, change or delete an account, and nothing here does either. Read the address
+        against the <a asp-action="Approvals">approval queue</a> and
+        <a asp-action="Users">Users &amp; Roles</a>, where those things actually happen.
+    </p>
+
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state">Nobody is locked out. Notes appear here the moment they are sent.</div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr><th>Who</th><th>Says</th><th>From</th><th>Waiting</th><th>Close</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var h in Model)
+                {
+                    <tr>
+                        <td>
+                            <strong>@h.Name</strong>
+                            <div class="status-text">
+                                <a href="mailto:@h.Email">@h.Email</a>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(h.ExpectedRole))
+                            {
+                                @* Their own words about which role they wanted. Worth a
+                                   second look: "Client User" asking for help is a buyer who
+                                   cannot order, "Procurement Manager" is somebody reading
+                                   this as an application they expected to be granted. *@
+                                <div class="status-text">as @h.ExpectedRole</div>
+                            }
+                        </td>
+                        <td class="status-text">@h.Message</td>
+                        <td>
+                            <span class="badge @(h.Channel == "Mobile" ? "badge-info" : "badge-neutral")">@h.Channel</span>
+                        </td>
+                        <td>
+                            @if (h.ArrivedToday)
+                            {
+                                <text>Today</text>
+                            }
+                            else
+                            {
+                                <text>@h.DaysWaiting @(h.DaysWaiting == 1 ? "day" : "days")</text>
+                            }
+                            <div class="status-text">@h.CreatedAt.ToString("yyyy-MM-dd HH:mm") UTC</div>
+                        </td>
+                        <td>
+                            <form asp-action="ResolveHelpRequest" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@h.Id" />
+                                <button type="submit" class="btn btn-outline-danger btn-xs">Close</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<div class="card vc-card-spaced">
+    <div class="card-title">What closing one means</div>
+    <p class="vc-text-muted">
+        A closed note keeps its text, who answered it and when, so the next person to look can
+        tell whether this is the same complaint arriving twice. The sender is not told - there is
+        no reply route here, only the address they gave - so close a note after you have answered
+        it, not before.
+    </p>
+</div>

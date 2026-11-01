@@ -11,6 +11,42 @@ namespace VerichatCRM.API.DTOs.Requests
         public string Email { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// "I cannot get in." The one form in this file that a signed-out, and possibly
+    /// never-registered, person fills in - so it asks for a name and an address to
+    /// reply to rather than a credential to check.
+    /// <para>
+    /// <see cref="ExpectedRole"/> is free text and is never read as an instruction:
+    /// it says what the person believed they were signing up as, which is the first
+    /// thing an administrator needs in order to tell "my application is stuck" from
+    /// "I was given the wrong role". Approving anything is still
+    /// <c>AccountApprovalsController</c>'s job, from the approval queue, not here.
+    /// </para>
+    /// </summary>
+    public class AskForHelpRequest
+    {
+        [Required, MaxLength(150)]
+        public string Name { get; set; } = string.Empty;
+
+        [Required, EmailAddress, MaxLength(200)]
+        public string Email { get; set; } = string.Empty;
+
+        [MaxLength(50)]
+        public string? ExpectedRole { get; set; }
+
+        [Required, MaxLength(2000)]
+        public string Message { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Which app the note was typed into. The mobile client sends "Mobile" so a
+        /// queue can tell a broken build of the phone app from a broken sign-in page;
+        /// it is the one field here the caller labels itself, and the only thing
+        /// mislabelling it can cost is a wrong word in a column.
+        /// </summary>
+        [MaxLength(40)]
+        public string? Channel { get; set; }
+    }
+
     public class ResetPasswordRequest
     {
         [Required] public string Token { get; set; } = string.Empty;

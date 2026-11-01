@@ -15,5 +15,11 @@ namespace VerichatCRM.Web.Services.Interfaces
 
         /// <summary>Consumes the token from an email-confirmation link.</summary>
         Task<AuthResponse> ConfirmEmailAsync(string token);
+
+        /// <summary>
+        /// Sends an "I cannot get in" note to an administrator. Nothing about the
+        /// address is checked first, and nothing about it is reported back.
+        /// </summary>
+        Task<AuthResponse> AskForHelpAsync(AskForHelpForm form);
     }
 }

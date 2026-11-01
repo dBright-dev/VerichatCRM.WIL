@@ -1,4 +1,5 @@
-﻿using VerichatCRM.Web.Services.Interfaces;
+﻿using VerichatCRM.Web.Models.Auth;
+using VerichatCRM.Web.Services.Interfaces;
 
 namespace VerichatCRM.Web.Services
 {
@@ -36,6 +37,13 @@ namespace VerichatCRM.Web.Services
         private async Task<ApprovalOutcome> DecideAsync(string userId, string verb, object body) =>
             await _api.SendForBodyAsync<object, ApprovalOutcome>(HttpMethod.Put, $"/api/auth/approvals/{userId}/{verb}", body)
             ?? new ApprovalOutcome { Message = _api.LastError ?? "The approvals service could not be reached." };
+
+        public async Task<List<HelpRequestItem>> GetHelpRequestsAsync() =>
+            await _api.GetAsync<List<HelpRequestItem>>("/api/auth/help/open") ?? new();
+
+        public async Task<HelpOutcome> ResolveHelpRequestAsync(string id) =>
+            await _api.SendForBodyAsync<object, HelpOutcome>(HttpMethod.Put, $"/api/auth/help/{id}/resolve", new { })
+            ?? new HelpOutcome { Message = _api.LastError ?? "The sign-in help service could not be reached." };
 
         public async Task<bool> RunSlaCheckAsync() =>
             await _api.PostAsync<object, object>("/api/supportticket/run-sla-check", new { }) != null;

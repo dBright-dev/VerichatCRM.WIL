@@ -104,6 +104,32 @@ namespace VerichatCRM.Web.Controllers
             return RedirectToAction(nameof(Approvals));
         }
 
+        /// <summary>
+        /// The notes from people who could not get to the approval queue, because they
+        /// could not get in at all. Same reviewers as
+        /// <see cref="Approvals"/> - the three roles that can approve an application,
+        /// change a role or deactivate an account, which is the complete list of fixes
+        /// a sign-in problem needs.
+        /// </summary>
+        [RequirePermission(Perm.AccountApprovals)]
+        public async Task<IActionResult> HelpRequests()
+        {
+            ViewData["Title"] = "Sign-in Help";
+            ViewData["Subtitle"] = "Notes from people who cannot get in";
+            var notes = await _admin.GetHelpRequestsAsync();
+            return View(notes);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [RequirePermission(Perm.AccountApprovals)]
+        public async Task<IActionResult> ResolveHelpRequest(string id)
+        {
+            var outcome = await _admin.ResolveHelpRequestAsync(id);
+            TempData[outcome.Success ? "SuccessMessage" : "ErrorMessage"] = outcome.Message;
+            return RedirectToAction(nameof(HelpRequests));
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [RequirePermission(Perm.WarehouseAlerts)]

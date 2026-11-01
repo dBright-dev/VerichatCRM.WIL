@@ -50,6 +50,13 @@
                     Forgotten the password? <a asp-action="ForgotPassword">Send me a reset link</a>
                 </p>
 
+                @* The other way out. A reset link is no help to an account that is
+                   declined, deactivated or mislabelled, and a person with none of the
+                   three has previously had nowhere to say so except a phone number. *@
+                <p class="vc-auth-switch">
+                    Cannot get in at all? <a asp-action="Help">Tell an administrator</a>
+                </p>
+
                 <p class="vc-auth-switch">
                     No account yet? <a asp-action="Register">Create one</a>
                 </p>

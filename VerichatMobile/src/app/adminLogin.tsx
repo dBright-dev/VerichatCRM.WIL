@@ -111,6 +111,10 @@ const AdminLoginScreen = () => {
           <TouchableOpacity style={styles.link} onPress={() => router.push('/forgotPassword')}>
             <Text style={styles.link_text}>Forgotten the password?</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity style={styles.link} onPress={() => router.push('/loginHelp')}>
+            <Text style={styles.link_text}>Cannot sign in at all? Tell an administrator</Text>
+          </TouchableOpacity>
         </View>
         </View>
       </ScrollView>

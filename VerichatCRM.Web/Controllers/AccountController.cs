@@ -216,6 +216,42 @@ namespace VerichatCRM.Web.Controllers
                     "That confirmation link is not one we still accept. Sign in and ask for a new one.")));
         }
 
+        /// <summary>
+        /// "I cannot get in", for the cases the three flows above do not cover. Reachable
+        /// from the sign-in form and from the review screen, because somebody whose
+        /// application was declined has just been told no and has nowhere else to argue.
+        /// </summary>
+        [HttpGet]
+        public IActionResult Help() => View(new AskForHelpForm());
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Help(AskForHelpForm form)
+        {
+            // A filled-in field that no reader of this page was shown means the
+            // submitter was not a reader. Answered with the same screen and the same
+            // sentence as a real note, so a script scanning the response learns that
+            // posting here always looks like it worked - which is also the only
+            // honest thing to say, since nothing here is ever verified.
+            if (!string.IsNullOrWhiteSpace(form.Website))
+                return View("Recovery", RecoveryNoticeViewModel.Worked(
+                    "Note received",
+                    "Your note is with a Verichat administrator. If the address you gave is a real " +
+                    "mailbox, expect an answer there.",
+                    form.Email));
+
+            if (!ModelState.IsValid) return View(form);
+
+            var result = await _auth.AskForHelpAsync(form);
+
+            // Not a "success" screen: this always reads the same whatever the address
+            // is, and the API's own wording already says what happens next.
+            return View("Recovery", RecoveryNoticeViewModel.Worked(
+                "Note received",
+                RefusedWith(result, "Your note is with a Verichat administrator."),
+                form.Email));
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Logout()

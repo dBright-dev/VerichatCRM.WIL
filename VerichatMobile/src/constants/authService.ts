@@ -4,6 +4,7 @@
 // POST /api/mobile/register       client application    → { success, approvalStatus, user } (no token)
 // POST /api/auth/forgot-password  { email }              → { success, message } (same answer either way)
 // POST /api/auth/reset-password   { token, newPassword } → { success, message } | 400 with the reason
+// POST /api/auth/help             { name, email, expectedRole, message, channel } → { success, message }
 //
 // Sign-up on either path is an application, not access: the account is written down
 // and waits for a Verichat employee to approve it, so no token comes back and the
@@ -119,4 +120,27 @@ export async function resetPassword(token: string, newPassword: string): Promise
     body: JSON.stringify({ token, newPassword }),
   })
   return data.message || 'Your password is set.'
+}
+
+/**
+ * Sends an "I cannot get in" note to a Verichat administrator, for the cases a reset
+ * link cannot reach: a declined application, a deactivated account, an address typed
+ * one letter wrong.
+ *
+ * `channel` says which app it came from, which is the mobile app's own fact to state -
+ * it is not a claim about the person, and it is what makes a spike from one build
+ * visible on the queue. The answer is the same whatever the address is registered as,
+ * so this screen cannot be used to find out who has an account.
+ */
+export async function askForHelp(payload: {
+  name: string
+  email: string
+  expectedRole?: string
+  message: string
+}): Promise<string> {
+  const data = await api<AuthResponse>('/api/auth/help', {
+    method: 'POST',
+    body: JSON.stringify({ ...payload, channel: 'Mobile' }),
+  })
+  return data.message || 'Your note is with a Verichat administrator.'
 }

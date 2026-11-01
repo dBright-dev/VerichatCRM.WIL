@@ -44,7 +44,7 @@
 
             @if (Model.IsDeclined)
             {
-                <p>If you can address what was raised, create the account again with the corrected details. If you think the review got it wrong, contact Verichat and ask for a second reading.</p>
+                <p>If you can address what was raised, create the account again with the corrected details. If you think the review got it wrong, say so below and an administrator reads it.</p>
                 <a class="btn btn-primary btn-block" asp-action="Register">Apply again</a>
             }
             else
@@ -56,6 +56,14 @@
             <p class="vc-auth-switch">
                 @(Model.IsDeclined ? "Not this account?" : "Need to check something else?")
                 <a asp-action="Login">Sign in</a>
+            </p>
+
+            @* Waiting for a queue nobody can see is the complaint behind most of these
+               notes, so the review screen offers the route rather than only the
+               declined branch - and "it has been a week" is exactly the thing an
+               administrator can act on. *@
+            <p class="vc-auth-switch">
+                Something not right? <a asp-action="Help">Tell an administrator</a>
             </p>
         </div>
     </div>

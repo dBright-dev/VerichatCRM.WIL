@@ -222,6 +222,10 @@
         {
             <div class="vc-sidebar__section-label">ACCOUNTS</div>
             <a class="vc-sidebar__link" asp-controller="Admin" asp-action="Approvals" aria-current="@Curr("Admin", "Approvals")"><span class="vc-sidebar__icon">✔</span> Account Approvals</a>
+            @* Same reviewers as the queue above, because the notes behind it are the
+               applications that never reached it: somebody who cannot sign in has no
+               way to say so from inside the system they are locked out of. *@
+            <a class="vc-sidebar__link" asp-controller="Admin" asp-action="HelpRequests" aria-current="@Curr("Admin", "HelpRequests")"><span class="vc-sidebar__icon">☎</span> Sign-in Help</a>
         }
 
         @if (isAdmin)

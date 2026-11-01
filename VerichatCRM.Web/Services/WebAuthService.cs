@@ -62,6 +62,23 @@ namespace VerichatCRM.Web.Services
                 HttpMethod.Post, "/api/auth/confirm-email", payload) ?? Refused();
         }
 
+        public async Task<AuthResponse> AskForHelpAsync(AskForHelpForm form)
+        {
+            // The API never sees the honeypot: the controller drops a submission that
+            // filled it before this is called, so anything that arrives here is posted
+            // as the web app's own channel rather than guessing from a user agent.
+            var payload = new
+            {
+                name = form.Name,
+                email = form.Email,
+                expectedRole = form.ExpectedRole,
+                message = form.Message,
+                channel = "Web"
+            };
+            return await _api.SendForBodyAsync<object, AuthResponse>(
+                HttpMethod.Post, "/api/auth/help", payload) ?? Refused();
+        }
+
         /// <summary>
         /// The API answered with something this client could not read as an auth
         /// response. ApiClient keeps the message it found in the body, or the words

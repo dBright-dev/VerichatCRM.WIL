@@ -11,6 +11,8 @@ namespace VerichatCRM.Web.Services.Interfaces
         Task<List<PendingAccount>> GetPendingAccountsAsync();
         Task<ApprovalOutcome> ApproveAccountAsync(string userId);
         Task<ApprovalOutcome> RejectAccountAsync(string userId, string reason);
+        Task<List<HelpRequestItem>> GetHelpRequestsAsync();
+        Task<HelpOutcome> ResolveHelpRequestAsync(string id);
         Task<bool> RunSlaCheckAsync();
         Task<bool> ResolveAlertAsync(string alertId);
     }

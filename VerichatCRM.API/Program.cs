@@ -99,9 +99,12 @@ builder.Services.AddScoped<IAccountApprovalService, AccountApprovalService>();
 // Password resets and email confirmations: the two flows a person uses when the
 // credentials they have do not work, before and after approval.
 builder.Services.AddScoped<IAccountRecoveryService, AccountRecoveryService>();
+// The third way in, for the accounts the two above cannot reach: a note to an
+// administrator from somebody standing outside the sign-in screen.
+builder.Services.AddScoped<ILoginHelpService, LoginHelpService>();
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<IProductService, ProductService>();
-    builder.Services.AddScoped<IInquiryService, InquiryService>();
+builder.Services.AddScoped<IInquiryService, InquiryService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
 builder.Services.AddScoped<IWarehouseAlertService, WarehouseAlertService>();
