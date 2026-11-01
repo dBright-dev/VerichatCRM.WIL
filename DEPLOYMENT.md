@@ -49,14 +49,23 @@ These values are read at *deploy* time, not build time: after changing any of th
 
 The one combination that would make `Bootstrap:DemoUsers` live on a host is a publish that ships `appsettings.Development.json` *and* an environment set to `Development`. Azure App Service and IIS both default to `Production` when the variable is unset, so the safe state is the accidental one — but if a staging slot is ever pointed at Development to read startup logs, treat every account in README's role table as existing on that slot, and delete them before it takes traffic.
 
-Local development uses the .NET secret manager rather than environment variables. The API project now carries a `UserSecretsId` (`VerichatCRM.API/VerichatCRM.API.csproj`), so this works out of the box:
+Local development needs only the JWT key. The connection string is already in `appsettings.Development.json` and points at LocalDB with `Encrypt=False;TrustServerCertificate=True`, which is what LocalDB requires — `Program.cs:41` allows that key only in Development, precisely so it can never reach a real host:
 
 ```powershell
 dotnet user-secrets set "Jwt:Key" "<64-char random string>" --project VerichatCRM.API
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=(localdb)\\MSSQLLocalDB;Database=VerichatCRM;Trusted_Connection=True;" --project VerichatCRM.API
 ```
 
+**Do not set `ConnectionStrings:DefaultConnection` in user secrets for local work, and check whether you already have.** Config precedence puts user secrets *above* `appsettings.Development.json`, so a value left over from a hosted rehearsal silently outranks the checked-in LocalDB string on every Visual Studio F5. The API then spends its startup trying to reach that server: the migration block at `Program.cs:266` runs before Kestrel binds, and `EnableRetryOnFailure` (`Program.cs:78`) retries it, so `dotnet run` looks like it has hung for a minute or more. When it finally answers, `/api/health` reports `database: Unhealthy — CanConnectAsync returned false` and the web sign-in page says only *"The request failed (HTTP 500)"* — the failure appears three layers away from its cause. Set the same key to the LocalDB string to keep the secret and the file agreeing, or delete it:
+
+```powershell
+dotnet user-secrets remove "ConnectionStrings:DefaultConnection" --project VerichatCRM.API
+```
+
+Removing it is the safer habit: the secrets store is per-machine and invisible in `git status`, so it is the one place a production connection string can sit without anyone reviewing it.
+
 User secrets are loaded only when `ASPNETCORE_ENVIRONMENT=Development`. They do nothing in production.
+
+The web tier has a matching Development override, and it matters for more than tidiness. `ApiBaseUrl` in `appsettings.json` is the *deployed* API, and `VerichatCRM.Web/Services/ApiFallbackHandler.cs:29` treats an HTTP 500 from the primary as a transient error and retries it against `BackupApiBaseUrl` — the live Azure host. Without the override, a local sign-in does not test your code: it posts the password you typed to production infrastructure and renders whatever error comes back. `appsettings.Development.json` for the web project therefore points `ApiBaseUrl` at `http://localhost:5184` and sets `BackupApiBaseUrl` to empty, which the handler reads as "no backup configured" (`:21`) and stops the failover from ever leaving the machine.
 
 ## 1. Rotate the database credential
 

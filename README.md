@@ -100,13 +100,14 @@ Set-Location VerichatCRM.WIL
 
 ### Configure secrets
 
-The JWT signing key and the database connection string are intentionally blank in checked-in settings. Configure both outside source control. From the repository root, set API user secrets (`init` is optional — the project already carries a `UserSecretsId`):
+The JWT signing key is intentionally blank in checked-in settings; supply it outside source control. The production database connection string is too, and it does not need to be set locally at all — `VerichatCRM.API/appsettings.Development.json` carries a LocalDB string that works on its own. Set only the key:
 
 ```powershell
 dotnet user-secrets init --project VerichatCRM.API
 dotnet user-secrets set "Jwt:Key" "<a newly generated random signing key of at least 32 bytes>" --project VerichatCRM.API
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<your SQL Server connection string>" --project VerichatCRM.API
 ```
+
+> If you have ever run `dotnet user-secrets set "ConnectionStrings:DefaultConnection" ...` for a hosted rehearsal, that value outranks the Development file and your local API tries to reach that server instead of LocalDB. The startup migration runs before the port is bound, so `dotnet run` appears to hang for a minute or more and then serves HTTP 500 — `/api/health` reports `database: Unhealthy` and the web sign-in page says only *"The request failed (HTTP 500)"*. Remove it (`dotnet user-secrets remove "ConnectionStrings:DefaultConnection" --project VerichatCRM.API`) unless you are deliberately pointing a local run at another server. `DEPLOYMENT.md`'s Secrets inventory explains the precedence.
 
 For a hosted API, set `Jwt__Key`, `ConnectionStrings__DefaultConnection`, and `Cors__AllowedOrigins__0` in the hosting provider's secret/configuration store. The CORS origin must be the exact HTTPS origin serving a browser client; do not add a trailing path. Outside Development the API also refuses to start when the connection string says `Encrypt=False`. The web app's API target is configured by `ApiBaseUrl`. The mobile app accepts `EXPO_PUBLIC_API_URL` and otherwise uses the configured Verichat API host.
 
