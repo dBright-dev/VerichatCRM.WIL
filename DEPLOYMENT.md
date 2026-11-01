@@ -9,11 +9,13 @@ Nothing in this file was executed against the hosting provider. The steps that t
 | Piece | Deployed target | Notes |
 | --- | --- | --- |
 | Staff web app (`VerichatCRM.Web`) | `verichat-crm-web.runasp.net` — Monster ASP shared hosting, publish profile `site94515-WebDeploy.pubxml` | Razor MVC. Talks to the API server-side and passes the API base URL to page script. |
-| API (`VerichatCRM.API`) | `verichat-crm-api.runasp.net` — Monster ASP shared hosting, publish profiles `site94518-WebDeploy{,1,2}.pubxml` | REST + SignalR hub at `/hubs/notifications`. |
+| API (`VerichatCRM.API`) | **`http://api-site.runasp.net/`** — Monster ASP shared hosting, publish profile `site94518-WebDeploy.pubxml` (the duplicate `…WebDeploy1` / `…WebDeploy2` profiles were deleted on 1 Nov; `verichat-crm-api.runasp.net` answers identically, so both names reach either the same site or two copies of the same broken deployment — the panel is the only place that can tell them apart) | REST + SignalR hub at `/hubs/notifications`. **Not serving:** every path returns HTTP 500.30, including `/api/health/live` — see §7.1. `https://` on the same host does not connect at all: no certificate is bound. |
 | Database | `databaseasp.net` (Monster ASP shared SQL Server) | Reached only by the API. The web app holds no connection string. |
 | Mobile client (`VerichatMobile`) | EAS builds, installed on devices | Reads `EXPO_PUBLIC_API_URL` at bundle time. |
 
 Publish profiles (`*.pubxml`) are git-ignored and none of them carries a `Password` element, so nothing new leaks there.
+
+**The published host is not the host the shipped configuration names.** `VerichatCRM.Web/appsettings.json:8` sets `ApiBaseUrl` to `https://verichat-crm-api.runasp.net` and `VerichatCRM.API/appsettings.json` allows `http(s)://verichat-crm-web.runasp.net` for CORS, but the API actually published is reached over **`http://`** — measured: `https://api-site.runasp.net/` never connects, and the `https://` default port on the *web* name is not bound either. So even after the API starts (below), the web app's server-side calls would still fail on scheme, and Expo Web would fail the same way. Fix it where the values belong — `ApiBaseUrl` on the web host and `Cors__AllowedOrigins__0` on the API host, set as application settings with the exact scheme — rather than committing a production origin into `appsettings.json`.
 
 ## Secrets inventory
 
@@ -144,7 +146,16 @@ Then: delete the rules file, ask GitHub to clear cached views and detached objec
 
 ### 7.1 The deployed API answers HTTP 500.30
 
-Observed on `http://verichat-crm-api.runasp.net/` (every path, including `/api/health`):
+Re-measured on 1 November 2026 after the API was published again — every path on
+both API host names fails the same way, while the web site on the same hosting
+family is healthy:
+
+| Probe | Result |
+| --- | --- |
+| `http://api-site.runasp.net/` and `/logs/` and `/api/health/live` | **500** — `HTTP Error 500.30 - ASP.NET Core app failed to start` |
+| `http://verichat-crm-api.runasp.net/` | **500** — the same page |
+| `https://api-site.runasp.net/`, `https://verichat-crm-api.runasp.net/`, `https://verichat-crm-web.runasp.net/` | **does not connect** — no certificate bound on any of them (§5) |
+| `http://verichat-crm-web.runasp.net/` | **200** — same .NET target, same host family |
 
 ```
 HTTP Error 500.30 - ASP.NET Core app failed to start
@@ -174,8 +185,8 @@ order:
 | Order | `Program.cs` | Throws when |
 | --- | --- | --- |
 | 1 | line 28 | no `ConnectionStrings:DefaultConnection` from any source |
-| 2 | line 40 | the string says `Encrypt=False` and the environment is not Development |
-| 3 | line 115 | `Jwt:Key` is blank |
+| 2 | line 41 | the string says `Encrypt=False` and the environment is not Development |
+| 3 | line 133 | `Jwt:Key` is blank |
 
 So the fix is in the hosting panel, not in the code:
 
@@ -194,6 +205,14 @@ turns `stdoutLogEnabled` on, so ANCM writes the startup exception to
 manager. The folder is created by the module; if it is empty after a failed start,
 the site is not reading this `web.config` (the deploy is publishing without it, or
 the host injected its own).
+
+The log is **only** reachable that way: `http://api-site.runasp.net/logs/` was
+requested during this investigation and answered 500.30 like every other path,
+because the `<handlers>` entry claims `path="*"`, so a dead app cannot serve its own
+log. Confirmed on 1 Nov that the file does ship — `stdoutLogEnabled="true"` and
+`stdoutLogFile=".\logs\stdout"` are present in the published
+`obj/Release/net10.0/PubTmp/Out/web.config` — so today's failed starts should already
+have written one or more files there, before any further publishing.
 
 Two things that are *not* the cause, because both are caught and logged and the app
 continues in degraded mode: a migration that fails at startup (§8) and seeding the
