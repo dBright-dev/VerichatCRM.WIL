@@ -574,3 +574,58 @@ Verified end to end on the local deployment, which went through both migrations 
 So the procedure in this section is the one that was actually walked, not a reconstruction
 of it. The escape-hatch `UPDATE` was not run.
 
+## 9. Running the EF commands from Visual Studio
+
+Two things go wrong before a single `UPDATE` reaches a database, and both fail in ways that
+look like the tool misbehaving rather than the tool being pointed somewhere you did not
+choose.
+
+**The Package Manager Console had four candidate owners of `AppDbContext`.**
+`Update-Database -Project VerichatCRM.Infrastructure -StartupProject VerichatCRM.API` failed
+with *"More than one DbContext named 'AppDbContext' was found. Specify which one by providing
+its full type name or its project."* `Microsoft.EntityFrameworkCore.Tools` was referenced by
+every project in the solution — API, Core, Infrastructure and Web — and each of them can
+resolve `VerichatCRM.Infrastructure.Data.AppDbContext`, since three of the four reference the
+project that defines it, so nothing in the repository says which project owns the command. The
+same pair of projects run from the CLI (`dotnet ef migrations list --project
+VerichatCRM.Infrastructure --startup-project VerichatCRM.API`) finds the context once and
+without complaint, which is why the console's project selection is the layer worth fixing
+rather than the code. `Tools` is now referenced by `VerichatCRM.API` alone — EF's own rule is
+one project, the startup — so set **Default project to `VerichatCRM.API`** before using any of
+these cmdlets. If a context is ever ambiguous again, name it in full:
+`-Context VerichatCRM.Infrastructure.Data.AppDbContext`. All four references were
+`PrivateAssets="all"`, so this is design-time only and nothing at runtime can notice —
+verified: Release build clean with 0 warnings, `dotnet ef database update --project
+VerichatCRM.Infrastructure --startup-project VerichatCRM.API` still resolves the context and
+the migrations assembly, and all 141 tests pass.
+
+**Migration commands do not inherit the Development connection string.** The design-time
+factory at `VerichatCRM.API/DesignTimeAppDbContextFactory.cs` is what `Update-Database`
+reaches, deliberately, so script generation works without a JWT key. It reads
+`appsettings.json` and `appsettings.<Environment>.json`, then user secrets at `:23`, then
+environment variables at `:24` — the same order as the running app, with the same consequence:
+a `ConnectionStrings:DefaultConnection` left in user secrets from a hosted rehearsal sends the
+migration tool to the **production** database rather than to LocalDB. It does not refuse. It
+prints *"An error occurred while accessing the database. Continuing without the information
+provided by the database"*, lists the migrations with no applied-or-pending column, and if the
+host *is* reachable it applies them there. Observed on a laptop that cannot route to that
+server: `migrations list` with the correct project pair failed with a SQL network error and
+that exact "continuing" line, and could not report pending status at all.
+
+Pin the target, and the ambiguity in the second problem disappears with it:
+
+```powershell
+$env:ConnectionStrings__DefaultConnection = 'Server=(localdb)\MSSQLLocalDB;Database=VerichatCRM;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True'
+dotnet ef database update --project VerichatCRM.Infrastructure --startup-project VerichatCRM.API
+```
+
+Two reasons not to use `Update-Database` against a database you did not create, even with the
+connection string pinned. `--idempotent` script generation (§8) is reviewable before anything
+executes, and `sqlcmd -U` takes the password interactively, so the credential appears in no
+script file, command line or shell history — whereas the design-time factory reads it out of a
+per-machine store nobody audited. And the API migrates itself at startup (`Program.cs:266`),
+so a development database the API has already booted against is current without any of this:
+`__EFMigrationsHistory` on the development box holds 21 applied migrations, latest
+`20261101152359_ReviewSelfClaimedStaffAccounts`, which is why the command above answers *"No
+migrations were applied. The database is already up to date."*
+
