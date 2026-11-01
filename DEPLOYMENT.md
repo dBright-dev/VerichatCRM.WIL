@@ -694,3 +694,59 @@ so a development database the API has already booted against is current without 
 `20261101152359_ReviewSelfClaimedStaffAccounts`, which is why the command above answers *"No
 migrations were applied. The database is already up to date."*
 
+
+## 10. Publish fails with "An equivalent project is already present in the project collection"
+
+Visual Studio's Publish dialog stops with:
+
+```
+Publish has encountered an error.
+An equivalent project (a project with the same global properties and tools version) is
+already present in the project collection, with the path
+"...\VerichatCRM.API\Properties\PublishProfiles\verichat-api - Web Deploy.pubxml.user".
+To load an equivalent into this project collection, unload this project first.
+```
+
+**No code was compiled and nothing was deployed when this throws.** The diagnostic log's stack
+says so: the throwing frame is
+`Microsoft.Publish.Framework.NewFx.Persistence.MsBuildFilePersister.UpdatePropertyAsync`, reached
+from `ServerProjectProfilesManager.PersistOperationPropertiesAsync`, and underneath it
+`ProjectCollection.OnAfterRenameLoadedProject` → `LoadedProjectCollection.AddProject`. That is the
+publish *UI writing the "last used" properties back into the profile's `.user` file*, not the
+Web Deploy build. Visual Studio loads each `.pubxml.user` into one solution-wide in-memory
+`ProjectCollection`, keyed by the file's path plus its global properties and tools version, and
+it does not remove the entry when an earlier publish in the same session aborts. The next publish
+tries to add the same identity again and MSBuild refuses, because two projects with one identity
+cannot both be loaded.
+
+This repository makes the collision likely rather than rare: all four of the API's profiles and
+all three of the web app's declare the same identity, `Release` / `Any CPU`. Any profile persist
+for a project can therefore collide with any other profile of that project still sitting in the
+collection - and the earlier attempts did abort, because the deployed site answered 500.30 (§7.1).
+
+Fix it in this order; the first one is what the error text itself asks for.
+
+1. **Unload then reload `VerichatCRM.API`** in Solution Explorer (right-click → Unload Project,
+   then Reload Project). That drops its entries from the collection. Cheapest, and usually enough.
+2. **Close Visual Studio completely** if step 1 does not clear it, then reopen. This is the only
+   way to empty the collection when the stale entry belongs to a project that is still loaded.
+   Check no build nodes survive the close: `Get-Process MSBuild,VBCSCompiler -ErrorAction SilentlyContinue`.
+3. **Publish from the command line**, which never touches Visual Studio's collection.
+4. Optionally delete the profiles for hosts you no longer use - `site94518-WebDeploy`,
+   `site103828-WebDeploy`, `FTPProfile` are leftovers from earlier hosting attempts. Fewer
+   profiles sharing one identity means fewer things that can collide. They are the only untracked
+   copies of those hosts' settings, so confirm you do not still need them first.
+
+Never delete a `.pubxml.user` file to fix this. It holds the publish credential, encrypted with
+the Windows user's DPAPI key; removing it does not fix the collection - which is in memory, not
+on disk - and it destroys a secret that cannot be recovered except by downloading a fresh
+publish settings file from the hosting panel. The `.user` files are ignored by `.gitignore:9`
+(`*.user`) and are not tracked, which is why they do not appear in `git status`.
+
+Step 3 is verified: `dotnet publish VerichatCRM.API -c Release -o <folder>` completes and produces
+64 files including `VerichatCRM.API.dll`, `VerichatCRM.Core.dll`,
+`VerichatCRM.Infrastructure.dll`, `appsettings.json` and the `web.config` that §7.1 says the panel
+needs. The project and its publish targets are sound, which is what makes this a Visual Studio
+session-state fault rather than a repository defect. Note that publishing to a *folder* only
+packages the output; `--profile` with an MSDeploy profile contacts the live host and overwrites
+what is deployed there, so run that deliberately and only when the deployment is the goal.
