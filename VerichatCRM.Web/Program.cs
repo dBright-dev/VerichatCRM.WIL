@@ -24,10 +24,15 @@ builder.Services.AddSession(options =>
 builder.Services.AddHttpContextAccessor();
 
 // HttpClient pointing to the API
+// Register the fallback handler
+builder.Services.AddTransient<ApiFallbackHandler>();
+
+// HttpClient pointing to the API with Backup Fallback
 builder.Services.AddHttpClient<IApiClient, ApiClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]!);
-});
+})
+.AddHttpMessageHandler<ApiFallbackHandler>(); // <-- Add this line
 
 builder.Services.AddScoped<IWebAuthService, WebAuthService>();
 builder.Services.AddScoped<IClientApiService, ClientApiService>();
