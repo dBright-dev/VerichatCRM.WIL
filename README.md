@@ -122,7 +122,7 @@ In PowerShell window 1:
 dotnet run --project VerichatCRM.API --launch-profile https
 ```
 
-The Development HTTPS URL is `https://localhost:7076`. On startup the API applies EF Core migrations, seeds a small sample client/product catalogue when those tables are empty, and creates the first administrator only when bootstrap settings are supplied.
+The Development HTTPS URL is `https://localhost:7076`. On startup the API applies EF Core migrations, seeds a small sample client/product catalogue when those tables are empty, creates the first administrator only when bootstrap settings are supplied, and — on a Development host that asks for it — the per-role sign-in accounts described below.
 
 ### Start the staff web application
 
@@ -133,7 +133,7 @@ $env:ApiBaseUrl = "https://localhost:7076"
 dotnet run --project VerichatCRM.Web --launch-profile https
 ```
 
-The Development HTTPS URL is `https://localhost:7266`. Create the first administrator with the API bootstrap configuration (`Bootstrap__AdminEmail`, `Bootstrap__AdminPassword`, and `Bootstrap__AdminName`) or create a permitted staff account through the registration flow.
+The Development HTTPS URL is `https://localhost:7266`. The first administrator comes from the API bootstrap configuration (`Bootstrap__AdminEmail`, `Bootstrap__AdminPassword`, and `Bootstrap__AdminName`), or from the development sign-in accounts listed below. Registering through the public form is no longer a way to obtain a staff login on a fresh machine: a self-registered account waits in the approval queue for an administrator to release it, and until an administrator exists there is nobody to release it.
 
 ### Start the mobile application
 
@@ -148,11 +148,35 @@ npx expo start
 
 Physical devices need an API URL they can reach and a trusted HTTPS certificate. A device cannot use its own `localhost` to reach the development computer.
 
+### Sign in as any role
+
+A fresh development database is given one account per role, so every screen in the system can be opened without first working through the approval queue seven times. `DemoUserSeeder` writes them at API startup, and only while **both** conditions hold: the host is running in the Development environment, and `Bootstrap:DemoUsers` reads `true` — set in `VerichatCRM.API/appsettings.Development.json`. Turn either off and no such account is created on that machine; a deployment would have to be handed the Development settings file *and* `ASPNETCORE_ENVIRONMENT=Development` before a single row appeared.
+
+Sign in at `https://localhost:7266/Account/Login`, or point the mobile app at the API. Each role is dropped on its own board:
+
+| Role | Email | Password | Opens |
+| --- | --- | --- | --- |
+| System Administrator | `admin@verichat.test.local` | `Demo!Admin2026` | `/Admin/Dashboard` |
+| Sales Representative | `sales@verichat.test.local` | `Demo!Sales2026` | `/Pipeline` |
+| Procurement Manager | `procurement@verichat.test.local` | `Demo!Stock2026` | `/Procurement/Dashboard` |
+| Field Support Engineer | `engineer@verichat.test.local` | `Demo!Fix2026` | `/Support/Dashboard` |
+| Logistics | `logistics@verichat.test.local` | `Demo!Move2026` | `/Logistics/Dashboard` |
+| Client User | `client@verichat.test.local` | `Demo!Client2026` | `/Portal` |
+| Medical Student | `student@verichat.test.local` | `Demo!Study2026` | `/Portal` |
+
+The two client roles share `/Portal` because they share what they are allowed to see; the mobile app gives each of them its own screens.
+
+**These are development credentials and nothing more.** They are not passwords for the hosted system and cannot be: the hosted API does not run in Development, so the accounts are never created there, and `Bootstrap__AdminEmail` / `Bootstrap__AdminPassword` remain the only way an administrator is born. The `.test.local` domain is deliberately not routable — approval notices, email-verification links and password resets addressed to these accounts can never reach a real mailbox.
+
+The `Client User` and `Medical Student` accounts also receive the CRM client record that orders, quotations and the enquiry queue are keyed on. That is the same call the approval queue makes when it accepts a client, and without it the portal and the mobile app would open on an empty list rather than a usable account.
+
+With the administrator account, the approval gate itself becomes demoable: register an eighth account through the public sign-up form, leave it `Pending`, and approve or decline it from `/Admin/Approvals`.
+
 ## Database and schema
 
 The source of truth is SQL Server, not Firestore. EF Core entities and mappings live in Core and Infrastructure; migrations are in `VerichatCRM.Infrastructure/Migrations`. API startup applies migrations. Do not use production data when demonstrating or testing locally.
 
-The startup seeder adds example clients and products only when the relevant tables are empty. It does not create ordinary user accounts. Configure the bootstrap administrator credentials as secrets and clear them after initial provisioning.
+The startup seeder adds example clients and products only when the relevant tables are empty, and stops there — tickets, quotations and anything the business actually records are entered by a user. It does not create ordinary user accounts on a deployment; the development sign-in accounts above are a separate, doubly guarded step. Configure the bootstrap administrator credentials as secrets and clear them after initial provisioning.
 
 ## Tests and code checks
 

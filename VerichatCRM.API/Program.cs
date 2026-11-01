@@ -245,12 +245,15 @@ if (!app.Environment.IsDevelopment() && allowedOrigins.Length == 0)
 // before migrating throws "Cannot open database ... requested by the login" on
 // a fresh machine.
 //
-// There is deliberately NO demo/seed data. Clients, products, tickets,
-// quotations and so on must all be entered by an administrator through the UI.
-// Only the initial System Administrator is created, and only from configuration
-// - see AdminBootstrapper. Both steps are guarded so an unreachable database
-// degrades the app instead of killing the process (which surfaces as HTTP
-// 500.30 on IIS).
+// There is no demo data in a deployment. DataSeeder opens a fresh database with
+// four clients and a starter catalogue so the screens are not blank on first run,
+// and stops there - tickets, quotations and everything the business actually records
+// are entered by a user. The initial System Administrator comes only from
+// configuration (see AdminBootstrapper), because an empty database otherwise has no
+// way to sign anyone in. DemoUserSeeder then adds one account per role, but only on a
+// development host that explicitly asks for it. Each step is guarded so an
+// unreachable database degrades the app instead of killing the process (which
+// surfaces as HTTP 500.30 on IIS).
 // ---------------------------------------------------------------------------
 using (var scope = app.Services.CreateScope())
 {
@@ -290,6 +293,25 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex,
             "Administrator bootstrap failed at startup. If the user table is empty, " +
             "nobody will be able to sign in - check the Bootstrap__* configuration.");
+    }
+
+    try
+    {
+        // Returns immediately unless this is the Development environment with
+        // Bootstrap:DemoUsers=true, so a deployed API never reaches the database
+        // through here at all.
+        await DemoUserSeeder.SeedAsync(
+            context,
+            scope.ServiceProvider.GetRequiredService<IMobileService>(),
+            app.Configuration,
+            app.Environment,
+            logger);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex,
+            "Development sign-in accounts could not be seeded. The system still runs; " +
+            "sign up through the UI and approve the account instead.");
     }
 }
 
