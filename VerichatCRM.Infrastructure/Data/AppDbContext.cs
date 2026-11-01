@@ -40,6 +40,7 @@ namespace VerichatCRM.Infrastructure.Data
         public DbSet<HealthMetric> HealthMetrics => Set<HealthMetric>();
         public DbSet<ClientTimelineNote> ClientTimelineNotes => Set<ClientTimelineNote>();
         public DbSet<Appointment> Appointments => Set<Appointment>();
+        public DbSet<LoginHelpRequest> LoginHelpRequests => Set<LoginHelpRequest>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // The IEntityTypeConfiguration classes in Data/Configurations are applied

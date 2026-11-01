@@ -57,6 +57,16 @@ namespace VerichatCRM.API.Services
                 Role = UserRoles.SystemAdministrator,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
+
+                // Approved and verified at birth, deliberately. Both states exist to
+                // distrust a public sign-up form, and this account did not come from
+                // one - it came from the deployment's own configuration, which only
+                // somebody who already controls the server can write. Left pending,
+                // the first administrator would sit in a queue that only an
+                // administrator can clear, and the system would lock everyone out.
+                // There is no ReviewedByUserId to record because no review happened.
+                ApprovalStatus = UserApproval.Approved,
+                EmailVerified = true,
             };
 
             context.Users.Add(user);

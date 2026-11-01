@@ -22,6 +22,58 @@ namespace VerichatCRM.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("VerichatCRM.Core.Entities.Appointment", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AssignedToUserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MeetingUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("RequestedByUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ScheduledDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<string>("Topic")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId", "ScheduledDate");
+
+                    b.HasIndex("Status", "ScheduledDate");
+
+                    b.ToTable("Appointments");
+                });
+
             modelBuilder.Entity("VerichatCRM.Core.Entities.Asset", b =>
                 {
                     b.Property<string>("AssetId")
@@ -42,22 +94,26 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.Property<string>("Manufacturer")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Model")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime?>("NextServiceDue")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("SerialNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -69,7 +125,13 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasIndex("ClientId");
 
-                    b.ToTable("Assets", (string)null);
+                    b.HasIndex("SerialNumber")
+                        .IsUnique()
+                        .HasFilter("[SerialNumber] <> N''");
+
+                    b.HasIndex("WarrantyExpiry");
+
+                    b.ToTable("Assets");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.AssetServiceLog", b =>
@@ -102,7 +164,47 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasIndex("AssetId");
 
-                    b.ToTable("AssetServiceLog", (string)null);
+                    b.ToTable("AssetServiceLog");
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.AuditLog", b =>
+                {
+                    b.Property<string>("AuditId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NewValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("AuditId");
+
+                    b.ToTable("AuditLogs");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.CalibrationSchedule", b =>
@@ -143,7 +245,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasIndex("ClientId", "ScheduledDate");
 
-                    b.ToTable("CalibrationSchedules", (string)null);
+                    b.ToTable("CalibrationSchedules");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.Client", b =>
@@ -153,7 +255,8 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.Property<string>("Address")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("AssignedRepId")
                         .HasColumnType("nvarchar(max)");
@@ -170,15 +273,18 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.Property<string>("ContactPerson")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("ContactPhone")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("ContractStatus")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -210,9 +316,13 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasKey("ClientId");
 
+                    b.HasIndex("ContractStatus");
+
+                    b.HasIndex("Sector");
+
                     b.HasIndex("SectorType");
 
-                    b.ToTable("Clients", (string)null);
+                    b.ToTable("Clients");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.ClientAssignment", b =>
@@ -240,7 +350,35 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasIndex("ClientId", "SalesRepId", "AssignedDate");
 
-                    b.ToTable("ClientAssignments", (string)null);
+                    b.ToTable("ClientAssignments");
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.ClientTimelineNote", b =>
+                {
+                    b.Property<string>("NoteId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.HasKey("NoteId");
+
+                    b.HasIndex("ClientId", "CreatedAt");
+
+                    b.ToTable("ClientTimelineNotes");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.Deal", b =>
@@ -262,7 +400,8 @@ namespace VerichatCRM.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("OwnerUserId")
                         .HasColumnType("nvarchar(max)");
@@ -271,11 +410,13 @@ namespace VerichatCRM.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Revenue")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Stage")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -284,7 +425,9 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasIndex("ClientId");
 
-                    b.ToTable("Deals", (string)null);
+                    b.HasIndex("Stage");
+
+                    b.ToTable("Deals");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.DeliveryLog", b =>
@@ -300,14 +443,15 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.Property<string>("ClientId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Destination")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime>("EstimatedArrival")
                         .HasColumnType("datetime2");
@@ -318,25 +462,35 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.Property<string>("Origin")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("TrackingNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("WeightKg")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
 
                     b.HasKey("DeliveryId");
 
-                    b.ToTable("DeliveryLogs", (string)null);
+                    b.HasIndex("TrackingNumber")
+                        .IsUnique()
+                        .HasFilter("[TrackingNumber] <> N''");
+
+                    b.HasIndex("ClientId", "Status");
+
+                    b.ToTable("DeliveryLogs");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.DeliveryStatusUpdate", b =>
@@ -372,7 +526,43 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasIndex("DeliveryLogDeliveryId");
 
-                    b.ToTable("DeliveryStatusUpdate", (string)null);
+                    b.ToTable("DeliveryStatusUpdate");
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.HealthMetric", b =>
+                {
+                    b.Property<string>("MetricId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeviceId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MetricType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("MetricId");
+
+                    b.ToTable("HealthMetrics");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.Inquiry", b =>
@@ -462,7 +652,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasIndex("Status", "Score");
 
-                    b.ToTable("Inquiries", (string)null);
+                    b.ToTable("Inquiries");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.Inventory", b =>
@@ -497,7 +687,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasIndex("SKU");
 
-                    b.ToTable("Inventory", (string)null);
+                    b.ToTable("Inventory");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.KeyPersonnel", b =>
@@ -529,7 +719,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasIndex("ClientId");
 
-                    b.ToTable("KeyPersonnel", (string)null);
+                    b.ToTable("KeyPersonnel");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.LabResultRecord", b =>
@@ -571,7 +761,58 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasKey("LabResultId");
 
-                    b.ToTable("LabResultRecords", (string)null);
+                    b.ToTable("LabResultRecords");
+                });
+
+            modelBuilder.Entity("VerichatCRM.Core.Entities.LoginHelpRequest", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ExpectedRole")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ResolvedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Status", "CreatedAt");
+
+                    b.ToTable("LoginHelpRequests");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.MobileDevice", b =>
@@ -581,6 +822,9 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ExternalId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("LastSyncAt")
                         .HasColumnType("datetime2");
@@ -603,7 +847,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasKey("DeviceId");
 
-                    b.ToTable("MobileDevices", (string)null);
+                    b.ToTable("MobileDevices");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.MobilePrescription", b =>
@@ -644,7 +888,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasKey("PrescriptionId");
 
-                    b.ToTable("MobilePrescriptions", (string)null);
+                    b.ToTable("MobilePrescriptions");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.MobileProfile", b =>
@@ -684,7 +928,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("MobileProfiles", (string)null);
+                    b.ToTable("MobileProfiles");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.MobileSettings", b =>
@@ -706,7 +950,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("MobileSettings", (string)null);
+                    b.ToTable("MobileSettings");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.Order", b =>
@@ -744,7 +988,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasIndex("Status");
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.Product", b =>
@@ -787,7 +1031,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasIndex("StockQty");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.PurchaseOrder", b =>
@@ -815,7 +1059,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasKey("PurchaseOrderId");
 
-                    b.ToTable("PurchaseOrders", (string)null);
+                    b.ToTable("PurchaseOrders");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.Quotation", b =>
@@ -838,22 +1082,27 @@ namespace VerichatCRM.Infrastructure.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("GrandTotal")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("QuoteReference")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<decimal>("Subtotal")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Terms")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -862,10 +1111,12 @@ namespace VerichatCRM.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("VatAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("VatRate")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(5, 4)
+                        .HasColumnType("decimal(5,4)");
 
                     b.HasKey("QuotationId");
 
@@ -873,7 +1124,11 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasIndex("DealId");
 
-                    b.ToTable("Quotations", (string)null);
+                    b.HasIndex("QuoteReference")
+                        .IsUnique()
+                        .HasFilter("[QuoteReference] <> N''");
+
+                    b.ToTable("Quotations");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.QuotationLineItem", b =>
@@ -883,7 +1138,8 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.Property<string>("ProductName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -894,16 +1150,18 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.Property<string>("SKU")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("LineItemId");
 
                     b.HasIndex("QuotationId");
 
-                    b.ToTable("QuotationLineItem", (string)null);
+                    b.ToTable("QuotationLineItem");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.SalesGoal", b =>
@@ -949,7 +1207,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasIndex("UserId", "Period");
 
-                    b.ToTable("SalesGoals", (string)null);
+                    b.ToTable("SalesGoals");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.TelehealthAppointment", b =>
@@ -985,7 +1243,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasKey("AppointmentId");
 
-                    b.ToTable("TelehealthAppointments", (string)null);
+                    b.ToTable("TelehealthAppointments");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.Ticket", b =>
@@ -994,11 +1252,12 @@ namespace VerichatCRM.Infrastructure.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AssignedToUserId")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Category")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("ClientId")
                         .IsRequired()
@@ -1013,7 +1272,8 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("EquipmentId")
                         .HasColumnType("nvarchar(450)");
@@ -1033,10 +1293,12 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.Property<string>("Priority")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("ResolutionNotes")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<DateTime?>("ResolvedAt")
                         .HasColumnType("datetime2");
@@ -1046,26 +1308,37 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("TrackingNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("TicketId");
 
-                    b.HasIndex("ClientId");
-
                     b.HasIndex("EquipmentId");
 
-                    b.ToTable("Tickets", (string)null);
+                    b.HasIndex("SlaDeadline");
+
+                    b.HasIndex("TrackingNumber")
+                        .IsUnique()
+                        .HasFilter("[TrackingNumber] <> N''");
+
+                    b.HasIndex("AssignedToUserId", "Status");
+
+                    b.HasIndex("ClientId", "Status");
+
+                    b.ToTable("Tickets");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.TicketActivity", b =>
@@ -1101,7 +1374,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasIndex("TicketId");
 
-                    b.ToTable("TicketActivity", (string)null);
+                    b.ToTable("TicketActivity");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.User", b =>
@@ -1109,16 +1382,37 @@ namespace VerichatCRM.Infrastructure.Migrations
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("ApprovalStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("DeviceToken")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
                     b.Property<string>("DisplayName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("EmailVerificationExpiry")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EmailVerificationToken")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailVerified")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -1130,13 +1424,37 @@ namespace VerichatCRM.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("PasswordResetExpiry")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PasswordResetToken")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReviewedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("UserId");
 
-                    b.ToTable("Users", (string)null);
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("ApprovalStatus", "CreatedAt");
+
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.VitalReading", b =>
@@ -1172,7 +1490,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasKey("ReadingId");
 
-                    b.ToTable("VitalReadings", (string)null);
+                    b.ToTable("VitalReadings");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.WarehouseAlert", b =>
@@ -1214,7 +1532,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasIndex("SKU", "IsResolved");
 
-                    b.ToTable("WarehouseAlerts", (string)null);
+                    b.ToTable("WarehouseAlerts");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.WeeklyExerciseLog", b =>
@@ -1237,7 +1555,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasKey("LogId");
 
-                    b.ToTable("WeeklyExerciseLogs", (string)null);
+                    b.ToTable("WeeklyExerciseLogs");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.WellnessGoal", b =>
@@ -1275,7 +1593,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                     b.HasKey("GoalId");
 
-                    b.ToTable("WellnessGoals", (string)null);
+                    b.ToTable("WellnessGoals");
                 });
 
             modelBuilder.Entity("VerichatCRM.Core.Entities.Asset", b =>
@@ -1425,7 +1743,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                             b1.HasKey("OrderId", "Id");
 
-                            b1.ToTable("OrderLineItem", (string)null);
+                            b1.ToTable("OrderLineItem");
 
                             b1.WithOwner()
                                 .HasForeignKey("OrderId");
@@ -1460,7 +1778,7 @@ namespace VerichatCRM.Infrastructure.Migrations
 
                             b1.HasKey("PurchaseOrderId", "Id");
 
-                            b1.ToTable("PurchaseOrderLineItem", (string)null);
+                            b1.ToTable("PurchaseOrderLineItem");
 
                             b1.WithOwner()
                                 .HasForeignKey("PurchaseOrderId");
