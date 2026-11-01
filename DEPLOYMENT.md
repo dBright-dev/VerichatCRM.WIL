@@ -266,9 +266,13 @@ migrations run; the snapshot drift itself is still open and is what §8 is about
 
 ## 8. Pre-flight checks before migrating an existing database
 
-**Three migrations are new or rewritten in this working copy.** Read §8.1 before
-running any of them against a database that holds real data.
+**Five migrations are new or rewritten in this working copy.** Read §8.1 before
+running any of them against a database that holds real data, and read §8.4 before
+you let anyone sign in afterwards — two of these migrations narrow columns, add
+unique indexes and put existing staff accounts back in the approval queue.
 
+- `20261101151838_SyncSchemaAndAccountLifecycle` is the index-and-precision migration §8.1 used to describe as deferred — it exists now, and it is the heaviest thing in the chain. It adds the seven account-lifecycle columns to `Users` and the `LoginHelpRequests` table, applies the widths and the `decimal(5,4)` the configuration classes have always declared, and creates the indexes no migration ever emitted, including the unique `IX_Users_Email`. **It can fail on live data**, and `Database/preflight-migration-checks.sql` (§8.1) is the script that predicts it.
+- `20261101152359_ReviewSelfClaimedStaffAccounts` runs one `UPDATE` over `Users`, and it is the migration with a business consequence rather than a schema one: every existing Sales Representative, Procurement Manager, Field Support Engineer and Logistics account becomes `Pending` and **cannot sign in** until a System Administrator approves it at `/Admin/Approvals`. That is the whole point of the migration — self-registered staff had no gate before this — but it is indistinguishable from an outage to the people affected. See §8.4.
 - `20261031160000_AddInquiryScoringInputs` does three things and nothing else —
   it narrows `Inquiries.Status` from `nvarchar(max)` to `nvarchar(30)`, because SQL Server cannot build an index on a `max` column and the queue sorts on `Status` (the values come from `InquiryStatuses`; the longest is nine characters); it adds the two nullable inputs the automatic enquiry score reads, `Inquiries.Urgency` (`nvarchar(30)`) and `Inquiries.EstimatedValue` (`decimal(18,2)`); and it creates the composite index `IX_Inquiries_Status_Score`.
 - `20261030204733_AddTask3Features` was **rewritten**, not added (`113d04d`). It had never run successfully anywhere: three of its foreign-key columns were declared `nvarchar(64)` against `nvarchar(450)` principals, which aborts the whole `CREATE TABLE` with Msg 1753, and its `Up()` also emitted a second `CREATE TABLE SalesGoals` with a shape belonging to no entity in the solution, five days after `20261025111000_AddSalesGoals` had already created that table. Both defects, and the stale `AppDbContextModelSnapshot.cs` / `.Designer.cs` entries that carried them, are corrected. The `HasMaxLength(64)` calls are gone from `AppDbContext` on purpose — the values stored in those columns are `Guid.ToString()` (36 characters), so nothing about the data changed; only the declaration now agrees with the principal it points at.
@@ -318,13 +322,31 @@ script safe to re-run: it reads `__EFMigrationsHistory` and emits only the migra
 database has not recorded, so a partially applied chain finishes rather than repeats.
 
 A database that does not exist yet needs none of this: since `c909aa6` the API creates
-and migrates it at startup. Verified against a scratch LocalDB database pointed at by an
-environment variable in a Production run — 38 tables, 19 rows in
-`__EFMigrationsHistory`, and `Appointments`, `AuditLogs`, `ClientTimelineNotes`,
-`HealthMetrics`, `TicketActivity` and `DeliveryStatusUpdate` all present, with
-`SalesGoals` created exactly once.
+and migrates it at startup. Re-verified against a scratch LocalDB database pointed at by an
+environment variable — **39 base tables, 21 rows in `__EFMigrationsHistory`**, and
+`Appointments`, `AuditLogs`, `ClientTimelineNotes`, `HealthMetrics`, `TicketActivity`,
+`DeliveryStatusUpdate` and `LoginHelpRequests` all present, with `SalesGoals` created
+exactly once, `Quotations.VatRate` at `decimal(5,4)`, `Tickets.Title` at
+`nvarchar(200)` and the five unique indexes built. The same script from §8.1 runs clean
+against that empty database, which is the check that it is safe to point at a host whose
+database the panel created but nothing has ever migrated.
 
-Pre-flight on an existing database is short, because nothing is dropped and nothing is made unique:
+**One rehearsal trap.** That run has to be in `Development`. [Program.cs:41](VerichatCRM.API/Program.cs#L41)
+refuses to start outside Development when the connection string says `Encrypt=False`, and
+LocalDB rejects an encrypted session, so a Production rehearsal dies with
+`ConnectionStrings:DefaultConnection sets Encrypt=False` before it reaches the database.
+The guard is the point — it is what stops a committed `Encrypt=False` opening a plaintext
+session to production SQL — so rehearse in Development and never loosen the guard to make
+a local run quieter.
+
+Pre-flight on an existing database is **not** short any more. `AddInquiryScoringInputs`
+narrows one column and adds nothing but nullables, so on its own it was safe to run
+blind. `SyncSchemaAndAccountLifecycle` re-types 30 columns across seven tables — 28
+string widths plus the decimal precision on `Quotations.VatRate` (`18,2` → `5,4`) and
+`DeliveryLogs.WeightKg` (`18,2` → `10,2`) — creates the `LoginHelpRequests` table and 15
+indexes, five of them unique, and adds seven `Users` columns. A single out-of-shape row
+aborts the script partway and leaves the schema half-changed, so run the §8.1 checklist
+against the live database before this one, then the two queries below:
 
 ```sql
 -- The only narrowed column, narrowed to 30. Should return no rows.
@@ -338,43 +360,56 @@ SELECT Urgency, COUNT(*) FROM Inquiries WHERE Urgency IS NOT NULL GROUP BY Urgen
 
 **Existing scores are not recalculated.** The new columns are nullable and no back-fill runs, deliberately: computing a score from data that was never captured would produce a confident-looking number that nobody chose. Enquiries written before this migration keep whatever `Score` their author typed. Re-ranking the queue after upgrading is a human action in the Inquiry form, not a migration step.
 
-### 8.1 The deferred index-and-precision migration
+**The whole upgrade, in order:**
 
-`20261031091951_ApplyEntityConfigurationsAndIndexes` was scaffolded, reviewed and **then deleted from this working copy, because it proposed changes that would have failed on the first database it touched.** Two of the reasons it was written that way are now fixed — the duplicate `SalesGoals` rebuild is gone (§8), so a fresh scaffold no longer tries to recreate that table — and one is not: the snapshot still omits the four tables that came from hand-written migrations, so a scaffold today opens with `CREATE TABLE Appointments / AuditLogs / ClientTimelineNotes / HealthMetrics`. Its purpose is unchanged and still outstanding. The `IEntityTypeConfiguration` classes it was meant to apply are live — `ApplyConfigurationsFromAssembly` runs at startup — which means **the unique indexes on `Users.Email`, the two tracking numbers, `Assets.SerialNumber` and `Quotations.QuoteReference`, and the `decimal(5,4)` precision on `VatRate` are declared in code but do not exist in the database.** Nothing enforces them until someone adds that migration back. Confirmed on the scratch database built from the whole chain by the API at startup: 187 unique indexes, every one of them a key, none of them a `UI_…`; `Quotations.VatRate` is `decimal(18,2)`.
+1. Confirm a **System Administrator** can sign in to the target deployment. Steps 5–8 all
+   depend on it, and after step 6 no other staff account can (§8.4).
+2. Clear the demo and QA residue (§8.2). Do this before step 3, or the pre-flight reports
+   seed rows instead of real ones.
+3. Run `Database/preflight-migration-checks.sql` against the live database (§8.1) and fix
+   every row sections 1–4 return. Write down what section 5 counts.
+4. Apply the chain — the idempotent script above, or a deploy that lets the API migrate at
+   startup. Only after step 3.
+5. Confirm the schema took: `__EFMigrationsHistory` should hold 21 rows and the database 39
+   base tables. Re-running sections 1–4 now proves nothing, because the narrowed columns
+   cannot physically hold an over-length value; they were the prediction, not the check.
+6. Work `/Admin/Approvals` and release the staff accounts the review migration pended
+   (§8.4). Until you do, the only way into the CRM is the administrator from step 1.
+7. Seed the catalogue (§8.3).
+8. Walk §7's post-deployment confirmations.
 
-When you do, run this checklist against the live database first. On an empty or newly created database it applies without complaint; on a database that has been used, any row that violates the new shape aborts the whole migration, and because the API calls `MigrateAsync()` at startup the app then comes up in degraded mode with the schema half-changed.
+### 8.1 The index-and-precision migration — it exists now, and the pre-flight is a gate
 
-```sql
--- The unique email index rejects any address held twice.
-SELECT Email, COUNT(*) FROM Users GROUP BY Email HAVING COUNT(*) > 1;
+`20261031091951_ApplyEntityConfigurationsAndIndexes` was scaffolded, reviewed and **then deleted from this working copy, because it proposed changes that would have failed on the first database it touched.** Two of the reasons it was written that way are now fixed — the duplicate `SalesGoals` rebuild is gone (§8), so a fresh scaffold no longer tries to recreate that table — and one is not: the snapshot still omits the four tables that came from hand-written migrations, so a scaffold today opens with `CREATE TABLE Appointments / AuditLogs / ClientTimelineNotes / HealthMetrics`.
 
--- Narrowing fails where stored text is longer than the new maximum.
-SELECT c.ClientId, c.ClientName, DATALENGTH(c.Address) AS AddressLen,
-       DATALENGTH(c.ContactEmail) AS EmailLen, DATALENGTH(c.ContactPhone) AS PhoneLen
-FROM Clients c
-WHERE DATALENGTH(c.Address) > 500 OR DATALENGTH(c.ContactEmail) > 200
-   OR DATALENGTH(c.ContactPhone) > 30 OR DATALENGTH(c.ClientName) > 200
-   OR DATALENGTH(c.Sector) > 100 OR DATALENGTH(c.ContractStatus) > 50;
+**Its purpose is no longer outstanding.** `20261101151838_SyncSchemaAndAccountLifecycle` is that migration — scaffolded, then edited the way §8.2 now tells you to edit a scaffold: the four phantom `CREATE TABLE` lines the snapshot has never seen were stripped, and what remains is the real delta. Confirmed on the local database after it ran on 2026-11-01 — `__EFMigrationsHistory` holds 21 rows and 39 base tables, `Quotations.VatRate` is `decimal(5,4)`, `Tickets.Title` is `nvarchar(200)`, and all five unique indexes are present: `IX_Users_Email`, `IX_Tickets_TrackingNumber`, `IX_DeliveryLogs_TrackingNumber`, `IX_Quotations_QuoteReference`, `IX_Assets_SerialNumber`. The same database had reported `decimal(18,2)` and no unique index on any of those five columns before this migration existed. The `IEntityTypeConfiguration` classes it applies are the ones `ApplyConfigurationsFromAssembly` has been loading at startup all along — the code always declared these shapes; nothing in the database enforced them until now.
 
-SELECT TicketId, DATALENGTH(Title) AS TitleLen, DATALENGTH(Description) AS DescLen,
-       DATALENGTH(ResolutionNotes) AS NotesLen, DATALENGTH(TrackingNumber) AS TrackLen
-FROM Tickets
-WHERE DATALENGTH(Title) > 200 OR DATALENGTH(Description) > 4000
-   OR DATALENGTH(ResolutionNotes) > 4000 OR DATALENGTH(TrackingNumber) > 30;
+One `Up()` does all of it, in five parts:
 
--- VatRate moves from decimal(18,2) to decimal(5,4): only 0.9999 and below fit,
--- so a rate stored as 15 (meaning 15%) rather than 0.15 cannot be converted.
-SELECT QuotationId, VatRate FROM Quotations WHERE VatRate >= 10;
+- seven columns on `Users` — `ApprovalStatus` `nvarchar(20)` **defaulting to `'Approved'`**, `EmailVerified` `bit` defaulting to `false`, plus `EmailVerificationToken`/`EmailVerificationExpiry`, `RejectionReason`, `ReviewedByUserId` and `ReviewedAt`;
+- the `LoginHelpRequests` table the help button writes to;
+- 28 string columns narrowed from `nvarchar(max)` across `Tickets`, `Quotations`, `QuotationLineItem`, `DeliveryLogs`, `Deals`, `Clients` and `Assets` — two of them are GUID foreign keys going to `nvarchar(450)`, which widens and stores 36-character values, so they are carried here for completeness rather than risk;
+- two decimals re-typed: `Quotations.VatRate` `18,2` → `5,4` and `DeliveryLogs.WeightKg` `18,2` → `10,2`;
+- 15 indexes created — five of them unique — and `IX_Tickets_ClientId` dropped so it can come back as the composite `IX_Tickets_ClientId_Status`.
 
--- Every filtered unique index fails on duplicated non-blank values.
-SELECT TrackingNumber, COUNT(*) FROM Tickets      WHERE TrackingNumber  <> '' GROUP BY TrackingNumber HAVING COUNT(*) > 1;
-SELECT TrackingNumber, COUNT(*) FROM DeliveryLogs WHERE TrackingNumber  <> '' GROUP BY TrackingNumber HAVING COUNT(*) > 1;
-SELECT QuoteReference, COUNT(*) FROM Quotations   WHERE QuoteReference  <> '' GROUP BY QuoteReference HAVING COUNT(*) > 1;
-SELECT SerialNumber,   COUNT(*) FROM Assets       WHERE SerialNumber    <> '' GROUP BY SerialNumber   HAVING COUNT(*) > 1;
+**Run `Database/preflight-migration-checks.sql` against the live database before applying it.** It is read-only, it prints one section per risk, and every section says what a healthy result looks like:
+
+```powershell
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d VerichatCRM -b -i 'Database\preflight-migration-checks.sql'
+sqlcmd -S tcp:<server>.database.windows.net -d <database> -U <login> -b -i 'Database\preflight-migration-checks.sql'
 ```
 
-Blank values are excluded by the index filters on purpose, so empty strings are
-safe; duplicates and over-length text are not.
+Applied and verified against the local database on 2026-11-01: sections 1–4 returned no rows, and the narrowing sweep was checked for the opposite property too — with one threshold deliberately set to zero it reported the two `Tickets` rows that have descriptions, so an empty result is the sweep finding nothing rather than the sweep doing nothing.
+
+Three things the script encodes that are easy to get wrong by hand:
+
+- **`DATALENGTH` counts bytes; the new maximum is characters.** A 200-character `nvarchar` column holds up to 400 bytes, so the test is `DATALENGTH(col) > @MaxLen * 2`. The earlier inline version of this checklist compared `DATALENGTH` against the character maximum directly, which over-reports by 2× — it flags a 101-character value in a 200-character column. The script does not.
+- **`IX_Users_Email` has no filter.** It is the only one of the five unique indexes built over the whole column, so a second blank address — or a second `NULL`, since SQL Server allows exactly one — aborts the migration just like two real duplicates. The other four exclude `''`, so blank values are safe there and duplicates are not.
+- **`VatRate` is the one that cannot be salvaged by widening.** `decimal(5,4)` fits 0.9999 and below; a rate stored as `15` meaning 15% does not fit, and no index filter can help. Either store it as `0.15` or the row blocks the migration.
+
+On an empty or newly created database all of this applies without complaint. On a database that has been used, any row that violates the new shape aborts the script at that statement, and because the API calls `MigrateAsync()` at startup the app then comes up in degraded mode with the schema half-changed. Fix or trim the offending rows, re-run the script, then migrate.
+
+**`ApprovalStatus` defaulting to `'Approved'` is deliberate and is the reason the migration itself is safe.** Adding a `NOT NULL` column to a populated table needs a default, and the alternative — `'Pending'` — would have locked every existing account out of the building in the same second the schema changed. The review that does lock staff accounts out is the *next* migration, and it does it on purpose: §8.4.
 
 ### 8.2 Clear the demo and QA residue before you migrate anything real
 
@@ -401,7 +436,7 @@ INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion)
 VALUES (N'20261023000000_AddHealthMetricTable', N'10.0.12');
 ```
 
-**On the missing `.Designer.cs` files.** Nine of the nineteen migrations are
+**On the missing `.Designer.cs` files.** Nine of the twenty-one migrations are
 hand-written: the seven listed in §12.4 of the technical report
 (`AddHealthMetricTable`, `AddClientTimelineNotes`, `AddB2BAppointments`,
 `AddSalesGoals`, `AddUserPasswordResetFields`, `AddAuditLogs`,
@@ -410,12 +445,19 @@ hand-written: the seven listed in §12.4 of the technical report
 carry `[DbContext]` and `[Migration]` inline instead of having generated Designer files.
 That is not a defect: the Designer exists to hold those two attributes plus a
 `TargetModel` snapshot, and the attributes are what EF actually needs to discover and
-order a migration. `dotnet ef migrations list` shows all nineteen in timestamp order and
+order a migration. `dotnet ef migrations list` shows all twenty-one in timestamp order and
 `MigrateAsync()` applies them cleanly — which it only started doing at `c909aa6`; before
 that the same call aborted on the pending-model-changes check without running any of
 them (§7.1). A fabricated `TargetModel` would be worse than none — it would assert a
 database state nobody observed, and `dotnet ef migrations remove` would then restore the
 wrong model, which is precisely the trap described in §8.
+
+The two newest — `20261101151838_SyncSchemaAndAccountLifecycle` and
+`20261101152359_ReviewSelfClaimedStaffAccounts` — were scaffolded rather than written, so
+they do have Designer files and the hand-written count has not grown. §8.1's migration is
+the first one built the way this paragraph has always told people to build it: scaffolded,
+then stripped of the phantom `CREATE TABLE` lines the stale snapshot invents, then read
+line by line before it shipped.
 
 What the nine do cost is the snapshot drift behind all of this: a hand-written migration
 updates no snapshot, so `AppDbContextModelSnapshot.cs` describes a database that does not
@@ -466,3 +508,60 @@ create yourself:
   category image standing in — rather than stored in the row. An absolute URL in
   the database would only be true on the host it was written for, and the mobile
   app loads `ImageUrl` directly.
+
+### 8.4 After the migration: release the staff accounts the review swept up
+
+`20261101152359_ReviewSelfClaimedStaffAccounts` runs one statement:
+
+```sql
+UPDATE [Users] SET [ApprovalStatus] = N'Pending'
+WHERE [Role] IN (N'Sales Representative', N'Procurement Manager',
+                 N'Field Support Engineer', N'Logistics');
+```
+
+It has no `WHERE` on the current status, so it pends **every account in those four roles that exists at the moment it runs**, including the ones an administrator created for real employees and the ones your own staff registered years ago. That is the design, and the comment above the migration says the cost out loud: nothing in the `Users` row records who created the account, so the sweep cannot tell a genuine employee from someone who typed a staff role into the sign-up form.
+
+**The consequence is that the morning after a migration, your staff cannot sign in.** [AuthService.cs:45](VerichatCRM.API/Services/AuthService.cs#L45) refuses a `Pending` account before issuing a token, and [AccountController.cs:52](VerichatCRM.Web/Controllers/AccountController.cs#L52) sends the right password to the `Account/Review` screen instead of a dashboard. Web and mobile both read the same flag, so the same person is locked out of both. The message is honest — *"Your account is created and waiting for a Verichat employee to approve it"* — but to anyone who has not read this section it is indistinguishable from an outage. Section 5 of `Database/preflight-migration-checks.sql` counts these accounts before you migrate; write the number down.
+
+Do this, in this order:
+
+1. **Before migrating**, sign in to the deployment with a **System Administrator** account and confirm it works. `System Administrator`, `Client User` and `Medical Student` are outside the sweep — the admin role because the sign-up form never offers it, the other two because they reach nothing but their own portal.
+2. **Migrate.** The order in §8's numbered runbook: §8.2's cleanup, then §8.1's pre-flight, then the chain, then §8.3's catalogue.
+3. **Sign in as that System Administrator** and open `/Admin/Approvals`. Three roles hold `Perm.AccountApprovals` — System Administrator, Sales Representative and Procurement Manager ([Perm.cs:82](VerichatCRM.Web/Authorization/Perm.cs#L82)) — but the latter two are themselves `Pending` after step 2, so **the administrator is the only account that can work the queue.** A `Pending` administrator would have no way back in: `AccountApprovalService.ApproveAsync` refuses self-review, so the sweep leaving that role alone is load-bearing, not an oversight.
+4. **Approve the accounts you know, one at a time.** There is no bulk approve, deliberately — it is the same yes-or-no decision as a normal application, and a queue of forty is a sign the sweep ran against a database it should not have. A reviewer cannot change the role while approving: the applicant stays in the role they asked for.
+5. Tell the staff who signed themselves up what happened. Anyone who cannot get in has `/Account/Help` and the help button on both the sign-in and the review screen, and their notes land next to the queue at `/Admin/HelpRequests`.
+
+If the queue genuinely cannot be worked — a demonstration, a migration onto a database whose staff are all already vetted — this is the escape hatch, and it is exactly the migration's own `Down()`:
+
+```sql
+UPDATE [Users] SET [ApprovalStatus] = N'Approved'
+WHERE [Role] IN (N'Sales Representative', N'Procurement Manager',
+                 N'Field Support Engineer', N'Logistics')
+  AND [ApprovalStatus] = N'Pending'
+  AND [ReviewedByUserId] IS NULL;
+```
+
+`ReviewedByUserId` is only ever written by the queue, so this releases the accounts the sweep caught and leaves anything a reviewer has since decided by hand — including a rejection — exactly as they left it. Running it undoes the protection this feature exists to provide, so run it to unblock a room, then work the queue properly.
+
+Verified end to end on the local deployment, which went through both migrations on
+2026-11-01:
+
+- the pre-flight script counted **12** staff accounts in the four swept roles (3 Sales
+  Representative, 5 Procurement Manager, 2 Field Support Engineer, 2 Logistics); after
+  the migrations ran, 6 of them sat `Pending` and 6 `Approved` — the pending half being
+  the accounts that existed before the sweep, the approved half the per-role
+  demonstration accounts `DemoUserSeeder` creates after it with `ApprovalStatus` set
+  explicitly in code;
+- a fresh Sales Representative registered through `/Account/Register` and signed in with
+  the **right** password: held on the review screen, with the "waiting for a Verichat
+  employee" wording, no session issued;
+- the `admin@verichat.test.local` System Administrator reached `/Admin/Dashboard`, opened
+  `/Admin/Approvals`, and found 7 applicants — the 6 above plus the new one;
+- its Approve button posted `/Admin/ApproveAccount`, returned to the queue, and the
+  account was no longer listed;
+- the held account's same credentials then signed straight in and landed on `/Pipeline`,
+  the Sales Representative board.
+
+So the procedure in this section is the one that was actually walked, not a reconstruction
+of it. The escape-hatch `UPDATE` was not run.
+
