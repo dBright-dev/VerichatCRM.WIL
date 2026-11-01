@@ -1103,7 +1103,7 @@ The honest page. Give this to every new user with the training pack; the system 
 **Platform**
 
 27. **No certificates on the Free Monster ASP plan**, so the deployed HTTPS endpoints depend on the platform's own TLS; the `.runasp.net` origins must match `Cors:AllowedOrigins` exactly.
-28. **NU1902/NU1903 build warnings** — `System.Security.Cryptography.Pkcs 9.0.11` (a transitive dependency of `Microsoft.Data.SqlClient 6.1.6`, reached via EF Core SqlServer 10.0.12) carries moderate and high advisories. Twenty warnings, zero errors; the upgrade is blocked upstream, and the path is documented in [documentation.md](documentation.md).
+28. **NU1902/NU1903 build warnings — cleared in this build.** `System.Security.Cryptography.Pkcs` used to resolve to 9.0.11 (a transitive dependency of `Microsoft.Data.SqlClient 6.1.6`, reached via EF Core SqlServer 10.0.12) and carried a moderate and a high advisory, twenty warnings and zero errors. It is now pinned to **10.0.14** in `VerichatCRM.Core.csproj`, which raises it for every project underneath, and the restore is warning-free. The number stays in this list so that anyone comparing builds knows the warning they used to see is *fixed*, not suppressed. Detail in [documentation.md](documentation.md) §18 item 60.
 29. **No global exception handler in the web app**, so an unexpected failure surfaces as the standard 500 page.
 30. **Currency and culture are host-dependent**: quotation totals and the PDF follow the server's locale (en-ZA → rand), which is why the page and the script share the culture explicitly.
 
