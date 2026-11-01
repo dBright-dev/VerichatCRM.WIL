@@ -112,6 +112,10 @@ const ClientLoginScreen = () => {
             <Text style={styles.button_text}>Create account</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity style={styles.back} onPress={() => router.push('/privacy')}>
+            <Text style={styles.back_text}>Privacy notice — what we hold about you</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.back} onPress={() => router.back()}>
             <Text style={styles.back_text}>← Back</Text>
           </TouchableOpacity>

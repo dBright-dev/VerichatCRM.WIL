@@ -110,6 +110,10 @@ a {
 .vc-user-name { font-size: 13px; font-weight: 600; color: var(--vc-surface); }
 .vc-user-role { font-size: 11px; color: var(--vc-text-inverse-muted); }
 .vc-logout { color: var(--vc-navy-link); background: none; border: none; cursor: pointer; font-size: 13px; padding: 0; }
+/* Sits above Sign out in the same block; quieter than the links in the nav because
+   it leaves the application shell entirely. */
+.vc-sidebar__policy { display: block; margin-bottom: .5rem; font-size: 13px; color: var(--vc-text-inverse-muted); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--vc-navy-border); }
+.vc-sidebar__policy:hover { color: var(--vc-text-inverse); }
 /* Topbar */
 .vc-topbar { background: var(--vc-surface); border-bottom: 1px solid var(--vc-border); padding: 1rem 1.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; position: sticky; top: 0; z-index: 10; }
 .vc-topbar__title { font-size: 1.3rem; margin: 0; }

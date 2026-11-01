@@ -162,6 +162,16 @@ const CreateAccountScreen = () => {
           >
             <Text style={styles.button_text}>{busy ? 'Creating…' : 'Sign up'}</Text>
           </TouchableOpacity>
+
+          {/* A store listing is not accepted unless the policy is reachable before an
+              account exists, and this is the screen where somebody hands over a company
+              address - so say where it goes, right under the button that sends it. */}
+          <Text style={styles.privacy_note}>
+            We hold only what the supply chain needs.{'\n'}
+            <Text style={styles.privacy_link} onPress={() => router.push('/privacy')}>
+              Read the privacy notice
+            </Text>
+          </Text>
         </View>
         </View>
       </ScrollView>
@@ -238,5 +248,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#ffffff',
+  },
+  privacy_note: {
+    textAlign: 'center',
+    fontSize: 12,
+    lineHeight: 19,
+    color: '#C7D6E6',
+    marginTop: 18,
+  },
+  privacy_link: {
+    color: '#8FC1FF',
+    fontWeight: '700',
   },
 })

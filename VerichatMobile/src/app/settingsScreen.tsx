@@ -154,6 +154,12 @@ const SettingsScreen = () => {
       router.push('/cartScreen')
       return
     }
+    // The notice is the one "MORE" row that is real content rather than a placeholder:
+    // the store listing points here, so it has to be reachable from inside the app too.
+    if (key === 'privacy') {
+      router.push('/privacy')
+      return
+    }
     const title = MORE_ROWS.find((row) => row.key === key)?.title ?? 'Information'
     Alert.alert(title, 'This information is not available in the mobile API yet.')
   }

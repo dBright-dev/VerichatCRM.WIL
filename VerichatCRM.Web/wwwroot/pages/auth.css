@@ -132,6 +132,32 @@
     overflow: hidden;
 }
 
+/* The privacy footnote at the foot of the brand panel (see _AuthPolicyFootnote).
+   Every screen that uses this shell is one a person reaches before they have an
+   account, which is the point at which a policy has to be readable. */
+.vc-auth-policy {
+    margin-top: 2.4rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--vc-navy-border);
+    display: grid;
+    gap: .3rem;
+}
+
+    .vc-auth-policy a {
+        color: var(--vc-text-inverse);
+        font-size: .84rem;
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    .vc-auth-policy span {
+        color: var(--vc-text-inverse-muted);
+        font-size: .76rem;
+        line-height: 1.55;
+        max-width: 34ch;
+    }
+
 /* The notice screen leads with a banner instead of a heading, so it needs the
    card's own rhythm rather than the dashboard's page-level margins. */
 .vc-auth-card .alert-banner {

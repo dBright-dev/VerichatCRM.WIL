@@ -65,9 +65,18 @@
     }
 
     /* ---------- which section is on screen ---------- */
-    var navLinks = Array.prototype.slice.call(document.querySelectorAll('.lnd-nav__links a[href^="#"]'));
+    // The nav links carry a leading slash, because on the privacy notice and the contact
+    // page a bare "#catalogue" is a fragment of the page you are already on and goes
+    // nowhere. So the spy reads the fragment rather than the attribute, and on a page
+    // without those sections it simply finds nothing to observe.
+    function fragmentOf(href) {
+        var parts = (href || '').split('#');
+        return parts.length > 1 ? parts[1] : '';
+    }
+
+    var navLinks = Array.prototype.slice.call(document.querySelectorAll('.lnd-nav__links a[href*="#"]'));
     var sections = navLinks
-        .map(function (a) { return document.querySelector(a.getAttribute('href')); })
+        .map(function (a) { return document.getElementById(fragmentOf(a.getAttribute('href'))); })
         .filter(Boolean);
 
     if (sections.length && 'IntersectionObserver' in window) {
@@ -75,7 +84,7 @@
             entries.forEach(function (entry) {
                 if (!entry.isIntersecting) return;
                 navLinks.forEach(function (a) {
-                    a.classList.toggle('is-active', a.getAttribute('href') === '#' + entry.target.id);
+                    a.classList.toggle('is-active', fragmentOf(a.getAttribute('href')) === entry.target.id);
                 });
             });
         }, { rootMargin: '-45% 0px -50% 0px' });

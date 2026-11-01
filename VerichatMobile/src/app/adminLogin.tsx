@@ -115,6 +115,10 @@ const AdminLoginScreen = () => {
           <TouchableOpacity style={styles.link} onPress={() => router.push('/loginHelp')}>
             <Text style={styles.link_text}>Cannot sign in at all? Tell an administrator</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity style={styles.link} onPress={() => router.push('/privacy')}>
+            <Text style={styles.link_text}>Privacy notice — what we hold about you</Text>
+          </TouchableOpacity>
         </View>
         </View>
       </ScrollView>

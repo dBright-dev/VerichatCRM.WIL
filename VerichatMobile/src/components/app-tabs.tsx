@@ -41,6 +41,7 @@ export default function AppTabs() {
       <Tabs.Screen name="explore" options={{ href: null }} />
       <Tabs.Screen name="GoalsScreen" options={{ href: null }} />
       <Tabs.Screen name="newUserAccount" options={{ href: null }} />
+      <Tabs.Screen name="privacy" options={{ href: null }} />
       <Tabs.Screen name="settingsScreen" options={{ href: null }} />
       <Tabs.Screen name="cartScreen" options={{ href: null }} />
     </Tabs>

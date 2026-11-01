@@ -20,6 +20,11 @@ SplashScreen.preventAutoHideAsync();
 // cannot sign in, and the guard below would otherwise bounce them to a login page.
 const AUTH_ROUTES = ['clientLogin', 'adminLogin', 'newUserAccount', 'forgotPassword', 'resetPassword', 'loginHelp'];
 
+// Readable in both states. The app stores will not accept a build whose privacy
+// policy only appears after you have an account, so the notice has to survive the
+// guard - and a signed-in user opens the same route from Settings.
+const PUBLIC_ROUTES = ['privacy'];
+
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const router = useRouter();
@@ -65,8 +70,8 @@ export default function TabLayout() {
   useEffect(() => {
     if (!hydrated) return;
     const current = segments[0];
-    const onAuthRoute = !current || AUTH_ROUTES.includes(current);
-    if (!signedIn && !onAuthRoute) router.replace('/');
+    const reachableWhileSignedOut = !current || AUTH_ROUTES.includes(current) || PUBLIC_ROUTES.includes(current);
+    if (!signedIn && !reachableWhileSignedOut) router.replace('/');
     if (signedIn && AUTH_ROUTES.includes(current ?? '')) router.replace('/');
   }, [router, segments, signedIn, hydrated]);
 
@@ -86,6 +91,7 @@ export default function TabLayout() {
             <Stack.Screen name="forgotPassword" />
             <Stack.Screen name="resetPassword" />
             <Stack.Screen name="loginHelp" />
+            <Stack.Screen name="privacy" />
           </Stack>
         )}
       </ThemeProvider>
