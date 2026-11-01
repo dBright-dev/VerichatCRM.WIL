@@ -102,6 +102,11 @@ builder.Services.AddScoped<IAccountRecoveryService, AccountRecoveryService>();
 // The third way in, for the accounts the two above cannot reach: a note to an
 // administrator from somebody standing outside the sign-in screen.
 builder.Services.AddScoped<ILoginHelpService, LoginHelpService>();
+// And the door that faces the other way: a note from somebody who has no account yet and
+// wants one, filed as an enquiry and mailed to the sales desk.
+builder.Services.AddScoped<IPublicEnquiryService, PublicEnquiryService>();
+// The gallery's read side: a projection of the catalogue with the commercial columns cut.
+builder.Services.AddScoped<IPublicCatalogService, PublicCatalogService>();
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IInquiryService, InquiryService>();

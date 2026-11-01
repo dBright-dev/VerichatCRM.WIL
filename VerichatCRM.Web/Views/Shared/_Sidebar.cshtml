@@ -240,7 +240,7 @@
         @* Deliberately outside every `Can(...)` check: the notice is the document
            that says what this role is allowed to read, so it has to be readable by
            whoever holds that role. *@
-        <a class="vc-sidebar__policy" href="/Home/Privacy">Privacy notice</a>
+        <a class="vc-sidebar__policy" href="/privacy">Privacy notice</a>
         <form asp-controller="Account" asp-action="Logout" method="post">
             @Html.AntiForgeryToken()
             <button type="submit" class="vc-logout">→ Sign out</button>

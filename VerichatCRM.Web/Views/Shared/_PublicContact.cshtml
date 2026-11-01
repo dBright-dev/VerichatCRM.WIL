@@ -1,0 +1,16 @@
+@*
+    The block that says where Verichat is and how to reach it, rendered from
+    VerichatContact so that the address, the two phone numbers and the sales address
+    exist once in this application. Four public pages need it, and a phone number that
+    is right on one of them and stale on the others is worse than printing no number.
+*@
+<div class="lnd-doc__contact">
+    <p>@VerichatContact.Company</p>
+    <p>@VerichatContact.Street, @VerichatContact.Suburb, @VerichatContact.City, @VerichatContact.Country</p>
+    <p>
+        <a href="@VerichatContact.PhoneHref">@VerichatContact.Phone</a>
+        &middot;
+        <a href="@VerichatContact.PhoneAlternateHref">@VerichatContact.PhoneAlternate</a>
+    </p>
+    <p><a href="@VerichatContact.EmailHref">@VerichatContact.Email</a></p>
+</div>

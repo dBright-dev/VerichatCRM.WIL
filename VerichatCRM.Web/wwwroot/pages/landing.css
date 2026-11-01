@@ -158,10 +158,16 @@ body.lnd {
         }
 
         .lnd-nav__links a:hover,
-        .lnd-nav__links a.is-active { color: var(--lnd-ivory); }
+        .lnd-nav__links a.is-active,
+        .lnd-nav__links a[aria-current="page"] { color: var(--lnd-ivory); }
 
+        /* aria-current is written by the server for the page you are standing on;
+           .is-active is written by the scroll spy for the section you are looking at.
+           They are the same underline because they answer the same question - which of
+           these links is where I am. */
         .lnd-nav__links a:hover::after,
-        .lnd-nav__links a.is-active::after { transform: scaleX(1); }
+        .lnd-nav__links a.is-active::after,
+        .lnd-nav__links a[aria-current="page"]::after { transform: scaleX(1); }
 
 .lnd-nav__actions { display: flex; align-items: center; gap: 1rem; }
 
@@ -756,12 +762,15 @@ body.lnd {
 /* ---------- footer ---------- */
 .lnd-footer { background: #050A16; border-top: 1px solid var(--lnd-line); }
 
+/* Four columns: the company, the home page's own sections, the portal and the
+   paperwork. Two of them are links to pages, and two are links to sections of a page
+   the visitor may already be standing away from. */
 .lnd-footer__top {
     max-width: var(--lnd-max);
     margin: 0 auto;
     padding: clamp(2.6rem, 5vw, 4rem) var(--lnd-gutter) 2.4rem;
     display: grid;
-    grid-template-columns: 1.6fr 1fr 1fr;
+    grid-template-columns: 1.6fr 1fr 1fr 1fr;
     gap: clamp(1.6rem, 4vw, 3.5rem);
 }
 
@@ -788,24 +797,26 @@ body.lnd {
     color: var(--lnd-faint);
 }
 
-/* ---------- legal pages (privacy notice) ---------- */
-/* A long-form prose page needs different rules from the marketing sections: the
-   measure is capped so a line never runs the full width of the shell, and the
-   contents list is sticky so section 10 is one click away from section 2. */
+/* ---------- long-form public pages ---------- */
+/* The frame every non-marketing public page shares: a masthead that carries a standfirst
+   and a metadata list, and a four-up "at a glance" strip. These sit outside the
+   .lnd-section rhythm below because a notice or a profile opens under the fixed nav, not
+   in the middle of a scroll. The .lnd-doc__ name covers all of them - privacy, profile,
+   services and contact all use this masthead, so it is no longer the legal block's. */
 .lnd-section--top { padding-top: clamp(8rem, 15vw, 11rem); }
 
 .lnd-section--close { padding-block: clamp(3rem, 6vw, 4.5rem) clamp(5rem, 10vw, 8.5rem); }
 
-.lnd-legal__masthead { max-width: 60rem; }
+.lnd-doc__masthead { max-width: 60rem; }
 
-.lnd-legal__title {
+.lnd-doc__title {
     font-size: clamp(2.5rem, 6.5vw, 4.4rem);
     line-height: 1.02;
     letter-spacing: -.035em;
     margin-top: 1.1rem;
 }
 
-.lnd-legal__standfirst {
+.lnd-doc__standfirst {
     color: var(--lnd-muted);
     font-size: 1.04rem;
     line-height: 1.85;
@@ -813,7 +824,7 @@ body.lnd {
     margin: 1.5rem 0 0;
 }
 
-.lnd-legal__meta {
+.lnd-doc__meta {
     display: flex;
     flex-wrap: wrap;
     gap: 1.5rem 3rem;
@@ -822,7 +833,7 @@ body.lnd {
     border-top: 1px solid var(--lnd-line);
 }
 
-    .lnd-legal__meta dt {
+    .lnd-doc__meta dt {
         font-size: .66rem;
         letter-spacing: .2em;
         text-transform: uppercase;
@@ -830,9 +841,9 @@ body.lnd {
         margin-bottom: .4rem;
     }
 
-    .lnd-legal__meta dd { margin: 0; font-size: .88rem; color: var(--lnd-muted); max-width: 30ch; line-height: 1.6; }
+    .lnd-doc__meta dd { margin: 0; font-size: .88rem; color: var(--lnd-muted); max-width: 30ch; line-height: 1.6; }
 
-.lnd-legal__glance {
+.lnd-doc__glance {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1px;
@@ -843,16 +854,16 @@ body.lnd {
     margin-top: clamp(2.6rem, 5vw, 4rem);
 }
 
-.lnd-legal__glance-item {
+.lnd-doc__glance-item {
     display: grid;
     gap: .45rem;
     background: var(--lnd-ink-2);
     padding: 1.2rem 1.25rem 1.3rem;
 }
 
-    .lnd-legal__glance-item b { font-family: var(--vc-font-heading); font-weight: 500; font-size: .96rem; }
+    .lnd-doc__glance-item b { font-family: var(--vc-font-heading); font-weight: 500; font-size: .96rem; }
 
-    .lnd-legal__glance-item span { color: var(--lnd-faint); font-size: .8rem; line-height: 1.7; }
+    .lnd-doc__glance-item span { color: var(--lnd-faint); font-size: .8rem; line-height: 1.7; }
 
 .lnd-legal {
     display: grid;
@@ -927,7 +938,7 @@ body.lnd {
         text-decoration-color: rgba(53, 196, 232, .4);
     }
 
-.lnd-legal__list {
+.lnd-points {
     list-style: none;
     display: grid;
     gap: .75rem;
@@ -935,7 +946,7 @@ body.lnd {
     padding: 0;
 }
 
-    .lnd-legal__list li {
+    .lnd-points li {
         position: relative;
         padding-left: 1.35rem;
         color: var(--lnd-muted);
@@ -943,7 +954,7 @@ body.lnd {
         line-height: 1.75;
     }
 
-        .lnd-legal__list li::before {
+        .lnd-points li::before {
             content: "";
             position: absolute;
             left: 0;
@@ -966,7 +977,7 @@ body.lnd {
 
 .lnd-legal__group-lead { margin-top: .4rem; }
 
-.lnd-legal__callout {
+.lnd-callout {
     margin-top: 1.6rem;
     padding: 1rem 1.25rem;
     border-left: 2px solid var(--lnd-gold);
@@ -974,7 +985,7 @@ body.lnd {
     background: linear-gradient(90deg, rgba(201, 169, 106, .07), transparent 70%);
 }
 
-    .lnd-legal__callout p { margin: 0; }
+    .lnd-callout p { margin: 0; }
 
 .lnd-legal__table {
     width: 100%;
@@ -1004,7 +1015,7 @@ body.lnd {
 
         .lnd-legal__table td:first-child { color: var(--lnd-ivory); white-space: nowrap; }
 
-.lnd-legal__contact {
+.lnd-doc__contact {
     display: grid;
     gap: .2rem;
     margin-top: 1.2rem;
@@ -1014,9 +1025,492 @@ body.lnd {
     background: var(--lnd-ink-2);
 }
 
-    .lnd-legal__contact p { margin: 0; font-size: .92rem; }
+    .lnd-doc__contact p { margin: 0; font-size: .92rem; }
 
-    .lnd-legal__contact p:first-child { color: var(--lnd-ivory); font-weight: 600; }
+    .lnd-doc__contact p:first-child { color: var(--lnd-ivory); font-weight: 600; }
+
+    /* The block travels - it is the notice's contact section, the profile's closing
+       panel and the footer of the contact page - so it carries its own link colour
+       rather than borrowing one from the prose column it happens to sit inside. */
+    .lnd-doc__contact a {
+        color: var(--lnd-cyan);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        text-decoration-color: rgba(53, 196, 232, .4);
+    }
+
+        .lnd-doc__contact a:hover { color: var(--lnd-ivory); text-decoration-color: var(--lnd-ivory); }
+
+/* Links that sit inside prose on the public pages. The shell's base rule makes every
+   anchor inherit its surrounding colour - right for a card or a button, wrong for a
+   sentence in the middle of a paragraph, where an underline is the only thing telling the
+   reader the sentence leads somewhere. */
+.lnd-head a,
+.lnd-tile a,
+.lnd-ledger a,
+.lnd-split__body a,
+.lnd-callout a,
+.lnd-statement a,
+.lnd-receipt a {
+    color: var(--lnd-cyan);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(53, 196, 232, .4);
+}
+
+    .lnd-head a:hover,
+    .lnd-tile a:hover,
+    .lnd-ledger a:hover,
+    .lnd-split__body a:hover,
+    .lnd-callout a:hover,
+    .lnd-statement a:hover,
+    .lnd-receipt a:hover { color: var(--lnd-ivory); text-decoration-color: var(--lnd-ivory); }
+
+/* A row of links or buttons under a block, left-aligned like the copy above it. The
+   closing call-to-action is centred because its section is; this is not. */
+.lnd-linkrow { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 1.3rem; }
+
+/* ---------- company profile (about) ---------- */
+/* Mission and vision are the two sentences the rest of the page is argued from, so they
+   sit in a panel with a rule down the left rather than as another paragraph in the
+   measure. Everything else on the page is a grid of the same two shapes - a tile and a
+   numbered ledger row - so the profile cannot drift into five unrelated layouts. */
+.lnd-statement {
+    position: relative;
+    display: grid;
+    gap: 1.15rem;
+    padding: clamp(1.5rem, 3.4vw, 2.6rem);
+    padding-left: clamp(1.8rem, 3.6vw, 2.9rem);
+    border: 1px solid var(--lnd-line-strong);
+    border-radius: var(--lnd-r);
+    background: linear-gradient(140deg, var(--lnd-ink-2), rgba(16, 27, 51, .5));
+}
+
+    .lnd-statement::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        border-radius: var(--lnd-r) 0 0 var(--lnd-r);
+        background: linear-gradient(var(--lnd-gold), rgba(201, 169, 106, .1));
+    }
+
+    .lnd-statement__lead {
+        font-family: var(--vc-font-heading);
+        font-size: clamp(1.3rem, 2.6vw, 1.9rem);
+        line-height: 1.34;
+        letter-spacing: -.018em;
+        color: var(--lnd-ivory);
+        margin: 0;
+        max-width: 44ch;
+    }
+
+    .lnd-statement__body {
+        color: var(--lnd-muted);
+        font-size: .95rem;
+        line-height: 1.85;
+        margin: 0;
+        max-width: 64ch;
+    }
+
+/* One tile shape, used by the values grid, the service capabilities and the sector
+   facts. The gap is 1px against a line-coloured background so a grid of tiles shares
+   hairlines instead of drawing a box around each one. */
+.lnd-tiles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--lnd-line);
+    border: 1px solid var(--lnd-line);
+    border-radius: var(--lnd-r);
+    overflow: hidden;
+    margin-top: clamp(2.2rem, 4.5vw, 3.4rem);
+}
+
+.lnd-tile {
+    display: grid;
+    gap: .55rem;
+    align-content: start;
+    background: var(--lnd-ink-2);
+    padding: 1.45rem 1.4rem 1.6rem;
+}
+
+    .lnd-tile__num {
+        font-family: var(--vc-font-heading);
+        font-size: .7rem;
+        letter-spacing: .22em;
+        color: var(--lnd-gold);
+    }
+
+    .lnd-tile h3 {
+        margin: 0;
+        font-size: 1.06rem;
+        line-height: 1.3;
+        letter-spacing: -.01em;
+    }
+
+    .lnd-tile p {
+        margin: 0;
+        color: var(--lnd-muted);
+        font-size: .88rem;
+        line-height: 1.8;
+    }
+
+/* What the company has actually built, as a ledger rather than a card wall: a number,
+   a name and a sentence, with the rule between rows carrying the structure. */
+.lnd-ledger {
+    display: grid;
+    margin-top: clamp(2.2rem, 4.5vw, 3.2rem);
+    border-top: 1px solid var(--lnd-line);
+}
+
+    .lnd-ledger > div {
+        display: grid;
+        grid-template-columns: 76px minmax(0, 1fr);
+        gap: clamp(1rem, 3vw, 2.4rem);
+        padding: 1.5rem 0;
+        border-bottom: 1px solid var(--lnd-line);
+    }
+
+    .lnd-ledger__num {
+        font-family: var(--vc-font-heading);
+        font-size: .92rem;
+        letter-spacing: .12em;
+        color: var(--lnd-gold);
+        padding-top: .18rem;
+    }
+
+    .lnd-ledger h3 { margin: 0 0 .45rem; font-size: 1.16rem; line-height: 1.25; }
+
+    .lnd-ledger p {
+        margin: 0;
+        color: var(--lnd-muted);
+        font-size: .93rem;
+        line-height: 1.8;
+        max-width: 72ch;
+    }
+
+/* ---------- split rows (profile and services) ---------- */
+/* One picture beside one piece of copy, and every second row flipped, so a page of six
+   or eight of them reads as a zig-zag rather than a column of identical blocks. The flip
+   is on the row, not the markup: the DOM still puts the picture before its caption.
+   Both the company profile and the services page are made of these, which is why the
+   class is named for the shape and not for either page. */
+.lnd-splits {
+    display: grid;
+    gap: clamp(3rem, 7vw, 5.5rem);
+    margin-top: clamp(2.6rem, 5vw, 4rem);
+}
+
+.lnd-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+    gap: clamp(1.6rem, 4vw, 3.4rem);
+    align-items: center;
+}
+
+    .lnd-split:nth-child(even) .lnd-split__media { order: 2; }
+
+    .lnd-split__media {
+        display: block;
+        aspect-ratio: 4 / 3;
+        border: 1px solid var(--lnd-line);
+        border-radius: var(--lnd-r);
+        background: var(--lnd-navy);
+        overflow: hidden;
+    }
+
+        .lnd-split__media img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .lnd-split__num {
+        font-family: var(--vc-font-heading);
+        font-size: .7rem;
+        letter-spacing: .22em;
+        text-transform: uppercase;
+        color: var(--lnd-cyan);
+        margin: 0;
+    }
+
+    .lnd-split h3 {
+        margin: .55rem 0 0;
+        font-size: clamp(1.3rem, 2.6vw, 1.8rem);
+        line-height: 1.2;
+        letter-spacing: -.02em;
+    }
+
+    /* The kicker paragraph above the heading is the only one that stays out of the
+       prose measure, so the body copy is everything that is not that. */
+    .lnd-split__body p:not(.lnd-split__num) {
+        margin: 1rem 0 0;
+        color: var(--lnd-muted);
+        font-size: .95rem;
+        line-height: 1.85;
+        max-width: 58ch;
+    }
+
+    .lnd-split .lnd-points { margin-top: 1.15rem; }
+
+    .lnd-split .lnd-roles { margin-top: 1.3rem; }
+
+/* ---------- contact us ---------- */
+/* The enquiry form and the facts about the office, side by side, because the question a
+   visitor is asking is "does a real place answer this" as much as "can I type at it". */
+.lnd-contact {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: clamp(1.8rem, 4vw, 3.2rem);
+    align-items: start;
+    margin-top: clamp(2.4rem, 5vw, 3.6rem);
+}
+
+.lnd-form {
+    display: grid;
+    gap: 1.15rem;
+    padding: clamp(1.35rem, 3vw, 2.1rem);
+    border: 1px solid var(--lnd-line-strong);
+    border-radius: var(--lnd-r);
+    background: var(--lnd-glass);
+    /* The navy shell inverts the app's palette, but a <select> opens an OS-drawn list
+       that knows nothing about either. Declaring the scheme dark is the one instruction
+       that makes the closed control and its dropdown agree. */
+    color-scheme: dark;
+}
+
+    .lnd-form__pair {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.15rem;
+    }
+
+    .lnd-form label {
+        display: block;
+        margin-bottom: .45rem;
+        font-size: .7rem;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+        color: var(--lnd-faint);
+    }
+
+    .lnd-form input,
+    .lnd-form textarea,
+    .lnd-form select {
+        display: block;
+        width: 100%;
+        padding: .75rem .9rem;
+        font: inherit;
+        font-size: .94rem;
+        color: var(--lnd-ivory);
+        background: rgba(255, 255, 255, .04);
+        border: 1px solid var(--lnd-line-strong);
+        border-radius: var(--lnd-r-sm);
+        transition: border-color .2s, background .2s, box-shadow .2s;
+    }
+
+        .lnd-form input:hover,
+        .lnd-form textarea:hover,
+        .lnd-form select:hover { border-color: rgba(255, 255, 255, .3); }
+
+        .lnd-form input:focus-visible,
+        .lnd-form textarea:focus-visible,
+        .lnd-form select:focus-visible {
+            outline: none;
+            border-color: var(--lnd-cyan);
+            background: rgba(255, 255, 255, .07);
+            box-shadow: 0 0 0 3px rgba(53, 196, 232, .16);
+        }
+
+    .lnd-form textarea { min-height: 8.5rem; line-height: 1.75; resize: vertical; }
+
+    .lnd-form__hint {
+        margin: .45rem 0 0;
+        font-size: .78rem;
+        line-height: 1.6;
+        color: var(--lnd-faint);
+    }
+
+    /* The app's error red is written for a white card; on ink it needs lifting. */
+    .lnd-form .text-critical,
+    .lnd-form .field-validation-error,
+    .lnd-form .validation-summary-errors {
+        color: #ff9fb0;
+        font-size: .82rem;
+    }
+
+    .lnd-form .validation-summary-errors ul { margin: 0; padding-left: 1.1rem; }
+
+    .lnd-form__foot {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-top: .4rem;
+        border-top: 1px solid var(--lnd-line);
+        margin-top: .3rem;
+    }
+
+        .lnd-form__foot p { margin: 0; font-size: .78rem; color: var(--lnd-faint); max-width: 42ch; }
+
+/* The field a person filling this in cannot see. Positioned off the layout rather than
+   display:none, because ignoring a stylesheet rule is the first trick in every spam
+   script, and the row survives on the navy shell for the same reason it does on the
+   sign-in card. */
+.lnd-form__trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* A drawn plan of the suburb, not an embedded map. See VerichatContact for why: an
+   iframe from a mapping provider loads their scripts and sets their cookies on a page
+   whose own notice promises no trackers. */
+.lnd-map {
+    position: relative;
+    display: block;
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--lnd-line-strong);
+    border-radius: var(--lnd-r);
+    background: var(--lnd-navy);
+    overflow: hidden;
+}
+
+    .lnd-map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+    .lnd-map__pin {
+        transform-origin: center;
+        animation: lnd-pin 2.6s var(--lnd-ease) infinite;
+    }
+
+    .lnd-map__cap {
+        position: absolute;
+        left: 1.1rem;
+        right: 1.1rem;
+        bottom: .9rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: .4rem 1rem;
+    }
+
+        .lnd-map__cap b { font-family: var(--vc-font-heading); font-weight: 500; font-size: .92rem; }
+
+        .lnd-map__cap span { font-size: .74rem; letter-spacing: .1em; text-transform: uppercase; color: var(--lnd-faint); }
+
+@keyframes lnd-pin {
+    0%, 100% { opacity: .9; transform: scale(1); }
+    50% { opacity: .35; transform: scale(1.9); }
+}
+
+.lnd-detail { display: grid; gap: 1.1rem; }
+
+    .lnd-detail > div {
+        display: grid;
+        gap: .45rem;
+        padding: 1.2rem 1.3rem 1.35rem;
+        border: 1px solid var(--lnd-line);
+        border-radius: var(--lnd-r-sm);
+        background: var(--lnd-ink-2);
+    }
+
+    .lnd-detail h3 {
+        margin: 0;
+        font-size: .68rem;
+        letter-spacing: .2em;
+        text-transform: uppercase;
+        color: var(--lnd-gold);
+        font-weight: 600;
+    }
+
+    .lnd-detail p { margin: 0; color: var(--lnd-muted); font-size: .9rem; line-height: 1.75; }
+
+    .lnd-detail a {
+        color: var(--lnd-cyan);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        text-decoration-color: rgba(53, 196, 232, .4);
+    }
+
+    .lnd-detail__tel {
+        font-family: var(--vc-font-heading);
+        font-size: 1.06rem;
+        letter-spacing: .01em;
+        color: var(--lnd-ivory);
+    }
+
+/* The screen a submission lands on. It repeats what was recorded and gives the second
+   route to the same desk, because "we have it" is only reassuring if the visitor can see
+   the reference and has somewhere to go if the answer does not arrive. */
+.lnd-receipt {
+    display: grid;
+    gap: 1.2rem;
+    max-width: 62rem;
+    margin-top: clamp(2rem, 4vw, 3rem);
+    padding: clamp(1.6rem, 4vw, 2.6rem);
+    border: 1px solid var(--lnd-line-strong);
+    border-radius: var(--lnd-r);
+    background: linear-gradient(140deg, var(--lnd-ink-2), rgba(16, 27, 51, .55));
+}
+
+    .lnd-receipt__mark {
+        display: grid;
+        place-items: center;
+        width: 2.4rem;
+        height: 2.4rem;
+        border-radius: 50%;
+        border: 1px solid rgba(201, 169, 106, .5);
+        color: var(--lnd-gold);
+        font-size: 1rem;
+    }
+
+    .lnd-receipt h2 { margin: 0; font-size: clamp(1.4rem, 3vw, 2rem); letter-spacing: -.02em; }
+
+    .lnd-receipt p { margin: 0; color: var(--lnd-muted); font-size: .95rem; line-height: 1.85; max-width: 66ch; }
+
+    .lnd-receipt__ref {
+        display: inline-block;
+        padding: .4rem .75rem;
+        border: 1px solid var(--lnd-line-strong);
+        border-radius: var(--lnd-r-sm);
+        font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+        font-size: .84rem;
+        letter-spacing: .08em;
+        color: var(--lnd-ivory);
+        background: rgba(255, 255, 255, .04);
+    }
+
+    .lnd-receipt__routes {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1px;
+        background: var(--lnd-line);
+        border: 1px solid var(--lnd-line);
+        border-radius: var(--lnd-r-sm);
+        overflow: hidden;
+    }
+
+        .lnd-receipt__routes a,
+        .lnd-receipt__routes div {
+            display: grid;
+            gap: .3rem;
+            padding: 1rem 1.1rem 1.15rem;
+            background: var(--lnd-ink-2);
+        }
+
+        .lnd-receipt__routes b { font-size: .92rem; color: var(--lnd-ivory); }
+
+        .lnd-receipt__routes span { font-size: .8rem; color: var(--lnd-faint); line-height: 1.65; }
+
+        .lnd-receipt__routes a:hover { background: var(--lnd-navy); }
 
 /* ---------- lightbox ---------- */
 .lnd-lightbox {
@@ -1095,7 +1589,8 @@ body.lnd {
     .lnd-tabs__btn { border-left: 0; border-bottom: 2px solid transparent; margin: 0 0 -1px; padding-inline: .9rem; grid-template-columns: 1fr; gap: .3rem; }
     .lnd-tabs__btn[aria-selected="true"] { border-bottom-color: var(--lnd-gold); }
     .lnd-footer__top { grid-template-columns: 1fr 1fr; }
-    .lnd-legal__glance { grid-template-columns: repeat(2, 1fr); }
+    .lnd-doc__glance { grid-template-columns: repeat(2, 1fr); }
+    .lnd-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 1180px) {
@@ -1153,6 +1648,19 @@ body.lnd {
         .lnd-legal__toc a { margin-left: 0; padding-left: .9rem; }
 
     .lnd-legal__table td:first-child { white-space: normal; }
+
+    /* A service row is a picture beside a paragraph; below this width the picture is
+       simply wider than the paragraph, so the rows stack and the alternating side is
+       turned off - a zig-zag made of one column is just an indented column. */
+    .lnd-split { grid-template-columns: 1fr; gap: 1.4rem; }
+
+        .lnd-split:nth-child(even) .lnd-split__media { order: 0; }
+
+    .lnd-contact { grid-template-columns: 1fr; }
+    .lnd-form__pair { grid-template-columns: 1fr; }
+    .lnd-receipt__routes { grid-template-columns: 1fr; }
+
+    .lnd-ledger > div { grid-template-columns: 54px minmax(0, 1fr); gap: 1rem; }
 }
 
 @media (max-width: 620px) {
@@ -1160,7 +1668,8 @@ body.lnd {
     .lnd-brand__text { letter-spacing: .22em; }
     .lnd-gallery { grid-template-columns: 1fr; }
     .lnd-footer__top { grid-template-columns: 1fr; }
-    .lnd-legal__glance { grid-template-columns: 1fr; }
+    .lnd-doc__glance { grid-template-columns: 1fr; }
+    .lnd-tiles { grid-template-columns: 1fr; }
     .lnd-legal__toc ol { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; }
     .lnd-section--top { padding-top: 7.5rem; }
     .lnd-nav__actions .lnd-btn { padding: .6rem 1rem; font-size: .78rem; }
@@ -1173,6 +1682,11 @@ body.lnd {
     .lnd-hero__img,
     .lnd-strip__track,
     .lnd-scrollcue i { animation: none !important; }
+
+    /* The pin on the drawn plan pulses to answer "is that the right building". A
+       pulsing dot is also the one animation on this shell that can be physically
+       uncomfortable to look at, so it stops rather than slows. */
+    .lnd-map__pin { animation: none !important; }
 
     .lnd-js [data-reveal] { opacity: 1; transform: none; transition: none; }
 

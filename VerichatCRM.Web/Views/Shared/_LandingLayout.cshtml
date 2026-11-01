@@ -5,6 +5,24 @@
     var jwt = Context.Session.GetString("JwtToken");
     var userName = Context.Session.GetString("UserName");
     var isAuthed = !string.IsNullOrEmpty(jwt);
+
+    var here = Normalize(Context.Request.Path.HasValue ? Context.Request.Path.Value! : "/");
+
+    // The nav marks whichever page you are on. It has to be the server that says so:
+    // these are five different documents, and a script that reads location.pathname
+    // would leave every one of them unmarked until it ran.
+    //
+    // Only the short spelling exists. An action with a [Route] attribute is taken out of
+    // conventional routing altogether, so /Home/about is a 404 rather than a second door
+    // to the same page - which is the reason the nav, the footer and the staff screens all
+    // link /privacy rather than the controller-shaped URL the notice used to answer at.
+    static string Normalize(string path)
+    {
+        var trimmed = path.Trim('/');
+        return trimmed.Length == 0 ? "/" : "/" + trimmed.ToLowerInvariant();
+    }
+
+    string OnThisPage(string href) => Normalize(href) == here ? "page" : "false";
 }
 <!DOCTYPE html>
 <html lang="en" class="lnd-html">
@@ -33,14 +51,18 @@
                 <span class="lnd-brand__tag">Supply&nbsp;·&nbsp;Service&nbsp;·&nbsp;CRM</span>
             </a>
 
-            <nav class="lnd-nav__links" id="lndNavLinks" aria-label="Sections">
-                @* The leading slash matters off the home page. A bare "#catalogue" is a
-                   fragment of the current document, so on the privacy notice and the
-                   contact page these four links went nowhere at all. *@
-                <a href="/#platform">Platform</a>
-                <a href="/#catalogue">Catalogue</a>
-                <a href="/#sectors">Sectors</a>
-                <a href="/#team">Team</a>
+            <nav class="lnd-nav__links" id="lndNavLinks" aria-label="Pages">
+                @* These are the four public pages, and the logo is Home. What used to
+                   live here were the home page's own section anchors: a bare "#catalogue"
+                   is a fragment of the document you are already standing on, so on the
+                   privacy notice and every page added since then those links went nowhere
+                   at all. The sections they pointed at are still reachable - the footer
+                   keeps them with their leading slash, which is the only spelling that
+                   means "the home page's section". *@
+                <a href="/about" aria-current='@OnThisPage("/about")'>About</a>
+                <a href="/services" aria-current='@OnThisPage("/services")'>Services</a>
+                <a href="/gallery" aria-current='@OnThisPage("/gallery")'>Gallery</a>
+                <a href="/contact" aria-current='@OnThisPage("/contact")'>Contact</a>
             </nav>
 
             <div class="lnd-nav__actions">
@@ -78,6 +100,14 @@
             </div>
 
             <div class="lnd-footer__col">
+                <h4>Company</h4>
+                <a href="/about">Who we are</a>
+                <a href="/services">What we do</a>
+                <a href="/gallery">What we stock</a>
+                <a href="/contact">Contact us</a>
+            </div>
+
+            <div class="lnd-footer__col">
                 <h4>Platform</h4>
                 <a href="/#platform">How it works</a>
                 <a href="/#catalogue">Catalogue</a>
@@ -91,7 +121,12 @@
                 <a href="/account/register">Request access</a>
                 <a href="/logistics/tracker">Track a delivery</a>
                 <a href="/support/tickethub">Raise a fault</a>
-                <a href="/Home/Privacy">Privacy notice</a>
+            </div>
+
+            <div class="lnd-footer__col">
+                <h4>Your data</h4>
+                <a href="/privacy">Privacy notice</a>
+                <a href="/account/help">Cannot sign in</a>
             </div>
         </div>
 

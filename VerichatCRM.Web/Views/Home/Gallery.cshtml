@@ -1,0 +1,145 @@
+@using VerichatCRM.Web.ViewModels.Home
+@model GalleryViewModel
+@{
+    // The public gallery. Everything here is the projected catalogue: name, category and
+    // photograph. Price and stock on hand are not in the payload by design - see
+    // PublicProductResponse in the API - so this page cannot leak them even by accident.
+    Layout = "_LandingLayout";
+    ViewData["Title"] = "Gallery";
+}
+
+<section class="lnd-section lnd-section--top" id="gallery">
+    <div class="lnd-wrap">
+        <div class="lnd-doc__masthead">
+            <p class="lnd-kicker">Verichat Quality Projects · Catalogue</p>
+            <h1 class="lnd-doc__title">What we keep on the shelf.</h1>
+            <p class="lnd-doc__standfirst">
+                Every line is grouped by the sector it is bought for rather than by the
+                alphabet, because a clinic does not shop for "consumables" - it shops for
+                what a theatre list and a ward round need this month. Select any item to
+                see it larger.
+            </p>
+
+            <dl class="lnd-doc__meta">
+                <div>
+                    <dt>Lines shown</dt>
+                    <dd>@Model.ItemCount across @Model.Groups.Count groups</dd>
+                </div>
+                <div>
+                    <dt>Sources</dt>
+                    <dd>@(Model.FromDatabase ? "The live catalogue, read through the public projection" : "Standing showcase items")</dd>
+                </div>
+                <div>
+                    <dt>Ordering</dt>
+                    <dd>Nothing is bought here. A quote starts as an enquiry from a named account.</dd>
+                </div>
+            </dl>
+        </div>
+
+        @if (!Model.FromDatabase)
+        {
+            <div class="lnd-callout" data-reveal>
+                <p>
+                    <b>These are our standing showcase items, not the warehouse list.</b>
+                    The catalogue could not be read just now - either it has not been loaded
+                    yet or the service is not answering. The lines below are the ones this
+                    site already shows on its front page; ask for anything else by telephone
+                    or from the contact page and the desk will quote from the real stock file.
+                </p>
+            </div>
+        }
+    </div>
+</section>
+
+@{ var groupIndex = 0; }
+@foreach (var group in Model.Groups)
+{
+    groupIndex++;
+    <div class="lnd-wrap"><hr class="lnd-hairline" /></div>
+
+    <section class="lnd-section" id="sector-@groupIndex">
+        <div class="lnd-wrap">
+            <div class="lnd-head" data-reveal>
+                <p class="lnd-kicker">@group.Name</p>
+                <h2>@group.Items.Count @(group.Items.Count == 1 ? "line" : "lines")</h2>
+                <p>@group.Body</p>
+            </div>
+
+            @if (group.Items.Count == 0)
+            {
+                <div class="lnd-callout" data-reveal>
+                    <p>
+                        <b>Nothing filed under this sector yet.</b>
+                        We supply for it - the catalogue simply has no line a visitor can see
+                        under this heading today. Telephone the office or send an enquiry and
+                        the desk will quote from the stock file directly.
+                    </p>
+                </div>
+            }
+            else
+            {
+                <div class="lnd-gallery">
+                    @{ var cardIndex = 0; }
+                    @foreach (var item in group.Items)
+                    {
+                        <button class="lnd-card" type="button" data-lightbox
+                                data-full="@item.Image" data-alt="@item.Alt"
+                                data-name="@item.Name — @item.Detail" data-detail="@group.Name"
+                                aria-label="Look closer at @item.Name"
+                                data-reveal data-reveal-delay="@(cardIndex * 90)">
+                            <span class="lnd-card__media">
+                                <img src="@item.Image" alt="@item.Alt" loading="lazy" decoding="async" width="900" height="900" />
+                                <span class="lnd-card__tag">@item.Category</span>
+                                <span class="lnd-card__zoom" aria-hidden="true">⤢</span>
+                            </span>
+                            <span class="lnd-card__body">
+                                <span class="lnd-card__name">@item.Name</span>
+                                <span class="lnd-card__variant">@item.Detail</span>
+                            </span>
+                        </button>
+                        cardIndex++;
+                    }
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<div class="lnd-wrap"><hr class="lnd-hairline" /></div>
+
+<section class="lnd-section lnd-section--close">
+    <div class="lnd-wrap">
+        <div class="lnd-head" data-reveal>
+            <h2>Not on this page?</h2>
+            <p>
+                The catalogue a client account sees inside the portal is wider than what is
+                published here, and it carries the prices that organisation has been quoted.
+                If you know what you need and cannot find it on this list, that usually means
+                it is stocked but not photographed yet.
+            </p>
+        </div>
+
+        <div class="lnd-cta" data-reveal>
+            <a class="lnd-btn lnd-btn--solid" href="/contact">Ask for a line</a>
+            <a class="lnd-btn lnd-btn--ghost" href="/account/register">Open a client account</a>
+        </div>
+
+        <p class="lnd-fineprint">
+            Displayed for reference only - nothing on this page is an offer, a price or a
+            promise of stock. Photographs show the class of item, and a specific delivery is
+            confirmed on the quotation.
+        </p>
+    </div>
+</section>
+
+<div class="lnd-lightbox" id="lndLightbox" role="dialog" aria-modal="true" aria-label="Catalogue item" hidden>
+    <button class="lnd-lightbox__close" type="button" aria-label="Close">✕</button>
+    <figure class="lnd-lightbox__figure">
+        <img class="lnd-lightbox__img" src="" alt="" />
+        <figcaption class="lnd-lightbox__cap">
+            <b></b>
+            <span class="lnd-lightbox__detail"></span>
+        </figcaption>
+        <p class="lnd-lightbox__hint">Click the image to zoom · Esc to close</p>
+    </figure>
+</div>

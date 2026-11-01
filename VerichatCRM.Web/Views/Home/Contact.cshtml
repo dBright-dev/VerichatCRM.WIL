@@ -1,0 +1,325 @@
+@using VerichatCRM.Web.Models.Public
+@model PublicEnquiryForm
+@{
+    // Contact us: the office facts, a drawn plan of where it sits, and a form that files a
+    // real enquiry. The route to a human is deliberately three deep - the form, a telephone
+    // number, and a mailbox - because the page that only offers a form is the page that
+    // loses the message when the form fails.
+    Layout = "_LandingLayout";
+    ViewData["Title"] = "Contact us";
+}
+
+<section class="lnd-section lnd-section--top" id="contact">
+    <div class="lnd-wrap">
+        <div class="lnd-doc__masthead">
+            <p class="lnd-kicker">Verichat Quality Projects · Contact</p>
+            <h1 class="lnd-doc__title">Talk to the desk that answers.</h1>
+            <p class="lnd-doc__standfirst">
+                This form writes into the same enquiry queue a Verichat representative works,
+                so what you send is not a copy of an email nobody had to read. It is filed,
+                scored against the same rules as every other enquiry, and answered inside one
+                working day.
+            </p>
+
+            <dl class="lnd-doc__meta">
+                <div>
+                    <dt>Head office</dt>
+                    <dd>@VerichatContact.Street, @VerichatContact.Suburb, @VerichatContact.City</dd>
+                </div>
+                <div>
+                    <dt>Telephone</dt>
+                    <dd>
+                        <a href="@VerichatContact.PhoneHref">@VerichatContact.Phone</a>
+                        &middot;
+                        <a href="@VerichatContact.PhoneAlternateHref">@VerichatContact.PhoneAlternate</a>
+                    </dd>
+                </div>
+                <div>
+                    <dt>Email</dt>
+                    <dd><a href="@VerichatContact.EmailHref">@VerichatContact.Email</a></dd>
+                </div>
+                <div>
+                    <dt>Answered</dt>
+                    <dd>Within one working day, by a named person</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+</section>
+
+<div class="lnd-wrap"><hr class="lnd-hairline" /></div>
+
+<section class="lnd-section" id="where">
+    <div class="lnd-wrap">
+        <div class="lnd-head" data-reveal>
+            <p class="lnd-kicker">01 — Where we are</p>
+            <h2>Avondale, Harare.</h2>
+            <p>
+                The plan below is drawn rather than embedded. A map from a mapping provider
+                loads that provider's scripts onto this page and sets their cookies under our
+                appearance, and the notice this site publishes says there are no trackers on
+                it. So the drawing is ours, and the real map is a link you choose to follow.
+            </p>
+        </div>
+
+        <figure class="lnd-map" data-reveal>
+            <svg viewBox="0 0 800 450" role="img"
+                 aria-label="Schematic plan of the Avondale street grid showing Verichat on Lincoln Road, with a marker at the office block.">
+                <defs>
+                    <linearGradient id="lndMapGlow" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="#0F1D38" />
+                        <stop offset="1" stop-color="#070D1C" />
+                    </linearGradient>
+                </defs>
+
+                <rect width="800" height="450" fill="url(#lndMapGlow)" />
+
+                @* The grid: one main road, the cross streets that meet it, and the blocks
+                   between them. Nothing here is to scale - the shapes say "a street grid",
+                   and the pin is the only claim about position. *@
+                <g stroke="#1E3357" stroke-width="2">
+                    <path d="M0 118 H800" />
+                    <path d="M0 342 H800" />
+                    <path d="M132 0 V450" />
+                    <path d="M368 0 V450" />
+                    <path d="M626 0 V450" />
+                </g>
+
+                <path d="M0 226 H800" stroke="#35C4E8" stroke-opacity=".5" stroke-width="7" />
+                <text x="16" y="216" fill="#7FA8C9" font-size="15" letter-spacing="4">LINCOLN ROAD</text>
+
+                <g fill="rgba(255,255,255,.035)" stroke="#1E3357" stroke-width="1.5">
+                    <rect x="168" y="150" width="72" height="52" rx="4" />
+                    <rect x="256" y="150" width="72" height="52" rx="4" />
+                    <rect x="168" y="258" width="160" height="54" rx="4" />
+                    <rect x="404" y="258" width="96" height="54" rx="4" />
+                    <rect x="404" y="150" width="182" height="52" rx="4" />
+                    <rect x="660" y="196" width="96" height="84" rx="4" />
+                </g>
+
+                @* The office. Gold, because everything else on this drawing is a street. *@
+                <g>
+                    <rect x="292" y="252" width="88" height="46" rx="5"
+                          fill="rgba(201,169,106,.16)" stroke="#C9A96A" stroke-width="2" />
+                    <text x="336" y="280" text-anchor="middle" fill="#C9A96A" font-size="13"
+                          letter-spacing="2">VERICHAT</text>
+                </g>
+
+                <g class="lnd-map__pin" transform="translate(336 236)">
+                    <circle r="9" fill="none" stroke="#C9A96A" stroke-width="2" />
+                    <circle r="3.2" fill="#C9A96A" />
+                </g>
+
+                <g fill="#7FA8C9" font-size="13" letter-spacing="3">
+                    <text x="16" y="382">AVONDALE</text>
+                    <text x="640" y="112" text-anchor="end">HARARE</text>
+                </g>
+
+                <g stroke="#7FA8C9" stroke-width="1.6" fill="none">
+                    <path d="M748 372 V404 M748 372 l-6 10 M748 372 l6 10" />
+                </g>
+                <text x="748" y="422" text-anchor="middle" fill="#7FA8C9" font-size="11"
+                      letter-spacing="2">N</text>
+            </svg>
+
+            <figcaption class="lnd-map__cap">
+                <b>@VerichatContact.Street, @VerichatContact.Suburb</b>
+                <span>@VerichatContact.City, @VerichatContact.Country &middot; drawn, not surveyed</span>
+            </figcaption>
+        </figure>
+
+        <div class="lnd-linkrow">
+            <a class="lnd-btn lnd-btn--solid" href="@VerichatContact.GoogleMapsHref"
+               rel="noopener noreferrer" target="_blank">Open in Google Maps</a>
+            <a class="lnd-btn lnd-btn--ghost" href="@VerichatContact.OpenStreetMapHref"
+               rel="noopener noreferrer" target="_blank">Open in OpenStreetMap</a>
+        </div>
+
+        <p class="lnd-fineprint">
+            Both links carry the address as a search and open in their own tab. Nothing is
+            sent to either provider until you press one, and what they then know is only what
+            you chose to look up.
+        </p>
+    </div>
+</section>
+
+<div class="lnd-wrap"><hr class="lnd-hairline" /></div>
+
+<section class="lnd-section" id="enquire">
+    <div class="lnd-wrap">
+        <div class="lnd-head" data-reveal>
+            <p class="lnd-kicker">02 — Send an enquiry</p>
+            <h2>Tell the desk what you need.</h2>
+            <p>
+                One form for everything: a price on a list, a fault on an installed unit, a
+                delivery you cannot find. Whoever reads it routes it, and the answer comes
+                from a named person rather than a shared mailbox.
+            </p>
+        </div>
+
+        <div class="lnd-contact">
+            <form class="lnd-form" asp-action="Contact" method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+                @* A field no reader of this page was shown, labelled like something a script
+                   would want to complete. Filling it means the submitter was not a reader, and
+                   HomeController.Contact answers that with the same receipt screen and records
+                   nothing - see the honeypot note in the privacy notice. *@
+                <div class="lnd-form__trap" aria-hidden="true">
+                    <label asp-for="Website">Website</label>
+                    <input asp-for="Website" type="text" tabindex="-1" autocomplete="off" />
+                </div>
+
+                <div class="lnd-form__pair">
+                    <div>
+                        <label asp-for="Name">Your name</label>
+                        <input asp-for="Name" placeholder="Full name"
+                               autocomplete="name" autofocus />
+                        <span asp-validation-for="Name" class="text-critical"></span>
+                    </div>
+                    <div>
+                        <label asp-for="Organisation">Organisation</label>
+                        <input asp-for="Organisation"
+                               placeholder="Clinic, site or department" autocomplete="organization" />
+                        <span asp-validation-for="Organisation" class="text-critical"></span>
+                    </div>
+                </div>
+
+                <div class="lnd-form__pair">
+                    <div>
+                        <label asp-for="Email">Email address</label>
+                        <input asp-for="Email" type="email"
+                               placeholder="you@example.co.zw" autocomplete="email" />
+                        <span asp-validation-for="Email" class="text-critical"></span>
+                        <p class="lnd-form__hint">Where the answer goes. Nothing else is mailed to it.</p>
+                    </div>
+                    <div>
+                        <label asp-for="Phone">Telephone</label>
+                        <input asp-for="Phone" type="tel"
+                               placeholder="+263 ..." autocomplete="tel" />
+                        <span asp-validation-for="Phone" class="text-critical"></span>
+                        <p class="lnd-form__hint">Optional, and only useful if a question needs the phone.</p>
+                    </div>
+                </div>
+
+                <div class="lnd-form__pair">
+                    <div>
+                        <label asp-for="Sector">What you need it for</label>
+                        <select asp-for="Sector">
+                            <option value="">Leave this blank if unsure</option>
+                            <option value="Clinical &amp; hospital">Clinical &amp; hospital</option>
+                            <option value="Mining &amp; industrial">Mining &amp; industrial</option>
+                            <option value="Education &amp; research">Education &amp; research</option>
+                            <option value="Other">Something else</option>
+                        </select>
+                        <span asp-validation-for="Sector" class="text-critical"></span>
+                    </div>
+                    <div>
+                        <label asp-for="Urgency">How soon</label>
+                        <select asp-for="Urgency">
+                            <option value="flexible">Planning ahead</option>
+                            <option value="standard">Normal</option>
+                            <option value="high">Needed this week</option>
+                            <option value="immediate">Something has stopped working</option>
+                        </select>
+                        <span asp-validation-for="Urgency" class="text-critical"></span>
+                        <p class="lnd-form__hint">
+                            "Planning ahead" is the honest answer more often than people think,
+                            and it is scored the same as any other.
+                        </p>
+                    </div>
+                </div>
+
+                <div>
+                    <label asp-for="Subject">Subject</label>
+                    <input asp-for="Subject"
+                           placeholder="Quote for ten surgical masks boxes" />
+                    <span asp-validation-for="Subject" class="text-critical"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Message">Your enquiry</label>
+                    <textarea asp-for="Message"
+                              placeholder="What you need, how many, and where it goes. A delivery address and a contact person make the first reply useful."></textarea>
+                    <span asp-validation-for="Message" class="text-critical"></span>
+                </div>
+
+                <div class="lnd-form__foot">
+                    <p>
+                        Sent, this becomes a Website enquiry in the queue and a copy reaches
+                        the sales desk. What we do with it is in the
+                        <a href="/privacy">privacy notice</a>.
+                    </p>
+                    <button class="lnd-btn lnd-btn--solid" type="submit">Send the enquiry</button>
+                </div>
+            </form>
+
+            <div class="lnd-detail">
+                <div data-reveal>
+                    <h3>Office</h3>
+                    <p>
+                        @VerichatContact.Street<br />
+                        @VerichatContact.Suburb<br />
+                        @VerichatContact.City, @VerichatContact.Country
+                    </p>
+                </div>
+
+                <div data-reveal>
+                    <h3>Telephone</h3>
+                    <p class="lnd-detail__tel">
+                        <a href="@VerichatContact.PhoneHref">@VerichatContact.Phone</a>
+                    </p>
+                    <p class="lnd-detail__tel">
+                        <a href="@VerichatContact.PhoneAlternateHref">@VerichatContact.PhoneAlternate</a>
+                    </p>
+                    <p>
+                        The second line is the one that still rings when the first is with a
+                        client. Either reaches the desk, and neither goes to a call centre.
+                    </p>
+                </div>
+
+                <div data-reveal>
+                    <h3>Email</h3>
+                    <p class="lnd-detail__tel"><a href="@VerichatContact.EmailHref">@VerichatContact.Email</a></p>
+                    <p>
+                        This is the address the form writes to as well, so a message that never
+                        left your own mail client and one that failed to be filed both arrive at
+                        the same desk.
+                    </p>
+                </div>
+
+                <div data-reveal>
+                    <h3>If you already have an account</h3>
+                    <p>
+                        Sign in and raise it there. An enquiry attached to your organisation
+                        carries the delivery history, the asset register and the quotations
+                        already open, which is why the portal answers faster than this form can.
+                    </p>
+                    <p><a href="/account/login">Sign in to the portal</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="lnd-wrap"><hr class="lnd-hairline" /></div>
+
+<section class="lnd-section lnd-section--close">
+    <div class="lnd-wrap">
+        <div class="lnd-callout" data-reveal>
+            <p>
+                <b>What this page is not.</b>
+                No product on it has a price, and nothing sent here is an order. The enquiry
+                starts a conversation with a representative; the quotation that follows is the
+                document with numbers in it, and it is issued against a named account.
+            </p>
+        </div>
+
+        <div class="lnd-cta" data-reveal>
+            <a class="lnd-btn lnd-btn--solid" href="/gallery">See what we stock</a>
+            <a class="lnd-btn lnd-btn--ghost" href="/services">Read the services page</a>
+        </div>
+    </div>
+</section>

@@ -37,9 +37,13 @@ builder.Services.AddScoped<IQuotationApiService, QuotationApiService>();
 builder.Services.AddScoped<IPipelineApiService, PipelineApiService>();
 builder.Services.AddScoped<ISupportApiService, SupportApiService>();
 builder.Services.AddScoped<IProductApiService, ProductApiService>();
-    builder.Services.AddScoped<IInquiryApiService, InquiryApiService>();
+builder.Services.AddScoped<IInquiryApiService, InquiryApiService>();
 builder.Services.AddScoped<IWarehouseAlertApiService, WarehouseAlertApiService>();
 builder.Services.AddScoped<IAdminApiService, AdminApiService>();
+// The public pages' two calls. Registered apart from the staff services because they
+// reach anonymous endpoints and must not acquire a habit of reading the session.
+builder.Services.AddScoped<IPublicEnquiryApiService, PublicEnquiryApiService>();
+builder.Services.AddScoped<IPublicCatalogApiService, PublicCatalogApiService>();
 
 var app = builder.Build();
 
