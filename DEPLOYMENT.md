@@ -56,7 +56,7 @@ Local development needs only the JWT key. The connection string is already in `a
 dotnet user-secrets set "Jwt:Key" "<64-char random string>" --project VerichatCRM.API
 ```
 
-**Do not set `ConnectionStrings:DefaultConnection` in user secrets for local work, and check whether you already have.** Config precedence puts user secrets *above* `appsettings.Development.json`, so a value left over from a hosted rehearsal silently outranks the checked-in LocalDB string on every Visual Studio F5. The API then spends its startup trying to reach that server: the migration block at `Program.cs:266` runs before Kestrel binds, and `EnableRetryOnFailure` (`Program.cs:78`) retries it, so `dotnet run` looks like it has hung for a minute or more. When it finally answers, `/api/health` reports `database: Unhealthy — CanConnectAsync returned false` and the web sign-in page says only *"The request failed (HTTP 500)"* — the failure appears three layers away from its cause. Set the same key to the LocalDB string to keep the secret and the file agreeing, or delete it:
+**Do not set `ConnectionStrings:DefaultConnection` in user secrets for local work, and check whether you already have.** Config precedence puts user secrets *above* `appsettings.Development.json`, so a value left over from a hosted rehearsal silently outranks the checked-in LocalDB string. It no longer breaks Visual Studio F5 — both API launch profiles now carry `ConnectionStrings__DefaultConnection` pinned to LocalDB, and an environment variable outranks user secrets (verified: with the stale secret still in place, the profile-launched API reports `Healthy` / `Database reachable` against LocalDB with nothing set in the shell) — but it **does** still hijack every `dotnet ef` command, because the EF tools apply only their own `ASPNETCORE_ENVIRONMENT=Development` default and not the profile's variables (§9). The failure is easy to mistake for a code bug: the API spends its startup trying to reach that server, since the migration block at `Program.cs:266` runs before Kestrel binds and `EnableRetryOnFailure` (`Program.cs:78`) retries it, so `dotnet run` looks like it has hung for a minute or more. When it finally answers, `/api/health` reports `database: Unhealthy — CanConnectAsync returned false` and the web sign-in page says only *"The request failed (HTTP 500)"* — the failure appears three layers away from its cause. Delete the key, since nothing local needs it:
 
 ```powershell
 dotnet user-secrets remove "ConnectionStrings:DefaultConnection" --project VerichatCRM.API
@@ -672,6 +672,17 @@ Pin the target, and the ambiguity in the second problem disappears with it:
 $env:ConnectionStrings__DefaultConnection = 'Server=(localdb)\MSSQLLocalDB;Database=VerichatCRM;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True'
 dotnet ef database update --project VerichatCRM.Infrastructure --startup-project VerichatCRM.API
 ```
+
+**The launch profiles' LocalDB pin does not reach these commands.** Both profiles in
+`VerichatCRM.API/Properties/launchSettings.json` now set `ConnectionStrings__DefaultConnection`
+to LocalDB, and that is what makes Visual Studio F5 work on a machine with a stale secret — but
+re-measured after that change, `dotnet ef migrations list --project VerichatCRM.Infrastructure
+--startup-project VerichatCRM.API` with nothing in the shell still answers *"An error occurred
+while accessing the database. Continuing without the information provided by the database"*
+with no applied-or-pending column. The EF tools apply their own `ASPNETCORE_ENVIRONMENT`
+default, which is how the design-time factory ends up in Development, but they do not apply the
+profile's other environment variables. So the shell assignment above is the only thing that
+decides where a migration command goes — set it in the same line, every time.
 
 Two reasons not to use `Update-Database` against a database you did not create, even with the
 connection string pinned. `--idempotent` script generation (§8) is reviewable before anything

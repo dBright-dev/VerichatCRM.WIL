@@ -107,7 +107,7 @@ dotnet user-secrets init --project VerichatCRM.API
 dotnet user-secrets set "Jwt:Key" "<a newly generated random signing key of at least 32 bytes>" --project VerichatCRM.API
 ```
 
-> If you have ever run `dotnet user-secrets set "ConnectionStrings:DefaultConnection" ...` for a hosted rehearsal, that value outranks the Development file and your local API tries to reach that server instead of LocalDB. The startup migration runs before the port is bound, so `dotnet run` appears to hang for a minute or more and then serves HTTP 500 — `/api/health` reports `database: Unhealthy` and the web sign-in page says only *"The request failed (HTTP 500)"*. Remove it (`dotnet user-secrets remove "ConnectionStrings:DefaultConnection" --project VerichatCRM.API`) unless you are deliberately pointing a local run at another server. `DEPLOYMENT.md`'s Secrets inventory explains the precedence.
+> If you have ever run `dotnet user-secrets set "ConnectionStrings:DefaultConnection" ...` for a hosted rehearsal, that value outranks the Development file. It no longer breaks the two `dotnet run` commands below — both API launch profiles pin the LocalDB string as an environment variable, which outranks user secrets — but it does silently redirect every `dotnet ef` command, because the EF tools apply only their own environment default and not the profile's variables. The API then spends a minute or more trying to reach that server before it binds a port (`Program.cs:266` runs the migration at startup), and sign-in reports *"The request failed (HTTP 500)"*. Remove it (`dotnet user-secrets remove "ConnectionStrings:DefaultConnection" --project VerichatCRM.API`) unless you are deliberately pointing a local run at another server. `DEPLOYMENT.md`'s Secrets inventory and section 9 explain the precedence.
 
 For a hosted API, set `Jwt__Key`, `ConnectionStrings__DefaultConnection`, and `Cors__AllowedOrigins__0` in the hosting provider's secret/configuration store. The CORS origin must be the exact HTTPS origin serving a browser client; do not add a trailing path. Outside Development the API also refuses to start when the connection string says `Encrypt=False`. The web app's API target is configured by `ApiBaseUrl`. The mobile app accepts `EXPO_PUBLIC_API_URL` and otherwise uses the configured Verichat API host.
 
@@ -130,11 +130,14 @@ The Development HTTPS URL is `https://localhost:7076`. On startup the API applie
 In PowerShell window 2:
 
 ```powershell
-$env:ApiBaseUrl = "https://localhost:7076"
 dotnet run --project VerichatCRM.Web --launch-profile https
 ```
 
-The Development HTTPS URL is `https://localhost:7266`. The first administrator comes from the API bootstrap configuration (`Bootstrap__AdminEmail`, `Bootstrap__AdminPassword`, and `Bootstrap__AdminName`), or from the development sign-in accounts listed below. Registering through the public form is no longer a way to obtain a staff login on a fresh machine: a self-registered account waits in the approval queue for an administrator to release it, and until an administrator exists there is nobody to release it.
+The Development HTTPS URL is `https://localhost:7266`. No `$env:ApiBaseUrl` is needed: `VerichatCRM.Web/appsettings.Development.json` already points the web tier at `http://localhost:5184`, which every API launch profile binds, and it blanks `BackupApiBaseUrl` so a local run cannot reach the deployed API by accident.
+
+The web app is a proxy, so **it needs the API window running**. If it is not, sign-in fails with `HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:5184)` — that is not a database or credential problem, it is the other project. In Visual Studio, set both `VerichatCRM.API` and `VerichatCRM.Web` as Multiple startup projects before pressing F5.
+
+The first administrator comes from the API bootstrap configuration (`Bootstrap__AdminEmail`, `Bootstrap__AdminPassword`, and `Bootstrap__AdminName`), or from the development sign-in accounts listed below. Registering through the public form is no longer a way to obtain a staff login on a fresh machine: a self-registered account waits in the approval queue for an administrator to release it, and until an administrator exists there is nobody to release it.
 
 ### Start the mobile application
 
