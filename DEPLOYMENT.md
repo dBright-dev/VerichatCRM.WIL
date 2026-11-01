@@ -724,14 +724,38 @@ all three of the web app's declare the same identity, `Release` / `Any CPU`. Any
 for a project can therefore collide with any other profile of that project still sitting in the
 collection - and the earlier attempts did abort, because the deployed site answered 500.30 (§7.1).
 
-Fix it in this order; the first one is what the error text itself asks for.
+**Confirming it is session state, before you spend time on anything else.** Compare the age of the
+Visual Studio process with the timestamps of the publish logs:
 
-1. **Unload then reload `VerichatCRM.API`** in Solution Explorer (right-click → Unload Project,
-   then Reload Project). That drops its entries from the collection. Cheapest, and usually enough.
-2. **Close Visual Studio completely** if step 1 does not clear it, then reopen. This is the only
-   way to empty the collection when the stale entry belongs to a project that is still loaded.
-   Check no build nodes survive the close: `Get-Process MSBuild,VBCSCompiler -ErrorAction SilentlyContinue`.
-3. **Publish from the command line**, which never touches Visual Studio's collection.
+```powershell
+(Get-Process devenv).StartTime                      # when this session began
+Get-ChildItem $env:TEMP -Filter 'tmp*.tmp' |        # the publish diagnostics
+  Where-Object { (Get-Content $_ -TotalCount 1) -match '^20' } |
+  Sort-Object LastWriteTime -Descending | Select-Object -First 6 Name,LastWriteTime
+```
+
+Read on this machine: `devenv` started 23:50:47, and the *same* exception was logged at 00:31:50,
+00:36:31 and 00:37:59 - three attempts inside one unbroken session, each adding to the leak. The
+logs from the sessions before it hold different faults entirely (`FormatException` in
+`ProjectProfilesManager.RunPublishStepsAsync` at 15:52 and 19:59, `WebToolsException: Build failed`
+at 20:39). So this error belongs to a process, not to the repository, and the cure is to empty that
+process. Note also that a retry does not recover: once the collection is dirty, every further
+publish in that session fails the same way.
+
+Fix it in this order.
+
+1. **Close Visual Studio completely and reopen.** This is the reliable cure and the only thing
+   that empties the collection. Check no build nodes survive the close:
+   `Get-Process MSBuild,VBCSCompiler,devenv -ErrorAction SilentlyContinue`.
+2. **Unload then reload `VerichatCRM.API`** in Solution Explorer (right-click → Unload Project,
+   then Reload Project) if you cannot close the IDE. It drops that project's entries and is what
+   the error text asks for, but the collection is solution-wide, so a stale entry belonging to
+   `VerichatCRM.Web` can still collide - which is why it is worth trying, not why it is enough.
+3. **Publish from the command line**, which never touches Visual Studio's collection:
+
+   ```powershell
+   dotnet publish VerichatCRM.API -c Release -o publish-api    # packages, contacts nobody
+   ```
 4. Optionally delete the profiles for hosts you no longer use - `site94518-WebDeploy`,
    `site103828-WebDeploy`, `FTPProfile` are leftovers from earlier hosting attempts. Fewer
    profiles sharing one identity means fewer things that can collide. They are the only untracked
