@@ -15,16 +15,33 @@ Nothing in this file was executed against the hosting provider. The steps that t
 
 Publish profiles (`*.pubxml`) are git-ignored and none of them carries a `Password` element, so nothing new leaks there.
 
-**The published host is not the host the shipped configuration names.** `VerichatCRM.Web/appsettings.json:8` sets `ApiBaseUrl` to `https://verichat-crm-api.runasp.net` and `VerichatCRM.API/appsettings.json` allows `http(s)://verichat-crm-web.runasp.net` for CORS, but the API actually published is reached over **`http://`** — measured: `https://api-site.runasp.net/` never connects, and the `https://` default port on the *web* name is not bound either. So even after the API starts (below), the web app's server-side calls would still fail on scheme, and Expo Web would fail the same way. Fix it where the values belong — `ApiBaseUrl` on the web host and `Cors__AllowedOrigins__0` on the API host, set as application settings with the exact scheme — rather than committing a production origin into `appsettings.json`.
+**The shipped configuration now names the host the API is actually published to.** Until 1 Nov it did not: `VerichatCRM.Web/appsettings.json` carried `ApiBaseUrl = https://verichat-crm-api.runasp.net`, while the published site is `http://api-site.runasp.net` and `https://` connects to none of the `*.runasp.net` names — re-measured 1 Nov 2026, every `https://` probe fails at `curl` return code 35 (`api-site` and `verichat-crm-web`: handshake failure; `verichat-crm-api`: connection reset). No certificate is bound anywhere. A web app configured that way would have failed every API call even after the 500.30 below is fixed, and the mobile app contradicted itself — `VerichatMobile/.env` said `http://`, the `api.ts` fallback said `https://`. All three now read `http://api-site.runasp.net`:
+
+| File | Value | In git? |
+| --- | --- | --- |
+| `VerichatCRM.Web/appsettings.json` | `"ApiBaseUrl": "http://api-site.runasp.net"` | yes — this is what the deployed web site ships with |
+| `VerichatMobile/src/constants/api.ts` | fallback `'http://api-site.runasp.net'` | yes — the default for any build that sets no env var |
+| `VerichatMobile/.env` | `EXPO_PUBLIC_API_URL=http://api-site.runasp.net` | **no** — `.gitignore:437` ignores `.env`, so this line only fixes the working copy on this machine |
+
+Because `.env` is ignored and there is no checked-in `.env.example`, the `api.ts` fallback is the only committed source of the mobile origin; a fresh clone that never creates `.env` still talks to the right host. A machine that does create `.env` must use the same value, or it silently overrides the fallback.
+
+CORS needs no change: `VerichatCRM.API/appsettings.json` already allows `http://verichat-crm-web.runasp.net` and its `https` variant, and the web origin is the only browser that calls the API cross-origin. `Cors:AllowedOrigins` in `appsettings.json` is for *deployed* origins, which are not secret — that is why the pair is committed rather than being a panel variable; extra local origins go in `Cors__AllowedOrigins__2`.
+
+Two consequences of committing an `http://` origin deliberately:
+
+1. **It is a marker of unfinished work, not a working arrangement.** The scheme is cleartext because no certificate is bound (§5). Bind one to both sites, then change `ApiBaseUrl`, `.env` and the `api.ts` fallback to `https://` in the same commit — an `https` page calling an `http` API is blocked as mixed content, so a half-migration breaks the web app.
+2. **A signed mobile release build is still impossible against it.** Android and iOS block cleartext traffic in release builds, so the EAS `production` profile needs the certificate first. Development builds and Expo Web work as configured.
+
+These values are read at *deploy* time, not build time: after changing any of them, republish the web site (`site94515-WebDeploy.pubxml`) and rebuild the mobile bundle — `EXPO_PUBLIC_*` is inlined into the JS bundle, so a `.env` edit needs a new build to take effect.
 
 ## Secrets inventory
 
 | Config key | Read by | Correct home today | Cost of rotating it |
 | --- | --- | --- | --- |
-| `ConnectionStrings:DefaultConnection` | `VerichatCRM.API/Program.cs:25` | Host secret store / `ConnectionStrings__DefaultConnection`. **Never** in `appsettings*.json` outside Development. | API restart. Sessions are unaffected. |
-| `Jwt:Key` | `Program.cs:104` | `Jwt__Key`. The app throws at startup when it is blank. | Every issued token becomes invalid — all staff and all mobile users are signed out. |
+| `ConnectionStrings:DefaultConnection` | `VerichatCRM.API/Program.cs:28` | Host secret store / `ConnectionStrings__DefaultConnection`. **Never** in `appsettings*.json` outside Development. | API restart. Sessions are unaffected. |
+| `Jwt:Key` | `Program.cs:133` | `Jwt__Key`. The app throws at startup when it is blank. | Every issued token becomes invalid — all staff and all mobile users are signed out. |
 | `Bootstrap:AdminEmail` / `AdminPassword` / `AdminName` | `AdminBootstrapper` | `Bootstrap__*` env vars, **deleted after the first sign-in**. Only consulted while the user table is empty; leaving them set is a standing admin-account door. | None once accounts exist. |
-| `Cors:AllowedOrigins` | `Program.cs:163` | `appsettings.json` (deployed origins are not secret) plus `Cors__AllowedOrigins__2` for extra environments. | Browsers stop being able to call the API. |
+| `Cors:AllowedOrigins` | `Program.cs:198` | `appsettings.json` (deployed origins are not secret) plus `Cors__AllowedOrigins__2` for extra environments. | Browsers stop being able to call the API. |
 | `EXPO_PUBLIC_API_URL` | `VerichatMobile/src/constants/api.ts` | `VerichatMobile/.env` (ignored) or the EAS build environment. | Needs a new app build; it is inlined into the bundle. |
 
 Local development uses the .NET secret manager rather than environment variables. The API project now carries a `UserSecretsId` (`VerichatCRM.API/VerichatCRM.API.csproj`), so this works out of the box:
@@ -43,7 +60,7 @@ This is the only step that actually fixes the exposure. Removing a password from
 1. Sign in to the Monster ASP control panel and open its SQL Server manager for the `db70543` database. Change the login password there. If the panel does not expose the option, ask support to reset it, or run `ALTER LOGIN ... WITH PASSWORD = '<new>'` in the panel's query tool if it grants one. **This cannot be done from a working copy — there is no SQL Server reachable from this repository.**
 2. Confirm nothing else authenticates with that same login. The `db70543` account is scoped to that one database, so no other application should be using it; verify before assuming.
 3. Put the new value into the host's configuration store (see §3) with `Encrypt=True` (see §4).
-4. Restart the API site, then check `http://verichat-crm-api.runasp.net/api/health`, which reports database readiness.
+4. Restart the API site, then check `http://api-site.runasp.net/api/health`, which reports database readiness.
 
 Old tokens stay valid until §2 is done; the password rotation alone does not sign anyone out.
 
@@ -87,9 +104,9 @@ Server=<sql-host>; Database=<db>; User Id=<login>; Password=<rotated>; Encrypt=T
 Two things now depend on the API being reachable over HTTPS with a valid certificate:
 
 - **Live notifications.** The JWT is no longer written into page script. The browser authenticates the cross-origin SignalR handshake with the `JwtToken` cookie, which is set as `HttpOnly; Secure; SameSite=None` whenever the web app is served over HTTPS. Browsers refuse to *store* a `SameSite=None` cookie that is not `Secure`, and refuse to *send* a `Secure` cookie over `http://`. So if either site is served over cleartext, the hub cannot authenticate and the toast feed goes quiet — that is a deployment gap, not a code bug.
-- **Mobile release builds.** Android and iOS block cleartext traffic, and `app.UseHttpsRedirection()` in `Program.cs` already sends `http://` API calls to a `https://` endpoint whose handshake currently fails (recorded in `VerichatMobile/.env`). Today's installs only work as development/preview builds.
+- **Mobile release builds.** Android and iOS block cleartext traffic, so today's installs only work as development/preview builds. `Program.cs:288` calls `app.UseHttpsRedirection()`, which *would* make the `http://` origin unreachable — it answers every cleartext request with a redirect to `https://`, and the handshake there fails. Whether it fires depends on the site having a 443 binding for ANCM to discover, and that is not observable on the API today because the process dies before serving a request. The sibling web site ships the same middleware (`VerichatCRM.Web/Program.cs:57`) and demonstrates what happens on this host: measured 1 Nov 2026, `http://verichat-crm-web.runasp.net/` and `/Account/Login` both return **200 with no `Location` header**, so redirection is inert there and cleartext works. If the API site *does* have a 443 binding, expect `307 → https://api-site.runasp.net` the moment it starts, which fails the handshake and looks like "the API is unreachable over http". The panel check is: does that site list an https binding? If it does, remove it or delete `UseHttpsRedirection()` until a certificate is really bound — note also that the redirect happens ahead of `UseCors` (line 289), so a browser cross-origin call would see no CORS headers on the redirect response either.
 
-Until both sites have certificates bound, the practical result is: log in, use every normal feature, and see no live notifications. Bind the certificate, then set `ApiBaseUrl` and `BaseUrl` in `VerichatCRM.Web/appsettings.json` to the `https://` API origin and switch `EXPO_PUBLIC_API_URL` to `https://`.
+Until both sites have certificates bound, the practical result is: log in, use every normal feature, and see no live notifications. Bind the certificate, then set `ApiBaseUrl` in `VerichatCRM.Web/appsettings.json` to the `https://` API origin and switch `EXPO_PUBLIC_API_URL` (and the `api.ts` fallback) to `https://`.
 
 ## 6. Scrub the git history
 
@@ -154,7 +171,8 @@ family is healthy:
 | --- | --- |
 | `http://api-site.runasp.net/` and `/logs/` and `/api/health/live` | **500** — `HTTP Error 500.30 - ASP.NET Core app failed to start` |
 | `http://verichat-crm-api.runasp.net/` | **500** — the same page |
-| `https://api-site.runasp.net/`, `https://verichat-crm-api.runasp.net/`, `https://verichat-crm-web.runasp.net/` | **does not connect** — no certificate bound on any of them (§5) |
+| `https://api-site.runasp.net/`, `https://verichat-crm-web.runasp.net/` | **does not connect** — `curl` rc 35, TLS handshake failure: no certificate bound (§5) |
+| `https://verichat-crm-api.runasp.net/` | **does not connect** — `curl` rc 35, connection reset before the handshake completed |
 | `http://verichat-crm-web.runasp.net/` | **200** — same .NET target, same host family |
 
 ```

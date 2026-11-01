@@ -7,11 +7,14 @@ https://youtu.be/sKW-5iuRPyI
 
 The checked-in publish profiles list these deployment targets:
 
-- **Staff web application:** [http://verichat-crm-web.runasp.net/](http://verichat-crm-web.runasp.net/)
-- **API health:** [http://verichat-crm-api.runasp.net/health](http://verichat-crm-api.runasp.net/health)
-- **API readiness and database check:** [http://verichat-crm-api.runasp.net/api/health](http://verichat-crm-api.runasp.net/api/health)
+- **Staff web application:** [http://verichat-crm-web.runasp.net/](http://verichat-crm-web.runasp.net/) — **returns 200**
+- **API (deployed host):** [http://api-site.runasp.net/](http://api-site.runasp.net/)
+- **API liveness:** [http://api-site.runasp.net/health](http://api-site.runasp.net/health)
+- **API readiness and database check:** [http://api-site.runasp.net/api/health](http://api-site.runasp.net/api/health)
 
-These links come from the Web Deploy profiles in `VerichatCRM.Web/Properties/PublishProfiles` and `VerichatCRM.API/Properties/PublishProfiles`. They could not be live-checked from the current development environment, so availability and the deployed version are unverified. The `/health` endpoint checks that the API process is running; `/api/health` also checks database readiness.
+These links come from the Web Deploy profiles in `VerichatCRM.Web/Properties/PublishProfiles` and `VerichatCRM.API/Properties/PublishProfiles`, and they were live-checked on 1 Nov 2026. The API host names `api-site.runasp.net`, which is the site `site94518-WebDeploy.pubxml` publishes to; `verichat-crm-api.runasp.net` answers with the same page, so the two names reach either one site or two copies of the same broken deployment — only the hosting panel can tell them apart. **The API does not serve today: every path returns `HTTP Error 500.30 - ASP.NET Core app failed to start`,** which is missing application settings (`ConnectionStrings__DefaultConnection`, `Jwt__Key`), not a code fault — DEPLOYMENT.md §7.1 is the runbook. `/health` reports the process is up; `/api/health` additionally reports database readiness.
+
+Neither site has a TLS certificate bound, so use `http://`. An `https://` request to any `*.runasp.net` name fails at the TLS layer. `VerichatCRM.Web/appsettings.json` and the mobile `API_BASE_URL` fallback both carry the `http://api-site.runasp.net` origin for that reason (`VerichatMobile/.env` is git-ignored, so it matches but is not part of the repository); a signed mobile release build additionally requires a certificate, because Android and iOS block cleartext traffic.
 
 ## Architecture
 

@@ -118,12 +118,12 @@ You also need:
 |---|---|---|
 | Staff web (local) | `http://localhost:5253`, `https://localhost:7266` | `VerichatCRM.Web/Properties/launchSettings.json` |
 | API (local) | `http://localhost:5184`, `https://localhost:7076` | `VerichatCRM.API/Properties/launchSettings.json` |
-| Staff web (deployed) | `https://verichat-crm-web.runasp.net` | Monster ASP shared hosting — see "What runs where" in DEPLOYMENT.md |
-| API (deployed) | `https://verichat-crm-api.runasp.net` | Monster ASP publication |
+| Staff web (deployed) | `http://verichat-crm-web.runasp.net` | Monster ASP shared hosting — see "What runs where" in DEPLOYMENT.md |
+| API (deployed) | `http://api-site.runasp.net` | Monster ASP publication, profile `site94518-WebDeploy.pubxml` |
 | Health probe | `GET {api}/api/health` | `HealthController` — use this to tell "the API is down" from "the database is down" |
 | Notification hub | `{api}/hubs/notifications` | SignalR, cookie-authenticated |
 
-**Note:** Two numbers in the mobile app's own comments are stale and will waste your afternoon if you copy them: `VerichatMobile/.env` suggests `http://localhost:5000` for local development, and the API's fallback constant is `https://verichat-crm-api.runasp.net` (HTTPS). The API actually listens on **5184** locally, and the comment's own Android-emulator address (`10.0.2.2:5000`) is therefore also wrong for this build. §5.6 gives the values to use.
+**Note:** Both deployed addresses are **`http://`, not `https://`**, and that is the host's current state rather than a choice: no certificate is bound to either site, so an `https://` request to any of the `*.runasp.net` names fails at the TLS handshake. Measured 1 Nov 2026 — `http://verichat-crm-web.runasp.net` returns 200, `https://verichat-crm-web.runasp.net` does not connect. The shipped `ApiBaseUrl` in `VerichatCRM.Web/appsettings.json` and the `api.ts` fallback both name `http://api-site.runasp.net` now, so there is nothing stale left to copy. (`VerichatMobile/.env` is git-ignored and is not in a fresh clone, so the `api.ts` fallback is what a new mobile build actually uses unless you set the variable yourself.) A signed mobile build still cannot ship against it until a certificate exists (§5.6 and DEPLOYMENT.md §5).
 
 ---
 
@@ -300,7 +300,7 @@ curl http://localhost:5184/api/health
 # from the repository root, in a second terminal
 dotnet run --project VerichatCRM.Web --launch-profile http
 ```
-It reads `ApiBaseUrl` from `VerichatCRM.Web/appsettings.json`, which points at the **deployed** API (`https://verichat-crm-api.runasp.net`). To make the web app talk to your local API instead, set:
+It reads `ApiBaseUrl` from `VerichatCRM.Web/appsettings.json`, which points at the **deployed** API (`http://api-site.runasp.net`). That deployment does not start today (DEPLOYMENT.md §7.1), so a local run of the web app will fail every API call until you either point `ApiBaseUrl` at a local API or fix the hosted site. To make the web app talk to your local API instead, set:
 
 ```bash
 ASPNETCORE_ENVIRONMENT=Development
@@ -328,7 +328,7 @@ EXPO_PUBLIC_API_URL=http://<your-machine-LAN-IP>:5184
 | API on your machine, app in a browser | `http://localhost:5184` |
 | API on your machine, app on the **Android emulator** | `http://10.0.2.2:5184` |
 | API on your machine, app on a **physical phone** (Expo Go) | `http://<LAN-IP>:5184` — a phone cannot see `localhost` |
-| The deployed API | `https://verichat-crm-api.runasp.net` |
+| The deployed API | `http://api-site.runasp.net` |
 
 If the address is wrong the app is not broken — it is reaching nothing. Every screen falls back to its cached or empty state and the offline banner appears (§12.7).
 

@@ -5,11 +5,11 @@ import NetInfo from '@react-native-community/netinfo';
 import { authenticateBiometric, hasUsableBiometrics } from './biometricAuth';
 
 // Verichat CRM API — shared base URL resolution.
-// Set EXPO_PUBLIC_API_URL in your .env / EAS config; falls back to the
-// deployed production API so the app works out of the box.
+// Set EXPO_PUBLIC_API_URL in your .env / EAS config; falls back to the deployed
+// API, which is http:// because no TLS certificate is bound to that host yet.
 export const API_BASE_URL =
   (process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/+$/, '') ||
-    'https://verichat-crm-api.runasp.net')
+    'http://api-site.runasp.net')
 
 const TOKEN_KEY = 'verichat.auth.token'
 const BIOMETRIC_LOGIN_KEY = 'verichat.auth.biometric-login'
