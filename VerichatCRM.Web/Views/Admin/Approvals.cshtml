@@ -1,0 +1,96 @@
+@model List<VerichatCRM.Web.Services.Interfaces.PendingAccount>
+@{
+    ViewData["Title"] = "Account Approvals";
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert-banner alert-banner--success" role="status"><span class="alert-icon">✓</span><span>@TempData["SuccessMessage"]</span></div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert-banner" role="alert"><span class="alert-icon">!</span><span>@TempData["ErrorMessage"]</span></div>
+}
+
+<div class="card">
+    <div class="card-title">Applications awaiting a decision (@Model.Count)</div>
+    <p class="vc-text-muted">
+        Every account on this list was created by the person who wanted it, on the public
+        sign-up form. Their password is real and their claim is not, so the login opens
+        nothing until you decide. Approving a client account adds them to the client
+        directory and lets them order; approving a staff account hands out that role's
+        whole console. Declining says why, in an email to the address they gave.
+    </p>
+
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state">Nothing is waiting. New sign-ups appear here the moment they are made.</div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr><th>Applicant</th><th>Asked for</th><th>Waiting</th><th>Decide</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var a in Model)
+                {
+                    <tr>
+                        <td>
+                            <strong>@a.DisplayName</strong>
+                            <div class="status-text">@a.Email</div>
+                        </td>
+                        <td>
+                            @a.Role
+                            @* The reviewer's one clue about what the click costs. A
+                               client account can raise a purchase order; a staff
+                               account can see every client. Both are worth pausing
+                               on, and this says which. *@
+                            <div class="status-text">
+                                <span class="badge @(a.IsStaffRole ? "badge-warning" : "badge-info")">
+                                    @(a.IsStaffRole ? "Console access" : "Client portal")
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            @if (a.DaysWaiting == 0)
+                            {
+                                <text>Today</text>
+                            }
+                            else
+                            {
+                                <text>@a.DaysWaiting @(a.DaysWaiting == 1 ? "day" : "days")</text>
+                            }
+                            <div class="status-text">@a.CreatedAt.ToString("yyyy-MM-dd HH:mm") UTC</div>
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-start;">
+                                <form asp-action="ApproveAccount" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@a.UserId" />
+                                    <button type="submit" class="btn btn-primary btn-xs">Approve</button>
+                                </form>
+                                <form asp-action="RejectAccount" method="post" style="display:flex;gap:.4rem;align-items:center;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@a.UserId" />
+                                    <input type="text" name="reason" class="form-input" maxlength="1000" required
+                                           placeholder="Why is this declined?" aria-label="Reason @a.DisplayName is declined" />
+                                    <button type="submit" class="btn btn-outline-danger btn-xs">Decline</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<div class="card vc-card-spaced">
+    <div class="card-title">Where this leaves the applicant</div>
+    <p class="vc-text-muted">
+        An approved account signs in on the web and in the mobile app with the password chosen
+        at sign-up. A declined one keeps its credentials and is refused at the door, with the
+        reason above quoted back to the person. <a asp-action="Users">Users &amp; Roles</a>
+        shows both, and a role change there always needs an administrator.
+    </p>
+</div>

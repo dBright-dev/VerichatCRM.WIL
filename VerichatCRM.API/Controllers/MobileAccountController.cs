@@ -29,14 +29,18 @@ namespace VerichatCRM.API.Controllers
             ?? User.FindFirst("sub")?.Value
             ?? throw new UnauthorizedAccessException("No user id claim.");
 
-        /// <summary>Client self-registration → "Client User" role, JWT included.</summary>
+        /// <summary>
+        /// Client self-registration → a "Client User" application. No token is
+        /// returned: the account waits in the approval queue until an employee
+        /// approves it, which is also when its CRM client record opens.
+        /// </summary>
         [HttpPost("register")]
         [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] ClientRegisterRequest request)
         {
-            // Registration spans Users, MobileProfiles and Clients, all in the
-            // same CRM database. Commit them together so a failed profile/client
-            // insert cannot leave a half-created account behind.
+            // Registration spans Users and MobileProfiles, in the same CRM database.
+            // Commit them together so a failed profile insert cannot leave a
+            // half-created application behind.
             var strategy = _db.Database.CreateExecutionStrategy();
             var result = await strategy.ExecuteAsync(async () =>
             {
@@ -63,7 +67,6 @@ namespace VerichatCRM.API.Controllers
                         p => p.Company = request.CompanyName!.Trim());
                 }
 
-                await _mobile.EnsureClientAccountAsync(registration.User.UserId);
                 await transaction.CommitAsync();
                 return registration;
             });

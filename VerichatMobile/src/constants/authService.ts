@@ -1,7 +1,11 @@
 // Verichat CRM API — auth endpoints for the mobile app.
-// POST /api/auth/login            { email, password }        → { success, token, user }
-// POST /api/auth/register         staff/admin registration
-// POST /api/mobile/register       client self-registration   → { success, token, user }
+// POST /api/auth/login            { email, password }   → { success, token, user }
+// POST /api/auth/register         staff application     → { success, approvalStatus, user } (no token)
+// POST /api/mobile/register       client application    → { success, approvalStatus, user } (no token)
+//
+// Sign-up on either path is an application, not access: the account is written down
+// and waits for a Verichat employee to approve it, so no token comes back and the
+// caller has to say so. Signing in is refused with the same wording until then.
 import { api, setAuthToken, STAFF_MOBILE_ROLES } from './api'
 
 export type AuthUser = {
@@ -16,6 +20,7 @@ export type AuthResponse = {
   message: string
   token?: string
   user?: AuthUser
+  approvalStatus?: string
 }
 
 function fail(response: AuthResponse): never {
@@ -44,7 +49,7 @@ export async function login(email: string, password: string, audience?: 'client'
   return data
 }
 
-/** Client self-registration → "Client User" role. */
+/** Client self-registration → a "Client User" application, not a signed-in session. */
 export async function registerClient(payload: {
   displayName: string
   email: string
@@ -56,12 +61,14 @@ export async function registerClient(payload: {
     body: JSON.stringify(payload),
   })
   if (!data.success) fail(data)
-  if (!data.token) throw new Error('The server did not return a registration token.')
-  setAuthToken(data.token)
+  // A token only exists once an employee has approved the account. Nothing is
+  // stored here, so the applicant lands on the sign-in screen and the API refuses
+  // those credentials until then - the same rule the web app applies.
+  if (data.token) setAuthToken(data.token)
   return data
 }
 
-/** Staff/admin registration (mirrors the Web register flow). */
+/** Staff registration — also an application. See the file header. */
 export async function registerStaff(payload: {
   displayName: string
   email: string
@@ -73,8 +80,7 @@ export async function registerStaff(payload: {
     body: JSON.stringify(payload),
   })
   if (!data.success) fail(data)
-  if (!data.token) throw new Error('The server did not return a registration token.')
-  setAuthToken(data.token)
+  if (data.token) setAuthToken(data.token)
   return data
 }
 

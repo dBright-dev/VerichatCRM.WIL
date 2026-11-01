@@ -235,6 +235,10 @@ a {
 .catalog-toolbar{display:flex;justify-content:space-between;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap}
 .ticket-row{margin-bottom:.75rem}.ticket-title{font-weight:600;margin-bottom:.3rem}.ticket-meta{font-size:.78rem;color:var(--vc-text-muted);display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:.6rem}
 .alert-banner{display:flex;align-items:center;gap:.6rem;padding:.9rem 1rem;background:var(--vc-danger-soft);border-left:4px solid var(--vc-danger);border-radius:var(--vc-radius-sm);margin-bottom:1.25rem}
+/* A confirmation is not an error. The banner has only ever carried the danger tone,
+   so the screens that reuse it for "saved" / "approved" said good news in the colour
+   of bad news - and a reviewer could not tell the two apart without reading. */
+.alert-banner--success{background:var(--vc-success-soft);border-left-color:var(--vc-success)}
 .text-critical,.status-critical{color:var(--vc-danger);font-weight:600}.text-warning,.status-warning{color:var(--vc-warning);font-weight:600}.text-success,.status-ok{color:var(--vc-success);font-weight:600}
 /* The activity feed and the timeline are one component with two names:
    .activity-* is used by Procurement/Dashboard and Logistics/AssetDetail,

@@ -54,6 +54,17 @@ namespace VerichatCRM.Web.Authorization
         public const string AdminRules = "admin.rules";
         public const string RoleAssignments = "admin.roles";
 
+        /// <summary>
+        /// Reviewing an account that a person created for themselves. Sign-up is
+        /// public, so the queue is where "I am a Procurement Manager" stops being a
+        /// claim and starts being a permission - and where a hospital buyer is told
+        /// they really are one. Held by the administrator and by the two roles that
+        /// can tell: Sales meets the clients, Procurement meets the suppliers and
+        /// the institutions. Ticket handlers and dispatchers read no identities, and
+        /// the client audience cannot approve anyone - least of all itself.
+        /// </summary>
+        public const string AccountApprovals = "accounts.approve";
+
         // Client audience (the accounts that order rather than fulfil)
         public const string ClientPortal = "client.portal";
         public const string ClientQuoteRespond = "client.quote.respond";
@@ -68,7 +79,7 @@ namespace VerichatCRM.Web.Authorization
                 AssetTracking, LogisticsTracker,
                 PipelineBoard, InquiryQueue, SalesLeads, SalesMap, QuotationBuilder, ProductCatalog, ProductCreate, ProductEdit,
                 TicketHub, TicketUpdate, WarehouseAlerts,
-                AdminAnalytics, DashboardAnalytics, AdminRules, RoleAssignments,
+                AdminAnalytics, DashboardAnalytics, AdminRules, RoleAssignments, AccountApprovals,
             },
 
             // Client directory + client details, asset tracking, pipeline board,
@@ -79,6 +90,7 @@ namespace VerichatCRM.Web.Authorization
                 ClientDirectory, ClientProfile,
                 AssetTracking,
                 PipelineBoard, InquiryQueue, SalesLeads, SalesMap, QuotationBuilder, ProductCatalog, ProductEdit,
+                AccountApprovals,
             },
 
             // Client directory, product catalog, ticket hub and logistics tracker,
@@ -91,6 +103,7 @@ namespace VerichatCRM.Web.Authorization
                 ClientDirectory, ClientProfile,
                 ProductCatalog,
                 TicketHub, LogisticsTracker, WarehouseAlerts,
+                AccountApprovals,
             },
 
             // Ticket hub (resolve + assign) and asset tracking.

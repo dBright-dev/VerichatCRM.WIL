@@ -94,6 +94,8 @@ builder.Services.AddScoped<IQuotationRepository, QuotationRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+// The reviewer's half of the same gate AuthService applies to the applicant.
+builder.Services.AddScoped<IAccountApprovalService, AccountApprovalService>();
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<IProductService, ProductService>();
     builder.Services.AddScoped<IInquiryService, InquiryService>();

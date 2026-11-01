@@ -42,6 +42,31 @@ public class PermissionTests
     }
 
     [Fact]
+    public void AccountApprovals_IsHeldByTheThreeRolesThatCanJudgeAnApplicant()
+    {
+        // The administrator always, plus the two roles that meet the people on the
+        // other end of a sign-up form. Deliberately not Field Support or Logistics,
+        // who read tickets and dispatch notes rather than identities, and never the
+        // client audience - which would be letting an applicant approve themselves.
+        foreach (var role in new[] { Roles.SystemAdministrator, Roles.SalesRepresentative, Roles.ProcurementManager })
+            Assert.True(Perm.Has(role, Perm.AccountApprovals), $"{role} should have {nameof(Perm.AccountApprovals)}");
+
+        foreach (var role in new[] { Roles.FieldSupportEngineer, Roles.Logistics, Roles.ClientUser, Roles.MedicalStudent })
+            Assert.False(Perm.Has(role, Perm.AccountApprovals), $"{role} should not have {nameof(Perm.AccountApprovals)}");
+    }
+
+    [Fact]
+    public void AccountApprovals_DoesNotOpenTheStaffScreensItSitsBeside()
+    {
+        // Reviewing an application is not the same act as reassigning roles or
+        // reading the client directory, and a Sales Representative who holds the
+        // queue must not inherit either of those from it.
+        Assert.False(Perm.Has(Roles.SalesRepresentative, Perm.ClientAssign));
+        Assert.False(Perm.Has(Roles.ProcurementManager, Perm.RoleAssignments));
+        Assert.False(Perm.Has(Roles.SalesRepresentative, Perm.AdminRules));
+    }
+
+    [Fact]
     public void UnknownOrMissingRole_HasNoPermissions()
     {
         Assert.False(Perm.Has("Intern", Perm.SalesLeads));

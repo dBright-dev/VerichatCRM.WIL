@@ -68,6 +68,42 @@ namespace VerichatCRM.Web.Controllers
             return RedirectToAction(nameof(Users));
         }
 
+        /// <summary>
+        /// The queue of accounts people created for themselves. Reachable by the
+        /// administrator and by Sales and Procurement - see
+        /// <see cref="Perm.AccountApprovals"/> - and on this screen the only
+        /// available actions are yes and no, never a role change: a reviewer cannot
+        /// promote an applicant into something they did not ask for.
+        /// </summary>
+        [RequirePermission(Perm.AccountApprovals)]
+        public async Task<IActionResult> Approvals()
+        {
+            ViewData["Title"] = "Account Approvals";
+            ViewData["Subtitle"] = "Applications that signed themselves up";
+            var pending = await _admin.GetPendingAccountsAsync();
+            return View(pending);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [RequirePermission(Perm.AccountApprovals)]
+        public async Task<IActionResult> ApproveAccount(string userId)
+        {
+            var outcome = await _admin.ApproveAccountAsync(userId);
+            TempData[outcome.Success ? "SuccessMessage" : "ErrorMessage"] = outcome.Message;
+            return RedirectToAction(nameof(Approvals));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [RequirePermission(Perm.AccountApprovals)]
+        public async Task<IActionResult> RejectAccount(string userId, string? reason)
+        {
+            var outcome = await _admin.RejectAccountAsync(userId, reason ?? string.Empty);
+            TempData[outcome.Success ? "SuccessMessage" : "ErrorMessage"] = outcome.Message;
+            return RedirectToAction(nameof(Approvals));
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [RequirePermission(Perm.WarehouseAlerts)]

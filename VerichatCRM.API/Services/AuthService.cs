@@ -31,7 +31,36 @@ namespace VerichatCRM.API.Services
             // Passwords predating PBKDF2 are rewritten now that we know the
             // plaintext is correct; each legacy account upgrades on first login.
             if (PasswordHasher.NeedsUpgrade(user.PasswordHash))
+            {
                 user.PasswordHash = PasswordHasher.Hash(request.Password);
+                await _users.UpdateAsync(user);
+            }
+
+            // The approval check runs after the password check and never before it.
+            // "This account is waiting for an employee" is a fact about the address
+            // that anyone could learn from the sign-up form, so handing it out before
+            // the password is proved would turn the login screen into a list of who
+            // has registered. Once the password is right, the person already holds
+            // the account, and the reason is the useful answer.
+            if (UserApproval.IsPending(user.ApprovalStatus))
+                return new AuthResponse
+                {
+                    Success = false,
+                    Message = "Your account is created and waiting for a Verichat employee to approve it. You will be able to sign in as soon as it is.",
+                    User = Map(user),
+                    ApprovalStatus = user.ApprovalStatus
+                };
+
+            if (UserApproval.IsRejected(user.ApprovalStatus))
+                return new AuthResponse
+                {
+                    Success = false,
+                    Message = string.IsNullOrWhiteSpace(user.RejectionReason)
+                        ? "A Verichat employee reviewed this account and did not approve it. Contact Verichat if you believe that was a mistake."
+                        : $"A Verichat employee reviewed this account and did not approve it: {user.RejectionReason}",
+                    User = Map(user),
+                    ApprovalStatus = user.ApprovalStatus
+                };
 
             user.LastLoginAt = DateTime.UtcNow;
             await _users.UpdateAsync(user);
@@ -41,7 +70,8 @@ namespace VerichatCRM.API.Services
                 Success = true,
                 Message = "Login successful.",
                 Token = _jwt.GenerateToken(user),
-                User = Map(user)
+                User = Map(user),
+                ApprovalStatus = user.ApprovalStatus
             };
         }
 
@@ -60,7 +90,15 @@ namespace VerichatCRM.API.Services
                 DisplayName = request.DisplayName.Trim(),
                 Email = request.Email.Trim().ToLowerInvariant(),
                 PasswordHash = PasswordHasher.Hash(request.Password),
-                Role = request.Role
+                Role = request.Role,
+                // Nothing a person says about themselves on a public form is
+                // evidence. "I am a Procurement Manager" buys the stock dashboard,
+                // the warehouse alerts and the logistics tracker; "I am a Client
+                // User" buys a purchase order line. So the account is written down
+                // as an application, and the employee who reviews it decides whether
+                // it is what it claims to be. No token is issued here: the applicant
+                // has a login, but the login does not open anything yet.
+                ApprovalStatus = UserApproval.Pending
             };
 
             await _users.AddAsync(user);
@@ -68,9 +106,9 @@ namespace VerichatCRM.API.Services
             return new AuthResponse
             {
                 Success = true,
-                Message = "Registration successful.",
-                Token = _jwt.GenerateToken(user),
-                User = Map(user)
+                Message = "Application received. A Verichat employee will review it, and you can sign in once it is approved.",
+                User = Map(user),
+                ApprovalStatus = user.ApprovalStatus
             };
         }
 

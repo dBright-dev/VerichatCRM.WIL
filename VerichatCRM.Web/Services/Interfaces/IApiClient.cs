@@ -8,6 +8,18 @@
         Task<TResponse?> PatchAsync<TRequest, TResponse>(string endpoint, TRequest body);
         Task<TResponse?> PutAsync<TRequest, TResponse>(string endpoint, TRequest body);
         Task<TResponse?> DeleteAsync<TResponse>(string endpoint);
+
+        /// <summary>
+        /// Sends <paramref name="body"/> and parses the response whatever the status
+        /// code says. The other verbs answer null on a refusal, which is right when
+        /// a failed call has nothing to show - but a sign-in that is refused because
+        /// the account is still awaiting approval, or a review that is refused
+        /// because it is your own application, is an answer rather than a transport
+        /// failure. Those flows need the server's sentence and its reason code, so
+        /// they call this and read the body the API wrote.
+        /// </summary>
+        Task<TResponse?> SendForBodyAsync<TRequest, TResponse>(HttpMethod method, string endpoint, TRequest body);
+
         void SetToken(string token);
 
         /// <summary>

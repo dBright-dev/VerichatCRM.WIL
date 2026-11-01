@@ -3,13 +3,14 @@ using VerichatCRM.API.DTOs.Requests;
 using VerichatCRM.API.Helpers;
 using VerichatCRM.API.Services;
 using VerichatCRM.Core.Entities;
-using VerichatCRM.Core.Interfaces;
 using Xunit;
 
 namespace VerichatCRM.Tests;
 
 public class AuthServiceTests
 {
+    private const string Password = "password1";
+
     [Fact]
     public async Task Register_RefusesPublicAdministratorRole()
     {
@@ -17,25 +18,107 @@ public class AuthServiceTests
         var service = new AuthService(users, CreateJwt());
         var response = await service.RegisterAsync(new RegisterRequest
         {
-            DisplayName = "Client", Email = "client@example.com", Password = "password1", Role = UserRoles.SystemAdministrator
+            DisplayName = "Client", Email = "client@example.com", Password = Password, Role = UserRoles.SystemAdministrator
         });
         Assert.False(response.Success);
         Assert.Empty(users.Users);
     }
 
     [Fact]
-    public async Task Register_NormalizesEmailAndPersistsClientRole()
+    public async Task Register_WritesAnApplicationAndWithholdsTheToken()
     {
         var users = new FakeUserRepository();
         var service = new AuthService(users, CreateJwt());
         var response = await service.RegisterAsync(new RegisterRequest
         {
-            DisplayName = "Client", Email = " CLIENT@Example.com ", Password = "password1", Role = UserRoles.ClientUser
+            DisplayName = "Client", Email = " CLIENT@Example.com ", Password = Password, Role = UserRoles.ClientUser
         });
-        Assert.True(response.Success);
-        Assert.Equal("client@example.com", Assert.Single(users.Users).Email);
+
+        var stored = Assert.Single(users.Users);
+        Assert.Equal("client@example.com", stored.Email);
         Assert.Equal(UserRoles.ClientUser, response.User!.Role);
+
+        // The point of the gate: a claim made on a public form is not access. The
+        // account is written down, and nothing that reads it hands out a session.
+        Assert.True(response.Success);
+        Assert.Equal(UserApproval.Pending, stored.ApprovalStatus);
+        Assert.Equal(UserApproval.Pending, response.ApprovalStatus);
+        Assert.Null(response.Token);
+    }
+
+    [Fact]
+    public async Task Login_ApprovedAccount_ReturnsAToken()
+    {
+        var users = WithUser(UserRoles.ClientUser, UserApproval.Approved);
+        var service = new AuthService(users, CreateJwt());
+
+        var response = await service.LoginAsync(new LoginRequest { Email = "who@example.com", Password = Password });
+
+        Assert.True(response.Success);
         Assert.False(string.IsNullOrWhiteSpace(response.Token));
+    }
+
+    [Fact]
+    public async Task Login_PendingApplication_IsRefusedButNamesTheWait()
+    {
+        var users = WithUser(UserRoles.ProcurementManager, UserApproval.Pending);
+        var service = new AuthService(users, CreateJwt());
+
+        var response = await service.LoginAsync(new LoginRequest { Email = "who@example.com", Password = Password });
+
+        Assert.False(response.Success);
+        Assert.Null(response.Token);
+        Assert.Equal(UserApproval.Pending, response.ApprovalStatus);
+        Assert.Contains("approve", response.Message);
+    }
+
+    [Fact]
+    public async Task Login_DeclinedApplication_QuotesTheReasonBack()
+    {
+        var users = WithUser(UserRoles.SalesRepresentative, UserApproval.Approved);
+        var applicant = users.Users.Single();
+        applicant.ApprovalStatus = UserApproval.Rejected;
+        applicant.RejectionReason = "This address is not one of our suppliers.";
+        var service = new AuthService(users, CreateJwt());
+
+        var response = await service.LoginAsync(new LoginRequest { Email = "who@example.com", Password = Password });
+
+        Assert.False(response.Success);
+        Assert.Null(response.Token);
+        Assert.Equal(UserApproval.Rejected, response.ApprovalStatus);
+        Assert.Contains("not one of our suppliers", response.Message);
+    }
+
+    [Fact]
+    public async Task Login_WrongPassword_SaysNothingAboutTheApplication()
+    {
+        // The account is waiting for a reviewer, and the answer to a bad password
+        // must be the same sentence used for an address that does not exist at all.
+        // Approving the applicant is a decision about them; this is not theirs to
+        // overhear, and the check order in AuthService is what keeps it that way.
+        var users = WithUser(UserRoles.ProcurementManager, UserApproval.Pending);
+        var service = new AuthService(users, CreateJwt());
+
+        var response = await service.LoginAsync(new LoginRequest { Email = "who@example.com", Password = "wrong-password" });
+
+        Assert.False(response.Success);
+        Assert.Equal("Invalid credentials.", response.Message);
+        Assert.Null(response.ApprovalStatus);
+        Assert.Null(response.User);
+    }
+
+    private static FakeUserRepository WithUser(string role, string approvalStatus)
+    {
+        var users = new FakeUserRepository();
+        users.Users.Add(new User
+        {
+            DisplayName = "Someone",
+            Email = "who@example.com",
+            PasswordHash = PasswordHasher.Hash(Password),
+            Role = role,
+            ApprovalStatus = approvalStatus
+        });
+        return users;
     }
 
     private static JwtHelper CreateJwt()
@@ -46,18 +129,5 @@ public class AuthServiceTests
             ["Jwt:Issuer"] = "test", ["Jwt:Audience"] = "test", ["Jwt:ExpiryMinutes"] = "60"
         }).Build();
         return new JwtHelper(config);
-    }
-
-    private sealed class FakeUserRepository : IUserRepository
-    {
-        public List<User> Users { get; } = [];
-        public Task<User?> GetByEmailAsync(string email) => Task.FromResult(Users.FirstOrDefault(u => u.Email.Equals(email, StringComparison.OrdinalIgnoreCase)));
-        public Task<User?> GetByIdAsync(string userId) => Task.FromResult(Users.FirstOrDefault(u => u.UserId == userId));
-        public Task<bool> EmailExistsAsync(string email) => Task.FromResult(Users.Any(u => u.Email.Equals(email, StringComparison.OrdinalIgnoreCase)));
-        public Task<User> AddAsync(User user) { Users.Add(user); return Task.FromResult(user); }
-        public Task UpdateAsync(User user) => Task.CompletedTask;
-        public Task<IEnumerable<User>> GetAllAsync() => Task.FromResult<IEnumerable<User>>(Users);
-        public Task<User?> GetByResetTokenAsync(string token) => Task.FromResult<User?>(null);
-        public Task<int> CountByRoleAsync(string role) => Task.FromResult(0);
     }
 }

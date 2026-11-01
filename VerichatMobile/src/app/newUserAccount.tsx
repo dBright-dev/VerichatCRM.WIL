@@ -39,16 +39,27 @@ const CreateAccountScreen = () => {
       return
     }
 
-    // Registers a "Client User" account against the CRM API and stores the
-    // returned JWT so the rest of the app is authenticated.
+    // Creates a "Client User" application against the CRM API. A Verichat employee
+    // reads it before the credentials open anything, so this signs nobody in: the
+    // response carries no token, and the person is sent back to sign-in to wait.
     setBusy(true)
     try {
-      await registerClient({
+      const result = await registerClient({
         displayName: fullName.trim(),
         email: email.trim(),
         password,
         companyName: companyName.trim(),
       })
+
+      if (!result.token) {
+        Alert.alert(
+          'Application submitted',
+          result.message || 'A Verichat employee will review your account. You can sign in once it is approved.',
+          [{ text: 'Sign in', onPress: () => router.replace('/clientLogin') }],
+        )
+        return
+      }
+
       router.replace('/')
     } catch (e) {
       Alert.alert('Sign up failed', e instanceof Error ? e.message : 'Something went wrong.')

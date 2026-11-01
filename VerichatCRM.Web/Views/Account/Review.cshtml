@@ -1,0 +1,62 @@
+@model VerichatCRM.Web.Models.Auth.AccountReviewViewModel
+@{
+    ViewData["Title"] = Model.IsDeclined ? "Application declined" : "Waiting for approval";
+    Layout = "_AuthLayout";
+}
+
+<section class="vc-auth">
+    <aside class="vc-auth-side">
+        <div class="vc-auth-brand">
+            <img class="vc-auth-logo" src="~/images/logo.png" width="40" height="40" alt="Verichat logo" />
+            <div>
+                <div class="vc-auth-brand-name">Verichat</div>
+                <div class="vc-auth-brand-sub">MEDICAL PROCUREMENT</div>
+            </div>
+        </div>
+        <h2 class="vc-auth-headline">A person reads<br />every application.</h2>
+        <p class="vc-auth-lede">The sign-up form is public, so what it produces is an application. A Verichat employee checks it before the login opens anything - which is also what keeps someone who is not a client out of a client's orders.</p>
+        <ul class="vc-auth-points">
+            <li><span class="vc-check">✓</span> Client accounts get their own catalogue, quotes and deliveries</li>
+            <li><span class="vc-check">✓</span> Staff accounts are checked against the team before they are granted</li>
+            <li><span class="vc-check">✓</span> You are emailed as soon as the decision is made</li>
+        </ul>
+    </aside>
+
+    <div class="vc-auth-main">
+        <div class="vc-auth-card">
+            <h1 class="vc-auth-title">@(Model.IsDeclined ? "Application declined" : "Your application is in the queue")</h1>
+            <p class="vc-auth-sub">
+                @if (string.IsNullOrWhiteSpace(Model.DisplayName))
+                {
+                    <text>@(string.IsNullOrWhiteSpace(Model.Email) ? "This account" : Model.Email)</text>
+                }
+                else
+                {
+                    <text>@Model.DisplayName — @Model.Email</text>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.Role))
+                {
+                    <text> · @Model.Role</text>
+                }
+            </p>
+
+            <p>@Model.Message</p>
+
+            @if (Model.IsDeclined)
+            {
+                <p>If you can address what was raised, create the account again with the corrected details. If you think the review got it wrong, contact Verichat and ask for a second reading.</p>
+                <a class="btn btn-primary btn-block" asp-action="Register">Apply again</a>
+            }
+            else
+            {
+                <p>There is nothing for you to do now. Approval is recorded against your email address, so the reviewer can reach you if they need proof of who you are. Sign in with the address and password you chose once it is approved.</p>
+                <a class="btn btn-outline btn-block" asp-action="Login">Back to sign in</a>
+            }
+
+            <p class="vc-auth-switch">
+                @(Model.IsDeclined ? "Not this account?" : "Need to check something else?")
+                <a asp-action="Login">Sign in</a>
+            </p>
+        </div>
+    </div>
+</section>

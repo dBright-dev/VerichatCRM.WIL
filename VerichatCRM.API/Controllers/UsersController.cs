@@ -21,7 +21,7 @@ namespace VerichatCRM.API.Controllers
         {
             var users = await System.Threading.Tasks.Task.Run(() =>
                 db.Users.OrderByDescending(u => u.CreatedAt)
-                    .Select(u => new { u.UserId, u.DisplayName, u.Email, u.Role, u.IsActive, u.CreatedAt, u.LastLoginAt })
+                    .Select(u => new { u.UserId, u.DisplayName, u.Email, u.Role, u.IsActive, u.CreatedAt, u.LastLoginAt, u.ApprovalStatus, u.RejectionReason })
                     .ToList());
             return Ok(users);
         }

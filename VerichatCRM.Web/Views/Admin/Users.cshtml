@@ -5,13 +5,13 @@
 }
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert-banner"><span class="alert-icon">✓</span><span>@TempData["SuccessMessage"]</span></div>
+    <div class="alert-banner alert-banner--success"><span class="alert-icon">✓</span><span>@TempData["SuccessMessage"]</span></div>
 }
 <div class="card">
     <div class="card-title">All Users (@Model.Count)</div>
-    <p class="vc-text-muted">Only System Administrators can change roles or deactivate users. New accounts are created by the person who signs up, or by the bootstrap administrator on a first run; this screen changes existing ones.</p>
+    <p class="vc-text-muted">Only System Administrators can change roles or deactivate users. New accounts are created by the person who signs up, or by the bootstrap administrator on a first run; this screen changes existing ones. An account that signed itself up is not live yet: it waits in <a asp-controller="Admin" asp-action="Approvals">the approval queue</a> until an employee approves it, which is what the second status column below is for.</p>
     <table class="data-table">
-        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Last login</th><th></th></tr></thead>
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Access</th><th>Approval</th><th>Last login</th><th></th></tr></thead>
         <tbody>
             @foreach (var u in Model)
             {
@@ -40,6 +40,13 @@
                         </form>
                     </td>
                     <td><span class="badge @(u.IsActive ? "badge-success" : "badge-neutral")">@(u.IsActive ? "Active" : "Inactive")</span></td>
+                    <td title="@u.RejectionReason">
+                        @* Two columns, because they answer two different questions:
+                           this row was not switched off, and this row was never
+                           approved, are both true of a self-registered account the
+                           same way - and only the second one is the queue's business. *@
+                        <span class="badge @Badge.For(u.ApprovalStatus)">@u.ApprovalStatus</span>
+                    </td>
                     <td>@(u.LastLoginAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
                     <td>
                         @if (u.IsActive)

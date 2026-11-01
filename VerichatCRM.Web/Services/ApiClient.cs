@@ -113,6 +113,35 @@ namespace VerichatCRM.Web.Services
             return await ReadAsync<TResponse>(endpoint, response);
         }
 
+        public async Task<TResponse?> SendForBodyAsync<TRequest, TResponse>(HttpMethod method, string endpoint, TRequest body)
+        {
+            EnsureToken();
+            var json = JsonSerializer.Serialize(body);
+            var request = new HttpRequestMessage(method, endpoint)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+
+            var response = await _http.SendAsync(request);
+            var respJson = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                RecordFailure(endpoint, response.StatusCode, respJson);
+            }
+
+            if (string.IsNullOrWhiteSpace(respJson)) return default;
+            try
+            {
+                return JsonSerializer.Deserialize<TResponse>(respJson, _jsonOpts);
+            }
+            catch (JsonException)
+            {
+                // A proxy that answered with an HTML error page instead of the API's
+                // JSON. LastError already carries the status wording for the page.
+                return default;
+            }
+        }
+
         private async Task<TResponse?> ReadAsync<TResponse>(string endpoint, HttpResponseMessage response)
         {
             if (response.IsSuccessStatusCode)

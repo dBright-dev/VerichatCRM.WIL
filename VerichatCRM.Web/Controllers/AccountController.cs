@@ -43,7 +43,16 @@ namespace VerichatCRM.Web.Controllers
 
             if (!result.Success || result.Token == null || result.User == null)
             {
-                ModelState.AddModelError("", result.Message);
+                // The right password in a queue. Approval is checked here as well as
+                // in the API, and the two cannot disagree because this reads the
+                // state the API sent rather than its wording: a person whose account
+                // is waiting, or was declined, is told which - on a screen that says
+                // what happens next - instead of being handed the same form and a
+                // line that looks like a typo in their password.
+                if (UserApproval.IsPending(result.ApprovalStatus) || UserApproval.IsRejected(result.ApprovalStatus))
+                    return View("Review", AccountReviewViewModel.From(result, request.Email));
+
+                ModelState.AddModelError("", RefusedWith(result, "We could not sign you in just now. Check your address and password, then try again."));
                 return View(request);
             }
 
@@ -100,36 +109,18 @@ namespace VerichatCRM.Web.Controllers
 
             var result = await _auth.RegisterAsync(request);
 
-            if (!result.Success || result.Token == null || result.User == null)
+            if (!result.Success || result.User == null)
             {
-                ModelState.AddModelError("", result.Message);
+                ModelState.AddModelError("", RefusedWith(result, "We could not submit your details just now. Check them and try again."));
                 return View(request);
             }
 
-            try
-            {
-                HttpContext.Session.SetString("JwtToken", result.Token);
-                HttpContext.Session.SetString("UserRole", result.User.Role);
-                HttpContext.Session.SetString("UserName", result.User.DisplayName);
-                HttpContext.Session.SetString("UserEmail", result.User.Email);
-
-                // The client portal is scoped to the signed-in client, and every
-                // client-facing API route is keyed on this id rather than on the
-                // token, so the web layer has to carry it too.
-                HttpContext.Session.SetString("UserId", result.User.UserId);
-
-                // The token also goes in a cookie so the SignalR handshake to the API
-                // can authenticate without the page ever reading it.
-                IssueHubCookie(result.Token);
-            }
-            catch
-            {
-                // Session may not be configured - continue anyway
-            }
-
-            if (result.User.Role == "System Administrator")
-                return RedirectToAction("Dashboard", "Admin");
-            return RedirectToRoleDashboard(result.User.Role);
+            // Sign-up creates an application, not a session. Nothing is written to
+            // the session and no token is issued here, because the credentials the
+            // applicant just chose do not open the system until an employee has read
+            // the application - the whole point being that a claim on a public form
+            // ("I am a Procurement Manager") is not evidence of the thing claimed.
+            return View("Review", AccountReviewViewModel.From(result, request.Email));
         }
 
         [HttpPost]
@@ -157,6 +148,14 @@ namespace VerichatCRM.Web.Controllers
 
             return RedirectToAction("Login", "Account");
         }
+
+        /// <summary>
+        /// The API's sentence about a refusal, with something usable when it said
+        /// nothing - which happens when the response was an error page or a
+        /// validation body rather than the auth payload this form expects.
+        /// </summary>
+        private static string RefusedWith(Models.Auth.AuthResponse result, string fallback) =>
+            string.IsNullOrWhiteSpace(result.Message) ? fallback : result.Message;
 
         /// <summary>
         /// Issues the HttpOnly cookie the SignalR handshake to the API presents.
