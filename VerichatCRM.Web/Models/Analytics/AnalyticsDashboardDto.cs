@@ -33,7 +33,6 @@ namespace VerichatCRM.Web.Models.Analytics
     {
         public DashboardAnalyticsResponse Overview { get; set; } = new();
         public AnalyticsDashboardDto? Charts { get; set; }
-        public string ChartsJson { get; set; } = "null";
         public bool IsDemo { get; set; }
     }
 }

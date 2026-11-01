@@ -1,0 +1,101 @@
+@model VerichatCRM.Core.Models.Dashboard.DashboardAnalyticsResponse
+@{
+    // The administrator's board is the only one that both reads the whole system
+    // and can change it, so it is laid out as overview-then-controls: the densest
+    // KPI rail in the product with the breach alert pulled out of it, then the
+    // shared trend charts, then the two panels that go nowhere else — the event
+    // log and the controls a breach is actually acted on from.
+    // The charts themselves are _DashboardCharts, the same partial the workspace
+    // board uses; what is unique to this screen is the rail, the alert and the
+    // controls, not a second copy of three Chart.js configs. DESIGN-SYSTEM.md 4.
+    var breaches = Model.Kpis.FirstOrDefault(k => k.BadgeVariant == "danger");
+}
+
+<div class="stat-grid stat-grid--dense">
+    @foreach (var kpi in Model.Kpis)
+    {
+        <div class="stat-card">
+            <div class="stat-accent @(kpi.BadgeVariant == "danger" ? "red" : "cyan")"></div>
+            <div class="stat-label">@kpi.Label</div>
+            <div class="stat-value vc-accent">@kpi.Value</div>
+            @if (!string.IsNullOrEmpty(kpi.DeltaLabel))
+            {
+                <div class="stat-meta">@kpi.DeltaLabel</div>
+            }
+        </div>
+    }
+</div>
+
+@if (breaches != null)
+{
+    <div class="alert-banner">
+        <span class="alert-icon" aria-hidden="true">&#9888;</span>
+        <div>
+            <strong>@breaches.Value @breaches.Label</strong>
+            <div class="status-text">Open tickets past their SLA. Assign or resolve them from the ticket hub; the rule that flags them is in the rules engine.</div>
+        </div>
+        <a class="btn btn-outline btn-sm" asp-controller="Support" asp-action="TicketHub">Ticket Hub</a>
+    </div>
+}
+
+<partial name="_DashboardCharts" model="Model" />
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-title">What moved</div>
+        @if (Model.Timeline.Count == 0)
+        {
+            <p class="empty-state">Nothing has been recorded in the last six months.</p>
+        }
+        else
+        {
+            <ul class="timeline">
+                @foreach (var ev in Model.Timeline.Take(6))
+                {
+                    <li class="timeline-item">
+                        <span class="timeline-dot @ev.BadgeVariant"></span>
+                        <span class="timeline-time">@ev.OccurredAt.ToLocalTime().ToString("dd MMM HH:mm")</span>
+                        <div class="timeline-title">@ev.Title</div>
+                        <div class="timeline-detail">@ev.Detail</div>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+
+    <div class="card">
+        <div class="card-title">System controls</div>
+        <p class="card-subtitle">Only an administrator reaches these.</p>
+        <ul class="activity-list">
+            <li class="activity-item">
+                <span class="activity-dot accent"></span>
+                <div class="activity-body">
+                    <div class="activity-title"><a asp-controller="Admin" asp-action="Users">Users &amp; Roles</a></div>
+                    <div class="activity-subtitle">Who can open which screen</div>
+                </div>
+                <span class="activity-time">manage</span>
+            </li>
+            <li class="activity-item">
+                <span class="activity-dot accent"></span>
+                <div class="activity-body">
+                    <div class="activity-title"><a asp-controller="Admin" asp-action="Rules">Rules Engine</a></div>
+                    <div class="activity-subtitle">Inquiry scoring and the SLA flag</div>
+                </div>
+                <span class="activity-time">edit</span>
+            </li>
+            <li class="activity-item">
+                <span class="activity-dot accent"></span>
+                <div class="activity-body">
+                    <div class="activity-title"><a asp-controller="Analytics" asp-action="Index">Analytics</a></div>
+                    <div class="activity-subtitle">Targets, funnel and revenue by sector</div>
+                </div>
+                <span class="activity-time">open</span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="~/js/charts.js"></script>
+}

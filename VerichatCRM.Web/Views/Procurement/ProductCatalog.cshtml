@@ -70,10 +70,12 @@
                 <div class="product-name">@p.ProductName</div>
                 <div class="product-price">R @p.Price.ToString("N0")</div>
                 <div class="product-footer">
-                    <span class="badge @(p.IsLowStock ? "badge-warning" : "badge-success")">
-                        @(p.IsLowStock ? "Low Stock" : "In Stock")
-                    </span>
-                    <span class="product-stock">@p.StockQty in stock</span>
+                    @* Same chip wording as the client portal's catalogue card; the
+                       count the buyer wants sits beside it, not inside it. A zero-
+                       stock line used to reach here with no word of its own. *@
+                    @{ var stockLabel = Badge.StockLabel(p.StockQty, p.IsLowStock); }
+                    <span class="badge @Badge.For(stockLabel)">@stockLabel</span>
+                    <span class="product-stock">@p.StockQty on hand</span>
                 </div>
                 @if (Perm.Has(Context.Session.GetString("UserRole") ?? "", Perm.ProductEdit))
                 {

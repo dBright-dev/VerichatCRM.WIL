@@ -57,9 +57,14 @@
                         <div class="vc-portal-ref">@p.SKU · @p.Category</div>
                         <div class="product-price">R @p.Price.ToString("N0")</div>
                         <div class="product-footer">
-                            <span class="badge @(p.StockQty == 0 ? "badge-critical" : p.IsLowStock ? "badge-warning" : "badge-success")">
-                                @(p.StockQty == 0 ? "Out of stock" : p.IsLowStock ? "Low stock" : $"{p.StockQty} in stock")
-                            </span>
+                            @* One word for one shelf state, the same on the buyer's own
+                               catalogue. This card used to pick its own wording —
+                               "3 in stock" folded into the chip and "Low stock" spelled
+                               differently from the "Low Stock" the staff screen showed.
+                               The quantity belongs to the buyer's screen, not the
+                               client's request form. *@
+                            @{ var stockLabel = Badge.StockLabel(p.StockQty, p.IsLowStock); }
+                            <span class="badge @Badge.For(stockLabel)">@stockLabel</span>
                             <input class="form-input vc-qty" type="number" min="0" max="10000" step="1" value="0"
                                    name="qty-@p.SKU" aria-label="Quantity to request for @p.ProductName" />
                         </div>

@@ -28,9 +28,9 @@
                                     roles, so Logistics, Client User and Medical
                                     Student accounts existed in the database but
                                     could never be granted or corrected here.
-                                    Saving to a client-audience role keeps the
-                                    person on the mobile app; they get no web
-                                    screens. *@
+                                    Saving to a client-audience role moves them to
+                                    the portal (/portal) on the web and their own
+                                    homescreen in the mobile app. *@
                                 @foreach (var r in UserRoles.All)
                                 {
                                     <option value="@r" selected="@(r == u.Role)">@r</option>

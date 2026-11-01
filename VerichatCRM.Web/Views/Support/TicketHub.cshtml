@@ -18,13 +18,13 @@
             <div class="ticket-header">
                 <div>
                     <span class="ticket-ref">@ticket.TrackingNumber</span>
-                    <span class="badge @GetPriorityBadge(ticket.Priority)">@ticket.Priority</span>
+                    <span class="badge @Badge.For(ticket.Priority)">@ticket.Priority</span>
                     @if (ticket.EscalationLevel > 0)
                     {
                         <span class="badge badge-critical">Escalated L@(ticket.EscalationLevel)</span>
                     }
                 </div>
-                <span class="status-text @GetStatusClass(ticket.Status)">@ticket.Status</span>
+                <span class="status-text @Badge.Tone(ticket.Status)">@ticket.Status</span>
             </div>
             <div class="ticket-title">@ticket.Title</div>
             <div class="ticket-meta">
@@ -38,24 +38,6 @@
         </div>
     }
 </div>
-
-@functions {
-    string GetPriorityBadge(string p) => p switch
-    {
-        "Critical" => "badge-critical",
-        "High" => "badge-warning",
-        "Medium" => "badge-info",
-        _ => "badge-neutral"
-    };
-
-    string GetStatusClass(string s) => s switch
-    {
-        "Resolved" => "status-ok",
-        "Escalated" => "status-critical",
-        "Under Review" => "status-warning",
-        _ => ""
-    };
-}
 
 @section Scripts {
     <script>

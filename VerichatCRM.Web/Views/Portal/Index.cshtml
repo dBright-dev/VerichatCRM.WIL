@@ -2,15 +2,6 @@
 @{
     ViewData["Title"] = "My Verichat";
 
-    string Badge(string status) => status switch
-    {
-        "Sent" or "Accepted" or "In Transit" or "Dispatched" or "Action Taken" => "vc-badge vc-badge--accent",
-        "Draft" or "Reviewed" or "Received" or "Under Review" or "Processing" => "vc-badge",
-        "Rejected" or "Failed" or "Returned" or "Escalated" => "vc-badge vc-badge--danger",
-        "Resolved" or "Delivered" or "Closed" => "vc-badge vc-badge--success",
-        _ => "vc-badge"
-    };
-
     string FirstLine(string name) =>
         string.IsNullOrWhiteSpace(name) ? "there" : name.Split(' ')[0];
 }
@@ -81,7 +72,7 @@
                     </div>
                     <div style="display:flex;align-items:center;gap:12px;">
                         <strong>R @q.GrandTotal.ToString("N0")</strong>
-                        <span class="@Badge(q.Status)">@q.Status</span>
+                        <span class="badge @Badge.For(q.Status)">@q.Status</span>
                     </div>
                 </div>
             }
@@ -105,7 +96,7 @@
                         <div class="vc-portal-row__title">@t.Title</div>
                         <div class="vc-portal-row__meta vc-portal-ref">@t.TrackingNumber · @t.Priority</div>
                     </div>
-                    <span class="@Badge(t.Status)">@t.Status</span>
+                    <span class="badge @Badge.For(t.Status)">@t.Status</span>
                 </div>
             }
         </div>
@@ -135,7 +126,7 @@
                 </div>
                 <div style="display:flex;align-items:center;gap:12px;">
                     <span class="vc-portal-row__meta">ETA @d.EstimatedArrival.ToLocalTime().ToString("dd MMM yyyy")</span>
-                    <span class="@Badge(d.Status)">@d.Status</span>
+                    <span class="badge @Badge.For(d.Status)">@d.Status</span>
                 </div>
             </div>
         }

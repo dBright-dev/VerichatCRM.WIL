@@ -196,7 +196,9 @@ namespace VerichatCRM.Web.Controllers
                 Roles.SalesRepresentative => RedirectToAction("Index", "Pipeline"),
                 Roles.ProcurementManager => RedirectToAction("Dashboard", "Procurement"),
                 Roles.FieldSupportEngineer => RedirectToAction("Dashboard", "Support"),
-                Roles.Logistics => RedirectToAction("Dashboard", "Support"),
+                // Logistics had the support dashboard as its home, so a dispatcher
+                // signed in to a screen of ticket counts. It has its own board now.
+                Roles.Logistics => RedirectToAction("Dashboard", "Logistics"),
 
                 // Client and student accounts have no staff screens. They land on the
                 // self-service portal, which shows only their own catalogue access,

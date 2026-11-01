@@ -23,6 +23,10 @@
     <a class="vc-skip-link" href="#mainContent">Skip to main content</a>
     <div class="vc-shell">
         <partial name="_Sidebar" />
+        @* Only painted while body.nav-open is set (≤1024px). Sits under the
+           drawer at z-index 15 and above the sticky topbar's 10, so a tap on the
+           dimmed page closes the nav instead of activating a control behind it. *@
+        <button class="vc-nav-scrim" type="button" id="vc-nav-scrim" aria-label="Close navigation"></button>
         <div class="vc-main">
             <partial name="_Topbar" />
             <main class="vc-content" id="mainContent">

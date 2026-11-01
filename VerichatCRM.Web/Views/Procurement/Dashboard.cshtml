@@ -1,8 +1,6 @@
-﻿@model VerichatCRM.Web.ViewModels.Procurement.ProcurementDashboardViewModel
-@{
-    ViewData["Title"] = "Dashboard";
-    ViewData["Subtitle"] = $"Here's what's happening across your workspace — {Model.CurrentDate:dddd, d MMMM yyyy}";
-}
+﻿@model VerichatCRM.Web.ViewModels.Procurement.StockDashboardViewModel
+@* The title and subtitle come from ProcurementController.SetHeader, the way every
+   other action in this controller sets its header. *@
 
 <div class="welcome-banner">
     <h2>Welcome back, @Model.ManagerName</h2>
@@ -11,59 +9,95 @@
 <div class="stat-grid">
     <div class="stat-card">
         <div class="stat-accent cyan"></div>
-        <div class="stat-label">Active Orders</div>
-        <div class="stat-value">@Model.ActiveOrders</div>
-        <div class="stat-meta">In transit</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-accent orange"></div>
-        <div class="stat-label">Pending Quotes</div>
-        <div class="stat-value">@Model.PendingQuotes</div>
-        <div class="stat-meta">awaiting approval</div>
+        <div class="stat-label">Catalogue Items</div>
+        <div class="stat-value">@Model.CatalogItems</div>
+        <div class="stat-meta">across @Model.CategoryCount categories</div>
     </div>
     <div class="stat-card">
         <div class="stat-accent cyan"></div>
-        <div class="stat-label">Catalog Items</div>
-        <div class="stat-value">@Model.CatalogItems</div>
-        <div class="stat-meta">across 4 sections</div>
+        <div class="stat-label">Stock on Hand</div>
+        <div class="stat-value">@Model.StockValue.ToString("C0")</div>
+        <div class="stat-meta">at last sale price</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-accent orange"></div>
+        <div class="stat-label">Short on Stock</div>
+        <div class="stat-value">@Model.LowStockItems</div>
+        <div class="stat-meta">at or under threshold</div>
     </div>
     <div class="stat-card">
         <div class="stat-accent red"></div>
-        <div class="stat-label">Low Stock Items</div>
-        <div class="stat-value">@Model.LowStockItems</div>
-        <div class="stat-meta">need reorder</div>
+        <div class="stat-label">Out of Stock</div>
+        <div class="stat-value">@Model.OutOfStockItems</div>
+        <div class="stat-meta">empty, counted above</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-accent cyan"></div>
+        <div class="stat-label">Awaiting Delivery</div>
+        <div class="stat-value">@Model.OpenOrders</div>
+        <div class="stat-meta">ordered, not received</div>
     </div>
 </div>
 
 <div class="grid-2">
     <div class="card">
-        <div class="card-title">Revenue vs Target</div>
-        <p class="card-subtitle">Feb – Jul 2026</p>
-        <canvas id="revenueChart" height="120"></canvas>
+        <div class="card-title">Units in stock by category</div>
+        <p class="card-subtitle">The eight largest holdings.</p>
+        @if (Model.CategoryLabels.Count == 0)
+        {
+            <p class="empty-state">No products have been published to the catalogue yet.</p>
+        }
+        else
+        {
+            <div class="chart-card-canvas"><canvas id="stockByCategory" role="img" aria-label="Units in stock by product category"></canvas></div>
+        }
     </div>
 
     <div class="card">
-        <div class="card-title">Recent Activity</div>
-        <div class="activity-list">
-            @foreach (var item in Model.RecentActivity)
-            {
-                <div class="activity-item">
-                    <span class="activity-dot @item.Severity"></span>
-                    <div class="activity-body">
-                        <div class="activity-title">@item.Title</div>
-                        <div class="activity-subtitle">@item.Subtitle</div>
-                    </div>
-                    <span class="activity-time">@item.Timestamp</span>
-                </div>
-            }
-        </div>
+        <div class="card-title">Reorder queue</div>
+        <p class="card-subtitle">The five shortest lines.</p>
+        @if (Model.ReorderQueue.Count == 0)
+        {
+            <p class="empty-state">Nothing is below its threshold. The warehouse is clear.</p>
+        }
+        else
+        {
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>On hand</th>
+                        <th>Flag</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.ReorderQueue)
+                    {
+                        <tr class="@(row.Severity == "Critical" ? "vc-row-danger" : "")">
+                            <td>
+                                <strong>@row.ProductName</strong>
+                                <div class="status-text">@row.SKU</div>
+                            </td>
+                            <td>@row.CurrentStock <span class="status-text">of @row.Threshold</span></td>
+                            <td><span class="badge @Badge.For(row.Severity)">@row.Severity</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <a class="btn btn-outline btn-sm" asp-controller="Procurement" asp-action="WarehouseAlerts">Raise an order</a>
+        }
     </div>
 </div>
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="~/js/dashboard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="~/js/charts.js"></script>
     <script>
-        window.revenueData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueVsTarget));
+        // Axes, legend and colour come from the theme's tokens through charts.js.
+        // This section used to load dashboard.js, which hand-wrote a Chart.js config
+        // around #00B4D8 and two greys that appear in no Verichat palette.
+        vcCharts.bar('stockByCategory',
+            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CategoryLabels)),
+            [{ label: 'Units in stock', data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CategoryUnits)) }]);
     </script>
 }

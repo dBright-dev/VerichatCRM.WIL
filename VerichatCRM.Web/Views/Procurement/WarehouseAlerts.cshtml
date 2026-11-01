@@ -1,8 +1,10 @@
 ﻿@using VerichatCRM.Web.ViewModels.Procurement
 @model VerichatCRM.Web.ViewModels.Procurement.WarehouseAlertsViewModel
 @{
-    ViewData["Title"] = "Warehouse Alerts";
-    ViewData["Subtitle"] = "Low-stock safeguard and reorder management";
+    // The heading comes from ProcurementController.WarehouseAlerts via SetHeader,
+    // the same as the Stock Dashboard's; this view used to set a second, slightly
+    // different copy of it here.
+    var chartRows = Model.Alerts.Take(12).ToList();
 }
 
 @if (Model.CriticalCount > 0)
@@ -21,79 +23,107 @@
     </div>
 }
 
-<table class="data-table">
-    <thead>
-        <tr>
-            <th>SKU</th>
-            <th>Product Name</th>
-            <th>Current Stock</th>
-            <th>Min Stock</th>
-            <th>Reorder Qty</th>
-            <th>Status</th>
-            <th>Reorder</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var row in Model.Alerts)
-        {
+@if (Model.Alerts.Count == 0)
+{
+    <div class="card">
+        <div class="empty-state">Nothing is below its reorder point. The shelf is covered.</div>
+    </div>
+}
+else
+{
+    <table class="data-table">
+        <thead>
             <tr>
-                <td><strong>@row.SKU</strong></td>
-                <td>@row.ProductName</td>
-                <td class="@GetStockClass(row)">@row.CurrentStock.ToString("N0")</td>
-                <td>@row.MinStock.ToString("N0")</td>
-                <td>@row.ReorderQty.ToString("N0")</td>
-                <td><span class="@GetStatusClass(row.Status)">@row.Status</span></td>
-                <td>
-                    @if (row.CanReorder)
-                    {
-                        <form asp-action="Reorder" method="post" class="vc-reorder-form">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="sku" value="@row.SKU" />
-                            <label class="visually-hidden" for="supplier-@row.SKU">Supplier for this order</label>
-                            <input id="supplier-@row.SKU" name="supplier" type="text" class="form-control form-control-sm"
-                                   maxlength="200" required placeholder="Supplier" value="@row.Supplier" />
-                            <label class="visually-hidden" for="cost-@row.SKU">Purchase cost per unit</label>
-                            <input id="cost-@row.SKU" name="unitCost" type="number" class="form-control form-control-sm vc-reorder-cost"
-                                   min="0.01" step="0.01" required
-                                   value="@row.SuggestedUnitCost.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
-                            <button type="submit" class="btn btn-danger btn-xs">Reorder</button>
-                        </form>
-                    }
-                    else
-                    {
-                        <span class="vc-text-muted small">Stock is above the reorder point.</span>
-                    }
-                </td>
+                <th>SKU</th>
+                <th>Product Name</th>
+                <th>Current Stock</th>
+                <th>Min Stock</th>
+                <th>Reorder Qty</th>
+                <th>Severity</th>
+                <th>Reorder</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Alerts)
+            {
+                <tr class="@(row.Severity == "Critical" ? "vc-row-danger" : "")">
+                    <td><strong>@row.SKU</strong></td>
+                    <td>@row.ProductName</td>
+                    <td>@row.CurrentStock.ToString("N0")</td>
+                    <td>@row.MinStock.ToString("N0")</td>
+                    <td>@row.ReorderQty.ToString("N0")</td>
+                    <td><span class="badge @Badge.For(row.Severity)">@row.Severity</span></td>
+                    <td>
+                        @if (row.CanReorder)
+                        {
+                            <form asp-action="Reorder" method="post" class="vc-reorder-form">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="sku" value="@row.SKU" />
+                                <label class="visually-hidden" for="supplier-@row.SKU">Supplier for this order</label>
+                                <input id="supplier-@row.SKU" name="supplier" type="text" class="form-control form-control-sm"
+                                       maxlength="200" required placeholder="Supplier" value="@row.Supplier" />
+                                <label class="visually-hidden" for="cost-@row.SKU">Purchase cost per unit</label>
+                                <input id="cost-@row.SKU" name="unitCost" type="number" class="form-control form-control-sm vc-reorder-cost"
+                                       min="0.01" step="0.01" required
+                                       value="@row.SuggestedUnitCost.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                                <button type="submit" class="btn btn-danger btn-xs">Reorder</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="vc-text-muted small">Stock is above the reorder point.</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
-<div class="card" style="margin-top: 2rem;">
-    <div class="card-title">Stock Level vs Minimum Required</div>
-    <canvas id="stockLevelChart" height="80"></canvas>
+<div class="card vc-card-spaced">
+    <div class="card-title">Stock on hand against the minimum required</div>
+    <p class="card-subtitle">The shortest @chartRows.Count @(chartRows.Count == 1 ? "line" : "lines") in the queue.</p>
+    @if (chartRows.Count == 0)
+    {
+        <div class="empty-state">No shortage to plot.</div>
+    }
+    else
+    {
+        <div class="chart-card-canvas"><canvas id="stockLevelChart" role="img" aria-label="Bar chart of current stock against minimum required per product"></canvas></div>
+    }
 </div>
 
-@functions {
-    string GetStockClass(StockAlertRow row) => row.Status switch
-    {
-        "Critical" => "text-critical",
-        "Low" => "text-warning",
-        _ => "text-success"
-    };
-
-    string GetStatusClass(string status) => status switch
-    {
-        "Critical" => "status-critical",
-        "Low" => "status-warning",
-        _ => "status-ok"
-    };
+@* The card above is titled "Stock Level vs Minimum Required" but used to plot
+   window.stockLevels, a Month/Desktop/Mobile series the controller never filled —
+   so the chart was permanently empty and its legend named two product lines this
+   catalogue does not sell. It now plots the rows actually in the table. Palette,
+   axes and fonts come from charts.js rather than warehouse-alerts.js, which was
+   the last view to hand-write a Chart.js config. Design-system doc 4. *@
+@if (chartRows.Count > 0)
+{
+    <script type="application/json" id="vc-stock-level-chart">
+        @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new
+        {
+            labels = chartRows.Select(r => r.ProductName).ToList(),
+            current = chartRows.Select(r => r.CurrentStock).ToList(),
+            minimum = chartRows.Select(r => r.MinStock).ToList()
+        }))
+    </script>
 }
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="~/js/warehouse-alerts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="~/js/charts.js"></script>
     <script>
-        window.stockLevels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StockLevels));
+        (function () {
+            var node = document.getElementById('vc-stock-level-chart');
+            if (!node || typeof vcCharts === 'undefined') return;
+            var d;
+            try { d = JSON.parse(node.textContent); } catch (err) { return; }
+            vcCharts.bar('stockLevelChart', d.labels, [
+                { label: 'On hand', data: d.current },
+                { label: 'Minimum required', data: d.minimum }
+            ]);
+        })();
     </script>
 }

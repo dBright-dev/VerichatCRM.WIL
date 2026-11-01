@@ -1,5 +1,14 @@
-﻿<aside class="vc-sidebar">
-    <a class="vc-sidebar__brand" asp-controller="Home" asp-action="Index">
+﻿@{
+    // One home per screen: the link that is the page you are on is marked, so the
+    // sidebar answers "where am I" as well as "where can I go". The theme styles
+    // [aria-current="page"] identically to the .active class it already honoured.
+    string? Curr(string ctrl, string act) =>
+        string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(), ctrl, StringComparison.OrdinalIgnoreCase)
+        && string.Equals(ViewContext.RouteData.Values["action"]?.ToString(), act, StringComparison.OrdinalIgnoreCase)
+            ? "page" : null;
+}
+<aside class="vc-sidebar" id="vcSidebar">
+    <a class="vc-sidebar__brand" asp-controller="Home" asp-action="Index" aria-current="@Curr("Home", "Index")">
         <img class="vc-brand-logo" src="~/images/logo.png" width="32" height="32" alt="Verichat logo" />
         <span><span class="vc-brand-text">Verichat</span><span class="vc-brand-sub">MEDICAL PROCUREMENT</span></span>
     </a>
@@ -45,11 +54,14 @@
 
         <div class="vc-sidebar__section-label">OVERVIEW</div>
 
+        @* Each role's home is its own screen; no two roles land on the same one.
+            See DESIGN-SYSTEM.md 4 for the contract this ordering implements. *@
         @if (isAdmin)
         {
             <a class="vc-sidebar__link"
                asp-controller="Admin"
-               asp-action="Dashboard">
+               asp-action="Dashboard"
+               aria-current="@Curr("Admin", "Dashboard")">
                 <span class="vc-sidebar__icon">▦</span>
                 Admin Dashboard
             </a>
@@ -58,27 +70,48 @@
         {
             <a class="vc-sidebar__link"
                asp-controller="Procurement"
-               asp-action="Dashboard">
+               asp-action="Dashboard"
+               aria-current="@Curr("Procurement", "Dashboard")">
                 <span class="vc-sidebar__icon">▦</span>
-                Dashboard
+                Stock Dashboard
+            </a>
+        }
+        else if (Can(Perm.LogisticsTracker))
+        {
+            // Logistics reads its own dispatch board. The gate is the permission
+            // this user actually holds rather than a role string, because a Field
+            // Support Engineer and Logistics share support.dashboard — matching on
+            // the permission is what separates their two homes.
+            <a class="vc-sidebar__link"
+               asp-controller="Logistics"
+               asp-action="Dashboard"
+               aria-current="@Curr("Logistics", "Dashboard")">
+                <span class="vc-sidebar__icon">▦</span>
+                Dispatch Dashboard
             </a>
         }
         else if (isSupport)
         {
             <a class="vc-sidebar__link"
                asp-controller="Support"
-               asp-action="Dashboard">
+               asp-action="Dashboard"
+               aria-current="@Curr("Support", "Dashboard")">
                 <span class="vc-sidebar__icon">▦</span>
-                Dashboard
+                Support Dashboard
             </a>
         }
         else if (isSales)
         {
+            @* A Sales Representative's home is the pipeline, not a second analytics
+               board: RoleHome sends them here after sign-in, and the pipeline is the
+               screen they act on. The generic workspace board stays reachable under
+               the Workspace entry below for the roles whose home it is. *@
             <a class="vc-sidebar__link"
-               asp-controller="Dashboard"
-               asp-action="Index">
+               asp-controller="Pipeline"
+               asp-action="Index"
+               aria-current="@Curr("Pipeline", "Index")">
                 <span class="vc-sidebar__icon">▦</span>
-                Dashboard
+                Pipeline Board
             </a>
         }
         else if (isClient)
@@ -87,18 +120,30 @@
                deliveries and tickets, and nothing belonging to anyone else. *@
             <a class="vc-sidebar__link"
                asp-controller="Portal"
-               asp-action="Index">
+               asp-action="Index"
+               aria-current="@Curr("Portal", "Index")">
                 <span class="vc-sidebar__icon">▦</span>
                 My Verichat
+            </a>
+        }
+
+        @if (Can(Perm.Workspace))
+        {
+            <a class="vc-sidebar__link"
+               asp-controller="Dashboard"
+               asp-action="Index"
+               aria-current="@Curr("Dashboard", "Index")">
+                <span class="vc-sidebar__icon">▨</span>
+                Workspace Analytics
             </a>
         }
 
         @if (isClient)
         {
             <div class="vc-sidebar__section-label">MY ACCOUNT</div>
-            <a class="vc-sidebar__link" asp-controller="Portal" asp-action="Catalogue"><span class="vc-sidebar__icon">📦</span> Catalogue</a>
-            <a class="vc-sidebar__link" asp-controller="Portal" asp-action="Quotations"><span class="vc-sidebar__icon">📄</span> My Quotations</a>
-            <a class="vc-sidebar__link" asp-controller="Portal" asp-action="Tickets"><span class="vc-sidebar__icon">🎫</span> Support</a>
+            <a class="vc-sidebar__link" asp-controller="Portal" asp-action="Catalogue" aria-current="@Curr("Portal", "Catalogue")"><span class="vc-sidebar__icon">📦</span> Catalogue</a>
+            <a class="vc-sidebar__link" asp-controller="Portal" asp-action="Quotations" aria-current="@Curr("Portal", "Quotations")"><span class="vc-sidebar__icon">📄</span> My Quotations</a>
+            <a class="vc-sidebar__link" asp-controller="Portal" asp-action="Tickets" aria-current="@Curr("Portal", "Tickets")"><span class="vc-sidebar__icon">🎫</span> Support</a>
         }
 
         @if (Can(Perm.ClientDirectory) || Can(Perm.AssetTracking) || Can(Perm.AppointmentManagement))
@@ -107,53 +152,56 @@
         }
         @if (Can(Perm.ClientDirectory))
         {
-            <a class="vc-sidebar__link" asp-controller="Clients" asp-action="Index"><span class="vc-sidebar__icon">👥</span> Client Directory</a>
+            <a class="vc-sidebar__link" asp-controller="Clients" asp-action="Index" aria-current="@Curr("Clients", "Index")"><span class="vc-sidebar__icon">👥</span> Client Directory</a>
         }
         @if (Can(Perm.AssetTracking))
         {
-            <a class="vc-sidebar__link" asp-controller="Logistics" asp-action="Assets"><span class="vc-sidebar__icon">🔧</span> Asset Tracking</a>
+            <a class="vc-sidebar__link" asp-controller="Logistics" asp-action="Assets" aria-current="@Curr("Logistics", "Assets")"><span class="vc-sidebar__icon">🔧</span> Asset Tracking</a>
         }
         @if (Can(Perm.AppointmentManagement))
         {
-            <a class="vc-sidebar__link" asp-controller="Telehealth" asp-action="Appointments"><span class="vc-sidebar__icon">📅</span> Client Appointments</a>
+            <a class="vc-sidebar__link" asp-controller="Telehealth" asp-action="Appointments" aria-current="@Curr("Telehealth", "Appointments")"><span class="vc-sidebar__icon">📅</span> Client Appointments</a>
         }
 
         @if (isSales)
         {
             <div class="vc-sidebar__section-label">SALES</div>
-            <a class="vc-sidebar__link" asp-controller="Inquiry" asp-action="Index"><span class="vc-sidebar__icon">📥</span> Inquiry Queue</a>
+            <a class="vc-sidebar__link" asp-controller="Inquiry" asp-action="Index" aria-current="@Curr("Inquiry", "Index")"><span class="vc-sidebar__icon">📥</span> Inquiry Queue</a>
             @if (Can(Perm.SalesLeads))
             {
-                <a class="vc-sidebar__link" asp-controller="Sales" asp-action="Leads"><span class="vc-sidebar__icon">🎯</span> Lead Tracker</a>
+                <a class="vc-sidebar__link" asp-controller="Sales" asp-action="Leads" aria-current="@Curr("Sales", "Leads")"><span class="vc-sidebar__icon">🎯</span> Lead Tracker</a>
             }
             @if (Can(Perm.SalesMap))
             {
-                <a class="vc-sidebar__link" asp-controller="Sales" asp-action="Map"><span class="vc-sidebar__icon">🗺</span> Client Map</a>
+                <a class="vc-sidebar__link" asp-controller="Sales" asp-action="Map" aria-current="@Curr("Sales", "Map")"><span class="vc-sidebar__icon">🗺</span> Client Map</a>
             }
-            <a class="vc-sidebar__link" asp-controller="Pipeline" asp-action="Index"><span class="vc-sidebar__icon">📊</span> Pipeline Board</a>
+            @if (!Can(Perm.Workspace))
+            {
+                <a class="vc-sidebar__link" asp-controller="Pipeline" asp-action="Index" aria-current="@Curr("Pipeline", "Index")"><span class="vc-sidebar__icon">📊</span> Pipeline Board</a>
+            }
             @if (Can(Perm.DashboardAnalytics))
             {
-                <a class="vc-sidebar__link" asp-controller="Analytics" asp-action="Index"><span class="vc-sidebar__icon">📈</span> Analytics</a>
+                <a class="vc-sidebar__link" asp-controller="Analytics" asp-action="Index" aria-current="@Curr("Analytics", "Index")"><span class="vc-sidebar__icon">📈</span> Analytics</a>
             }
-            <a class="vc-sidebar__link" asp-controller="Quotation" asp-action="Index"><span class="vc-sidebar__icon">📄</span> Quotation Builder</a>
+            <a class="vc-sidebar__link" asp-controller="Quotation" asp-action="Index" aria-current="@Curr("Quotation", "Index")"><span class="vc-sidebar__icon">📄</span> Quotation Builder</a>
         }
 
         @if (Can(Perm.ProductCatalog))
         {
             <div class="vc-sidebar__section-label">CATALOG</div>
-            <a class="vc-sidebar__link" asp-controller="Procurement" asp-action="ProductCatalog"><span class="vc-sidebar__icon">📦</span> Product Catalog</a>
+            <a class="vc-sidebar__link" asp-controller="Procurement" asp-action="ProductCatalog" aria-current="@Curr("Procurement", "ProductCatalog")"><span class="vc-sidebar__icon">📦</span> Product Catalog</a>
         }
 
         @if (isSupport || isProcurement)
         {
             <div class="vc-sidebar__section-label">SUPPORT</div>
-            <a class="vc-sidebar__link" asp-controller="Support" asp-action="TicketHub"><span class="vc-sidebar__icon">🎫</span> Ticket Hub</a>
+            <a class="vc-sidebar__link" asp-controller="Support" asp-action="TicketHub" aria-current="@Curr("Support", "TicketHub")"><span class="vc-sidebar__icon">🎫</span> Ticket Hub</a>
             @* Same rule as Warehouse Alerts below: a Field Support Engineer holds
                support.dashboard, which is what put this section on their screen,
                but not logistics.tracker - so the link was a guaranteed 403. *@
             @if (Can(Perm.LogisticsTracker))
             {
-                <a class="vc-sidebar__link" asp-controller="Logistics" asp-action="Tracker"><span class="vc-sidebar__icon">🚚</span> Logistics Tracker</a>
+                <a class="vc-sidebar__link" asp-controller="Logistics" asp-action="Tracker" aria-current="@Curr("Logistics", "Tracker")"><span class="vc-sidebar__icon">🚚</span> Logistics Tracker</a>
             }
         }
 
@@ -164,14 +212,14 @@
         @if (Can(Perm.WarehouseAlerts))
         {
             <div class="vc-sidebar__section-label">OPERATIONS</div>
-            <a class="vc-sidebar__link" asp-controller="Procurement" asp-action="WarehouseAlerts"><span class="vc-sidebar__icon">🏭</span> Warehouse Alerts</a>
+            <a class="vc-sidebar__link" asp-controller="Procurement" asp-action="WarehouseAlerts" aria-current="@Curr("Procurement", "WarehouseAlerts")"><span class="vc-sidebar__icon">🏭</span> Warehouse Alerts</a>
         }
 
         @if (isAdmin)
         {
             <div class="vc-sidebar__section-label">ADMIN</div>
-            <a class="vc-sidebar__link" asp-controller="Admin" asp-action="Users"><span class="vc-sidebar__icon">👤</span> Users &amp; Roles</a>
-            <a class="vc-sidebar__link" asp-controller="Admin" asp-action="Rules"><span class="vc-sidebar__icon">⚙</span> Rules Engine</a>
+            <a class="vc-sidebar__link" asp-controller="Admin" asp-action="Users" aria-current="@Curr("Admin", "Users")"><span class="vc-sidebar__icon">👤</span> Users &amp; Roles</a>
+            <a class="vc-sidebar__link" asp-controller="Admin" asp-action="Rules" aria-current="@Curr("Admin", "Rules")"><span class="vc-sidebar__icon">⚙</span> Rules Engine</a>
         }
     </nav>
 

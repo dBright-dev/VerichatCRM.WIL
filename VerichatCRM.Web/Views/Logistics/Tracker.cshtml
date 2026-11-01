@@ -10,7 +10,7 @@
         <div class="shipment-card">
             <div class="shipment-header">
                 <span class="shipment-ref">@d.TrackingNumber</span>
-                <span class="badge @GetStatusBadge(d.Status)">@d.Status</span>
+                <span class="badge @Badge.For(d.Status)">@d.Status</span>
             </div>
             <div class="shipment-route">
                 <div class="route-point">
@@ -31,15 +31,3 @@
         </div>
     }
 </div>
-
-@functions {
-    string GetStatusBadge(string s) => s switch
-    {
-        "Processing" => "badge-neutral",
-        "Dispatched" => "badge-warning",
-        "In Transit" => "badge-info",
-        "Delivered" => "badge-success",
-        "Failed" => "badge-critical",
-        _ => "badge-neutral"
-    };
-}

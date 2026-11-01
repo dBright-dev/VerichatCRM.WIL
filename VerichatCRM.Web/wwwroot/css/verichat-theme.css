@@ -92,7 +92,7 @@ a {
 .vc-main { flex: 1; margin-left: var(--vc-sidebar-width); display: flex; flex-direction: column; min-width: 0; }
 .vc-content { flex: 1; padding: 1.75rem; max-width: 1400px; width: 100%; margin: 0 auto; }
 /* Sidebar */
-.vc-sidebar { width: var(--vc-sidebar-width); background: var(--vc-navy); color: var(--vc-text-inverse); min-height: 100vh; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 20; overflow-y: auto; }
+.vc-sidebar { width: var(--vc-sidebar-width); background: var(--vc-navy); color: var(--vc-text-inverse); min-height: 100vh; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 20; overflow-y: auto; transition: transform .2s ease; }
 .vc-sidebar__brand { display: flex; align-items: center; gap: .6rem; padding: 1.25rem; border-bottom: 1px solid var(--vc-navy-border); text-decoration: none; }
 .vc-sidebar__user { display: flex; align-items: center; gap: .6rem; padding: .9rem 1.25rem; border-bottom: 1px solid var(--vc-navy-border); }
 .vc-brand-logo { width: 32px; height: 32px; border-radius: var(--vc-radius-sm); background: var(--vc-plate); object-fit: contain; padding: 2px; flex: none; }
@@ -115,6 +115,9 @@ a {
 .vc-topbar__title { font-size: 1.3rem; margin: 0; }
 .vc-topbar__subtitle { color: var(--vc-text-muted); font-size: .88rem; margin: .1rem 0 0; }
 .vc-topbar__actions { display: flex; gap: .5rem; }
+.vc-topbar__lead { display: flex; align-items: center; gap: .75rem; min-width: 0; }
+/* Hidden on desktop, where the sidebar is always on screen. */
+.vc-topbar__menu { display: none; align-items: center; justify-content: center; flex: none; }
 /* One declaration. There used to be two, 200 lines apart, and the later one won —
    so the bordered 40px square described first never applied to any button. This
    is the shape that was actually rendering, kept pixel-for-pixel.
@@ -177,6 +180,9 @@ a {
 .vc-kpi-card__value, .stat-value, .kpi-value, .vc-portal-kpi__value { font-family: var(--vc-font-heading); font-size: 1.6rem; font-weight: 600; line-height: 1.1; }
 .stat-meta, .vc-portal-kpi__hint { font-size: .78rem; color: var(--vc-text-muted); margin-top: .3rem }
 .stat-grid, .kpi-grid, .vc-portal-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .875rem; margin-bottom: 1.25rem }
+/* The admin rail carries five tiles, one more than any other board, so its tiles
+   take a narrower minimum rather than wrapping to a second row. */
+.stat-grid--dense { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) }
 /* The coloured 4px strip down the left of a KPI tile (Procurement/Dashboard,
    Support/Dashboard). */
 .stat-accent { position: absolute; top: 0; left: 0; width: 4px; height: 100% }
@@ -221,6 +227,10 @@ a {
 /* A message shown where a list would be. It existed only as inline styles on two
    divs. */
 .empty-state { padding: 2.5rem 1.5rem; text-align: center; color: var(--vc-text-muted); font-size: .88rem }
+/* A card that follows a full-bleed table rather than sitting in a .grid-2 or
+   .chart-grid, so nothing gives it a gap. Was an inline style="margin-top:2rem"
+   on Procurement/WarehouseAlerts.cshtml:72. */
+.vc-card-spaced { margin-top: 2rem }
 /* Compat: the class names the views already use. */
 .catalog-toolbar{display:flex;justify-content:space-between;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap}
 .ticket-row{margin-bottom:.75rem}.ticket-title{font-weight:600;margin-bottom:.3rem}.ticket-meta{font-size:.78rem;color:var(--vc-text-muted);display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:.6rem}
@@ -263,6 +273,19 @@ a {
 .vc-status__actions{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap}
 .vc-status__req{margin-top:1.25rem;font-size:.8rem;color:var(--vc-text-muted)}
 .pipeline-column{background:var(--vc-bg)}.welcome-banner{margin-bottom:1.25rem}
+/* Dispatch lanes (Logistics/Dashboard). A lane per delivery status, oldest ETA at
+   the top, wide enough that a dispatcher reads the board without opening anything.
+   Built from the same .card / .badge / .route-* parts as every other screen. */
+.dispatch-lanes{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(280px,1fr);gap:1rem;overflow-x:auto;padding-bottom:.5rem;margin-bottom:1.25rem}
+.dispatch-lane{padding:0;display:flex;flex-direction:column}
+.dispatch-lane__head{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.9rem 1.1rem;border-bottom:1px solid var(--vc-border)}
+.dispatch-lane__head .card-title{margin:0}
+.dispatch-lane__list{list-style:none;margin:0;padding:0}
+.dispatch-row{padding:.85rem 1.1rem;border-bottom:1px solid var(--vc-border)}
+.dispatch-row:last-child{border-bottom:0}
+.dispatch-row .shipment-route{margin:.55rem 0}
+.dispatch-row__ref{font-weight:700;font-size:.85rem}
+.dispatch-row__foot{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem;font-size:.75rem}
 .vc-btn,.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.6rem 1.2rem;border-radius:var(--vc-radius-sm);font-size:.88rem;font-weight:600;text-decoration:none;border:1px solid transparent;cursor:pointer}
 .vc-btn-primary,.btn-primary{background:linear-gradient(135deg,var(--vc-accent),var(--vc-cyan));color:var(--vc-surface);border:none}
 .vc-btn-primary:hover,.btn-primary:hover{opacity:.92;color:var(--vc-surface);text-decoration:none}
@@ -292,7 +315,17 @@ a {
 .form-input,.form-select{width:100%;padding:.6rem .85rem;border:1px solid var(--vc-border);border-radius:var(--vc-radius-sm);font-size:.88rem;background:var(--vc-surface)}
 .form-group{margin-bottom:1rem}
 .form-label{display:block;font-size:.8rem;font-weight:600;margin-bottom:.35rem}
-@media(max-width:1024px){.vc-sidebar{transform:translateX(-100%)}.vc-main{margin-left:0}.grid-2{grid-template-columns:1fr}}
+/* Below 1024px the nav is an off-canvas drawer and #vc-nav-toggle is the only
+   way back to it, so it gets a scrim that dismisses on click. */
+@media(max-width:1024px){
+  .vc-sidebar{transform:translateX(-100%)}
+  .vc-main{margin-left:0}
+  .grid-2{grid-template-columns:1fr}
+  .vc-topbar__menu{display:inline-flex}
+  body.nav-open .vc-sidebar{transform:translateX(0)}
+  body.nav-open .vc-nav-scrim{display:block}
+}
+.vc-nav-scrim{display:none;position:fixed;inset:0;background:rgba(10,20,45,.55);z-index:15;border:0;padding:0;cursor:pointer}
 @media(max-width:640px){.vc-content{padding:1rem}.shipment-meta{grid-template-columns:1fr 1fr}.catalog-toolbar{flex-direction:column}}
 
 /* Toast notifications */

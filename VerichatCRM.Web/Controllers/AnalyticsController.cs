@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using VerichatCRM.Core.Models.Dashboard;
 using VerichatCRM.Web.Authorization;
 using VerichatCRM.Web.Models.Analytics;
@@ -9,9 +8,6 @@ namespace VerichatCRM.Web.Controllers
 {
     public class AnalyticsController : Controller
     {
-        // Web defaults = camelCase; the default encoder also escapes < and > so the JSON is safe in a script tag.
-        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-
         private readonly IApiClient _api;
         private readonly IWebHostEnvironment _env;
 
@@ -42,7 +38,6 @@ namespace VerichatCRM.Web.Controllers
             {
                 Overview = overview,
                 Charts = charts,
-                ChartsJson = JsonSerializer.Serialize(charts, JsonOptions),
                 IsDemo = useDemo
             });
         }

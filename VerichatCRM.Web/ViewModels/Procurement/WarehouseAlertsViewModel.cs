@@ -4,9 +4,7 @@
     {
         public List<StockAlertRow> Alerts { get; set; } = new();
         public int CriticalCount { get; set; }
-        public int LowCount { get; set; }
         public string CriticalItemName { get; set; } = string.Empty;
-        public List<StockLevelPoint> StockLevels { get; set; } = new();
     }
 
     public class StockAlertRow
@@ -25,14 +23,15 @@
         /// </summary>
         public decimal SuggestedUnitCost { get; set; }
 
-        public bool CanReorder => ReorderQty > 0 && Status != "OK";
-        public string Status { get; set; } = "OK"; // OK, Low, Critical
-    }
+        public bool CanReorder => ReorderQty > 0;
 
-    public class StockLevelPoint
-    {
-        public string Month { get; set; } = string.Empty;
-        public int Desktop { get; set; }
-        public int Mobile { get; set; }
+        /// <summary>
+        /// The alert feed's own word — "Critical" or "Warning" — carried straight
+        /// through rather than renamed. This screen used to translate Warning to
+        /// "Low", which is a priority word, so the buyer's two stock screens showed
+        /// the same shortage under two different names and the badge mapping had to
+        /// give "Low" two meanings to cope.
+        /// </summary>
+        public string Severity { get; set; } = string.Empty;
     }
 }

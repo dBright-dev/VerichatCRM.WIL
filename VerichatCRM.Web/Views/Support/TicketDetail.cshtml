@@ -30,13 +30,13 @@
     <div class="d-flex justify-content-between flex-wrap gap-2">
         <div>
             <span class="ticket-ref">@Model.TrackingNumber</span>
-            <span class="badge @PriorityBadge(Model.Priority)">@Model.Priority</span>
+            <span class="badge @Badge.For(Model.Priority)">@Model.Priority</span>
             @if (Model.EscalationLevel > 0)
             {
                 <span class="badge badge-critical">Escalated L@(Model.EscalationLevel)</span>
             }
         </div>
-        <span class="status-text @StatusClass(Model.Status)">@Model.Status</span>
+        <span class="status-text @Badge.Tone(Model.Status)">@Model.Status</span>
     </div>
     <h2 class="card-title mt-2 mb-1">@Model.Title</h2>
     <div class="vc-text-muted small">@Model.Category &middot; Opened @Utc(Model.CreatedAt)</div>
@@ -181,22 +181,6 @@
 
     string Humanize(string action) =>
         System.Text.RegularExpressions.Regex.Replace(action ?? "", "(?<=[a-z])(?=[A-Z])", " ");
-
-    string PriorityBadge(string p) => p switch
-    {
-        "Critical" => "badge-critical",
-        "High" => "badge-warning",
-        "Medium" => "badge-info",
-        _ => "badge-neutral"
-    };
-
-    string StatusClass(string s) => s switch
-    {
-        "Resolved" => "status-ok",
-        "Escalated" => "status-critical",
-        "Under Review" => "status-warning",
-        _ => ""
-    };
 }
 
 @section Scripts {

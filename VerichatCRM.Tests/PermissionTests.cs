@@ -138,8 +138,9 @@ public class StatusPageViewModelTests
     [InlineData(Roles.SalesRepresentative, "/pipeline")]
     [InlineData(Roles.ProcurementManager, "/procurement/dashboard")]
     [InlineData(Roles.FieldSupportEngineer, "/support/dashboard")]
-    [InlineData(Roles.Logistics, "/support/dashboard")]
-    [InlineData(Roles.ClientUser, "/")]
+    [InlineData(Roles.Logistics, "/logistics/dashboard")]
+    [InlineData(Roles.ClientUser, "/portal")]
+    [InlineData(Roles.MedicalStudent, "/portal")]
     public void NotFound_SignedIn_LinksToTheRolesHome(string role, string expectedUrl)
     {
         var vm = StatusPageViewModel.For(404, role, true);
@@ -148,9 +149,36 @@ public class StatusPageViewModelTests
     }
 
     [Fact]
-    public void Forbidden_ClientUser_ExplainsTheMobileApp()
+    public void EveryStaffRole_HasADifferentHome()
     {
+        // Logistics and Field Support both hold support.dashboard, so the sidebar
+        // and the login redirect sent a dispatcher to the ticket queue. Two staff
+        // roles landing on the same screen is the defect this guards.
+        var staff = new[]
+        {
+            Roles.SystemAdministrator, Roles.SalesRepresentative, Roles.ProcurementManager,
+            Roles.FieldSupportEngineer, Roles.Logistics
+        };
+        var homes = staff.Select(RoleHome.UrlFor).ToList();
+        Assert.Equal(5, homes.Distinct().Count());
+        Assert.All(homes, url => Assert.NotEqual("/", url));
+    }
+
+    [Fact]
+    public void Forbidden_ClientUser_GetsTheStaffScreenExplanation()
+    {
+        // Clients have a web portal now, so a 403 on a staff screen tells them the
+        // screen isn't theirs — it no longer turns them away to the mobile app.
         var vm = StatusPageViewModel.For(403, Roles.ClientUser, true);
+        Assert.Contains("Client User", vm.Message);
+        Assert.Equal("Back to your dashboard", vm.PrimaryLabel);
+        Assert.Equal("/portal", vm.PrimaryUrl);
+    }
+
+    [Fact]
+    public void Forbidden_UnknownRole_IsTurnedToThePublicHome()
+    {
+        var vm = StatusPageViewModel.For(403, "Warehouse temp", true);
         Assert.Contains("mobile app", vm.Message);
         Assert.Equal("Go to home", vm.PrimaryLabel);
     }

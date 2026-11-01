@@ -2,14 +2,8 @@
 @{
     ViewData["Title"] = "My Quotations";
     ViewData["Subtitle"] = $"{Model.Quotations.Count} shown · {Model.AwaitingResponse} awaiting your answer";
-
-    string Badge(string status) => status switch
-    {
-        "Sent" => "vc-badge vc-badge--accent",
-        "Accepted" => "vc-badge vc-badge--success",
-        "Rejected" or "Expired" => "vc-badge vc-badge--danger",
-        _ => "vc-badge"
-    };
+    // Badge.For, not a portal-only switch: "Expired" is the same fact here as on
+    // the asset register, so it gets the same colour.
 }
 
 <partial name="_PortalAlert" />
@@ -45,7 +39,7 @@
                     · valid until @q.ValidUntil.ToLocalTime().ToString("dd MMM yyyy")
                 </div>
             </div>
-            <span class="@Badge(q.Status)">@q.Status</span>
+            <span class="badge @Badge.For(q.Status)">@q.Status</span>
         </div>
 
         <div class="vc-quote-card__totals">

@@ -1,10 +1,19 @@
 ﻿<header class="vc-topbar">
-    <div>
-        <h1 class="vc-topbar__title">@ViewData["Title"]</h1>
-        @if (ViewData["Subtitle"] != null)
-        {
-            <p class="vc-topbar__subtitle">@ViewData["Subtitle"]</p>
-        }
+    @* Grouped with the title so the header keeps two flex children: adding the
+       toggle as a third would push the page title to the middle of the bar. *@
+    <div class="vc-topbar__lead">
+        @* Below 1024px _Sidebar is an off-canvas drawer, so without this button the
+           navigation is unreachable. aria-controls names the element it opens;
+           site.js keeps aria-expanded and body.nav-open in sync. *@
+        <button class="vc-icon-btn vc-topbar__menu" type="button" id="vc-nav-toggle"
+                aria-controls="vcSidebar" aria-expanded="false" aria-label="Open navigation">☰</button>
+        <div>
+            <h1 class="vc-topbar__title">@ViewData["Title"]</h1>
+            @if (ViewData["Subtitle"] != null)
+            {
+                <p class="vc-topbar__subtitle">@ViewData["Subtitle"]</p>
+            }
+        </div>
     </div>
     <div class="vc-topbar__actions">
         <button class="vc-icon-btn" aria-label="Notifications" type="button" id="vc-notification-bell">

@@ -2,14 +2,8 @@
 @{
     var priorities = (string[])ViewData["Priorities"]!;
     var categories = new[] { "General", "Equipment fault", "Delivery", "Billing", "Training query" };
-
-    string Badge(string status) => status switch
-    {
-        "Escalated" => "vc-badge vc-badge--danger",
-        "Resolved" or "Closed" => "vc-badge vc-badge--success",
-        "Action Taken" => "vc-badge vc-badge--accent",
-        _ => "vc-badge"
-    };
+    // Status and priority colour both come from the one mapping the staff views
+    // use; the portal used to keep a third, narrower copy of it.
 }
 
 <partial name="_PortalAlert" />
@@ -93,8 +87,8 @@
                 <div class="vc-portal-row__meta vc-portal-ref">@t.TrackingNumber · @t.Category</div>
             </div>
             <div style="display:flex;gap:8px;align-items:center;">
-                <span class="badge @(t.Priority == "Critical" ? "badge-critical" : t.Priority == "High" ? "badge-warning" : "badge-neutral")">@t.Priority</span>
-                <span class="@Badge(t.Status)">@t.Status</span>
+                <span class="badge @Badge.For(t.Priority)">@t.Priority</span>
+                <span class="badge @Badge.For(t.Status)">@t.Status</span>
             </div>
         </div>
 

@@ -41,10 +41,63 @@ namespace VerichatCRM.Web.Controllers
         public async Task<IActionResult> Dashboard()
         {
             if (!IsAuthenticated) return RedirectToAction("Login", "Account");
-            SetHeader("Procurement Dashboard", "Reorder consumables, track deliveries, monitor stock.");
-            var dashboard = await _api.GetAsync<VerichatCRM.Core.Models.Dashboard.DashboardAnalyticsResponse>("/api/dashboard/analytics")
-                ?? new VerichatCRM.Core.Models.Dashboard.DashboardAnalyticsResponse();
-            return View("~/Views/Dashboard/Index.cshtml", dashboard);
+            SetHeader("Stock Dashboard", $"What is on the shelf, what is short and what has been ordered — {DateTime.Now:dddd, d MMMM yyyy}");
+
+            // This action used to return ~/Views/Dashboard/Index.cshtml — the same
+            // workspace board every other role sees — while a real
+            // Views/Procurement/Dashboard.cshtml sat next to it unreferenced, drawing
+            // a revenue chart and an activity feed from two list properties nothing
+            // ever filled. The board below reads the stock the manager owns.
+            var products = await _products.GetAllAsync();
+            var alerts = await _alerts.GetActiveAsync();
+            var purchaseOrders = await _api.GetAsync<List<PurchaseOrderSummary>>("/api/purchaseorder")
+                ?? new List<PurchaseOrderSummary>();
+
+            var vm = new StockDashboardViewModel
+            {
+                ManagerName = HttpContext.Session.GetString("UserName") ?? "Procurement Manager",
+                CatalogItems = products.Count,
+                CategoryCount = products
+                    .Select(p => p.Category)
+                    .Where(c => !string.IsNullOrWhiteSpace(c))
+                    .Distinct()
+                    .Count(),
+                // Priced at the catalogue's own last sale price: this is a scale
+                // figure for the shelf, not a valuation, and the only cost data in
+                // the system is what a purchase order paid.
+                StockValue = products.Sum(p => p.Price * p.StockQty),
+                LowStockItems = products.Count(p => p.IsLowStock),
+                OutOfStockItems = products.Count(p => p.StockQty == 0),
+                // Ordered but not yet on the shelf. "Received" is the only status
+                // PurchaseOrderService ever writes besides the three here.
+                OpenOrders = purchaseOrders.Count(po => po.Status is "Draft" or "Submitted" or "Approved")
+            };
+
+            vm.ReorderQueue = alerts
+                .OrderBy(a => a.CurrentStock)
+                .ThenBy(a => a.ProductName)
+                .Take(5)
+                .Select(a => new ReorderRow
+                {
+                    SKU = a.SKU,
+                    ProductName = a.ProductName,
+                    CurrentStock = a.CurrentStock,
+                    Threshold = a.Threshold,
+                    Severity = a.Severity
+                })
+                .ToList();
+
+            // "Uncategorised" is a real bucket, not a filler: a product saved without
+            // a category has to be counted somewhere or the chart quietly drops stock.
+            var holdings = products
+                .GroupBy(p => string.IsNullOrWhiteSpace(p.Category) ? "Uncategorised" : p.Category.Trim())
+                .OrderByDescending(g => g.Sum(p => p.StockQty))
+                .Take(8)
+                .ToList();
+            vm.CategoryLabels = holdings.Select(g => g.Key).ToList();
+            vm.CategoryUnits = holdings.Select(g => g.Sum(p => p.StockQty)).ToList();
+
+            return View(vm);
         }
 
         [RequirePermission(Perm.ProductCatalog)]
@@ -188,12 +241,11 @@ namespace VerichatCRM.Web.Controllers
                     Supplier = LastSupplierFor(a.SKU),
                     SuggestedUnitCost = products
                         .FirstOrDefault(p => string.Equals(p.SKU, a.SKU, StringComparison.OrdinalIgnoreCase))?.Price ?? 0m,
-                    Status = a.Severity == "Critical" ? "Critical" : "Low"
+                    Severity = a.Severity
                 }).ToList()
             };
-            vm.CriticalCount = vm.Alerts.Count(a => a.Status == "Critical");
-            vm.LowCount = vm.Alerts.Count(a => a.Status == "Low");
-            vm.CriticalItemName = vm.Alerts.FirstOrDefault(a => a.Status == "Critical")?.ProductName ?? string.Empty;
+            vm.CriticalCount = vm.Alerts.Count(a => a.Severity == "Critical");
+            vm.CriticalItemName = vm.Alerts.FirstOrDefault(a => a.Severity == "Critical")?.ProductName ?? string.Empty;
             return View(vm);
         }
 

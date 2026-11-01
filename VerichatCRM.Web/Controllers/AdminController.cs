@@ -21,9 +21,13 @@ namespace VerichatCRM.Web.Controllers
         {
             var dashboard = await _api.GetAsync<DashboardAnalyticsResponse>("/api/dashboard/analytics")
                 ?? new DashboardAnalyticsResponse();
-            ViewData["Title"] = "Dashboard";
+            // Named the same as the sidebar tile and the browser tab, so the three
+            // agree on what this screen is called.
+            ViewData["Title"] = "Admin Dashboard";
             ViewData["Subtitle"] = $"System Administrator overview — {DateTime.Now:dddd, d MMMM yyyy}";
-            return View("~/Views/Dashboard/Index.cshtml", dashboard);
+            // Its own view, not Views/Dashboard/Index.cshtml: the admin board is the
+            // one that pairs the numbers with the controls that change them.
+            return View(dashboard);
         }
 
         [RequirePermission(Perm.AdminAnalytics)]
