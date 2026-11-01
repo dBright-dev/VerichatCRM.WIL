@@ -29,7 +29,7 @@ public static class CatalogueArt
         string.IsNullOrEmpty(_webRoot) || !Directory.Exists(ProductsDirectory)
             ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             : new HashSet<string>(
-                Directory.EnumerateFiles(ProductsDirectory).Select(Path.GetFileName!),
+                Directory.EnumerateFiles(ProductsDirectory).Select(name => Path.GetFileName(name)!),
                 StringComparer.OrdinalIgnoreCase));
 
     private static string ProductsDirectory =>
@@ -89,11 +89,12 @@ public static class CatalogueArt
         return ProductPhotos.Value.Contains(file) ? "/images/catalogue/products/" + file : null;
     }
 
-    private static string Slug(string category)
+    private static string Slug(string? text)
     {
-        var sb = new StringBuilder(category.Length);
+        var source = (text ?? string.Empty).Trim().ToLowerInvariant();
+        var sb = new StringBuilder(source.Length);
         var dash = false;
-        foreach (var c in category.Trim().ToLowerInvariant())
+        foreach (var c in source)
         {
             if (char.IsLetterOrDigit(c))
             {
