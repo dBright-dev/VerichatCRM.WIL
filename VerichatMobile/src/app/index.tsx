@@ -2,7 +2,7 @@ import { CRMTheme } from '../constants/crmTheme'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { getAuthRole, getAuthToken, getBiometricLoginEnabled, isStaffMobileRole, setAuthToken, subscribeAuth } from '../constants/api'
+import { getAuthRole, getAuthToken, getBiometricLoginEnabled, isStaffMobileRole, subscribeAuth } from '../constants/api'
 import { authenticateBiometric, hasUsableBiometrics } from '../constants/biometricAuth'
 import ClientHomeScreen from './clientHomescreen'
 import DashboardScreen from './DashboardScreen'
@@ -56,6 +56,9 @@ const HomeScreen = () => {
 
     void tryBiometricLogin()
     return () => { mounted = false }
+    // Mount-only deliberately: tryBiometricLogin already returns when signed in, and
+    // re-running the effect on every session change would re-prompt for biometrics.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleBiometricRetry = async () => {

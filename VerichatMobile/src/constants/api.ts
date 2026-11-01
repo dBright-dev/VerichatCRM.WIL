@@ -11,6 +11,20 @@ export const API_BASE_URL =
   (process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/+$/, '') ||
     'http://api-site.runasp.net')
 
+// That fallback is a development convenience and nothing else. A signed build that
+// resolves to a cleartext origin cannot reach the API on a phone at all — iOS refuses
+// it outright and Android does too unless the manifest opts back in — so the app would
+// install, open and then sit on a spinner with nothing to explain itself. Throwing here
+// means the first launch of a misconfigured release build is a crash that names the
+// setting, which is a far shorter route to the fix than an unexplained empty screen.
+// Dev and the static web export are deliberately unaffected: both can reach http.
+if (!__DEV__ && Platform.OS !== 'web' && API_BASE_URL.startsWith('http://')) {
+  throw new Error(
+    `Release builds need EXPO_PUBLIC_API_URL pointing at an https API origin; got ${API_BASE_URL}. ` +
+    'See "Publish a release" in VerichatMobile/README.md.'
+  )
+}
+
 const TOKEN_KEY = 'verichat.auth.token'
 const BIOMETRIC_LOGIN_KEY = 'verichat.auth.biometric-login'
 const CACHE_PREFIX = 'verichat.api.cache.'
