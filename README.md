@@ -13,6 +13,9 @@ The checked-in publish profiles list these deployment targets:
 
 These links come from the Web Deploy profiles in `VerichatCRM.Web/Properties/PublishProfiles` and `VerichatCRM.API/Properties/PublishProfiles`. They could not be live-checked from the current development environment, so availability and the deployed version are unverified. The `/health` endpoint checks that the API process is running; `/api/health` also checks database readiness.
 
+## UI/UX Web Application
+
+
 ## Architecture
 
 ```mermaid
@@ -38,7 +41,7 @@ The API uses .NET 10, ASP.NET Core controllers, EF Core, and SQL Server. The mob
 
 ## Implemented workflows
 
-- Staff authenticate through the API; the web app stores the JWT in its server-side session. Mobile stores its token in SecureStore on native platforms and browser local storage on web.
+- Staff authenticate through the API; the web app stores the JWT in its server-side session. Mobile stores its token in SecureStore on native platforms and browser local storage on the web.
 - Role permissions are checked in the API and the web application. Self-registration cannot create an administrator. Client mobile registration creates a corresponding CRM directory record.
 - Staff dashboards and analytics query current clients, inquiries, orders, tickets, products, assets, and deliveries. Order totals are labelled as order value; the database does not contain payment or recognized-revenue records.
 - The mobile catalogue loads products from the API. Checkout sends a multi-line order; the server uses database prices, validates quantities and stock, updates stock, and associates the order with the signed-in client.
@@ -104,7 +107,7 @@ dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<your SQL Server 
 
 For a hosted API, set `Jwt__Key`, `ConnectionStrings__DefaultConnection`, and `Cors__AllowedOrigins__0` in the hosting provider's secret/configuration store. The CORS origin must be the exact HTTPS origin serving a browser client; do not add a trailing path. The web app's API target is configured by `ApiBaseUrl`. The mobile app accepts `EXPO_PUBLIC_API_URL` and otherwise uses the configured Verichat API host.
 
-> A signing key was previously present in repository configuration. Removing it from current files does not remove it from Git history. Rotate the key in every running environment and invalidate tokens signed with the old key before deployment.
+> A signing key was previously present in the repository configuration. Removing it from current files does not remove it from Git history. Rotate the key in every running environment and invalidate tokens signed with the old key before deployment.
 
 EF Core migration-script generation during publish uses `DesignTimeAppDbContextFactory` and does not start the API host, so publish can build its database script without a JWT secret. The running API still requires both the JWT key and a real database connection string from its environment or secret store.
 
@@ -116,7 +119,7 @@ In PowerShell window 1:
 dotnet run --project VerichatCRM.API --launch-profile https
 ```
 
-The Development HTTPS URL is `https://localhost:7076`. On startup the API applies EF Core migrations, seeds a small sample client/product catalogue when those tables are empty, and creates the first administrator only when bootstrap settings are supplied.
+The Development HTTPS URL is `https://localhost:7076`. On startup, the API applies EF Core migrations, seeds a small sample client/product catalogue when those tables are empty, and creates the first administrator only when bootstrap settings are supplied.
 
 ### Start the staff web application
 
