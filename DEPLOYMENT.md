@@ -10,7 +10,8 @@ Nothing in this file was executed against the hosting provider. The steps that t
 | --- | --- | --- |
 | Staff web app (`VerichatCRM.Web`) | `verichat-crm-web.runasp.net` — Monster ASP shared hosting, publish profile `site94515-WebDeploy.pubxml` | Razor MVC. Talks to the API server-side and passes the API base URL to page script. |
 | API (`VerichatCRM.API`) | **`http://api-site.runasp.net/`** — Monster ASP shared hosting, publish profile `site94518-WebDeploy.pubxml` (the duplicate `…WebDeploy1` / `…WebDeploy2` profiles were deleted on 1 Nov; `verichat-crm-api.runasp.net` answers identically, so both names reach either the same site or two copies of the same broken deployment — the panel is the only place that can tell them apart) | REST + SignalR hub at `/hubs/notifications`. **Not serving:** every path returns HTTP 500.30, including `/api/health/live` — see §7.1. `https://` on the same host does not connect at all: no certificate is bound. |
-| Database | `databaseasp.net` (Monster ASP shared SQL Server) | Reached only by the API. The web app holds no connection string. |
+| Backup API (`VerichatCRM.API`, second deployment) | `https://verichat-api-aqcbgydhhbgbgha5.eastus-01.azurewebsites.net` — Azure App Service, the target of `BackupApiBaseUrl` | **Serving, but `Degraded`:** it starts and has its `Jwt__Key` and connection string set, then fails every data route because it has no database it can reach (§7.2). Not a working safety net yet. |
+| Database | `databaseasp.net` (Monster ASP shared SQL Server) | Reached only by the API, and only by an API running *inside* that hosting family: the published name resolves to the private address `10.0.0.23`, so no connection string naming it works from Azure (§7.2). The web app holds no connection string. |
 | Mobile client (`VerichatMobile`) | EAS builds, installed on devices | Reads `EXPO_PUBLIC_API_URL` at bundle time. |
 
 Publish profiles (`*.pubxml`) are git-ignored and none of them carries a `Password` element, so nothing new leaks there.
@@ -272,6 +273,59 @@ empty database. If that database exists but holds no tables — the hosted case,
 the panel created it — `/api/health` still reports Healthy, because its database check
 only proves a connection opens. The fix downgrades this one warning to a log line, so the
 migrations run; the snapshot drift itself is still open and is what §8 is about.
+
+### 7.2 The Azure copy starts, and cannot reach any database
+
+Re-measured 1 Nov 2026 at 21:13 UTC against
+`https://verichat-api-aqcbgydhhbgbgha5.eastus-01.azurewebsites.net/api/health`:
+
+```json
+{"status":"Degraded", "jwt":{"status":"Healthy","detail":"Jwt:Key present."},
+ "database":{"status":"Unhealthy","detail":"CanConnectAsync returned false. Check connection string / firewall."},
+ "environment":null, "latencyMs":13926}
+```
+
+Three things follow from that payload, and the first two are good news that is easy to miss
+because the overall status reads as a failure.
+
+**The Azure app is configured; the primary is not.** It answers as JSON, so `Program.cs` got
+past all three startup checks (§7.1), which means `Jwt__Key` **and**
+`ConnectionStrings:DefaultConnection` are both set on that App Service — a blank connection
+string throws before the first request and would show 500.30, exactly like
+`api-site.runasp.net`. The remaining failure is one setting's *value*, not a missing setting.
+
+**`environment: null` is not a misconfiguration.** `HealthController.cs:89` reads the raw
+`ASPNETCORE_ENVIRONMENT` variable, which Azure never sets — the framework supplies
+`Production` as a default without writing the variable. So the payload shows null while the
+app really is running as Production, which is why the `Encrypt=False` rejection at
+`Program.cs:41` is armed on that host. Do not read that field as "no environment".
+
+**The database cannot be reached from Azure, by construction.** The published name for the
+Monster ASP SQL Server, `db70543.databaseasp.net`, resolves to **`10.0.0.23`** — an RFC 1918
+private address — and TCP 1433 against it fails from outside that network (re-verified;
+`Test-NetConnection` reports `TcpTestSucceeded : False`). A DNS record that returns a private
+address is only meaningful to machines already inside the publisher's network. The API is
+normally colocated there, which is precisely why this hosting pair was chosen — but it means
+**no connection string naming that server can ever work on Azure**, so the App Service copy
+needs its own database (Azure SQL plus §8's chain) or it stays `Degraded` permanently. Setting
+`Jwt__Key` there was necessary and is not sufficient.
+
+`latencyMs` is not a health signal either, and should not be compared between probes: the same
+endpoint returned 54 ms and 13,926 ms within minutes of each other. What *is* informative is
+which branch produced the text: `HealthController.cs:37` is the "the call completed and
+answered `false`" path, while `:43` would have surfaced the base exception message instead.
+So the payload tells you the check ran and was refused, not why — the reason is on the host,
+where `:42` logs it as `Health database check failed.`
+
+**The failover is therefore dead at both ends.** `ApiFallbackHandler.cs:29` treats a 500 from
+the primary as transient and retries it against `BackupApiBaseUrl` — this Azure copy. Today
+the primary returns 500.30 for every path and the backup has no reachable data, so the retry
+cannot succeed; it only doubles the latency of a failing request and makes the web app's error
+page report whichever of the two came back last. The safety net becomes a safety net when the
+backup has a database. Until then, either give the App Service its own Azure SQL database, or
+blank `BackupApiBaseUrl` in the deployed web configuration so there is one failure to read
+instead of two — the same reasoning behind §9's warning about the design-time factory, and the
+reason the web project's `appsettings.Development.json` already ships that key empty.
 
 ## 8. Pre-flight checks before migrating an existing database
 
