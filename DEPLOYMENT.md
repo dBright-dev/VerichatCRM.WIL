@@ -421,3 +421,45 @@ the `CREATE TABLE` lines for the four tables the snapshot has never seen — and
 every remaining line, because the differ's other blind spot is a table that is *in* the
 snapshot but was never emitted by any migration, which is exactly how `TicketActivity`
 and `DeliveryStatusUpdate` went missing for a whole release.
+
+### 8.3 The catalogue seed
+
+`Database/seed-catalogue.sql` is the 61-line public catalogue behind `/gallery`,
+the client portal and the procurement list. It is separate from the schema chain
+on purpose — migrations change the shape of `Products`, this changes its contents
+— and it is upsert-by-SKU, so it is re-runnable.
+
+```powershell
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d VerichatCRM -b -i Database\seed-catalogue.sql
+```
+
+Applied and verified against the local database on 2026-11-01: the first run
+re-filed six legacy categories and upserted 57 rows to a total of 61 (40 clinical,
+14 education and research, 7 mining and industrial); the second run reported
+`0 rows touched`, and a price and stock quantity deliberately changed on
+`VC-CN-101` between the two runs survived both. That is the property the script
+is designed around: a matched row has its name and category reconciled, but never
+its price, count or threshold, because those are live data once the warehouse is
+transacting and a re-seed must not reset them.
+
+**Read the header before running it anywhere real.** The rows were written from
+the sectors the company publishes, not from a stock count, and the sales desk has
+not signed them off. `Price` is indicative and the schema has no currency column
+while the staff views print `R`, so these numbers are not a price list yet.
+
+Two things the script assumes, both worth checking on a database you did not
+create yourself:
+
+- **Categories are validated, not free text.** `CreateProductRequestValidator`
+  accepts only the eight values in `ProductCategories`, and the vocabulary grew
+  from five to eight in this pass — `Clinical Consumables`, `Mining & Industrial`
+  and `Teaching & Simulation` were added because the company sells into all three
+  and had no name for them. Rows written under the old `Clinical` / `Rehab` /
+  `Education` labels would have been unsaveable from the product form, so step 1
+  re-files them. The script ends by failing loudly if any row is still outside the
+  list; adding a ninth category means code, seed and pick-list together.
+- **`ImageUrl` stays NULL.** Product photographs are found by filename —
+  `wwwroot/images/catalogue/products/<product name, slugged>.jpg`, with the
+  category image standing in — rather than stored in the row. An absolute URL in
+  the database would only be true on the host it was written for, and the mobile
+  app loads `ImageUrl` directly.

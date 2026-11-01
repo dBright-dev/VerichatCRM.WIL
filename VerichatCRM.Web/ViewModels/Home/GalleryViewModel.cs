@@ -77,9 +77,15 @@ public class GalleryViewModel
         // A category is not a sector, so a row like "Home Care & Rehabilitation" reaches
         // clinical rather than a fourth group, and only a genuinely blank category falls
         // through to the honest "Also stocked" set.
+        //
+        // The photograph is tried per item first, then per category: an uploaded ImageUrl
+        // always wins, a catalogue photograph named after the product comes next, and a
+        // category image is what an item with no photo of its own is filed under.
         var tiles = products
             .Select(p => (Sector: SectorFor(p.Category), Item: Tile(p.Sku, p.Name, p.Category,
-                string.IsNullOrWhiteSpace(p.ImageUrl) ? CatalogueArt.ImageFor(p.Category) : p.ImageUrl)))
+                string.IsNullOrWhiteSpace(p.ImageUrl)
+                    ? CatalogueArt.ProductImageFor(p.Name) ?? CatalogueArt.ImageFor(p.Category)
+                    : p.ImageUrl)))
             .ToList();
 
         var groups = LandingContent.Sectors

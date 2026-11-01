@@ -52,6 +52,10 @@ builder.Services.AddScoped<IPublicCatalogApiService, PublicCatalogApiService>();
 
 var app = builder.Build();
 
+// The catalogue's per-product photographs are found by looking at the files actually
+// served from wwwroot, so a tile never links to a picture that is not there.
+CatalogueArt.UseWebRoot(app.Environment.WebRootPath);
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {

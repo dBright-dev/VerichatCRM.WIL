@@ -46,6 +46,11 @@
                         {
                             <img src="@p.ImageUrl" alt="@p.ProductName" onerror="this.style.display='none'; this.parentElement.classList.add('placeholder')" />
                         }
+                        else if (CatalogueArt.ProductImageFor(p.ProductName) is { } photo)
+                        {
+                            // The item's own photograph, found by name on disk - see CatalogueArt.
+                            <img src="@photo" alt="@p.ProductName" onerror="this.style.display='none'; this.parentElement.classList.add('placeholder')" />
+                        }
                         else if (CatalogueArt.ImageFor(p.Category) is { } art)
                         {
                             // Stands in for the grey box most cards would otherwise show.

@@ -74,14 +74,20 @@ namespace VerichatCRM.Infrastructure.Data
 
             if (!await context.Products.AnyAsync())
             {
+                // Six rows, not the catalogue. The full stock list is Database/seed-catalogue.sql;
+                // this subset exists so a brand-new database has something to render on day one.
+                // Categories come from ProductCategories because the API validator refuses any
+                // other value, and these rows used to be filed as "Clinical", "Rehab" and
+                // "Education" - which meant a seeded product could not be saved again from the
+                // product form without first changing its category.
                 var products = new List<Product>
                 {
-                    new() { SKU = "VC-AM-001", ProductName = "Anoscopy Model - Adult Medium", Category = "Clinical", Price = 12500m, StockQty = 20, LowStockThreshold = 5 },
-                    new() { SKU = "VC-CM-003", ProductName = "Crutch - Adjustable Forearm", Category = "Rehab", Price = 1100m, StockQty = 8, LowStockThreshold = 10 },
-                    new() { SKU = "VC-TB-005", ProductName = "IV Giving Set - Sterile", Category = "Clinical", Price = 28m, StockQty = 3500, LowStockThreshold = 2000 },
-                    new() { SKU = "VC-LB-006", ProductName = "Lab Coat - White Unisex", Category = "Education", Price = 380m, StockQty = 24, LowStockThreshold = 15 },
-                    new() { SKU = "VC-SM-013", ProductName = "Surgical Mask - Type IIR Box 50", Category = "Clinical", Price = 180m, StockQty = 180, LowStockThreshold = 500 },
-                    new() { SKU = "VC-WA-015", ProductName = "Wheelchair - Lightweight Aluminium", Category = "Rehab", Price = 8900m, StockQty = 22, LowStockThreshold = 25 }
+                    new() { SKU = "VC-AM-001", ProductName = "Anoscopy Model - Adult Medium", Category = ProductCategories.TeachingSimulation, Price = 12500m, StockQty = 20, LowStockThreshold = 5 },
+                    new() { SKU = "VC-CM-003", ProductName = "Crutch - Adjustable Forearm", Category = ProductCategories.HomeCare, Price = 1100m, StockQty = 8, LowStockThreshold = 10 },
+                    new() { SKU = "VC-TB-005", ProductName = "IV Giving Set - Sterile", Category = ProductCategories.ClinicalConsumables, Price = 28m, StockQty = 3500, LowStockThreshold = 2000 },
+                    new() { SKU = "VC-LB-006", ProductName = "Lab Coat - White Unisex", Category = ProductCategories.PPE, Price = 380m, StockQty = 24, LowStockThreshold = 15 },
+                    new() { SKU = "VC-SM-013", ProductName = "Surgical Mask - Type IIR Box 50", Category = ProductCategories.ClinicalConsumables, Price = 180m, StockQty = 180, LowStockThreshold = 500 },
+                    new() { SKU = "VC-WA-015", ProductName = "Wheelchair - Lightweight Aluminium", Category = ProductCategories.HomeCare, Price = 8900m, StockQty = 22, LowStockThreshold = 25 }
                 };
 
                 context.Products.AddRange(products);

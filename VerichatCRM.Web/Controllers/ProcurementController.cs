@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using VerichatCRM.Core.Entities;
 using VerichatCRM.Web.Authorization;
 using VerichatCRM.Web.Models.Procurement;
 using VerichatCRM.Web.Services.Interfaces;
@@ -205,6 +206,10 @@ namespace VerichatCRM.Web.Controllers
                 "Products saved here are published to the catalogue and the mobile app.");
 
             ViewData["IsEdit"] = model != null && !string.IsNullOrEmpty(model.SKU);
+            // The API rejects anything outside this list, so the form has to offer it.
+            // It used to be read from a ?categories= query string that no link ever set,
+            // which left the pick-list empty and the hint promising free text.
+            ViewData["Categories"] = ProductCategories.All;
             return View("ProductForm", model ?? new ProductViewModel());
         }
 
