@@ -26,7 +26,13 @@ internal sealed class FakeUserRepository : IUserRepository
     public Task<IEnumerable<User>> GetByApprovalStatusAsync(string approvalStatus) =>
         Task.FromResult(Users.Where(u => u.ApprovalStatus == approvalStatus).ToList().AsEnumerable());
 
-    public Task<User?> GetByResetTokenAsync(string token) => Task.FromResult<User?>(null);
+    // Mirrors SQL's NULL-vs-value comparison: an account with no token outstanding
+    // never matches, whatever the caller searches for.
+    public Task<User?> GetByResetTokenAsync(string tokenHash) =>
+        Task.FromResult(Users.FirstOrDefault(u => u.PasswordResetToken == tokenHash));
+
+    public Task<User?> GetByVerificationTokenAsync(string tokenHash) =>
+        Task.FromResult(Users.FirstOrDefault(u => u.EmailVerificationToken == tokenHash));
 
     public Task<bool> EmailExistsAsync(string email) =>
         Task.FromResult(Users.Any(u => u.Email.Equals(email, StringComparison.OrdinalIgnoreCase)));

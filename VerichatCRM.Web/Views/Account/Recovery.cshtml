@@ -1,0 +1,60 @@
+﻿@model VerichatCRM.Web.Models.Auth.RecoveryNoticeViewModel
+@{
+    ViewData["Title"] = Model.Title;
+    Layout = "_AuthLayout";
+}
+
+<section class="vc-auth">
+    <aside class="vc-auth-side">
+        <div class="vc-auth-brand">
+            <img class="vc-auth-logo" src="~/images/logo.png" width="40" height="40" alt="Verichat logo" />
+            <div>
+                <div class="vc-auth-brand-name">Verichat</div>
+                <div class="vc-auth-brand-sub">MEDICAL PROCUREMENT</div>
+            </div>
+        </div>
+        <h2 class="vc-auth-headline">Nothing about<br />your account changed.</h2>
+        <p class="vc-auth-lede">Recovery screens only ever do the one thing they say they do. Asking for a link, or clicking an old one, cannot reveal or move anything you did not already hold.</p>
+        <ul class="vc-auth-points">
+            <li><span class="vc-check">✓</span> An unused reset link leaves the password exactly as it was</li>
+            <li><span class="vc-check">✓</span> Confirming an address grants no access by itself</li>
+            <li><span class="vc-check">✓</span> Approval is still what opens an account</li>
+        </ul>
+    </aside>
+
+    <div class="vc-auth-main">
+        <div class="vc-auth-card">
+            @if (Model.IsProblem)
+            {
+                <div class="alert-banner" role="alert">@Model.Title</div>
+            }
+            else
+            {
+                <div class="alert-banner alert-banner--success" role="status">@Model.Title</div>
+            }
+
+            <h1 class="vc-auth-title">
+                @(Model.IsProblem ? "It did not go through" : "Done")
+            </h1>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Email))
+            {
+                <p class="vc-auth-sub">@Model.Email</p>
+            }
+
+            <p>@Model.Body</p>
+
+            @if (Model.IsProblem)
+            {
+                <p>If this keeps happening, the address may not have an account yet, or the link you used arrived from an earlier request. Start again and click the newest link.</p>
+                <a class="btn btn-primary btn-block" asp-action="ForgotPassword">Ask for another link</a>
+                <p class="vc-auth-switch">Or <a asp-action="Login">sign in</a> if you have your password.</p>
+            }
+            else
+            {
+                <a class="btn btn-primary btn-block" asp-action="Login">Sign in</a>
+                <p class="vc-auth-switch">No account yet? <a asp-action="Register">Create one</a></p>
+            }
+        </div>
+    </div>
+</section>

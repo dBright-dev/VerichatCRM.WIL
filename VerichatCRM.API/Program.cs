@@ -96,6 +96,9 @@ builder.Services.AddScoped<IQuotationRepository, QuotationRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 // The reviewer's half of the same gate AuthService applies to the applicant.
 builder.Services.AddScoped<IAccountApprovalService, AccountApprovalService>();
+// Password resets and email confirmations: the two flows a person uses when the
+// credentials they have do not work, before and after approval.
+builder.Services.AddScoped<IAccountRecoveryService, AccountRecoveryService>();
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<IProductService, ProductService>();
     builder.Services.AddScoped<IInquiryService, InquiryService>();

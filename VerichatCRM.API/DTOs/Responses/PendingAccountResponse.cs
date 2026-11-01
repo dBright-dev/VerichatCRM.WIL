@@ -22,6 +22,15 @@ namespace VerichatCRM.API.DTOs.Responses
         public DateTime CreatedAt { get; set; }
         public bool IsStaffRole { get; set; }
 
+        /// <summary>
+        /// Whether the applicant clicked the link sent to the address on this row.
+        /// It is not proof of who they are - the address is still self-declared and a
+        /// person can confirm a mailbox they control for the occasion - but it does
+        /// mean the approval or decline notice will reach them, and an applicant who
+        /// never answers their own email is a different proposition to approve.
+        /// </summary>
+        public bool EmailVerified { get; set; }
+
         /// <summary>Whole days this application has been waiting, for the reviewer's ordering.</summary>
         public int DaysWaiting => Math.Max(0, (int)(DateTime.UtcNow - CreatedAt).TotalDays);
     }

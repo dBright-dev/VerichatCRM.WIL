@@ -109,6 +109,24 @@
     margin: 1.4rem 0 0;
 }
 
+/* The sentence that explains what the form will and will not do - e.g. that a
+   reset request says nothing about whether the address is registered. Quieter
+   than the field copy because it is about the system, not about what to type. */
+.vc-auth-note {
+    font-size: .78rem;
+    line-height: 1.5;
+    color: var(--vc-text-muted);
+    border-left: 2px solid var(--vc-border);
+    padding: .1rem 0 .1rem .7rem;
+    margin: 1.1rem 0 0;
+}
+
+/* The notice screen leads with a banner instead of a heading, so it needs the
+   card's own rhythm rather than the dashboard's page-level margins. */
+.vc-auth-card .alert-banner {
+    margin: 0 0 1.2rem;
+}
+
 /* The validation summary sits above the fields; without this it renders as
    unstyled text and reads as part of the form's copy. */
 .vc-auth-card .text-critical ul {

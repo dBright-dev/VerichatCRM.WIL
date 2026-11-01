@@ -37,6 +37,7 @@ namespace VerichatCRM.API.Services
                     Email = u.Email,
                     Role = u.Role,
                     CreatedAt = u.CreatedAt,
+                    EmailVerified = u.EmailVerified,
                     IsStaffRole = !UserRoles.ClientAudience.Contains(u.Role)
                 })
                 .ToList();

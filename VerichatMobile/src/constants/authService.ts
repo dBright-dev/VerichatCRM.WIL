@@ -2,10 +2,13 @@
 // POST /api/auth/login            { email, password }   → { success, token, user }
 // POST /api/auth/register         staff application     → { success, approvalStatus, user } (no token)
 // POST /api/mobile/register       client application    → { success, approvalStatus, user } (no token)
+// POST /api/auth/forgot-password  { email }              → { success, message } (same answer either way)
+// POST /api/auth/reset-password   { token, newPassword } → { success, message } | 400 with the reason
 //
 // Sign-up on either path is an application, not access: the account is written down
 // and waits for a Verichat employee to approve it, so no token comes back and the
 // caller has to say so. Signing in is refused with the same wording until then.
+// A password reset does not change that - it proves the mailbox, not the applicant.
 import { api, setAuthToken, STAFF_MOBILE_ROLES } from './api'
 
 export type AuthUser = {
@@ -87,4 +90,33 @@ export async function registerStaff(payload: {
 /** Sign out — clears the stored JWT. */
 export function logout() {
   setAuthToken(null)
+}
+
+/**
+ * Asks the API for a reset link. Returns the server's sentence, which is the same
+ * whether or not the address has an account - the endpoint is built that way so the
+ * screen cannot be used to find out who registered.
+ */
+export async function forgotPassword(email: string): Promise<string> {
+  const data = await api<AuthResponse>('/api/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
+  return data.message || 'If that address has a Verichat account, a reset link is on its way.'
+}
+
+/**
+ * Trades a reset link for a new password.
+ *
+ * The link itself opens the website, because a mail client can only hand a token to
+ * a browser; this screen is the backup for somebody who has the code and no browser
+ * to hand, which is why the API takes the token in a body. A used or expired code
+ * comes back as a 400, and `api()` throws with the server's reason.
+ */
+export async function resetPassword(token: string, newPassword: string): Promise<string> {
+  const data = await api<AuthResponse>('/api/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, newPassword }),
+  })
+  return data.message || 'Your password is set.'
 }

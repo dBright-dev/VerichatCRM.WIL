@@ -16,7 +16,9 @@ import { fetchSettings } from '@/constants/settingsService';
 SplashScreen.preventAutoHideAsync();
 
 /** Routes that are only reachable while signed out. */
-const AUTH_ROUTES = ['clientLogin', 'adminLogin', 'newUserAccount'];
+// The recovery screens belong here: the whole reason a person needs one is that they
+// cannot sign in, and the guard below would otherwise bounce them to a login page.
+const AUTH_ROUTES = ['clientLogin', 'adminLogin', 'newUserAccount', 'forgotPassword', 'resetPassword'];
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -81,6 +83,8 @@ export default function TabLayout() {
             <Stack.Screen name="clientLogin" />
             <Stack.Screen name="adminLogin" />
             <Stack.Screen name="newUserAccount" />
+            <Stack.Screen name="forgotPassword" />
+            <Stack.Screen name="resetPassword" />
           </Stack>
         )}
       </ThemeProvider>

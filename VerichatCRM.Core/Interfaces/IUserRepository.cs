@@ -10,7 +10,14 @@ namespace VerichatCRM.Core.Interfaces
         Task<User?> GetByEmailAsync(string email);
         Task<User?> GetByIdAsync(string userId);
         Task<IEnumerable<User>> GetAllAsync();
-        Task<User?> GetByResetTokenAsync(string token);
+        /// <summary>
+        /// The account holding this <b>hashed</b> reset token. Callers hash what the
+        /// user presented (see <c>RecoveryToken.Hash</c>) because the plaintext only
+        /// ever exists in the email and in the link.
+        /// </summary>
+        Task<User?> GetByResetTokenAsync(string tokenHash);
+        /// <summary>The account holding this <b>hashed</b> email-confirmation token.</summary>
+        Task<User?> GetByVerificationTokenAsync(string tokenHash);
         /// <summary>
         /// Accounts sitting in one approval state, oldest first: the queue an
         /// employee works down. Only the approval gate reads it, so the ordering is

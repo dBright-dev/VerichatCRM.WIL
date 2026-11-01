@@ -60,6 +60,14 @@ namespace VerichatCRM.Web.Services.Interfaces
         /// </summary>
         public bool IsStaffRole { get; set; }
 
+        /// <summary>
+        /// Whether the applicant clicked the link sent to this address. It is not
+        /// identity proof, but it is the difference between an applicant who answers
+        /// their own email - and so will read the approval or the decline - and one
+        /// who may never see either.
+        /// </summary>
+        public bool EmailVerified { get; set; }
+
         public int DaysWaiting => Math.Max(0, (int)(DateTime.UtcNow - CreatedAt).TotalDays);
     }
 

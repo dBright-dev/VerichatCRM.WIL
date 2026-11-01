@@ -106,7 +106,8 @@ namespace VerichatCRM.API.Services
             return new AuthResponse
             {
                 Success = true,
-                Message = "Application received. A Verichat employee will review it, and you can sign in once it is approved.",
+                Message = "Application received. A Verichat employee will review it, and you can sign in once it is approved. " +
+                          "Check your inbox for a link to confirm this email address.",
                 User = Map(user),
                 ApprovalStatus = user.ApprovalStatus
             };
@@ -117,7 +118,8 @@ namespace VerichatCRM.API.Services
             UserId = u.UserId,
             DisplayName = u.DisplayName,
             Email = u.Email,
-            Role = u.Role
+            Role = u.Role,
+            EmailVerified = u.EmailVerified
         };
     }
 }

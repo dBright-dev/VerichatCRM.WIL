@@ -107,6 +107,10 @@ const AdminLoginScreen = () => {
           <TouchableOpacity style={styles.button} onPress={handleSSOLogin}>
             <Text style={styles.button_text}>Log in with SSO</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity style={styles.link} onPress={() => router.push('/forgotPassword')}>
+            <Text style={styles.link_text}>Forgotten the password?</Text>
+          </TouchableOpacity>
         </View>
         </View>
       </ScrollView>
@@ -196,5 +200,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#ffffff',
+  },
+  // A quieter text action than the two buttons above it: staff who forgot a
+  // password need the same recovery flow as clients, but asking for it is not the
+  // primary job of this screen.
+  link: {
+    alignItems: 'center',
+    marginTop: 14,
+  },
+  link_text: {
+    fontSize: 13,
+    color: '#e6e6e6',
+    fontWeight: '600',
   },
 })

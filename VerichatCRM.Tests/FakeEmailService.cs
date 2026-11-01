@@ -18,6 +18,9 @@ internal sealed class FakeEmailService : IEmailService
     public Task SendPasswordResetEmailAsync(string toEmail, string displayName, string resetLink) =>
         SendAsync(toEmail, "Reset your Verichat password", resetLink);
 
+    public Task SendEmailConfirmationAsync(string toEmail, string displayName, string confirmationLink) =>
+        SendAsync(toEmail, "Confirm your email address with Verichat", confirmationLink);
+
     public Task SendNotificationEmailAsync(string toEmail, string subject, string message) =>
         SendAsync(toEmail, subject, message);
 

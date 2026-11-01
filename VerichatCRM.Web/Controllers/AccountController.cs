@@ -123,6 +123,99 @@ namespace VerichatCRM.Web.Controllers
             return View("Review", AccountReviewViewModel.From(result, request.Email));
         }
 
+        /// <summary>
+        /// "I cannot get in" - the forgotten-password form. Anonymous, like sign-in
+        /// itself; the whole point is that the person cannot authenticate right now.
+        /// </summary>
+        [HttpGet]
+        public IActionResult ForgotPassword() => View(new ForgotPasswordRequest());
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request)
+        {
+            if (!ModelState.IsValid) return View(request);
+
+            var result = await _auth.ForgotPasswordAsync(request.Email);
+
+            // One screen for both outcomes, because the API gives one sentence for
+            // both outcomes: whether or not the address has an account, the next thing
+            // this person can do is the same - wait for a link, or sign up if they
+            // never had an account. Anything more specific would turn a help screen
+            // into a directory of who registered.
+            return View("Recovery", RecoveryNoticeViewModel.Worked(
+                "Ask answered",
+                RefusedWith(result, "If that address has a Verichat account, a reset link is on its way. " +
+                                    "It works once and expires in an hour."),
+                request.Email));
+        }
+
+        /// <summary>
+        /// The page the emailed reset link opens. The token arrives in the query
+        /// string because that is all a mail client can do with a link; it is then
+        /// posted on as a hidden field so it never appears in a form the user has to
+        /// read.
+        /// </summary>
+        [HttpGet]
+        public IActionResult ResetPassword(string? token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                return View("Recovery", RecoveryNoticeViewModel.Problem(
+                    "That link was cut short",
+                    "A reset link carries a long code, and some mail clients break it when they wrap the line. " +
+                    "Request a fresh link and click it in one go."));
+
+            return View(new ResetPasswordRequest { Token = token });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        {
+            if (!ModelState.IsValid) return View(request);
+
+            var result = await _auth.ResetPasswordAsync(request);
+
+            if (!result.Success)
+            {
+                // An expired or already-used token is worth the API's exact words,
+                // because the fix is to ask again rather than to try the same link a
+                // second time.
+                ModelState.AddModelError("", RefusedWith(result,
+                    "That reset link did not work. Request a new one and try again."));
+                return View(request);
+            }
+
+            // A password reset does not approve an application, and the message the
+            // API returns says which of the two the person now has.
+            return View("Recovery", result.ApprovalStatus == UserApproval.Pending
+                ? RecoveryNoticeViewModel.Worked("Password changed, still in the queue", result.Message)
+                : RecoveryNoticeViewModel.Worked("Password changed", result.Message));
+        }
+
+        /// <summary>
+        /// The page an email-confirmation link opens. It acts on the token immediately
+        /// rather than showing a button: the click is the confirmation, and asking the
+        /// person to submit a form they did not intend to load adds a step that proves
+        /// nothing extra.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> VerifyEmail(string? token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                return View("Recovery", RecoveryNoticeViewModel.Problem(
+                    "That link was cut short",
+                    "A confirmation link carries a long code, and some mail clients break it when they wrap the line. " +
+                    "Sign in and ask for a new one."));
+
+            var result = await _auth.ConfirmEmailAsync(token);
+
+            return result.Success
+                ? View("Recovery", RecoveryNoticeViewModel.Worked("Address confirmed", result.Message))
+                : View("Recovery", RecoveryNoticeViewModel.Problem("This link did not work", RefusedWith(result,
+                    "That confirmation link is not one we still accept. Sign in and ask for a new one.")));
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Logout()

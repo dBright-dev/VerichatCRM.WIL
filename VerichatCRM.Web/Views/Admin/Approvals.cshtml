@@ -29,7 +29,7 @@
     {
         <table class="data-table">
             <thead>
-                <tr><th>Applicant</th><th>Asked for</th><th>Waiting</th><th>Decide</th></tr>
+                <tr><th>Applicant</th><th>Asked for</th><th>Address</th><th>Waiting</th><th>Decide</th></tr>
             </thead>
             <tbody>
                 @foreach (var a in Model)
@@ -50,6 +50,21 @@
                                     @(a.IsStaffRole ? "Console access" : "Client portal")
                                 </span>
                             </div>
+                        </td>
+                        <td>
+                            @* Confirmed means the applicant clicked the link sent here,
+                               so the approval or the decline will actually reach them and
+                               somebody read that mail. Not confirmed is not a refusal - it
+                               is a reason to expect silence after approving, and a reason
+                               to be careful with a staff role. *@
+                            @if (a.EmailVerified)
+                            {
+                                <span class="badge badge-success">Confirmed</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-info">Not confirmed</span>
+                            }
                         </td>
                         <td>
                             @if (a.DaysWaiting == 0)

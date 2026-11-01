@@ -97,6 +97,10 @@ const ClientLoginScreen = () => {
             <Text style={styles.button_text}>Sign In</Text>
           </AnimatedButton>
 
+          <TouchableOpacity style={styles.back} onPress={() => router.push('/forgotPassword')}>
+            <Text style={styles.back_text}>Forgotten the password?</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.button} onPress={() => router.replace('/newUserAccount')}>
             <Text style={styles.button_text}>Create account</Text>
           </TouchableOpacity>

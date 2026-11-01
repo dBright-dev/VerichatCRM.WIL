@@ -38,7 +38,22 @@ namespace VerichatCRM.Infrastructure.Data.External
                 + "<p>Hi " + (string.IsNullOrWhiteSpace(displayName) ? "there" : displayName) + ",</p>"
                 + "<p>We received a request to reset your Verichat Quality Projects password.</p>"
                 + "<p><a href=\"" + resetLink + "\">Click here to choose a new password</a></p>"
-                + "<p>This link expires in 1 hour. If you did not request a reset you can ignore this email.</p>";
+                + "<p>This link works once, expires in 1 hour, and is only valid for the account it was sent to. "
+                + "If you did not request a reset you can ignore this email - your password stays as it is.</p>";
+
+            return SendAsync(toEmail, subject, body);
+        }
+
+        public Task SendEmailConfirmationAsync(string toEmail, string displayName, string confirmationLink)
+        {
+            var subject = "Confirm your email address with Verichat";
+            var body = "<h2>One click to confirm this address</h2>"
+                + "<p>Hi " + (string.IsNullOrWhiteSpace(displayName) ? "there" : displayName) + ",</p>"
+                + "<p>A Verichat account was created with this email address. Confirming it tells the employee "
+                + "reviewing your application that the person who applied can read the mail it was sent to.</p>"
+                + "<p><a href=\"" + confirmationLink + "\">Confirm this email address</a></p>"
+                + "<p>The link expires in 7 days. It is not the approval itself - an employee still reads the "
+                + "application - but an unconfirmed address is a much harder one to approve.</p>";
 
             return SendAsync(toEmail, subject, body);
         }

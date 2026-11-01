@@ -34,10 +34,16 @@ namespace VerichatCRM.Infrastructure.Data.Repositories
                 .ToListAsync();
         }
 
-        public async Task<User?> GetByResetTokenAsync(string token)
+        public async Task<User?> GetByResetTokenAsync(string tokenHash)
         {
             return await _context.Users
-                .FirstOrDefaultAsync(u => u.PasswordResetToken == token);
+                .FirstOrDefaultAsync(u => u.PasswordResetToken == tokenHash);
+        }
+
+        public async Task<User?> GetByVerificationTokenAsync(string tokenHash)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.EmailVerificationToken == tokenHash);
         }
 
         public async Task<IEnumerable<User>> GetByApprovalStatusAsync(string approvalStatus)

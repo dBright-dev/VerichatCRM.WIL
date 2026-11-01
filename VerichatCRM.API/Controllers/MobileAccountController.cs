@@ -15,12 +15,18 @@ namespace VerichatCRM.API.Controllers
     {
         private readonly IMobileService _mobile;
         private readonly IAuthService _auth;
+        private readonly IAccountRecoveryService _recovery;
         private readonly AppDbContext _db;
 
-        public MobileAccountController(IMobileService mobile, IAuthService auth, AppDbContext db)
+        public MobileAccountController(
+            IMobileService mobile,
+            IAuthService auth,
+            IAccountRecoveryService recovery,
+            AppDbContext db)
         {
             _mobile = mobile;
             _auth = auth;
+            _recovery = recovery;
             _db = db;
         }
 
@@ -73,6 +79,11 @@ namespace VerichatCRM.API.Controllers
 
             if (!result.Success || result.User == null)
                 return BadRequest(result);
+
+            // Outside the transaction, so a rolled-back profile write never leaves a
+            // confirmation link pointing at an application that is not in the
+            // database. Same flow the web sign-up uses - see AuthController.Register.
+            await _recovery.SendConfirmationEmailAsync(result.User.UserId);
 
             return Ok(result);
         }
