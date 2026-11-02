@@ -82,11 +82,15 @@ Old tokens stay valid until §2 is done; the password rotation alone does not si
 
 ## 2. Replace the JWT signing key
 
-Two different signing keys were committed: a readable placeholder in `a53523c` and a generated 64-byte base64 key in `c751e3a` → `36b1f29`. Both must be treated as public. Anyone holding either can mint tokens for any role, including `System Administrator`, and the API will accept them.
+Three different signing keys have been committed: a readable placeholder in `a53523c`, a generated 64-byte base64 key in `c751e3a` → `36b1f29`, and a third one that went in again much later and is the one to deal with now. All must be treated as public. Anyone holding any of them can mint tokens for any role, including `System Administrator`, and the API will accept them.
 
-1. Generate a fresh key: `[Convert]::ToBase64String((1..64 | ForEach-Object { Get-Random -Max 256 } | ForEach-Object { [byte]$_ }))`.
+**The third key is a live problem, not a history problem.** `797f8d4` pointed the API's default connection at Entra-authenticated Azure SQL, and the same commit put a generated 64-byte base64 key into `VerichatCRM.API/appsettings.json` under a comment that still said *"a token signing key must never be committed"*. That file is on `dev2` and on `main` and both are pushed, so the key has been readable in a public repository, and any deployed copy that did not have `Jwt__Key` as an application setting was signing with it — which is the state the health payload's `jwt: Healthy` was reporting. The commit that empties the key again has to be paired with the panel setting, in that order: `Program.cs` refuses to start when `Jwt:Key` is blank, so a host that was relying on the file becomes `HTTP 500.30` as soon as it runs this build. The file's `//Jwt` comment names the environment variable as the only correct home; the value is what was missing.
+
+1. Generate a fresh key — a new one, not the one from the repository: `[Convert]::ToBase64String((1..64 | ForEach-Object { Get-Random -Max 256 } | ForEach-Object { [byte]$_ }))`.
 2. Set `Jwt__Key` on the API host and restart the site.
 3. Expect every session to break. Tell staff to sign in again; the stale `JwtToken` cookie and the stale session value are overwritten on the next successful login (`VerichatCRM.Web/Controllers/AccountController.cs`).
+
+Expiry limits the damage on its own: `Jwt:ExpiryMinutes` is 120, so tokens minted with a burned key stop being accepted two hours after they were issued. Rotation therefore invalidates an attacker's existing token without a logout campaign; what rotation does not fix is the ability to mint a *new* one while the key is still in the repository and still the value a host reads.
 
 ## 3. Giving the API its configuration on shared hosting
 
@@ -192,7 +196,18 @@ Earlier on 2 November the same URL reported the database answering in single-dig
 
 The sentence that used to close this section — "check connection string / firewall" — was the last thing the deployed build could say, and it was deliberately uninformative: `CanConnectAsync` swallowed the `SqlException` and returned a bool, so 18456 (login rejected), 4060 (this database cannot be opened) and a TCP timeout all printed the same words. **That build has since been published, and the classification it was written to produce is now in the payload above: error 0, severity 20.** SQL Server reports no error number when the session dies before the engine can answer, and severity 20 is the fatal-transport band, so this host opened a socket to the server and lost it during login. That rules out the two causes the runbook has been chasing — a wrong password would read 18456 at severity 14, an unopenable catalog 4060 — and points at the network layer instead: the TLS handshake, or a firewall/egress rule that accepts the connection and then drops it. The `latencyMs` of about a second fits a handshake that completes and dies rather than a timeout or a rejected credential.
 
-`DescribeFailure` now names this case in words rather than leaving the reader to know that 0/20 is the transport band, so the next deployed build says "a transport or TLS failure at the network layer, not a credential this server rejected"; that change is committed on `dev2` and not yet published. The server's own message — which does name the cause — is in the API log, since this endpoint is anonymous and returns only the classification.
+`DescribeFailure` now names this case in words rather than leaving the reader to know that 0/20 is the transport band, so the payload says which layer failed rather than quoting a number pair; that landed in the same build the next deploy published, and the Azure copy confirmed it at 21:43 UTC:
+
+> `Database unreachable: the connection was established and then dropped before SQL Server answered - a transport or TLS failure at the network layer, not a credential this server rejected. The server's own message is in the API log.` — `https://verichat-api-aqcbgydhhbgbgha5.eastus-01.azurewebsites.net/api/health`, HTTP 503, `latencyMs` 4619
+
+So the Azure hostname this runbook has been doubting does resolve and does answer; §7.2's measurement stands and the earlier worry that it had been mistyped was wrong. Three consecutive probes over two minutes returned the same 503, which is what a stable, deliberate Unhealthy looks like.
+
+**The Monster copy is 500.30 again, and the two failures are not the same event.** `http://api-site.runasp.net/health` answered `HTTP 500` with the *"ASP.NET Core app failed to start"* page at 21:44 and on the two retries that followed, having answered 503 JSON nine minutes earlier. A process that was serving requests and then fails to come back after a recycle is a startup throw, and the runbook has two candidates that produce exactly this shape:
+
+- `Program.cs` refuses to start when `Jwt:Key` is blank. Until §2's key was still in the published `appsettings.json`, so a host that never had `Jwt__Key` configured was starting *because of the repository* — and any deploy that removes it, or any panel edit that clears the setting, produces this page.
+- The startup migration block runs before Kestrel binds, and the same database that drops the connection at login (§7.1's 0/20 reading) would throw there instead of being reported by a health check. This is why the site can be Unhealthy-but-answering one moment and not-starting the next: the health endpoint catches the connection failure, `Program.cs` does not.
+
+Which one it is cannot be read from the internet, because 500.30 deliberately prints nothing useful; it is in the host's stdout log, which the Monster panel exposes and this repository cannot reach. The ordering test is cheap: set `Jwt__Key` from §2, restart, and if the site comes back to 503 JSON the cause was the key.
 
 *Counting note:* the six above is the reading from before the approval gate was removed, and the
 hosted database has not run any of them yet. After publishing the build containing
