@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace VerichatCRM.Core.Entities
@@ -27,13 +28,16 @@ namespace VerichatCRM.Core.Entities
 
         /// <summary>
         /// Roles a person may choose for themselves when self-registering on the
-        /// web or mobile sign-up form. System Administrator is deliberately
-        /// excluded: an administrator account must be created by an existing
-        /// administrator (via Users &amp; Roles) or by the one-time
-        /// configuration bootstrap, never claimed from a public sign-up form.
+        /// web or mobile sign-up form.
+        ///
+        /// System Administrator is in this list because the role is meant to be
+        /// claimable from the form, and it is listed in <see cref="ApprovalExempt"/>
+        /// so the account it creates signs in without waiting for a reviewer.
+        /// Read the consequence there before removing it from either list.
         /// </summary>
         public static readonly string[] SelfRegisterable =
         {
+            SystemAdministrator,
             SalesRepresentative,
             ProcurementManager,
             FieldSupportEngineer,
@@ -44,6 +48,29 @@ namespace VerichatCRM.Core.Entities
             // open - claiming a role with permissions from a public form - is nil.
             MedicalStudent
         };
+
+        /// <summary>
+        /// Roles whose self-registered account is written as Approved rather than
+        /// Pending, so the holder can sign in immediately and never appears in
+        /// /Admin/Approvals.
+        ///
+        /// The review gate exists because a claim on a public form is not evidence
+        /// of the thing claimed. Exempting a role switches that check off for it:
+        /// /Account/Register is anonymous, so anyone who reaches it can create an
+        /// approved System Administrator and then read every client record, edit
+        /// every staff account and approve or reject other people's applications.
+        /// To put the gate back for this role, remove it from this array - new
+        /// sign-ups queue again, and accounts already created keep their Approved
+        /// status until someone changes it at /Admin/Approvals or in the database.
+        /// </summary>
+        public static readonly string[] ApprovalExempt =
+        {
+            SystemAdministrator
+        };
+
+        public static bool IsApprovalExempt(string? role) =>
+            role != null && ApprovalExempt.Contains(role);
+
 
         /// <summary>
         /// Roles whose holder orders consumables through the mobile app. Both of

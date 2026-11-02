@@ -56,10 +56,21 @@ namespace VerichatCRM.Web.Controllers
                 return View(request);
             }
 
+            return CompleteSignIn(result);
+        }
+
+        /// <summary>
+        /// Writes the signed-in session and sends the user to the board their role
+        /// owns. Shared with the sign-up path, because an approval-exempt role is
+        /// signed in by the form that just created it rather than bounced to the
+        /// login screen to prove the password it chose a second earlier.
+        /// </summary>
+        private IActionResult CompleteSignIn(AuthResponse result)
+        {
             try
             {
-                HttpContext.Session.SetString("JwtToken", result.Token);
-                HttpContext.Session.SetString("UserRole", result.User.Role);
+                HttpContext.Session.SetString("JwtToken", result.Token!);
+                HttpContext.Session.SetString("UserRole", result.User!.Role);
                 HttpContext.Session.SetString("UserName", result.User.DisplayName);
                 HttpContext.Session.SetString("UserEmail", result.User.Email);
 
@@ -70,15 +81,17 @@ namespace VerichatCRM.Web.Controllers
 
                 // The token also goes in a cookie so the SignalR handshake to the API
                 // can authenticate without the page ever reading it.
-                IssueHubCookie(result.Token);
+                IssueHubCookie(result.Token!);
             }
             catch
             {
                 // Session may not be configured - continue anyway
             }
 
-            // System Administrator always lands on the Admin dashboard.
-            if (result.User.Role == "System Administrator")
+            // System Administrator always lands on the Admin dashboard. Both callers
+            // have already proved Token and User are set, which is why this method
+            // takes the response rather than picking the pieces out itself.
+            if (result.User!.Role == "System Administrator")
                 return RedirectToAction("Dashboard", "Admin");
             return RedirectToRoleDashboard(result.User.Role);
         }
@@ -95,11 +108,12 @@ namespace VerichatCRM.Web.Controllers
         {
             // Never trust the posted role string. The set checked here has to be
             // the set the API enforces (UserRoles.SelfRegisterable), not the full
-            // role list - otherwise the form accepts "System Administrator" and
-            // the server's refusal arrives as an opaque error instead of a field
-            // message. Client User and Medical Student are in this form's dropdown
-            // and in that set: they order from Verichat instead of working inside it,
-            // and the API opens their Clients row as part of registering them.
+            // role list - otherwise the form accepts a role the server will refuse
+            // and the refusal arrives as an opaque error instead of a field message.
+            // System Administrator is in that set, and in UserRoles.ApprovalExempt,
+            // so choosing it on this form creates an account that signs in at once;
+            // Client User and Medical Student are there too and still queue for
+            // review. See the consequence recorded on ApprovalExempt.
             if (!UserRoles.SelfRegisterable.Contains(request.Role))
             {
                 ModelState.AddModelError("Role", "Select a valid role.");
@@ -115,8 +129,24 @@ namespace VerichatCRM.Web.Controllers
                 return View(request);
             }
 
-            // Sign-up creates an application, not a session. Nothing is written to
-            // the session and no token is issued here, because the credentials the
+            // A role the API recorded as Approved is not an application, and the
+            // "waiting for approval" screen would be describing a queue this account
+            // is not in. Sign the person straight in with the credentials they just
+            // submitted rather than asking them to prove the password a second time.
+            if (UserApproval.IsApproved(result.ApprovalStatus))
+            {
+                var signedIn = await _auth.LoginAsync(new LoginRequest
+                {
+                    Email = request.Email,
+                    Password = request.Password
+                });
+
+                if (signedIn.Success && signedIn.Token != null && signedIn.User != null)
+                    return CompleteSignIn(signedIn);
+            }
+
+            // Everything else creates an application, not a session. Nothing is written
+            // to the session and no token is issued here, because the credentials the
             // applicant just chose do not open the system until an employee has read
             // the application - the whole point being that a claim on a public form
             // ("I am a Procurement Manager") is not evidence of the thing claimed.

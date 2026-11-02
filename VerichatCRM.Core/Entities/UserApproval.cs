@@ -17,6 +17,9 @@ public static class UserApproval
     public static bool IsPending(string? status) =>
         string.Equals(status, Pending, System.StringComparison.OrdinalIgnoreCase);
 
+    public static bool IsApproved(string? status) =>
+        string.Equals(status, Approved, System.StringComparison.OrdinalIgnoreCase);
+
     public static bool IsRejected(string? status) =>
         string.Equals(status, Rejected, System.StringComparison.OrdinalIgnoreCase);
 }

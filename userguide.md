@@ -143,7 +143,12 @@ Rules, all verified in `AdminBootstrapper`:
 
 - It runs **only when the user table is completely empty**. Restarting the app can never resurrect or overwrite an administrator.
 - If the user table is empty *and* these variables are missing, the API logs a warning and starts anyway — and then nobody can sign in. That is the cause of "the login page rejects every password" on a fresh install (§17).
-- `System Administrator` is deliberately excluded from every self-service sign-up form. If you need a second administrator, sign in as the first one and change that person's role in **Users & Roles** (§7.2).
+- `System Administrator` is the one self-service role that needs no approval: choosing it on
+  `/Account/Register` writes the account as already approved and signs you straight into the
+  console. Anyone who reaches that page can therefore create an administrator, so treat the
+  sign-up route as part of the trusted perimeter (§18). To give the role to someone who already
+  has an account instead, sign in as an administrator and change their role in
+  **Users & Roles** (§7.2) — that path is reviewed by a human.
 
 **After the first sign-in, change the password** (there is no password-change screen; see §18) and delete the two `Bootstrap__` variables.
 
@@ -177,30 +182,43 @@ Errors appear above the form, not in a popup. A wrong password, an unknown addre
 ▷ **Create account** — `/Account/Register`, linked from the sign-in card as *Create one*.
 
 Fields: **Full name**, **Email address**, **Password**, and **What will you do here?** — the
-role select, laid out as two labelled groups:
+role select, laid out as three labelled groups:
 
 - *Order from Verichat* — `Client User — buy, request quotes, raise support`, `Medical Student — browse and request, no purchasing`
 - *Work inside Verichat* — `Sales Representative — revenue engine`, `Procurement Manager — supply & logistics`, `Field Support Engineer — on-site resolution`, `Logistics — delivery & transport`
+- *Run Verichat* — `System Administrator — full control, no review needed`
 
-Below the select the form says the one thing it will not do: *System Administrator is not on
-this list. It is granted by an existing administrator, never claimed from a public form.*
+The first option a visitor sees is `Client User`. A dropdown with no selection displays its
+first entry, and this page is anonymous, so the administrator choice is deliberately listed
+last rather than pre-chosen.
 
-On success you are signed in immediately and sent to **your own** home: a staff role to its
-dashboard, a client role to the client portal at `/Portal` (§12.8). Signing up as Client User
-or Medical Student also creates the client record your quotes, orders and tickets hang off —
-the API opens a `Clients` row keyed to your new user id, so nothing has to be typed twice.
+What happens when you submit depends on the role:
+
+- **System Administrator** is signed in on the spot and sent to ▷ Admin Dashboard. The account
+  is written as approved, because this is the one role exempt from the review queue.
+- **Every other role** creates an application, not a session. The account is stored as
+  `Pending`, the page shows *Waiting for approval*, and signing in before an employee approves
+  it shows that screen again rather than letting you in. Approval happens in
+  ▷ Users & Roles (§7.2).
+
+Signing up as Client User or Medical Student also creates the client record your quotes, orders
+and tickets hang off — the API opens a `Clients` row keyed to your new user id, so nothing has
+to be typed twice.
 **Note:** The password placeholder reads *At least 8 characters* but **nothing in the web or API code
 enforces a minimum length** (§18) — choose sensibly; the system will not stop you.
+**Note:** The sign-up screen and the API's reply both tell the applicant to expect a link that
+confirms the address is theirs. **No link is sent at registration** — address verification
+exists only as the `/Account/VerifyEmail` route and the token machinery behind it (§18).
 
-Rejections you will see: `Email is already registered.` and `Select a valid role.` (posted
-from the form that is unreachable — the dropdown only offers the six — but it is what stops
-someone editing the HTML and posting `System Administrator`).
+Rejections you will see: `Email is already registered.` and `Select a valid role.` — the second
+is what stops someone editing the HTML of the form and posting a role string that is not in
+`UserRoles.SelfRegisterable`.
 
 Both client roles can also sign up from the mobile app's **New User** button (§12.1); the two
 paths produce the same account, and the same client record.
 
-`[SG-03]` — the registration form with the role dropdown open, showing the six choices in
-their two groups.
+`[SG-03]` — the registration form with the role dropdown open, showing the seven choices in
+their three groups.
 
 ### 4.4 Signing in on mobile
 
@@ -377,7 +395,7 @@ Every signed-in web page uses the same frame (`_Layout` → `_Sidebar` + `_Topba
 └──────────────────┴──────────────────────────────────────────────────┘
 ```
 
-The diagram above is drawn with single-width characters on purpose so that its borders line up in any monospace font. Where it says `[logo]`, `[bell]` and `[gear]`, the running app shows real icons: the Verichat wordmark from `~/images/logo.png`, the 🔔 Notifications button and the ⚙ Settings button.
+The diagram above is drawn with single-width characters on purpose so that its borders line up in any monospace font. Where it says `[logo]`, `[bell]` and `[gear]`, the running app shows real icons: the Verichat **mark** from `~/images/logo.png` (the square V/C ligature, not the wide wordmark — see `DESIGN-SYSTEM.md` §1.3 for which lock-up goes where), the 🔔 Notifications button and the ⚙ Settings button.
 
 - **Avatar + name + role** at the top of the sidebar is read from your session; the role is shown in capitals. Before anyone signs in it reads `Verichat User` / `GUEST`.
 - **Page title and subtitle** come from the screen, not from you. The subtitle usually carries the live count ("3 enquiries", "4 open • 1 escalated • 2 SLA breaches").
@@ -974,11 +992,21 @@ Screens you open for information and cannot change from, whatever your role: **L
 **Sign in and access**
 
 1. *I typed the right password and it says* `Invalid credentials.` — Wrong password, unknown address, or a **deactivated** account: all three answer identically. Ask an administrator to check ▷ Users & Roles.
-2. *There is no "forgot password" link.* Correct — there is no password reset anywhere in the product (§18). An administrator must set it for you, today by direct database action.
-3. *I signed up and chose System Administrator.* The form does not offer it, and posting it anyway is refused on purpose. Only an existing administrator can grant it.
-4. *My client account signs in on the phone and gets "no access" on the web.* You are on a staff URL. Client roles have their own four screens — ▷ *My Verichat*, *Catalogue*, *My Quotations*, *Support* — reached from `/Portal` (§12.8); a client who types `/Pipeline` is refused on purpose, and the 403 page links back to `/Portal`.
-5. *I changed someone's role and their menu changed instantly.* Menus are built per request from the role; that is the expected behaviour, and it is why the sidebar is the best indicator of what you are allowed to do.
-6. *Everything on my dashboard is 0 or empty.* Usually an expired 120-minute token (§4.5): sign out and back in. Otherwise the API or the database is down — §17.
+2. *I forgot my password.* Use **Forgot password?** on the sign-in card — `/Account/ForgotPassword`
+   emails a link that opens `/Account/ResetPassword`, works once and expires in an hour. A person
+   with no administrator access can also be reset by an administrator; there is still no screen
+   where you change your password while signed in (§18).
+3. *I signed up and chose System Administrator.* That role is offered on the form and is the
+   one exempt from review, so the account works the moment it is created and lands on
+   ▷ Admin Dashboard. A posting of any role outside `UserRoles.SelfRegisterable` is refused
+   with `Select a valid role.`, and an existing administrator can demote the account again in
+   ▷ Users & Roles (§7.2).
+4. *I signed up and my screen says* *Waiting for approval.* Your role is queued for review — the
+   right password in a pending account returns that screen on purpose (§4.3). An employee
+   approves it in ▷ Users & Roles, then sign in again.
+5. *My client account signs in on the phone and gets "no access" on the web.* You are on a staff URL. Client roles have their own four screens — ▷ *My Verichat*, *Catalogue*, *My Quotations*, *Support* — reached from `/Portal` (§12.8); a client who types `/Pipeline` is refused on purpose, and the 403 page links back to `/Portal`.
+6. *I changed someone's role and their menu changed instantly.* Menus are built per request from the role; that is the expected behaviour, and it is why the sidebar is the best indicator of what you are allowed to do.
+7. *Everything on my dashboard is 0 or empty.* Usually an expired 120-minute token (§4.5): sign out and back in. Otherwise the API or the database is down — §17.
 
 **Sales**
 
@@ -1191,7 +1219,7 @@ The rubric requires a high-quality annotated screenshot for **every major step**
 |---|---|---|---|
 | SG-01 | `/Account/Login` | empty | (1) email (2) password (3) Sign In (4) *Create one* |
 | SG-02 | `/Account/Login` | failed attempt | (1) validation summary `Invalid credentials.` |
-| SG-03 | `/Account/Register` | dropdown open | (1) full name (2) email (3) password hint (4) the six roles, in their two groups (5) *System Administrator is not on this list* (6) Create Account |
+| SG-03 | `/Account/Register` | dropdown open | (1) full name (2) email (3) password hint (4) the seven roles, in their three groups (5) *System Administrator — full control, no review needed* (6) Create Account |
 | SG-04 | mobile *Choose your account* | cold start | (1) Client (2) Staff / Admin (3) New User |
 | SG-05 | mobile client login | empty | (1) email (2) password (3) Sign In (4) Create account |
 | SG-06 | mobile New User | mid-entry | (1)–(5) the five fields (6) Sign up |

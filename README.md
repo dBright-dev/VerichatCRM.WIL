@@ -151,7 +151,7 @@ The Development HTTPS URL is `https://localhost:7266`. No `$env:ApiBaseUrl` is n
 
 The web app is a proxy, so **it needs the API window running**. If it is not, sign-in fails with `HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:5184)` — that is not a database or credential problem, it is the other project. In Visual Studio, set both `VerichatCRM.API` and `VerichatCRM.Web` as Multiple startup projects before pressing F5.
 
-The first administrator comes from the API bootstrap configuration (`Bootstrap__AdminEmail`, `Bootstrap__AdminPassword`, and `Bootstrap__AdminName`), or from the development sign-in accounts listed below. Registering through the public form is no longer a way to obtain a staff login on a fresh machine: a self-registered account waits in the approval queue for an administrator to release it, and until an administrator exists there is nobody to release it.
+The first administrator comes from the API bootstrap configuration (`Bootstrap__AdminEmail`, `Bootstrap__AdminPassword`, and `Bootstrap__AdminName`), or from the development sign-in accounts listed below. Self-registration is otherwise not a way to obtain a staff login: every role the public form offers except **System Administrator** is written as `Pending` and waits in the approval queue for an administrator to release it — so on a fresh machine with no administrator, six of the seven roles still cannot get in. System Administrator is approval-exempt by design (`UserRoles.ApprovalExempt`), which means the public `/Account/Register` page can mint an administrator; that is a deliberate trade-off, documented in the user guide §4.3 and in the code comment on that array.
 
 ### Start the mobile application
 

@@ -29,8 +29,9 @@
             <h1 class="vc-auth-title">Create account</h1>
             <p class="vc-auth-sub">All fields are required except where marked.</p>
             <p class="vc-auth-sub">
-                A Verichat employee reads every application before these credentials open
-                anything, so sign in again once you have been approved. We also send a link
+                For every role except System Administrator, a Verichat employee reads the
+                application before these credentials open anything, so sign in again once you
+                have been approved. We also send a link
                 to confirm this address is yours - clicking it is what tells the reviewer
                 the notice will reach you.
             </p>
@@ -71,11 +72,19 @@
                             <option value="Field Support Engineer">Field Support Engineer — on-site resolution</option>
                             <option value="Logistics">Logistics — delivery &amp; transport</option>
                         </optgroup>
+                        @* Last, not first: an unselected <select> shows its first
+                           option, and this form is anonymous. System Administrator
+                           is listed but must never be the pre-chosen answer. *@
+                        <optgroup label="Run Verichat">
+                            <option value="System Administrator">System Administrator — full control, no review needed</option>
+                        </optgroup>
                     </select>
                     <span asp-validation-for="Role" class="text-critical"></span>
                     <p class="vc-auth-sub" style="margin:.5rem 0 0;">
-                        System Administrator is not on this list. It is granted by an
-                        existing administrator, never claimed from a public form.
+                        System Administrator is on this list and is the one role that
+                        skips the review queue: choosing it creates an account that can
+                        sign in immediately. Every other role here waits for an employee
+                        to approve it.
                     </p>
                 </div>
 

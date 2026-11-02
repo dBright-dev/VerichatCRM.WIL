@@ -12,14 +12,30 @@ public class AuthServiceTests
     private const string Password = "password1";
 
     [Fact]
-    public async Task Register_RefusesPublicAdministratorRole()
+    public async Task Register_SystemAdministratorNeedsNoApproval()
     {
         var users = new FakeUserRepository();
         var service = new AuthService(users, CreateJwt());
         var response = await service.RegisterAsync(new RegisterRequest
         {
-            DisplayName = "Client", Email = "client@example.com", Password = Password, Role = UserRoles.SystemAdministrator
+            DisplayName = "Ops", Email = "ops@example.com", Password = Password, Role = UserRoles.SystemAdministrator
         });
+
+        Assert.True(response.Success);
+        Assert.Equal(UserApproval.Approved, response.ApprovalStatus);
+        Assert.Equal(UserApproval.Approved, Assert.Single(users.Users).ApprovalStatus);
+    }
+
+    [Fact]
+    public async Task Register_RefusesARoleNobodyMaySelfAssign()
+    {
+        var users = new FakeUserRepository();
+        var service = new AuthService(users, CreateJwt());
+        var response = await service.RegisterAsync(new RegisterRequest
+        {
+            DisplayName = "Tourist", Email = "tourist@example.com", Password = Password, Role = "Chief Executive Officer"
+        });
+
         Assert.False(response.Success);
         Assert.Empty(users.Users);
     }

@@ -77,28 +77,33 @@ namespace VerichatCRM.API.Services
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
         {
-            // A public sign-up form must never be able to mint an administrator.
-            // System Administrator is excluded from SelfRegisterable on purpose.
+            // The role a person posts has to be one the form is allowed to hand out.
+            // System Administrator is in SelfRegisterable now, so it passes here and
+            // is exempted from review further down - see UserRoles.ApprovalExempt.
             if (!UserRoles.SelfRegisterable.Contains(request.Role))
                 return new AuthResponse { Success = false, Message = "That role cannot be self-assigned. Ask an administrator to create the account." };
 
             if (await _users.EmailExistsAsync(request.Email))
                 return new AuthResponse { Success = false, Message = "Email is already registered." };
 
+            // Nothing a person says about themselves on a public form is
+            // evidence. "I am a Procurement Manager" buys the stock dashboard,
+            // the warehouse alerts and the logistics tracker; "I am a Client
+            // User" buys a purchase order line. So the account is written down
+            // as an application, and the employee who reviews it decides whether
+            // it is what it claims to be. No token is issued here: the applicant
+            // has a login, but the login does not open anything yet.
+            // The one exception is a role named in UserRoles.ApprovalExempt -
+            // System Administrator - which is recorded as Approved and therefore
+            // does open the system the moment it is created.
+            var approvedOnArrival = UserRoles.IsApprovalExempt(request.Role);
             var user = new User
             {
                 DisplayName = request.DisplayName.Trim(),
                 Email = request.Email.Trim().ToLowerInvariant(),
                 PasswordHash = PasswordHasher.Hash(request.Password),
                 Role = request.Role,
-                // Nothing a person says about themselves on a public form is
-                // evidence. "I am a Procurement Manager" buys the stock dashboard,
-                // the warehouse alerts and the logistics tracker; "I am a Client
-                // User" buys a purchase order line. So the account is written down
-                // as an application, and the employee who reviews it decides whether
-                // it is what it claims to be. No token is issued here: the applicant
-                // has a login, but the login does not open anything yet.
-                ApprovalStatus = UserApproval.Pending
+                ApprovalStatus = approvedOnArrival ? UserApproval.Approved : UserApproval.Pending
             };
 
             await _users.AddAsync(user);
@@ -106,8 +111,10 @@ namespace VerichatCRM.API.Services
             return new AuthResponse
             {
                 Success = true,
-                Message = "Application received. A Verichat employee will review it, and you can sign in once it is approved. " +
-                          "Check your inbox for a link to confirm this email address.",
+                Message = approvedOnArrival
+                    ? $"Account created as {request.Role}. This role needs no review, so sign in with the address and password you just chose."
+                    : "Application received. A Verichat employee will review it, and you can sign in once it is approved. " +
+                      "Check your inbox for a link to confirm this email address.",
                 User = Map(user),
                 ApprovalStatus = user.ApprovalStatus
             };
