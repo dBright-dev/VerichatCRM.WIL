@@ -271,7 +271,9 @@ npx expo lint
 npx tsc --noEmit
 ```
 
-The current xUnit suite covers 71 authentication, ownership, order, stock, permission-matrix, inquiry-scoring, role-dashboard, and EF design-time context cases across seven test files. It is not a complete integration or end-to-end suite: there are no API contract tests, and the Expo client has no test runner configured (`VerichatMobile/package.json` defines no `test` script), so mobile behaviour is verified by `expo lint` and `tsc` only.
+The xUnit suite is **140 test cases in ten test files**, all passing (measured on 2 Nov 2026: `Failed: 0, Passed: 140, Skipped: 0` in 8 seconds). It covers authentication and PBKDF2 password migration, account recovery and the login-help path, the permission matrix for all seven roles, client ownership on the controller boundary, order validation and stock movement, inquiry scoring, badge counting, dashboard analytics, and the EF design-time context that lets migrations be scripted without starting the host. Three further files in that project are fakes (`FakeEmailService`, `FakeMobileService`, `FakeUserRepository`), not tests.
+
+It is not a complete integration or end-to-end suite: there are no API contract tests, no test exercises the Razor views or the web tier's proxy, and the Expo client has no test runner configured (`VerichatMobile/package.json` defines no `test` script), so mobile behaviour is verified by `expo lint` and `tsc` only. The screens a reviewer actually judges - the role dashboards, the portal, the quick-login panel - are checked by running them, not by this suite, and that difference should be read as a limitation rather than as coverage.
 
 ## GitHub Actions
 
