@@ -52,7 +52,8 @@ namespace VerichatCRM.Infrastructure.Data.External
                 + "<p>A Verichat account was created with this email address. Confirming it tells the employee "
                 + "reviewing your application that the person who applied can read the mail it was sent to.</p>"
                 + "<p><a href=\"" + confirmationLink + "\">Confirm this email address</a></p>"
-                + "<p>The link expires in 7 days. It is not the approval itself - an employee still reads the "
+                + "<p>The link expires in 7 days. It is not the approval itself - for a role that "
+                + "needs review, an employee still reads the "
                 + "application - but an unconfirmed address is a much harder one to approve.</p>";
 
             return SendAsync(toEmail, subject, body);
