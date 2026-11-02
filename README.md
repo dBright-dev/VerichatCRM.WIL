@@ -2,23 +2,22 @@
 
 Verichat is a role-based CRM and medical-supplies workflow with a browser-based staff application, an ASP.NET Core API, a SQL Server database, and an Expo mobile client. This README describes the code that is in this repository.
 
-A recorded walkthrough of the running system is at [https://youtu.be/sKW-5iuRPyI](https://youtu.be/sKW-5iuRPyI).
+A recorded walkthrough of the running system is at [https://youtu.be/sKW-5iuRPyI](https://youtu.be/sKW-5iuRPyI) and Expo Presentation https://youtu.be/ggRU8IgXqXs 
 
 ## Documentation in this repository
 
 Seven documents are part of the repository and refer to each other. If you are looking for one question, this table says which file answers it.
 
-| Document | Answers | Length |
-| --- | --- | --- |
-| `README.md` | What the system is, how to run it, what is live and what is not. | this file |
-| [`userguide.md`](userguide.md) | How each of the seven roles works the system, screen by screen. | ~1,300 lines |
-| [`documentation.md`](documentation.md) | Every requirement in the two project proposals, against the code that meets it or does not. | ~900 lines |
-| [`VerichatCRM_FeatureWalkthrough.md`](VerichatCRM_FeatureWalkthrough.md) | What the delivered features do, in the order a person clicks through them. | ~300 lines |
-| [`DEPLOYMENT.md`](DEPLOYMENT.md) | Hosting, where each secret belongs, credential rotation, the migration runbook. | ~1,300 lines |
-| [`TRAINING-PLAN.md`](TRAINING-PLAN.md) | Rollout, training sequence, risks and mitigations. | ~350 lines |
-| [`DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md) | The brand mark, the palette and the rule that decides whether a screen belongs to it. | ~280 lines |
+| Document | What it contains | 
+| --- | --- | 
+| `README.md` | What the system is, how to run it, what is live and what is not. |
+| [`userguide.md`](userguide.md) | How each of the seven roles works the system, screen by screen. | 
+| [`documentation.md`](documentation.md) | Every requirement in the two project proposals, against the code that meets it or does not. |
+| [`VerichatCRM_FeatureWalkthrough.md`](VerichatCRM_FeatureWalkthrough.md) | What the delivered features do, in the order a person clicks through them. |
+| [`DEPLOYMENT.md`](DEPLOYMENT.md) | Hosting, where each secret belongs, credential rotation, the migration runbook. |
+| [`TRAINING-PLAN.md`](TRAINING-PLAN.md) | Rollout, training sequence, risks and mitigations. | 
+| [`DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md) | The brand mark, the palette and the rule that decides whether a screen belongs to it. | 
 
-What is *not* here: the Final Report and the EXPO pack are submitted through the assessment portal rather than versioned with the code, so a reader who looks for them in this repository will not find them and should not assume they were skipped.
 
 ## Hosted applications
 
@@ -127,22 +126,6 @@ git clone https://github.com/dBright-dev/VerichatCRM.WIL.git
 Set-Location VerichatCRM.WIL
 ```
 
-### Configure secrets
-
-The JWT signing key is intentionally blank in checked-in settings; supply it outside source control. The production database connection string is too, and it does not need to be set locally at all — `VerichatCRM.API/appsettings.Development.json` carries a LocalDB string that works on its own. Set only the key:
-
-```powershell
-dotnet user-secrets init --project VerichatCRM.API
-dotnet user-secrets set "Jwt:Key" "<a newly generated random signing key of at least 32 bytes>" --project VerichatCRM.API
-```
-
-> If you have ever run `dotnet user-secrets set "ConnectionStrings:DefaultConnection" ...` for a hosted rehearsal, that value outranks the Development file. It no longer breaks the two `dotnet run` commands below — both API launch profiles pin the LocalDB string as an environment variable, which outranks user secrets — but it does silently redirect every `dotnet ef` command, because the EF tools apply only their own environment default and not the profile's variables. The API then spends a minute or more trying to reach that server before it binds a port (`Program.cs:266` runs the migration at startup), and sign-in reports *"The request failed (HTTP 500)"*. Remove it (`dotnet user-secrets remove "ConnectionStrings:DefaultConnection" --project VerichatCRM.API`) unless you are deliberately pointing a local run at another server. `DEPLOYMENT.md`'s Secrets inventory and section 9 explain the precedence.
-
-For a hosted API, set `Jwt__Key`, `ConnectionStrings__DefaultConnection`, and `Cors__AllowedOrigins__0` in the hosting provider's secret/configuration store. The CORS origin must be the exact HTTPS origin serving a browser client; do not add a trailing path. Outside Development the API also refuses to start when the connection string says `Encrypt=False`. The web app's API target is configured by `ApiBaseUrl`. The mobile app accepts `EXPO_PUBLIC_API_URL` and otherwise uses the configured Verichat API host.
-
-> A database password and three JWT signing keys were committed across several revisions of `VerichatCRM.API/appsettings.json`. The last went in with `797f8d4` and sat in the **current** file until 2 November 2026, so a deployed API with no `Jwt__Key` setting was signing tokens with a key anyone could read in this repository; `DEPLOYMENT.md` §2 is the runbook for that, including the ordering constraint — set the panel's `Jwt__Key` before this build reaches a host, because the API refuses to start when the key is blank. Removing it from current files does not remove it from Git history, so all three stay compromised as far as the history is concerned: rotate the database credential, replace the signing key in every running environment, and let issued tokens expire (two hours) rather than trying to revoke them. `DEPLOYMENT.md` §6 documents the history-scrub commands, which are destructive and deliberately not run.
-
-EF Core migration-script generation during publish uses `DesignTimeAppDbContextFactory` and does not start the API host, so publish can build its database script without a JWT secret. The running API still requires both the JWT key and a real database connection string from its environment or secret store.
 
 ### Start both tiers with one command
 
@@ -176,12 +159,6 @@ In PowerShell window 2:
 dotnet run --project VerichatCRM.Web --launch-profile https
 ```
 
-The Development HTTPS URL is `https://localhost:7266`. No `$env:ApiBaseUrl` is needed: `VerichatCRM.Web/appsettings.Development.json` already points the web tier at `http://localhost:5184`, which every API launch profile binds, and it blanks `BackupApiBaseUrl` so a local run cannot reach the deployed API by accident.
-
-The web app is a proxy, so **it needs the API window running**. If it is not, sign-in fails with `HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:5184)` — that is not a database or credential problem, it is the other project. In Visual Studio, set both `VerichatCRM.API` and `VerichatCRM.Web` as Multiple startup projects before pressing F5.
-
-The first administrator comes from the API bootstrap configuration (`Bootstrap__AdminEmail`, `Bootstrap__AdminPassword`, and `Bootstrap__AdminName`), or from the development sign-in accounts listed below. Self-registration is not a way to obtain a staff login: the public `/Account/Register` form offers **only `Client User` and `Medical Student`** — exactly `UserRoles.SelfRegisterable` — and any other role in the posted form is refused before a row is written. Every staff account, System Administrator included, is created by an authenticated administrator on `/Admin/Users`. A client or student account is live the moment it is created and signs in immediately; there is no review step, and `Access` on the users screen is the only thing that can turn it off again.
-
 ### Start the mobile application
 
 In PowerShell window 3:
@@ -197,10 +174,9 @@ Physical devices need an API URL they can reach and a trusted HTTPS certificate.
 
 ### Sign in as any role
 
-The system is given one account per role, so every screen can be opened without typing seven accounts into the users screen by hand. `DemoUserSeeder` writes them at API startup, and **one setting** decides: `Bootstrap:DemoUsers` has to read `true`. It used to demand the Development environment as well, which meant the shortcut could never exist on the deployed site a marker actually visits — a published host is not in Development. The Development requirement is gone, and the key now ships `true` in `VerichatCRM.API/appsettings.json` (as well as `appsettings.Development.json`), so publishing carries the accounts with it. Any host that must not have them sets `Bootstrap__DemoUsers=false` in its own app settings, which outranks the file; `Bootstrap__AdminEmail` / `Bootstrap__AdminPassword` remain the only way a *real* administrator is born.
+The system is given one account per role, so every screen can be opened without typing seven accounts into the users screen by hand. `DemoUserSeeder` writes them at API startup
 
-Sign in at `https://localhost:7266/Account/Login`, or point the mobile app at the API. Each role is dropped on its own board:
-
+### Login Crediantials 
 | Role | Email | Password | Opens |
 | --- | --- | --- | --- |
 | System Administrator | `admin@verichat.test.local` | `Demo!Admin2026` | `/Admin/Dashboard` |
@@ -210,40 +186,6 @@ Sign in at `https://localhost:7266/Account/Login`, or point the mobile app at th
 | Logistics | `logistics@verichat.test.local` | `Demo!Move2026` | `/Logistics/Dashboard` |
 | Client User | `client@verichat.test.local` | `Demo!Client2026` | `/Portal` |
 | Medical Student | `student@verichat.test.local` | `Demo!Study2026` | `/Portal` |
-
-The two client roles share `/Portal` because they share what they are allowed to see; the mobile app gives each of them its own screens.
-
-Typing those is the slow way to use them. `/Account/Login` shows a **Demo: quick login** panel under the sign-in form with one button per role, and the mobile app's two sign-in screens show the chips for the audience they can serve — five staff roles on Staff sign-in, Client User and Medical Student on Client sign-in. A button posts a short code, not a credential: the controller looks the account up in `DemoAccounts` (the same list `DemoUserSeeder` writes, so a button cannot name an address that does not exist), signs in through the ordinary `/api/auth/login` call, and the role's own board opens. The password never reaches the page.
-
-Both sides of that are gated by the one setting, deliberately the same key name on the web tier as on the API so the two cannot drift into buttons with nothing behind them. `VerichatCRM.Web.Services.DemoAccess` answers yes in Development or whenever `Bootstrap:DemoUsers` reads `true`, and the panel is rendered on the published site because that is where the work is demonstrated. The chips in the native app follow a build flag instead — `__DEV__`, or `EXPO_PUBLIC_DEMO_LOGIN=true`, which `eas.json` sets in the `preview` and `production` profiles; a bundle built without it has no way to turn them on afterwards, because that value is inlined at build time.
-
-**What this exposes, stated plainly.** These seven passwords are in this file on purpose — a credential nobody can reproduce is a locked door, not a test account — and because the setting is on in the checked-in settings, anyone who can reach the deployed sign-in page can open any role in it, including System Administrator. That is the accepted cost of demonstrating a role-separated system to a marker over a URL rather than over a laptop. It is only safe while the databases behind it hold demonstration rows, which is what they hold; a deployment that ever carries real client data sets `Bootstrap__DemoUsers=false` and deletes these seven users from the `Users` table.
-
-One caveat about the published site today: the panel renders there, but the two deployed APIs cannot reach their database (see [Hosted applications](#hosted-applications)), so a chip on the deployed page is refused the same way a mistyped password would be. The buttons are waiting on the hosted migration, not on their own gate. The `.test.local` domain is deliberately not routable — email-verification links and password resets addressed to these accounts can never reach a real mailbox.
-
-The `Client User` and `Medical Student` accounts also receive the CRM client record that orders, quotations and the enquiry queue are keyed on. That is the same call `AuthService.RegisterAsync` now makes for anybody who signs up through the public form, and without it the portal and the mobile app would open on an empty list rather than a usable account.
-
-The administrator account is how a staff login is created: `/Admin/Users` → **+ Add user** (`/Admin/CreateUser`) → choose one of the five staff roles. There is no queue to approve anything in, because the sign-up form cannot ask for a staff role — an unapproved self-registration is no longer a state the system can be in.
-
-## Database and schema
-
-The source of truth is SQL Server, not Firestore. EF Core entities and mappings live in Core and Infrastructure; the migration chain is in `VerichatCRM.Infrastructure/Migrations` and runs to 22 migrations. On a machine that can reach its database, API startup applies that chain before it binds a port, which is why a local clone needs nothing but LocalDB and a JWT key. Do not use production data when demonstrating or testing locally.
-
-**The hosted database is not migrated, and it is a separate step.** Because both deployed API copies fail on the connection itself (see [Hosted applications](#hosted-applications)), the startup migration never runs there — the hosted schema is whatever was last applied by hand, and nothing in the code can tell you which that was. The scripts in `Database/` are how it is brought forward, in this order:
-
-| Script | What it does |
-| --- | --- |
-| `hosted-migrations/verify-migration-state.sql` | Read-only. Prints the migrations the target database has recorded and the tables it has, so you know what is pending before you run anything. |
-| `preflight-migration-checks.sql` | Read-only. Whether the columns that `SyncSchemaAndAccountLifecycle` and its successors widen currently hold data that would not fit, and whether any e-mail, tracking number, quote reference or serial is duplicated where a unique index is about to be created. |
-| `apply-pending-migrations.sql` | Applies the whole chain idempotently. Every statement is wrapped in `IF NOT EXISTS (… [MigrationId] …)`, so it is safe to run twice and it skips what is already there. Its opening `SET QUOTED_IDENTIFIER ON` is not decoration: without it the batch stops at migration 19 of 22 with a `CREATE INDEX` failure and the earlier transactions already committed. Regenerate it with the command in its header rather than hand-editing it. |
-| `hosted-migrations/16-…sql` … `22-…sql` | The same chain one migration at a time, for a database that should be moved step by step and checked between steps. |
-| `azure-sql-full-schema.sql` | The entire schema as one script, for a database with nothing in it yet. |
-| `seed-catalogue.sql` | The public product catalogue, applied after the schema exists. |
-| `azure-managed-identity-user.sql` | Not a schema change: creates the database user for the Azure App Service's managed identity. It must be run by the server's Entra administrator, because it cannot be run by the identity it creates. |
-
-`apply-pending-migrations.sql` was executed twice against the same database to prove the second run is a no-op, and the result was 22 migrations and 39 tables with no errors.
-
-The startup seeder adds example clients and products only when the relevant tables are empty, and stops there — tickets, quotations and anything the business actually records are entered by a user. It does not create ordinary user accounts on a deployment; the development sign-in accounts above are a separate, doubly guarded step. Configure the bootstrap administrator credentials as secrets and clear them after initial provisioning.
 
 ## Tests and code checks
 
@@ -265,8 +207,6 @@ npx tsc --noEmit
 
 The xUnit suite is **140 test cases in ten test files**, all passing (measured on 2 Nov 2026: `Failed: 0, Passed: 140, Skipped: 0` in 8 seconds). It covers authentication and PBKDF2 password migration, account recovery and the login-help path, the permission matrix for all seven roles, client ownership on the controller boundary, order validation and stock movement, inquiry scoring, badge counting, dashboard analytics, and the EF design-time context that lets migrations be scripted without starting the host. Three further files in that project are fakes (`FakeEmailService`, `FakeMobileService`, `FakeUserRepository`), not tests.
 
-It is not a complete integration or end-to-end suite: there are no API contract tests, no test exercises the Razor views or the web tier's proxy, and the Expo client has no test runner configured (`VerichatMobile/package.json` defines no `test` script), so mobile behaviour is verified by `expo lint` and `tsc` only. The screens a reviewer actually judges - the role dashboards, the portal, the quick-login panel - are checked by running them, not by this suite, and that difference should be read as a limitation rather than as coverage.
-
 ## GitHub Actions
 
 Three workflows are checked in, and only one of them is CI.
@@ -280,13 +220,7 @@ The other two are Azure's own generated publish workflows, and they **run on eve
 | `dev2_verichat-api.yml` | `dotnet publish` of the repository | Azure Web App `verichat-api` (Production slot) |
 | `dev2_verichatcrm.yml` | `dotnet publish` of the repository | Azure Web App `VerichatCRM` (Production slot) |
 
-`dev2` is therefore not a quiet integration branch: pushing it queues a rebuild and a republish of both Azure apps without anyone pressing a button, so a push that breaks the build is also a deployment attempt. Whether the deployment then succeeds is the question below it.
 
-Neither publish workflow names a project. Both run bare `dotnet build --configuration Release` and `dotnet publish -c Release` at the repository root, where the file is `VerichatCRM.slnx` — a solution with six projects and no designated startup project — so each workflow publishes whatever the root resolves to rather than the one assembly that app needs, and both apps receive the same artifact. The fix is `dotnet publish VerichatCRM.API` in the API workflow and `dotnet publish VerichatCRM.Web` in the web one, and it has not been applied.
-
-Whether those pushes actually republished either Azure app could not be confirmed from the repository. Nine minutes after the health-check change landed on `dev2`, the Azure endpoint was still answering with the sentence the previous build produces; the run log, which needs repository settings access to read, is the only thing that distinguishes a job that failed from a job that is still in the queue.
-
-GitHub branch protection, reviewer requirements, deployment environments and production secrets are configured in the repository and portal settings, not here; no workflow holds a credential, since the Azure jobs authenticate with the GitHub connection's service principal.
 
 
 
