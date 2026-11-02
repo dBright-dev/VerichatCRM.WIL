@@ -61,6 +61,15 @@ namespace VerichatCRM.Web.Controllers
                 }
 
                 request = new LoginRequest { Email = account.Email, Password = account.Password };
+
+                // Model binding has already recorded the two required-field failures
+                // for the Email and Password boxes this button's form deliberately did
+                // not post - the credential is the whole point of not putting it in the
+                // DOM. Without clearing them the IsValid check below rejects a request
+                // whose email and password are now both present, and every chip answers
+                // "The Email field is required." instead of signing in.
+                ModelState.Remove(nameof(LoginRequest.Email));
+                ModelState.Remove(nameof(LoginRequest.Password));
             }
 
             if (!ModelState.IsValid) return View(request);

@@ -35,13 +35,22 @@ namespace VerichatCRM.API.Controllers
         /// while their real causes were different (one a credential, the other an
         /// identity with no user in the database), and the payload could not tell them
         /// apart.
+        /// <para>
+        /// The connection is built from the context's connection string rather than
+        /// taken from <c>GetDbConnection()</c>. That returns the context's own pooled
+        /// connection, and this method's <c>await using</c> would dispose the object
+        /// the context is still holding - so the migration probe underneath this one,
+        /// running in the same request on the same context, threw "The ConnectionString
+        /// property has not been initialized" and every healthy database reported
+        /// <c>MigrationCheckFailed</c> even though it was reachable and fully migrated.
+        /// </para>
         /// </summary>
         private async Task<(bool ok, string detail, long latencyMs)> CheckDatabaseAsync()
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             try
             {
-                await using var connection = _db.Database.GetDbConnection();
+                await using var connection = new SqlConnection(_db.Database.GetConnectionString());
                 await connection.OpenAsync();
                 sw.Stop();
                 return (true, "Database reachable.", sw.ElapsedMilliseconds);
@@ -78,6 +87,11 @@ namespace VerichatCRM.API.Controllers
         /// </summary>
         internal static string DescribeFailure(int number, byte severity) => number switch
         {
+            // What both deployed APIs report. SQL gives no error number when the
+            // session died before the engine could answer, and severity 20 is the
+            // fatal-transport band, so the socket was opened and then lost during
+            // login - not a wrong password, which is 18456 at severity 14.
+            0 when severity >= 20 => "the connection was established and then dropped before SQL Server answered - a transport or TLS failure at the network layer, not a credential this server rejected",
             18456 => "the server answered and rejected the login - a SQL password that no longer matches the user, or an Entra token whose identity has no user in this database",
             4060 or 916 or 229 => "the login opened a session but this database cannot be opened - wrong catalog, or the user has no access to it",
             18451 => "the server named in the connection string is not one this host can resolve or reach",

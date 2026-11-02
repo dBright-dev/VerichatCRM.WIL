@@ -179,18 +179,20 @@ Then: delete the rules file, ask GitHub to clear cached views and detached objec
 
 ### 7.1 The deployed API answers HTTP 500.30
 
-**Status, re-measured 2 November 2026 late: the 500.30 is fixed; the database is not reachable again.** `http://api-site.runasp.net/api/health` answers HTTP 503 as a JSON body rather than the 500.30 HTML page, the process starts, and `Jwt:Key` is present — all of which was the failure this section described. What the payload now says is not what it said earlier the same day:
+**Status, re-measured 2 November 2026 at 21:35 UTC: the 500.30 is fixed and the error classifier is published; the database still will not open.** `http://api-site.runasp.net/api/health` answers HTTP 503 as a JSON body rather than the 500.30 HTML page, the process starts, and `Jwt:Key` is present — all of which was the failure this section described. What the payload now says is not what it said earlier the same day:
 
 ```json
 {"status":"Degraded","service":"VerichatCRM.API","environment":null,
  "checks":{"database":{"status":"Unhealthy",
-   "detail":"CanConnectAsync returned false. Check connection string / firewall.","latencyMs":1097},
+   "detail":"Database unreachable: SQL error 0 at severity 20. The server's own message is in the API log.","latencyMs":1065},
    "jwt":{"status":"Healthy","detail":"Jwt:Key present."}}}
 ```
 
 Earlier on 2 November the same URL reported the database answering in single-digit milliseconds with `MigrationsPending` and six migrations named, because `CheckDatabaseAsync` is followed by `GetPendingMigrationsAsync()` at [HealthController.cs:112](VerichatCRM.API/Controllers/HealthController.cs) — a schema probe as well as a connectivity probe, which is how it could prove the deployed assembly contained migration 21 and rule Route A out in §8.5. **That reading is superseded, not wrong:** it was taken against a working connection, and the connection has since stopped opening. Something changed on the host between the two probes — the credential the panel holds, the SQL server's state, or the settings on a republished build — and none of the three is visible from this repository. Until the connection opens again, §8.5's schema question cannot be answered by the payload at all, because the migration probe only runs when `dbOk` is true.
 
-The sentence "check connection string / firewall" is the last thing the deployed build can say, and it is deliberately uninformative: `CanConnectAsync` swallows the `SqlException` and returns a bool, so 18456 (login rejected), 4060 (this database cannot be opened) and a TCP timeout all printed the same words. `HealthController` now opens the connection itself and classifies the error number, so the next deployed build names which of those the host is actually suffering; that change is on `dev2` and not yet published.
+The sentence that used to close this section — "check connection string / firewall" — was the last thing the deployed build could say, and it was deliberately uninformative: `CanConnectAsync` swallowed the `SqlException` and returned a bool, so 18456 (login rejected), 4060 (this database cannot be opened) and a TCP timeout all printed the same words. **That build has since been published, and the classification it was written to produce is now in the payload above: error 0, severity 20.** SQL Server reports no error number when the session dies before the engine can answer, and severity 20 is the fatal-transport band, so this host opened a socket to the server and lost it during login. That rules out the two causes the runbook has been chasing — a wrong password would read 18456 at severity 14, an unopenable catalog 4060 — and points at the network layer instead: the TLS handshake, or a firewall/egress rule that accepts the connection and then drops it. The `latencyMs` of about a second fits a handshake that completes and dies rather than a timeout or a rejected credential.
+
+`DescribeFailure` now names this case in words rather than leaving the reader to know that 0/20 is the transport band, so the next deployed build says "a transport or TLS failure at the network layer, not a credential this server rejected"; that change is committed on `dev2` and not yet published. The server's own message — which does name the cause — is in the API log, since this endpoint is anonymous and returns only the classification.
 
 *Counting note:* the six above is the reading from before the approval gate was removed, and the
 hosted database has not run any of them yet. After publishing the build containing
