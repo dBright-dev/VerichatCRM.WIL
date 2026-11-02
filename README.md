@@ -178,7 +178,7 @@ In PowerShell window 1:
 dotnet run --project VerichatCRM.API --launch-profile https
 ```
 
-The Development HTTPS URL is `https://localhost:7076`. On startup the API applies EF Core migrations, seeds a small sample client/product catalogue when those tables are empty, creates the first administrator only when bootstrap settings are supplied, and — on a Development host that asks for it — the per-role sign-in accounts described below.
+The Development HTTPS URL is `https://localhost:7076`. On startup the API applies EF Core migrations, seeds a small sample client/product catalogue when those tables are empty, creates the first administrator only when bootstrap settings are supplied, and — wherever `Bootstrap:DemoUsers` reads true — the per-role sign-in accounts described below.
 
 ### Start the staff web application
 
