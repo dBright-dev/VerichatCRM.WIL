@@ -204,8 +204,14 @@ What happens when you submit depends on the role:
 Signing up as Client User or Medical Student also creates the client record your quotes, orders
 and tickets hang off — the API opens a `Clients` row keyed to your new user id, so nothing has
 to be typed twice.
-**Note:** The password placeholder reads *At least 8 characters* but **nothing in the web or API code
-enforces a minimum length** (§18) — choose sensibly; the system will not stop you.
+**Password length is enforced, on every path that sets or checks one.** Signing up requires at
+least 8 characters (`[Required, MinLength(8)]` on `RegisterRequest.Password`), a reset requires at
+least 8 (`MinimumPasswordLength` in `AccountRecoveryService.cs:31`, checked at `:82`), and signing
+in rejects a password shorter than 6 (`[Required, MinLength(6)]` on `LoginRequest.Password`) before
+the database is queried. So a short password never reaches the hashing code, and the API answers
+with a validation problem naming the field rather than a message you have to interpret. What is
+**not** enforced anywhere is complexity — no digit, no symbol, no dictionary check — so
+`aaaaaaaa` satisfies all three today.
 **What the screen promises about a confirmation link is true.** Once the account row is
 committed, the API issues an address-verification token and emails its link to the address just
 typed (`AuthController.Register` -> `AccountRecoveryService.SendConfirmationEmailAsync`), for every
@@ -961,7 +967,7 @@ What each field does, in the words the screen uses. "Required" means the server 
 
 **Sign in** — *Email address* (required), *Password* (required). Errors: `Invalid credentials.`
 
-**Create Account (web)** — *Full Name*, *Email Address*, *Password* (hint *Min. 8 characters*, **not enforced**), *Role* (one of the four staff roles). Errors: `Email is already registered.`, `Select a valid role.`, `That role cannot be self-assigned. Ask an administrator to create the account.`
+**Create Account (web)** — *Full Name*, *Email Address*, *Password* (required, min. 8 — enforced), *Role* (one of the seven choices in three groups, §4.3). Errors: `Email is already registered.`, `Select a valid role.`, `That role cannot be self-assigned. Ask an administrator to create the account.`
 
 **Add New Client** *(Admin only)* — *Client Name* (required, ≤200), *Sector* (required: Mining / Clinical / Education / Rehab / Manufacturing / Waste Management), *Contact Person* (≤150), *Contact Phone* (≤30), *Contact Email* (valid email, ≤200), *Address* (≤500). Tip panel on the right: the client starts as **Prospect**, a rep can be assigned after creation, key personnel come from the profile.
 
@@ -1102,10 +1108,10 @@ The honest page. Give this to every new user with the training pack; the system 
 
 **Access and accounts**
 
-1. **No password reset or password change** anywhere, web or mobile. Only direct database access can fix a forgotten password.
-2. **No minimum password length is enforced.** The *At least 8 characters* placeholder is advisory only; the web `RegisterRequest` carries no validation attributes and the API checks none.
+1. **No way to change your password while signed in.** `ChangePasswordRequest` exists as a DTO with no route behind it. The only self-service path is the one-time reset link from `/Account/ForgotPassword` (§4.5), which requires access to the mailbox on the account; an administrator cannot set one either, so a person locked out of their email needs direct database access.
+2. **Password length is enforced; complexity is not.** At least 8 characters at sign-up (`[MinLength(8)]` on `RegisterRequest.Password`) and at reset (`MinimumPasswordLength`, `AccountRecoveryService.cs:31`), at least 6 at sign-in (`[MinLength(6)]` on `LoginRequest.Password`) — but no digit, symbol or dictionary rule anywhere, so `aaaaaaaa` satisfies all three.
 3. **Deactivate has no Activate.** A deactivated account cannot be restored from ▷ Users & Roles.
-4. **No user creation in the web UI by an administrator** — self-registration (the four self-assignable staff roles, or either client role) and the bootstrap admin are the only paths; there is no "create a colleague" form on ▷ Users & Roles despite what some older notes claim. An administrator can *change* an existing person's role, which is how staff accounts become client accounts.
+4. **No user creation in the web UI by an administrator** — self-registration (the five self-assignable staff roles, or either client role) and the bootstrap admin are the only paths; there is no "create a colleague" form on ▷ Users & Roles despite what some older notes claim. An administrator can *change* an existing person's role, which is how staff accounts become client accounts.
 5. The 403 page does not tell you **which permission** was missing.
 
 **Screen and data behaviour**
