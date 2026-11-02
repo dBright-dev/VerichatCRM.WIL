@@ -22,14 +22,15 @@ What is *not* here: the Final Report and the EXPO pack are submitted through the
 
 ## Hosted applications
 
-Four deployment targets are configured. They are not in the same state, so each was requested over HTTP rather than described from the publish profile — results below are from **2 November 2026**.
+The two applications are deployed as five hosted surfaces, and they are not in the same state, so each one below was requested over HTTP rather than described from the publish profile — results are from **2 November 2026, late**.
 
 | Surface | URL | What it answers |
 | --- | --- | --- |
-| Staff web application | [http://verichat-crm-web.runasp.net/](http://verichat-crm-web.runasp.net/) | **200.** The landing pages, `/Account/Login` and `/privacy` render. |
+| Staff web application | [http://verichat-crm-web.runasp.net/](http://verichat-crm-web.runasp.net/) | **200.** The landing pages, `/Account/Login` and `/privacy` render, and the login page shows the seven demo chips. This host runs a build from before `b2bca9d`, so a chip is refused by the form's own required-field check and never reaches the API — republishing the web project fixes it. |
+| Staff web application, Azure | [https://verichatcrm-egendmhdghfjehdt.eastus2-01.azurewebsites.net/Account/Login](https://verichatcrm-egendmhdghfjehdt.eastus2-01.azurewebsites.net/Account/Login) | **200.** The current build, deployed by the `dev2` workflow: seven chips render and a chip clears the form and calls the API. |
 | API on Monster ASP | [http://api-site.runasp.net/health](http://api-site.runasp.net/health) | **200 `Alive`.** The process starts; `/` redirects. |
-| API readiness, Monster ASP | [http://api-site.runasp.net/api/health](http://api-site.runasp.net/api/health) | **503 `Degraded`** — `database: Unhealthy`, `jwt: Healthy`. |
-| API readiness, Azure App Service | [https://verichat-api-aqcbgydhhbgbgha5.eastus-01.azurewebsites.net/api/health](https://verichat-api-aqcbgydhhbgbgha5.eastus-01.azurewebsites.net/api/health) | **503 `Degraded`** — same shape, `jwt: Healthy`. Served over HTTPS with a valid certificate. |
+| API readiness, Monster ASP | [http://api-site.runasp.net/api/health](http://api-site.runasp.net/api/health) | **200 `Healthy`** — `database: Database reachable.` at `latencyMs 0`, `jwt: Healthy`, no pending migrations. `POST /api/auth/login` with a demo address returns a token and its role, so hosted sign-in works against this copy. |
+| API readiness, Azure App Service | [https://verichat-api-aqcbgydhhbgbgha5.eastus-01.azurewebsites.net/api/health](https://verichat-api-aqcbgydhhbgbgha5.eastus-01.azurewebsites.net/api/health) | **No answer** since the `5d1f70d` deploy. It was signing tokens with the key committed in `appsettings.json`; that key is gone, `Program.cs` refuses to start on a blank one, so this app needs `Jwt__Key` as an application setting. `DEPLOYMENT.md` §2 is the runbook. |
 | API, second Monster name | [http://verichat-crm-api.runasp.net/](http://verichat-crm-api.runasp.net/) | **`HTTP Error 500.30 - ASP.NET Core app failed to start`.** |
 
 ## UI/UX Web Application
