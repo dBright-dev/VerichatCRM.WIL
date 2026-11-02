@@ -2,17 +2,32 @@
 -- Migration 16 of 21: 20261027100000_AddUserDeviceToken
 -- Route B step for the hosted database on site103828 (api-site.runasp.net).
 --
--- One self-contained batch with no GO separators, because a hosting panel web SQL
--- window sends the text as one batch and GO is client-side only. Run 16 then 17 then
--- 18 then 19 then 20 then 21, one file at a time: a file either commits or rolls back,
--- and the failing file names itself. Re-running a file that already succeeded is a no-op,
--- because every statement is still guarded by IF NOT EXISTS on __EFMigrationsHistory.
+-- One self-contained batch with no GO separators, because a hosting panel web
+-- SQL window submits its text as one batch and GO is a client-side separator.
+-- Run 16, then 17, 18, 19, 20, 21, one file at a time. Every statement keeps the
+-- IF NOT EXISTS guard on __EFMigrationsHistory, so a file that already succeeded
+-- is a no-op and a file that failed can be re-run once its cause is fixed.
 --
--- QUOTED_IDENTIFIER is asserted here rather than trusted to the client: sqlcmd leaves it
--- OFF without -I, and a filtered-index CREATE then fails with Msg 1934 part-way through.
+-- Two failure shapes, and they are NOT interchangeable (measured 2 Nov):
+--   * an execution error - duplicate key on one of the five unique indexes,
+--     truncation into a narrowed column, a NULL where the column turns NOT NULL -
+--     enters the CATCH below, prints the Step n/21 FAILED line, rolls the whole
+--     migration back and re-raises the original message.
+--   * a DDL compile error - Msg 2714 There is already an object named, Msg 2705
+--     Column names in each table must be unique - ABORTS the batch without ever
+--     entering CATCH. You get only the server message, no Step line, and the open
+--     transaction from the failed attempt can outlive it on a pooled panel
+--     connection. The unconditional ROLLBACK guard below is what clears that.
+--   Either way the migration is not recorded, so verify-migration-state.sql tells
+--   you where the chain actually stopped. See DEPLOYMENT.md section 8.5.
+--
+-- QUOTED_IDENTIFIER is asserted rather than trusted to the client: sqlcmd leaves it
+-- OFF without -I, migration 20 builds its unique filtered indexes through
+-- EXEC(N'CREATE UNIQUE INDEX ...'), and that fails with Msg 1934 when it is off.
 -- ============================================================================
 SET QUOTED_IDENTIFIER ON;
 SET ANSI_NULLS ON;
+IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 
 BEGIN TRY
     

@@ -724,13 +724,14 @@ six pending regions split out, one file per migration, each of them:
   default — `sqlcmd` leaves it off without `-I`, and migration 20's five unique filtered indexes
   are built through `EXEC(N'CREATE UNIQUE INDEX …')`, which fails with Msg 1934 when it is off;
 - wrapped in `BEGIN TRY … BEGIN CATCH` with `IF XACT_STATE() <> 0 ROLLBACK TRANSACTION` and the
-  original message re-raised at severity 16, so a failure rolls that one migration back instead of
-  leaving an open transaction sitting on a pooled panel connection;
+  original message re-raised at severity 16 — and opening with `IF @@TRANCOUNT > 0 ROLLBACK
+  TRANSACTION;`, because the wrapper is not universal. See the two failure shapes below;
 - still guarded per statement by `IF NOT EXISTS (… __EFMigrationsHistory …)`, so re-running a file
   that already succeeded is a no-op, and each file records its own `MigrationId`.
 
 Splitting also buys attribution: one 2215-line paste gives you one anonymous error, six pastes
-name the migration that failed.
+tell you which migration failed — either by printing its own `Step n/21 … FAILED` line, or, for
+the errors that abort before the handler runs, by being the file you just pasted.
 
 **Measured, on 2 Nov, against a database frozen in exactly the hosted state.** Created with
 `dotnet ef database update 20261025174339_AddAppointmentMeetingLinks` — 15 rows in
@@ -744,6 +745,39 @@ then each file run through `sqlcmd -b` **deliberately without `-I`**, so the bat
 - Re-running `16-AddUserDeviceToken.sql` prints `Step 16/21 - AddUserDeviceToken applied (or
   already recorded).` and changes nothing.
 - The throwaway database was dropped afterwards.
+
+**The failure handling has two shapes, and assuming they are the same is how you end up trusting
+a message that never arrives.** Both were produced on purpose:
+
+*Execution errors are caught.* A duplicate key raised inside `EXEC(N'…')` — the exact shape of
+migration 20's five unique filtered indexes — reaches the outer `CATCH`, which prints
+`Step n/21 … FAILED - rolled back, nothing recorded.`, prints the server's own message, and
+re-raises it at severity 16. That is the most likely way this chain fails on real data, and it is
+the well-behaved one.
+
+*DDL compile errors abort the batch before `CATCH` is ever entered.* With the history row for
+migration 16 deleted while its `DeviceToken` column still existed — i.e. the schema-drift case —
+file 16 returned only:
+
+```
+Msg 2705, Level 16, State 4, Server …, Line 40
+Column names in each table must be unique. Column name 'DeviceToken' in table 'Users' is
+specified more than once.
+```
+
+No `Step 16/21` line at all, in either the success or the failure wording. `Msg 2714` "There is
+already an object named …" behaves the same way. The consequences are narrower than they look but
+you have to know them: **the migration is not recorded**, because the `INSERT` into
+`__EFMigrationsHistory` sits after the statement that died inside the same uncommitted transaction,
+so `verify-migration-state.sql` still reports the truth and the chain is resumable; but the
+transaction opened by the aborted batch can outlive it on a connection the panel keeps pooled, which
+is why every file now begins with an unconditional `IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;` before
+`BEGIN TRY` — a re-run cannot inherit an orphan from the failed attempt.
+
+So read a failure by its shape: a `Step n/21 … FAILED` line means the migration rolled itself back
+cleanly and the message is the cause; a bare `Msg 2705`/`Msg 2714` with no `Step` line means the
+hosted schema does not match its own history, and §8.1's drift note applies — do not delete the
+object to make the message go away.
 
 One thing the run produced is worth knowing about rather than panicking at: file 17 emits
 *"Warning! The maximum key length for a nonclustered index is 1700 bytes. The index
@@ -778,7 +812,7 @@ A failure tells you which problem it is, and only the first two are fixable by h
 | --- | --- | --- |
 | `Cannot insert duplicate key row … IX_…` | the hosted rows already violate a uniqueness rule migration 20 formalises | de-duplicate per §8.1 section 3, then re-run that file — the guards make it resumable |
 | `String or binary data would be truncated` / `ALTER TABLE … is not allowed because table … has null` | a value does not fit a narrowed width, or a column has `NULL` where the model says `NOT NULL` | §8.1 sections 1–2 name the rows; fix the data, re-run the file |
-| `There is already an object named …` / `Column already exists` | the hosted schema drifted from migration 15 — someone changed it in the panel | do **not** delete the object. Stop, and treat it as a schema-repair task; the guarded script assumes history matches reality |
+| `There is already an object named …` (Msg 2714) / `Column names in each table must be unique` (Msg 2705) — **and no `Step n/21` line** | the hosted schema drifted from migration 15 — someone changed it in the panel. The missing `Step` line is the tell: this class aborts the batch before `CATCH` runs | do **not** delete the object. Stop, run `verify-migration-state.sql` to confirm the chain did not advance, then treat it as a schema-repair task; the guarded script assumes history matches reality |
 | `Invalid object name …` | a table the chain expects is missing, so the host is not really at 15 | run `verify-migration-state.sql` and read which of 1–15 are missing before touching anything else |
 | `Permission denied` on `ALTER`/`CREATE` | the shared SQL login lacks DDL rights | a hosting-panel job, not a script change |
 | syntax error on a construct LocalDB accepts | the hosted engine is older than the LocalDB the rehearsal used | report the version from `SELECT @@VERSION` with the failing file |
