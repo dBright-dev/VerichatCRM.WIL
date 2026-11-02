@@ -340,6 +340,71 @@ blank `BackupApiBaseUrl` in the deployed web configuration so there is one failu
 instead of two — the same reasoning behind §9's warning about the design-time factory, and the
 reason the web project's `appsettings.Development.json` already ships that key empty.
 
+### 7.3 One shared Azure SQL database, so the backup is real
+
+The plan chosen on 2 Nov: **both copies of the API read one database**, which is what turns the
+failover from a second error into a recovery. It also fixes the token problem in
+`ApiFallbackHandler.cs:62`, which replays the primary's JWT to the backup — with one shared
+`Jwt:Key` that token validates on both hosts.
+
+**Test this first, before provisioning anything, because the whole plan depends on it.** The
+Monster ASP API sits inside a network whose own SQL server is reachable only from there
+(`db70543.databaseasp.net` resolves to the private `10.0.0.23`). Whether it may also make an
+*outbound* connection to Azure SQL on TCP 1433 is a property of that host's egress rules, and it
+is not observable from a working copy. Point the Monster API's `ConnectionStrings__DefaultConnection`
+at the new database and read `/api/health`: `Healthy` means egress is open and the plan works; a
+timeout means shared hosting blocks outbound 1433, and the fallback is to make Azure the only API
+and retire Monster entirely rather than to keep two halves of a failover that cannot both see the
+data.
+
+**Steps, in order.** Every hosted write here needs the panels; none of them can be done from this
+repository, and steps 4 onward change shared infrastructure, so confirm each one before running it.
+
+1. **Create the database.** Azure SQL logical server + database in the same region as the App
+   Service (`eastus-01`), SQL authentication rather than Entra ID, because the connection string
+   the app builds is a SQL-auth one. Add the server's own firewall rule allowing
+   *Azure services*, and `0.0.0.0` only if you intend to administer it from a laptop — which,
+   unlike the Monster server, this one will actually permit.
+2. **Create the schema on the empty database** with `Database/azure-sql-full-schema.sql`. It is
+   `dotnet ef migrations script --idempotent` output covering all 21 migrations and it stamps
+   `__EFMigrationsHistory` for every one of them, so the API reports zero pending migrations the
+   moment it connects. Run it against an *empty* database; on a database that already has some of
+   the tables the idempotent guards make it a no-op for those, which is the intended behaviour,
+   but do not use it as a substitute for the incremental chain in §8.5 against the existing
+   Monster data.
+3. **Move the rows that already exist.** The accounts, clients, catalogue and tickets currently
+   live in the Monster database, which nothing outside that network can read. The export has to
+   run from inside it — the host's own SQL tool in the panel, or a backup file they can hand over.
+   Until this step happens the new database is empty, and an empty shared database is a worse
+   outcome than the current arrangement: both copies would come up `Healthy` over a system with no
+   users in it.
+4. **Repoint both APIs at it** by setting `ConnectionStrings__DefaultConnection` to the same value
+   in the Monster ASP panel and in Azure App Service → Settings → Environment variables. Keep
+   `Encrypt=True;TrustServerCertificate=False`; `Program.cs:41` rejects a Production connection
+   string without encryption, which is why the Azure copy's `environment: null` in §7.2 is not a
+   reprieve.
+5. **Set one shared `Jwt:Key`** in both, before turning failover on. Two different keys and every
+   request that fails over comes back `401`, and on the web tier that reads as the user being
+   logged out by the safety net. §2 already asks for a fresh key — do the rotation once and put
+   the same value in both places.
+6. **Verify both origins** return `Healthy` with no pending migrations, then sign in against one
+   and call an authenticated route against the other with the same token. That single check proves
+   steps 4 and 5 together; a `Healthy` pair does not.
+7. **Only now enable the backup.** Set `BackupApiBaseUrl` on the deployed web tier, and
+   `EXPO_PUBLIC_API_BACKUP_URL` for mobile — in `VerichatMobile/.env` for a local build, and in an
+   `env` block in `VerichatMobile/eas.json` for a cloud one, because no profile sets an `env` block
+   today and a cloud build therefore resolves whatever fallback is committed in `api.ts`. The
+   mobile retry rules are in `fetchWithFailover()`: a read is replayed on `500/502/503/504` or a
+   socket failure, a write only when the primary proved it never ran the handler.
+
+**Cost.** An Azure SQL database is a monthly charge even on the cheapest general-purpose tier, and
+it is the reason this is a decision rather than a task. It also means the Monster SQL subscription
+becomes redundant once step 3 is done.
+
+**Rollback.** Steps 4 and 5 are two app settings each; putting the previous values back returns the
+system to the state described in §7.2. Step 3 is the one that is not reversible from here, which is
+why it should be a copy into the new database rather than a move out of the old one.
+
 ## 8. Pre-flight checks before migrating an existing database
 
 **Five migrations are new or rewritten in this working copy.** Read §8.1 before
