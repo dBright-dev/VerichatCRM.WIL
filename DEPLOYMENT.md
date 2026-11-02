@@ -475,6 +475,31 @@ Two things this leaves that need attention:
   `README.md`. Those credentials are live the moment the API is reachable from the internet. §8.2
   describes clearing them.
 
+### 7.5 Two APIs, two databases, so failover is switched off (2 November 2026)
+
+The arrangement chosen on 2 Nov is the opposite of §7.3's premise. `api-site.runasp.net` reads the
+Monster database (`db70543`), and the Azure API reads `VerichatDB`. `/api/health` proves the first
+half already: the Monster copy reports `MigrationsPending` at `latencyMs: 3`, which is a colocated
+SQL Server answering, not a cross-region call to Brazil. Nothing had to be configured for it — the
+App Setting the panel already holds outranks `appsettings.json`, and it is the only reason that copy
+still works after §7.4 moved the committed default to Entra. **Do not delete that app setting when
+next deploying the API to Monster**, and do not put its value in this repository: it is a SQL
+password, and the one that was in use became known in plain text on 2 Nov, so it needs rotating in
+the hosting panel before any of this is written down anywhere.
+
+The consequence is that these two APIs are not copies of each other. A request that fails over does
+not land on a backup of the same data, it lands on a different dataset with different users,
+different clients and different tickets. That is worse than no fallback: a read returns the wrong
+answer and looks like success, and a write commits against the system nobody is looking at. So
+`BackupApiBaseUrl` in `VerichatCRM.Web/appsettings.json` is empty, and
+`ApiFallbackHandler` disables itself on that (`Services/ApiFallbackHandler.cs:21`) rather than
+retrying into the wrong database.
+
+Failover comes back only under §7.3's condition — one database both APIs read, one `Jwt:Key` so a
+token minted by one validates on the other. Until then the honest options are: Azure becomes the
+only API once §7.4 steps 1-4 are done and the real rows have been exported out of the Monster
+network, or Monster stays primary with no backup at all.
+
 ## 8. Pre-flight checks before migrating an existing database
 
 **Five migrations are new or rewritten in this working copy.** Read §8.1 before
