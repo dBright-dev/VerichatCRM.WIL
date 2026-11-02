@@ -5,16 +5,31 @@ https://youtu.be/sKW-5iuRPyI
 
 ## Hosted applications
 
-The checked-in publish profiles list these deployment targets:
+Four deployment targets are configured. They are not in the same state, so each was requested over HTTP rather than described from the publish profile — results below are from **2 November 2026**.
 
-- **Staff web application:** [http://verichat-crm-web.runasp.net/](http://verichat-crm-web.runasp.net/) — **returns 200**
-- **API (deployed host):** [http://api-site.runasp.net/](http://api-site.runasp.net/)
-- **API liveness:** [http://api-site.runasp.net/health](http://api-site.runasp.net/health)
-- **API readiness and database check:** [http://api-site.runasp.net/api/health](http://api-site.runasp.net/api/health)
+| Surface | URL | What it answers |
+| --- | --- | --- |
+| Staff web application | [http://verichat-crm-web.runasp.net/](http://verichat-crm-web.runasp.net/) | **200.** The landing pages, `/Account/Login` and `/privacy` render. |
+| API on Monster ASP | [http://api-site.runasp.net/health](http://api-site.runasp.net/health) | **200 `Alive`.** The process starts; `/` redirects. |
+| API readiness, Monster ASP | [http://api-site.runasp.net/api/health](http://api-site.runasp.net/api/health) | **503 `Degraded`** — `database: Unhealthy`, `jwt: Healthy`. |
+| API readiness, Azure App Service | [https://verichat-api-aqcbgydhhbgbgha5.eastus-01.azurewebsites.net/api/health](https://verichat-api-aqcbgydhhbgbgha5.eastus-01.azurewebsites.net/api/health) | **503 `Degraded`** — same shape, `jwt: Healthy`. Served over HTTPS with a valid certificate. |
+| API, second Monster name | [http://verichat-crm-api.runasp.net/](http://verichat-crm-api.runasp.net/) | **`HTTP Error 500.30 - ASP.NET Core app failed to start`.** |
 
-These links come from the Web Deploy profiles in `VerichatCRM.Web/Properties/PublishProfiles` and `VerichatCRM.API/Properties/PublishProfiles`, and they were live-checked on 1 Nov 2026. The API host names `api-site.runasp.net`, which is the site `site94518-WebDeploy.pubxml` publishes to; `verichat-crm-api.runasp.net` answers with the same page, so the two names reach either one site or two copies of the same broken deployment — only the hosting panel can tell them apart. **The API does not serve today: every path returns `HTTP Error 500.30 - ASP.NET Core app failed to start`,** which is missing application settings (`ConnectionStrings__DefaultConnection`, `Jwt__Key`), not a code fault — DEPLOYMENT.md §7.1 is the runbook. `/health` reports the process is up; `/api/health` additionally reports database readiness.
+**The database is the only failing check, and it fails on both hosts that start, which means hosted sign-in does not work.** Sign-in is a call to the API, and the API cannot read the `Users` table, so a correct password still ends as a failure — `DEPLOYMENT.md` §7 records the HTTP 500 the web tier returns and why. Everything that does not touch SQL (the landing pages, the privacy notice, the sign-in form itself, `/health`) works as designed. **The whole system, with its data, runs locally** — see [Start both tiers with one command](#start-both-tiers-with-one-command).
 
-Neither site has a TLS certificate bound, so use `http://`. An `https://` request to any `*.runasp.net` name fails at the TLS layer. `VerichatCRM.Web/appsettings.json` and the mobile `API_BASE_URL` fallback both carry the `http://api-site.runasp.net` origin for that reason (`VerichatMobile/.env` is git-ignored, so it matches but is not part of the repository); a signed mobile release build additionally requires a certificate, because Android and iOS block cleartext traffic.
+The two causes are different and both are already known:
+
+- **Monster ASP** reaches the SQL Server that came with the hosting plan. That server accepts connections from the host's own private network only, and its `sa`-equivalent credential has been rotated once since the connection string was written, so the deployed string and the server no longer agree. `DEPLOYMENT.md` §9 has the rotation runbook.
+- **Azure** reaches `verichat-server-2026` / `VerichatDB` with an Entra token minted by the App Service's managed identity. The database exists and the token is valid, but that identity has never been added as a user inside the database, so the server has nothing to authorise it against. `Database/azure-managed-identity-user.sql` is the script that creates that user; it needs to be run by someone who can connect to the server as its Entra administrator.
+
+`18456` (login rejected) and `4060` (cannot open this database) are different failures with different fixes, and the payload quoted above cannot tell them apart because both hosts still run the build that answers `CanConnectAsync` with one sentence for all of them. `HealthController` now opens the connection itself and classifies the SQL error number, so the next deployed build names which of the two each host needs. Push to `dev2` deploys the Azure copy automatically (see [GitHub Actions](#github-actions)).
+
+`api-site.runasp.net` and `verichat-crm-api.runasp.net` are two separate sites, not two names for one: they now answer differently, which they could not do if they shared a process. The second has no application settings at all — it is the deployment the publish profile was generated for and never completed — and `DEPLOYMENT.md` §7.1 is the runbook for finishing it.
+
+Only the Azure host serves HTTPS; an `https://` request to any `*.runasp.net` name fails at the TLS layer, because no certificate is bound there. `VerichatCRM.Web/appsettings.json` and the mobile `API_BASE_URL` fallback therefore carry the `http://api-site.runasp.net` origin (`VerichatMobile/.env` is git-ignored, so it matches but is not part of the repository), and a signed mobile release build needs the Azure origin instead, because Android and iOS block cleartext traffic — that repoint is the remaining step in `DEPLOYMENT.md` §7.3.
+
+One consequence of the hosted state is worth checking deliberately: the deployed sign-in page contains no **Demo: quick login** panel and no `.test.local` address in its markup, verified against `http://verichat-crm-web.runasp.net/Account/Login` on the same date. The development accounts, the one-click buttons, and the list they read are gated to `IsDevelopment()` / `__DEV__` at three separate layers, so a deployment has neither the panel nor the accounts.
+
 
 ## Architecture
 
