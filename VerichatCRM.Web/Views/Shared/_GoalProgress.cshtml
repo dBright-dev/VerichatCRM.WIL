@@ -1,0 +1,24 @@
+﻿@model VerichatCRM.Web.Models.Goals.GoalProgressViewModel
+@{
+    var pct = (int)Math.Round(Math.Clamp(Model.Percentage, 0, 100));
+}
+
+<div class="vc-card p-3 mb-3" aria-label="Monthly sales goal">
+    @if (!Model.HasGoal)
+    {
+        <div class="fw-semibold small">Monthly goal</div>
+        <div class="vc-text-muted small">No goal set yet. Set a target to track progress here.</div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-baseline flex-wrap gap-2">
+            <div class="fw-semibold small">Monthly goal</div>
+            <div class="vc-text-muted small">@Model.Achieved.ToString("C0") of @Model.Target.ToString("C0")</div>
+        </div>
+        <div class="progress mt-2" style="height:10px;" role="progressbar"
+             aria-valuenow="@pct" aria-valuemin="0" aria-valuemax="100" aria-label="Goal progress">
+            <div class="progress-bar" style="width:@(pct)%;"></div>
+        </div>
+        <div class="vc-text-muted small mt-1">@Model.Percentage.ToString("0.#")% achieved</div>
+    }
+</div>

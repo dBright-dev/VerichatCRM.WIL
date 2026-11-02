@@ -1,0 +1,106 @@
+@model VerichatCRM.Web.ViewModels.Logistics.DispatchDashboardViewModel
+@{
+    ViewData["Title"] = ViewData["Title"] as string ?? "Dispatch Dashboard";
+}
+
+@* A dispatcher reads lanes, not tiles: which column each delivery is sitting in,
+   in date order. The lanes are the same .card / .badge / .route-* components the
+   rest of the product uses, arranged the way this job actually works — which is
+   why this screen does not look like the stock board or the ticket queue.
+   DESIGN-SYSTEM.md 4. *@
+
+@if (Model.Lanes.Count == 0)
+{
+    <div class="card">
+        <div class="card-title">Nothing on the road</div>
+        <p class="empty-state">No delivery is open right now. New ones appear here as soon as an order is dispatched.</p>
+    </div>
+}
+else
+{
+    <div class="dispatch-lanes">
+        @foreach (var lane in Model.Lanes)
+        {
+            <div class="card dispatch-lane">
+                <div class="dispatch-lane__head">
+                    <span class="card-title">@lane</span>
+                    <span class="badge @Badge.For(lane)">@Model.ByLane[lane].Count</span>
+                </div>
+                <ul class="dispatch-lane__list">
+                    @foreach (var d in Model.ByLane[lane])
+                    {
+                        <li class="dispatch-row">
+                            <a class="dispatch-row__ref" asp-action="Tracker">@d.TrackingNumber</a>
+                            <div class="shipment-route">
+                                <span class="route-point"><span class="route-dot origin"></span><span class="route-label">@d.Origin</span></span>
+                                <span class="route-line"></span>
+                                <span class="route-point"><span class="route-dot destination"></span><span class="route-label">@d.Destination</span></span>
+                            </div>
+                            <div class="dispatch-row__foot">
+                                <span class="vc-text-muted">@d.WeightKg kg · @d.OrderId</span>
+                                <span class="meta-value">@d.EstimatedArrival.ToLocalTime().ToString("dd MMM")</span>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+    </div>
+}
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-title">Past the promised date</div>
+        <p class="card-subtitle">@Model.Late.Count late · @Model.DeliveredThisWeek delivered in the last 7 days</p>
+        @if (Model.Late.Count == 0)
+        {
+            <p class="empty-state">Every open delivery is still inside its ETA.</p>
+        }
+        else
+        {
+            <table class="data-table">
+                <thead>
+                    <tr><th>Tracking #</th><th>Destination</th><th>Was due</th><th>Carrier</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model.Late)
+                    {
+                        <tr class="vc-row-danger">
+                            <td><strong>@d.TrackingNumber</strong></td>
+                            <td>@d.Destination</td>
+                            <td>@d.EstimatedArrival.ToLocalTime().ToString("dd MMM HH:mm")</td>
+                            <td>@(d.Carrier ?? "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <div class="card">
+        <div class="card-title">Service due</div>
+        <p class="card-subtitle">Within 30 days, or flagged needs service</p>
+        @if (Model.ServiceDue.Count == 0)
+        {
+            <p class="empty-state">Nothing is coming up for a service visit.</p>
+        }
+        else
+        {
+            <ul class="activity-list">
+                @foreach (var a in Model.ServiceDue)
+                {
+                    <li class="activity-item">
+                        <span class="activity-dot @((a.NextServiceDue ?? DateTime.MaxValue) < DateTime.UtcNow ? "critical" : "warning")"></span>
+                        <div class="activity-body">
+                            <div class="activity-title">
+                                <a asp-action="AssetDetail" asp-route-id="@a.SerialNumber">@a.Model</a>
+                            </div>
+                            <div class="activity-subtitle">@a.SerialNumber · @(a.Location ?? a.ClientId)</div>
+                        </div>
+                        <span class="activity-time">@a.NextServiceDue?.ToLocalTime().ToString("dd MMM") ?? "now"</span>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</div>

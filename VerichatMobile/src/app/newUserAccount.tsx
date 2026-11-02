@@ -1,9 +1,11 @@
+import { CRMTheme } from '../constants/crmTheme'
 import { useRouter } from 'expo-router'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
     Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native'
 import { registerClient } from '../constants/authService'
+import { useKeyboardAutoScroll } from '../hooks/useKeyboardAutoScroll'
 
 const CreateAccountScreen = () => {
   const router = useRouter()
@@ -13,6 +15,12 @@ const CreateAccountScreen = () => {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [busy, setBusy] = useState(false)
+  const fullNameInput = useRef<TextInput>(null)
+  const companyInput = useRef<TextInput>(null)
+  const emailInput = useRef<TextInput>(null)
+  const passwordInput = useRef<TextInput>(null)
+  const confirmPasswordInput = useRef<TextInput>(null)
+  const { scrollRef, contentRef, onFieldFocus } = useKeyboardAutoScroll()
 
   const handleSignUp = async () => {
     if (
@@ -31,8 +39,9 @@ const CreateAccountScreen = () => {
       return
     }
 
-    // Registers a "Client User" account against the CRM API and stores the
-    // returned JWT so the rest of the app is authenticated.
+    // Creates a "Client User" account against the CRM API and signs it in with the
+    // password chosen above, so the person lands on their own home screen instead of
+    // being sent back to a form to type the same password twice.
     setBusy(true)
     try {
       await registerClient({
@@ -41,9 +50,18 @@ const CreateAccountScreen = () => {
         password,
         companyName: companyName.trim(),
       })
+
       router.replace('/')
     } catch (e) {
-      Alert.alert('Sign up failed', e instanceof Error ? e.message : 'Something went wrong.')
+      // The account write and the sign-in are two calls, so a failure here may still
+      // have created the account. Say that, because "try again" would hit an address
+      // already registered.
+      Alert.alert(
+        'Could not finish signing you in',
+        `${e instanceof Error ? e.message : 'Something went wrong.'} ` +
+          'If your account was created, use the sign-in screen with the password you just chose.',
+        [{ text: 'Sign in', onPress: () => router.replace('/clientLogin') }],
+      )
     } finally {
       setBusy(false)
     }
@@ -52,16 +70,18 @@ const CreateAccountScreen = () => {
   return (
     <KeyboardAvoidingView
       style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        <View ref={contentRef} collapsable={false} style={styles.content}>
         <View style={styles.Logo}>
           <Image
-            source={require('../../assets/images/canva/design_pt.png')}
+            source={require('../../assets/images/brand/verichat-logo-light.png')}
             style={styles.logo_image}
           />
         </View>
@@ -71,6 +91,8 @@ const CreateAccountScreen = () => {
         <View style={styles.form}>
           <Text style={styles.label}>Full Name</Text>
           <TextInput
+            ref={fullNameInput}
+            onFocus={() => onFieldFocus(fullNameInput.current)}
             style={styles.input}
             value={fullName}
             onChangeText={setFullName}
@@ -81,6 +103,8 @@ const CreateAccountScreen = () => {
 
           <Text style={styles.label}>Company Name</Text>
           <TextInput
+            ref={companyInput}
+            onFocus={() => onFieldFocus(companyInput.current)}
             style={styles.input}
             value={companyName}
             onChangeText={setCompanyName}
@@ -90,6 +114,8 @@ const CreateAccountScreen = () => {
 
           <Text style={styles.label}>Email address</Text>
           <TextInput
+            ref={emailInput}
+            onFocus={() => onFieldFocus(emailInput.current)}
             style={styles.input}
             value={email}
             onChangeText={setEmail}
@@ -102,6 +128,8 @@ const CreateAccountScreen = () => {
 
           <Text style={styles.label}>Password</Text>
           <TextInput
+            ref={passwordInput}
+            onFocus={() => onFieldFocus(passwordInput.current)}
             style={styles.input}
             value={password}
             onChangeText={setPassword}
@@ -114,6 +142,8 @@ const CreateAccountScreen = () => {
 
           <Text style={styles.label}>Confirm Password</Text>
           <TextInput
+            ref={confirmPasswordInput}
+            onFocus={() => onFieldFocus(confirmPasswordInput.current)}
             style={styles.input}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
@@ -131,6 +161,17 @@ const CreateAccountScreen = () => {
           >
             <Text style={styles.button_text}>{busy ? 'Creating…' : 'Sign up'}</Text>
           </TouchableOpacity>
+
+          {/* A store listing is not accepted unless the policy is reachable before an
+              account exists, and this is the screen where somebody hands over a company
+              address - so say where it goes, right under the button that sends it. */}
+          <Text style={styles.privacy_note}>
+            We hold only what the supply chain needs.{'\n'}
+            <Text style={styles.privacy_link} onPress={() => router.push('/privacy')}>
+              Read the privacy notice
+            </Text>
+          </Text>
+        </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -142,21 +183,22 @@ export default CreateAccountScreen
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
-    backgroundColor: '#004e7a',
+    backgroundColor: CRMTheme.primaryDark,
   },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#004e7a',
+    backgroundColor: CRMTheme.primaryDark,
     paddingVertical: 40,
   },
+  content: { width: '100%', alignItems: 'center' },
   Logo: {
     marginBottom: 10,
   },
   logo_image: {
-    width: 150,
-    height: 150,
+    width: 220,
+    height: 134,
     resizeMode: 'contain',
   },
   title: {
@@ -188,7 +230,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   button: {
-    backgroundColor: '#0057a8',
+    backgroundColor: CRMTheme.primary,
     paddingVertical: 14,
     width: 170,
     alignSelf: 'center',
@@ -205,5 +247,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#ffffff',
+  },
+  privacy_note: {
+    textAlign: 'center',
+    fontSize: 12,
+    lineHeight: 19,
+    color: '#C7D6E6',
+    marginTop: 18,
+  },
+  privacy_link: {
+    color: '#8FC1FF',
+    fontWeight: '700',
   },
 })

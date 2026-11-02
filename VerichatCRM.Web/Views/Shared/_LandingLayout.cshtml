@@ -1,0 +1,142 @@
+@{
+    // The public shell. Deliberately not _Layout: a marketing page should not
+    // carry the signed-in app chrome (sidebar, topbar, notification bell), and an
+    // anonymous visitor should not load SignalR or the hub poller.
+    var jwt = Context.Session.GetString("JwtToken");
+    var userName = Context.Session.GetString("UserName");
+    var isAuthed = !string.IsNullOrEmpty(jwt);
+
+    var here = Normalize(Context.Request.Path.HasValue ? Context.Request.Path.Value! : "/");
+
+    // The nav marks whichever page you are on. It has to be the server that says so:
+    // these are five different documents, and a script that reads location.pathname
+    // would leave every one of them unmarked until it ran.
+    //
+    // Only the short spelling exists. An action with a [Route] attribute is taken out of
+    // conventional routing altogether, so /Home/about is a 404 rather than a second door
+    // to the same page - which is the reason the nav, the footer and the staff screens all
+    // link /privacy rather than the controller-shaped URL the notice used to answer at.
+    static string Normalize(string path)
+    {
+        var trimmed = path.Trim('/');
+        return trimmed.Length == 0 ? "/" : "/" + trimmed.ToLowerInvariant();
+    }
+
+    string OnThisPage(string href) => Normalize(href) == here ? "page" : "false";
+}
+<!DOCTYPE html>
+<html lang="en" class="lnd-html">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Verichat</title>
+    <meta name="description" content="Verichat runs the medical supply chain for clinics, mine rescue stations and teaching laboratories - ranked enquiries, tracked deliveries and SLA-routed service in one portal." />
+    <meta name="theme-color" content="#070D1C" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/verichat-theme.css" />
+    <link rel="stylesheet" href="~/pages/landing.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="lnd">
+    <a class="vc-skip-link" href="#mainContent">Skip to main content</a>
+
+    <header class="lnd-nav" id="lndNav">
+        <div class="lnd-nav__inner">
+            <a class="lnd-brand" href="/" aria-label="Verichat home">
+                <img class="lnd-brand__logo" src="/images/logo.png" width="34" height="34" alt="" />
+                <span class="lnd-brand__text">VERICHAT</span>
+                <span class="lnd-brand__tag">Supply&nbsp;·&nbsp;Service&nbsp;·&nbsp;CRM</span>
+            </a>
+
+            <nav class="lnd-nav__links" id="lndNavLinks" aria-label="Pages">
+                @* These are the four public pages, and the logo is Home. What used to
+                   live here were the home page's own section anchors: a bare "#catalogue"
+                   is a fragment of the document you are already standing on, so on the
+                   privacy notice and every page added since then those links went nowhere
+                   at all. The sections they pointed at are still reachable - the footer
+                   keeps them with their leading slash, which is the only spelling that
+                   means "the home page's section". *@
+                <a href="/about" aria-current='@OnThisPage("/about")'>About</a>
+                <a href="/services" aria-current='@OnThisPage("/services")'>Services</a>
+                <a href="/gallery" aria-current='@OnThisPage("/gallery")'>Gallery</a>
+                <a href="/contact" aria-current='@OnThisPage("/contact")'>Contact</a>
+            </nav>
+
+            <div class="lnd-nav__actions">
+                @if (isAuthed)
+                {
+                    <span class="lnd-nav__user">@(string.IsNullOrWhiteSpace(userName) ? "Signed in" : userName)</span>
+                    <a class="lnd-btn lnd-btn--solid" href="/dashboard">Open dashboard</a>
+                }
+                else
+                {
+                    <a class="lnd-nav__signin" href="/account/login">Sign in</a>
+                    <a class="lnd-btn lnd-btn--solid" href="/account/register">Client portal</a>
+                }
+                <button class="lnd-nav__toggle" type="button" aria-controls="lndNavLinks" aria-expanded="false" aria-label="Open menu">
+                    <span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main id="mainContent">
+        @RenderBody()
+    </main>
+
+    <footer class="lnd-footer">
+        <div class="lnd-footer__top">
+            <div class="lnd-footer__brand">
+                <a class="lnd-brand lnd-brand--wordmark" href="/" aria-label="Verichat home">
+                    <img src="/images/brand/verichat-logo-light.png" width="176" height="107" alt="Verichat Quality Projects" />
+                </a>
+                <p>
+                    Medical equipment and consumables, supplied and serviced against a
+                    schedule you can see.
+                </p>
+            </div>
+
+            <div class="lnd-footer__col">
+                <h4>Company</h4>
+                <a href="/about">Who we are</a>
+                <a href="/services">What we do</a>
+                <a href="/gallery">What we stock</a>
+                <a href="/contact">Contact us</a>
+            </div>
+
+            <div class="lnd-footer__col">
+                <h4>Platform</h4>
+                <a href="/#platform">How it works</a>
+                <a href="/#catalogue">Catalogue</a>
+                <a href="/#sectors">Sectors</a>
+                <a href="/#team">Team</a>
+            </div>
+
+            <div class="lnd-footer__col">
+                <h4>Portal</h4>
+                <a href="/account/login">Sign in</a>
+                <a href="/account/register">Request access</a>
+                <a href="/logistics/tracker">Track a delivery</a>
+                <a href="/support/tickethub">Raise a fault</a>
+            </div>
+
+            <div class="lnd-footer__col">
+                <h4>Your data</h4>
+                <a href="/privacy">Privacy notice</a>
+                <a href="/account/help">Cannot sign in</a>
+            </div>
+        </div>
+
+        <div class="lnd-footer__base">
+            <span>© @DateTime.Now.Year Verichat. All rights reserved.</span>
+            <span>Delivery, service and supply chain for clinical, mining and education institutions.</span>
+        </div>
+    </footer>
+
+    <script src="~/js/landing.js" defer></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

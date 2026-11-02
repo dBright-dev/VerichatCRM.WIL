@@ -23,6 +23,18 @@ namespace VerichatCRM.API.DTOs.Responses
         public string Status { get; set; } = "pending";
     }
 
+    public class StaffTelehealthAppointmentResponse : TelehealthAppointmentResponse
+    {
+        [JsonPropertyName("clientUserId")]
+        public string ClientUserId { get; set; } = string.Empty;
+
+        [JsonPropertyName("clientName")]
+        public string ClientName { get; set; } = string.Empty;
+
+        [JsonPropertyName("createdAt")]
+        public DateTime CreatedAt { get; set; }
+    }
+
     public class LabResultMobileResponse
     {
         [JsonPropertyName("id")]

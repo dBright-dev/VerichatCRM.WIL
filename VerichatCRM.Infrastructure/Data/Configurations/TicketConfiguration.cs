@@ -1,8 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using VerichatCRM.Core.Entities;
 
 namespace VerichatCRM.Infrastructure.Data.Configurations
@@ -13,34 +10,21 @@ namespace VerichatCRM.Infrastructure.Data.Configurations
         {
             builder.HasKey(t => t.TicketId);
             builder.Property(t => t.TrackingNumber).IsRequired().HasMaxLength(30);
-            builder.HasIndex(t => t.TrackingNumber).IsUnique();
             builder.Property(t => t.Title).IsRequired().HasMaxLength(200);
             builder.Property(t => t.Description).HasMaxLength(4000);
             builder.Property(t => t.Priority).HasMaxLength(20);
             builder.Property(t => t.Status).HasMaxLength(30);
             builder.Property(t => t.Category).HasMaxLength(50);
+            builder.Property(t => t.ResolutionNotes).HasMaxLength(4000);
 
-            // Store PhotoUrls as JSON column
-            builder.Property(t => t.PhotoUrls)
-                .HasConversion(
-                    v => string.Join(';', v),
-                    v => v.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList())
-                .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<string>>(
-                    (a, b) => a!.SequenceEqual(b!),
-                    a => a.Aggregate(0, (h, s) => HashCode.Combine(h, s.GetHashCode())),
-                    a => a.ToList()));
+            // PhotoUrls stays a nvarchar(max) JSON column, which is how EF Core 10
+            // maps List<string> by default and how the deployed rows are stored.
+            // Do not add the old semicolon value converter here: it would reinterpret
+            // every existing JSON array as one long string.
 
-            // Store Activities as owned collection
-            builder.OwnsMany(t => t.Activities, a =>
-            {
-                a.WithOwner().HasForeignKey(x => x.TicketId);
-                a.HasKey(x => x.ActivityId);
-                a.Property(x => x.Action).HasMaxLength(50);
-                a.Property(x => x.FromValue).HasMaxLength(100);
-                a.Property(x => x.ToValue).HasMaxLength(100);
-                a.Property(x => x.Notes).HasMaxLength(2000);
-            });
-
+            // Tracking numbers are generated on create; the filter keeps any legacy
+            // blank rows out of the unique index rather than colliding with each other.
+            builder.HasIndex(t => t.TrackingNumber).IsUnique().HasFilter("[TrackingNumber] <> N''");
             builder.HasIndex(t => new { t.ClientId, t.Status });
             builder.HasIndex(t => new { t.AssignedToUserId, t.Status });
             builder.HasIndex(t => t.SlaDeadline);

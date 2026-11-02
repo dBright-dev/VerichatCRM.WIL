@@ -57,6 +57,12 @@ namespace VerichatCRM.API.Services
                 Role = UserRoles.SystemAdministrator,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
+
+                // Verified at birth. The flag exists to distrust an address claimed on
+                // a public sign-up form, and this address came from the deployment's own
+                // configuration, which only somebody who already controls the server can
+                // write.
+                EmailVerified = true,
             };
 
             context.Users.Add(user);

@@ -1,0 +1,38 @@
+﻿@model VerichatCRM.Web.Models.StatusPageViewModel
+
+<section class="vc-status" aria-labelledby="statusTitle">
+    <div class="vc-status__card">
+        @if (Model.Code == 404)
+        {
+            <div class="vc-status__code" aria-hidden="true">404</div>
+        }
+        else
+        {
+            <div class="vc-status__icon" aria-hidden="true">@Model.Icon</div>
+        }
+
+        <h2 class="vc-status__title" id="statusTitle">@Model.Heading</h2>
+        <p class="vc-status__msg">@Model.Message</p>
+
+        <div class="vc-status__actions">
+            <a class="btn btn-primary" href="@Model.PrimaryUrl">@Model.PrimaryLabel</a>
+
+            @if (Model.Code != 403 || Model.IsAuthenticated)
+            {
+                <button type="button" class="btn btn-outline-secondary" onclick="history.length > 1 ? history.back() : (location.href='@Model.PrimaryUrl')">Go back</button>
+            }
+
+            @if (Model.IsAuthenticated)
+            {
+                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-outline-secondary">Sign out</button>
+                </form>
+            }
+        </div>
+
+        @if (Model.ShowRequestId)
+        {
+            <p class="vc-status__req">Request ID: <code>@Model.RequestId</code></p>
+        }
+    </div>
+</section>

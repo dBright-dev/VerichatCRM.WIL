@@ -15,13 +15,19 @@
         <div class="stat-accent orange"></div>
         <div class="stat-label">Escalated</div>
         <div class="stat-value">@Model.Escalated</div>
-        <div class="stat-meta">past SLA</div>
+        <div class="stat-meta">raised above the first line</div>
     </div>
     <div class="stat-card">
         <div class="stat-accent red"></div>
         <div class="stat-label">SLA Breaches</div>
         <div class="stat-value">@Model.SlaBreaches</div>
         <div class="stat-meta">auto-flagged</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-accent orange"></div>
+        <div class="stat-label">Assets Awaiting Service</div>
+        <div class="stat-value">@Model.AssetsUnderMaintenance</div>
+        <div class="stat-meta">flagged on the register</div>
     </div>
     <div class="stat-card">
         <div class="stat-accent green"></div>
@@ -32,38 +38,37 @@
 </div>
 
 <div class="card">
-    <div class="card-title">Recent Tickets</div>
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Tracking #</th>
-                <th>Title</th>
-                <th>Priority</th>
-                <th>Status</th>
-                <th>Time</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var t in Model.RecentTickets)
-            {
-                <tr>
-                    <td><strong>@t.TrackingNumber</strong></td>
-                    <td>@t.Title</td>
-                    <td><span class="badge @GetPriorityBadge(t.Priority)">@t.Priority</span></td>
-                    <td>@t.Status</td>
-                    <td>@t.TimeAgo</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
-
-@functions {
-    string GetPriorityBadge(string p) => p switch
+    <div class="card-title">Longest open tickets</div>
+    <p class="card-subtitle">The eight that have waited longest, oldest first.</p>
+    @if (Model.RecentTickets.Count == 0)
     {
-        "Critical" => "badge-critical",
-        "High" => "badge-warning",
-        "Medium" => "badge-info",
-        _ => "badge-neutral"
-    };
-}
+        <p class="empty-state">Nothing is open. The queue is clear.</p>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Tracking #</th>
+                    <th>Title</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in Model.RecentTickets)
+                {
+                    <tr>
+                        <td><strong>@t.TrackingNumber</strong></td>
+                        <td>@t.Title</td>
+                        <td><span class="badge @Badge.For(t.Priority)">@t.Priority</span></td>
+                        <td><span class="badge @Badge.For(t.Status)">@t.Status</span></td>
+                        <td>@t.TimeAgo</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    <a class="btn btn-outline btn-sm" asp-controller="Support" asp-action="TicketHub">Open the ticket hub</a>
+</div>

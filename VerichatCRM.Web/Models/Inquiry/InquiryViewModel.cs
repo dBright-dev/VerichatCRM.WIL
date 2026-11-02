@@ -16,10 +16,21 @@ namespace VerichatCRM.Web.Models.Inquiry
         public string Source { get; set; } = "";
         public string Status { get; set; } = "";
         public int Score { get; set; }
+        public string? Urgency { get; set; }
+        public decimal? EstimatedValue { get; set; }
         public string? Notes { get; set; }
         public DateTime? ResponseDueAt { get; set; }
         public bool IsOverdue { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? RespondedAt { get; set; }
+
+        // Supplied by the API once the follow-up tracking endpoints ship.
+        public DateTime? LastContactDate { get; set; }
+        public DateTime? NextFollowUpDate { get; set; }
+        public string? FollowUpStatus { get; set; }
+
+        // Falls back to the SLA response time until LastContactDate exists.
+        public DateTime? EffectiveLastContact => LastContactDate ?? RespondedAt;
     }
 
     public class InquirySummaryViewModel
@@ -44,7 +55,16 @@ namespace VerichatCRM.Web.Models.Inquiry
         public string? Description { get; set; }
         public string Source { get; set; } = "Website";
         public string Status { get; set; } = "New";
-        public int Score { get; set; } = 50;
+        public string? Urgency { get; set; }
+        public decimal? EstimatedValue { get; set; }
+
+        /// <summary>
+        /// Left blank, the API scores the enquiry from its sector, contract
+        /// status, value and urgency. A number typed here is stored as typed and
+        /// survives later edits to those factors, which is how the queue gets
+        /// ranked by hand.
+        /// </summary>
+        public int? Score { get; set; }
         public string? Notes { get; set; }
 
         public List<ClientViewModel> Clients { get; set; } = new();

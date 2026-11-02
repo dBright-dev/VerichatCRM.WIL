@@ -27,7 +27,7 @@
                     <td>@(a.LastServiceDate?.ToString("yyyy-MM-dd") ?? "N/A")</td>
                     <td>@(a.NextServiceDue?.ToString("yyyy-MM-dd") ?? "N/A")</td>
                     <td>@(a.WarrantyExpiry?.ToString("yyyy-MM-dd") ?? "N/A")</td>
-                    <td><span class="badge @(a.Status == "Overdue" ? "badge-critical" : a.Status == "Due Soon" ? "badge-warning" : a.Status == "Expired" ? "badge-neutral" : "badge-success")">@a.Status</span></td>
+                    <td><span class="badge @Badge.For(a.Status)">@a.Status</span></td>
                     <td class="text-end"><a class="btn btn-sm btn-outline-primary" asp-controller="Support" asp-action="TicketHub">Schedule Service</a></td>
                 </tr>
             }

@@ -1,6 +1,7 @@
 @model VerichatCRM.Web.Models.Procurement.ProductViewModel
 @{
     var isEdit = ViewData["IsEdit"] is true;
+    var categories = ViewData["Categories"] as IReadOnlyList<string> ?? Array.Empty<string>();
     ViewData["Title"] = isEdit ? "Edit Product" : "New Product";
 }
 
@@ -32,16 +33,16 @@
         <div class="form-group">
             <label class="form-label" asp-for="Category">Category</label>
             <input asp-for="Category" class="form-input" list="category-options"
-                   placeholder="Type a category, e.g. PPE or Laboratory" />
+                   placeholder="Choose a sector category" />
             <datalist id="category-options">
-                @foreach (var c in ViewContext.HttpContext.Request.Query["categories"].ToString()
-                             .Split(',', StringSplitOptions.RemoveEmptyEntries))
+                @foreach (var c in categories)
                 {
                     <option value="@c"></option>
                 }
             </datalist>
             <span class="form-hint">
-                Categories are free text so you are not limited to a fixed list.
+                The API only accepts these eight values, so a new sector needs the list in
+                <code>ProductCategories</code> extended before a product can be filed under it.
             </span>
             <span asp-validation-for="Category" class="text-critical"></span>
         </div>

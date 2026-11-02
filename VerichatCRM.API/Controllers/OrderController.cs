@@ -51,6 +51,12 @@ namespace VerichatCRM.API.Controllers
         public async Task<ActionResult<OrderResponse>> CreateOrder([FromBody] CreateOrderRequest request)
         {
             if (User.IsInRole(UserRoles.ClientUser)) request.ClientId = CurrentUserId();
+            // Enforced here rather than by CreateOrderRequestValidator: a client
+            // user's body carries no ClientId, and validation runs during binding,
+            // i.e. before the line above can supply it.
+            if (string.IsNullOrWhiteSpace(request.ClientId))
+                return BadRequest(new { message = "Client ID is required." });
+
             try
             {
                 var order = await _orderService.CreateOrderAsync(request);

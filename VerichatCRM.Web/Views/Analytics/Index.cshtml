@@ -1,0 +1,175 @@
+﻿@model VerichatCRM.Web.Models.Analytics.AnalyticsPageViewModel
+@{
+    // Every panel decides its own empty state here rather than shipping a canvas
+    // that a script has to hide afterwards. This view used to do the hiding in JS,
+    // which is why it was the only board whose "no data yet" copy appeared as a
+    // muted line beside a shrunken chart instead of the .empty-state every other
+    // screen uses.
+    var salesTarget = Model.Charts?.SalesVsTarget ?? new();
+    var funnel = Model.Charts?.Funnel;
+    var sectors = (Model.Charts?.SectorRevenue ?? new()).Where(p => p.Revenue > 0).ToList();
+    var trend = Model.Overview.RevenueTrend;
+}
+
+@section Styles {
+    <style>
+        .vc-hover-card {
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+
+            .vc-hover-card:hover {
+                transform: scale(1.02);
+                box-shadow: 0 8px 24px rgba(0,0,0,.10);
+            }
+
+        @@media (prefers-reduced-motion: reduce) {
+            .vc-hover-card {
+                transition: none;
+            }
+
+                .vc-hover-card:hover {
+                    transform: none;
+                }
+        }
+    </style>
+}
+
+@if (Model.IsDemo)
+{
+    <div class="alert alert-info" role="status">Showing demo data (Development only).</div>
+}
+else if (Model.Charts is null)
+{
+    <div class="alert alert-secondary" role="status">Sales, pipeline and sector charts will appear once analytics data is available.</div>
+}
+
+<div class="stat-grid">
+    @foreach (var kpi in Model.Overview.Kpis)
+    {
+        <div class="stat-card vc-hover-card"><div class="stat-label">@kpi.Label</div><div class="stat-value vc-accent">@kpi.Value</div><div class="stat-meta">@kpi.DeltaLabel</div></div>
+    }
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-12 col-xl-8">
+        <div class="card vc-hover-card h-100">
+            <div class="card-title">Sales vs target</div>
+            @if (salesTarget.Count == 0)
+            {
+                <div class="empty-state">No sales or target data yet.</div>
+            }
+            else
+            {
+                <div class="vc-chart-box"><canvas id="chartSalesTarget" role="img" aria-label="Bar chart comparing monthly sales with target"></canvas></div>
+            }
+        </div>
+    </div>
+    <div class="col-12 col-xl-4">
+        <div class="card vc-hover-card h-100">
+            <div class="card-title">Pipeline funnel</div>
+            @if (funnel is null || funnel.Inquiries == 0)
+            {
+                <div class="empty-state">No pipeline activity yet.</div>
+            }
+            else
+            {
+                <div class="vc-chart-box"><canvas id="chartFunnel" role="img" aria-label="Funnel of inquiries, quotes and won deals"></canvas></div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-xl-5">
+        <div class="card vc-hover-card h-100">
+            <div class="card-title">Revenue by sector</div>
+            @if (sectors.Count == 0)
+            {
+                <div class="empty-state">No sector revenue yet.</div>
+            }
+            else
+            {
+                <div class="vc-chart-box"><canvas id="chartSectors" role="img" aria-label="Doughnut chart of revenue by sector"></canvas></div>
+            }
+        </div>
+    </div>
+    <div class="col-12 col-xl-7">
+        <div class="card vc-hover-card h-100">
+            <div class="card-title">Monthly order value</div>
+            @if (trend.Count == 0)
+            {
+                <div class="empty-state">No order history yet.</div>
+            }
+            else
+            {
+                <div class="vc-chart-box"><canvas id="chartRevenue" role="img" aria-label="Line chart of monthly order value"></canvas></div>
+            }
+        </div>
+    </div>
+</div>
+
+@* One JSON payload, read by charts.js. This page used to hand-write four Chart.js
+   configurations and the colour list beside them — Mine as #b26a00, the series
+   line as #5B5BD6 — none of it taken from the brand tokens, and it pinned
+   chart.js 4.4.1 while every other board pinned 4.4.4. Palette, axes, fonts and
+   the Rand formatter now come from the same place they do everywhere else; the
+   only thing this view chooses is which panel holds which chart. Design-system
+   doc 4. *@
+<script type="application/json" id="vc-analytics-charts">
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new
+    {
+        salesVsTarget = new
+        {
+            labels = salesTarget.Select(p => p.Label).ToList(),
+            sales = salesTarget.Select(p => p.Sales).ToList(),
+            target = salesTarget.Select(p => p.Target).ToList()
+        },
+        funnel = funnel is null
+            ? null
+            : new[]
+            {
+                new { label = "Inquiry", value = funnel.Inquiries },
+                new { label = "Quote", value = funnel.Quotes },
+                new { label = "Won", value = funnel.Won }
+            },
+        sectors = new
+        {
+            labels = sectors.Select(p => p.Sector).ToList(),
+            values = sectors.Select(p => p.Revenue).ToList()
+        },
+        trend = new
+        {
+            labels = trend.Select(p => p.Label).ToList(),
+            values = trend.Select(p => p.Value).ToList()
+        }
+    }))
+</script>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="~/js/charts.js"></script>
+    <script>
+        (function () {
+            var node = document.getElementById('vc-analytics-charts');
+            if (!node || typeof vcCharts === 'undefined') return;
+            var d;
+            try { d = JSON.parse(node.textContent); } catch (err) { return; }
+
+            if (d.salesVsTarget.labels.length) {
+                vcCharts.bar('chartSalesTarget', d.salesVsTarget.labels, [
+                    { label: 'Sales', data: d.salesVsTarget.sales },
+                    { label: 'Target', data: d.salesVsTarget.target }
+                ], { money: true });
+            }
+            if (d.funnel) vcCharts.funnel('chartFunnel', d.funnel);
+            if (d.sectors.labels.length) {
+                vcCharts.doughnut('chartSectors', d.sectors.labels, d.sectors.values, { money: true });
+            }
+            if (d.trend.labels.length) {
+                vcCharts.line('chartRevenue', d.trend.labels, [
+                    { label: 'Order value', data: d.trend.values, fill: true }
+                ], { money: true });
+            }
+        })();
+    </script>
+}

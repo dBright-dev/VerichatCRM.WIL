@@ -1,0 +1,140 @@
+﻿@model VerichatCRM.Web.Models.Sales.LeadsViewModel
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success" role="status">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger" role="alert">@TempData["Error"]</div>
+}
+
+<div class="kpi-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-bottom:22px;">
+    <div class="kpi-card">
+        <div class="kpi-label">Open leads</div>
+        <div class="kpi-value">@Model.OpenCount</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Due today</div>
+        <div class="kpi-value">@Model.DueTodayCount</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Overdue</div>
+        <div class="kpi-value" style="@(Model.OverdueCount > 0 ? "color:#b3261e;" : "")">@Model.OverdueCount</div>
+    </div>
+</div>
+
+<div class="chip-row" style="margin-bottom:16px;">
+    @foreach (var f in Model.Filters)
+    {
+        <a class="chip @(Model.ActiveFilter == f ? "active" : "")" asp-action="Leads" asp-route-stage="@f">@(f == "Due" ? "Due / overdue" : f)</a>
+    }
+</div>
+
+@if (Model.Leads.Count == 0)
+{
+    <div style="text-align:center; padding:56px 24px;">
+        <h2 class="auth-title" style="font-size:1.25rem;">No leads here</h2>
+        <p class="auth-subtitle">Nothing matches this filter. Try "All" or log a new enquiry.</p>
+        <a class="btn btn-primary" asp-controller="Inquiry" asp-action="Create">+ New enquiry</a>
+    </div>
+}
+else
+{
+    <div style="overflow-x:auto;">
+        <table class="data-table" style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="text-align:left; border-bottom:1px solid #e2e5ea;">
+                    <th style="padding:10px;">Client</th>
+                    <th style="padding:10px;">Stage</th>
+                    <th style="padding:10px;">Last contact</th>
+                    <th style="padding:10px;">Next follow-up</th>
+                    <th style="padding:10px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var l in Model.Leads)
+                {
+                    var name = l.ClientName ?? l.Company ?? l.ContactName;
+                    var due = FollowUpHelper.IsFollowUpDue(l.NextFollowUpDate);
+                    var overdue = FollowUpHelper.IsFollowUpOverdue(l.NextFollowUpDate);
+
+                    <tr style="border-bottom:1px solid #f0f2f5;">
+                        <td style="padding:10px;">
+                            <strong>@name</strong>
+                            <div class="vc-text-muted small">@l.Subject</div>
+                        </td>
+                        <td style="padding:10px;"><span class="badge">@l.Status</span></td>
+                        <td style="padding:10px;">
+                            <span class="@(l.EffectiveLastContact is null ? "vc-text-muted" : "")">@FollowUpHelper.Describe(l.EffectiveLastContact)</span>
+                        </td>
+                        <td style="padding:10px;">
+                            @if (l.NextFollowUpDate is null)
+                            {
+                                <span class="vc-text-muted">Not scheduled</span>
+                            }
+                            else if (due)
+                            {
+                                <strong style="color:#b3261e;">@(overdue ? "Overdue" : "Today") &middot; @l.NextFollowUpDate.Value.ToString("dd MMM")</strong>
+                            }
+                            else
+                            {
+                                <span>@l.NextFollowUpDate.Value.ToString("dd MMM")</span>
+                            }
+                        </td>
+                        <td style="padding:10px; white-space:nowrap;">
+                            <form asp-action="MarkContacted" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@l.InquiryId" />
+                                <input type="hidden" name="status" value="@l.Status" />
+                                <input type="hidden" name="filter" value="@Model.ActiveFilter" />
+                                <button type="submit" class="btn btn-primary btn-sm">Mark contacted</button>
+                            </form>
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                    data-id="@l.InquiryId" data-name="@name"
+                                    onclick="vcOpenFollowUp(this)">
+                                Add follow-up
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<dialog id="followUpDialog" style="border:1px solid #e2e5ea; border-radius:12px; padding:24px; max-width:420px; width:92%;">
+    <form asp-action="AddFollowUp" method="post">
+        <h3 style="font-size:1.1rem; margin-bottom:4px;">Add follow-up</h3>
+        <p id="followUpLead" class="vc-text-muted small"></p>
+
+        <input type="hidden" name="id" id="followUpId" />
+        <input type="hidden" name="filter" value="@Model.ActiveFilter" />
+
+        <label for="followUpDate" class="form-label small">Next follow-up date</label>
+        <input type="date" id="followUpDate" name="nextFollowUpDate" class="form-control mb-3"
+               required min="@DateTime.UtcNow.ToString("yyyy-MM-dd")" />
+
+        <label for="followUpNote" class="form-label small">Note (optional)</label>
+        <textarea id="followUpNote" name="note" class="form-control mb-3" rows="3" maxlength="500"></textarea>
+
+        <div style="display:flex; gap:8px; justify-content:flex-end;">
+            <button type="button" class="btn btn-outline-secondary"
+                    onclick="document.getElementById('followUpDialog').close()">
+                Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">Save follow-up</button>
+        </div>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script>
+        function vcOpenFollowUp(btn) {
+            document.getElementById('followUpId').value = btn.dataset.id;
+            document.getElementById('followUpLead').textContent = btn.dataset.name;
+            document.getElementById('followUpDate').value = '';
+            document.getElementById('followUpNote').value = '';
+            document.getElementById('followUpDialog').showModal();
+        }
+    </script>
+}

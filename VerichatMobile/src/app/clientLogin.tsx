@@ -1,25 +1,42 @@
+import { CRMTheme } from '../constants/crmTheme'
 import { useRouter } from 'expo-router'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
     Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native'
 import { login } from '../constants/authService'
+import FloatingInput from '../components/ui/FloatingInput'
+import AnimatedButton from '../components/ui/AnimatedButton'
+import DemoQuickLogin from '../components/ui/DemoQuickLogin'
+import { useKeyboardAutoScroll } from '../hooks/useKeyboardAutoScroll'
 
 const ClientLoginScreen = () => {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
+  const emailInput = useRef<TextInput>(null)
+  const passwordInput = useRef<TextInput>(null)
+  const { scrollRef, contentRef, onFieldFocus } = useKeyboardAutoScroll()
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     if (!email.trim() || !password) {
       Alert.alert('Missing details', 'Enter your email address and password to log in.')
       return
     }
 
+    void submit(email.trim(), password)
+  }
+
+  /**
+   * The sign-in path both entries share, taking the credential as arguments rather
+   * than reading the fields: a demo chip supplies its own account and still goes
+   * through the same call, so there is one place where a session is issued.
+   */
+  const submit = async (mail: string, pass: string) => {
     setBusy(true)
     try {
-      await login(email.trim(), password, 'client')
+      await login(mail, pass, 'client')
       router.replace('/')
     } catch (e) {
       Alert.alert('Sign in failed', e instanceof Error ? e.message : 'Something went wrong.')
@@ -28,19 +45,29 @@ const ClientLoginScreen = () => {
     }
   }
 
+  // The chip signs in and leaves the address in the field, so the person can see
+  // which of the two client accounts the home screen belongs to.
+  const handleDemoPick = (mail: string, pass: string) => {
+    setEmail(mail)
+    setPassword(pass)
+    void submit(mail, pass)
+  }
+
   return (
     <KeyboardAvoidingView
       style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        <View ref={contentRef} collapsable={false} style={styles.content}>
         <View style={styles.Logo}>
           <Image
-            source={require('../../assets/images/canva/design_pt.png')}
+            source={require('../../assets/images/brand/verichat-logo-light.png')}
             style={styles.logo_image}
           />
         </View>
@@ -49,9 +76,10 @@ const ClientLoginScreen = () => {
         <Text style={styles.title}>Client Log in</Text>
 
         <View style={styles.card}>
-          <Text style={styles.label}>Email address</Text>
-          <TextInput
-            style={styles.input}
+          <FloatingInput
+            label="Email address"
+            containerStyle={{ marginBottom: 0 }}
+            style={{ fontSize: 16 }}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -59,11 +87,14 @@ const ClientLoginScreen = () => {
             autoCorrect={false}
             autoComplete="email"
             textContentType="emailAddress"
+            inputRef={emailInput}
+            onFocus={() => onFieldFocus(emailInput.current)}
           />
 
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
+          <FloatingInput
+            label="Password"
+            containerStyle={{ marginBottom: 0 }}
+            style={{ fontSize: 16 }}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -71,23 +102,44 @@ const ClientLoginScreen = () => {
             autoCorrect={false}
             autoComplete="password"
             textContentType="password"
+            inputRef={passwordInput}
+            onFocus={() => onFieldFocus(passwordInput.current)}
           />
 
-          <TouchableOpacity
+          <AnimatedButton
             style={[styles.button, styles.first_button, busy && styles.button_disabled]}
             onPress={handleLogin}
             disabled={busy}
+            loading={busy}
           >
-            <Text style={styles.button_text}>{busy ? 'Signing in…' : 'Sign In'}</Text>
+            <Text style={styles.button_text}>Sign In</Text>
+          </AnimatedButton>
+
+          <TouchableOpacity style={styles.back} onPress={() => router.push('/forgotPassword')}>
+            <Text style={styles.back_text}>Forgotten the password?</Text>
+          </TouchableOpacity>
+
+          {/* The other way out. A reset link does nothing for a deactivated account
+              or a typo'd address, and until now a person with one of those had no way
+              to say so from inside the app they cannot reach. */}
+          <TouchableOpacity style={styles.back} onPress={() => router.push('/loginHelp')}>
+            <Text style={styles.back_text}>Cannot sign in at all? Tell an administrator</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={() => router.replace('/newUserAccount')}>
             <Text style={styles.button_text}>Create account</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity style={styles.back} onPress={() => router.push('/privacy')}>
+            <Text style={styles.back_text}>Privacy notice — what we hold about you</Text>
+          </TouchableOpacity>
+
+          <DemoQuickLogin audience="client" onPick={handleDemoPick} disabled={busy} />
+
           <TouchableOpacity style={styles.back} onPress={() => router.back()}>
             <Text style={styles.back_text}>← Back</Text>
           </TouchableOpacity>
+        </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -97,16 +149,17 @@ const ClientLoginScreen = () => {
 export default ClientLoginScreen
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#004e7a' },
+  flex: { flex: 1, backgroundColor: CRMTheme.primaryDark },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#004e7a',
+    backgroundColor: CRMTheme.primaryDark,
     paddingVertical: 40,
   },
+  content: { width: '100%', alignItems: 'center' },
   Logo: { marginBottom: 20 },
-  logo_image: { width: 150, height: 150, resizeMode: 'contain' },
+  logo_image: { width: 220, height: 134, resizeMode: 'contain' },
   welcome_text: {
     fontSize: 26,
     color: '#ffffff',
@@ -138,7 +191,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   button: {
-    backgroundColor: '#0057a8',
+    backgroundColor: CRMTheme.primary,
     paddingVertical: 14,
     width: 190,
     alignSelf: 'center',

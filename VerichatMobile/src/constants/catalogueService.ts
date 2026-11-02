@@ -14,7 +14,9 @@ export type MobileProduct = {
 
 export async function fetchMobileCatalogue(category?: string): Promise<MobileProduct[]> {
   const query = category && category !== 'All' ? `?category=${encodeURIComponent(category)}` : ''
-  return api<MobileProduct[]>(`/api/product${query}`)
+  // The catalogue is operational data; never substitute an old offline
+  // response for the database-backed product list.
+  return api<MobileProduct[]>(`/api/product${query}`, undefined, { allowCachedFallback: false })
 }
 
 /** 1-tap reorder of a recurring consumable → creates a pre-filled order. */
@@ -48,6 +50,18 @@ export async function submitCartOrder(lines: { sku: string; quantity: number }[]
 
 export type MobileQuotation = { quotationId: string; quoteReference: string; status: string; grandTotal: number; validUntil: string; lineItems: { productName: string; quantity: number; lineTotal: number }[] }
 
+/** Submit a mobile request cart; the API recalculates live catalogue pricing and creates a Draft quotation. */
+export async function requestQuotation(lines: { sku: string; quantity: number }[], notes?: string): Promise<MobileQuotation> {
+  return api<MobileQuotation>('/api/quotation/request', { method: 'POST', body: JSON.stringify({ lines, notes }) })
+}
+
 export async function fetchMyQuotations(): Promise<MobileQuotation[]> {
   return api<MobileQuotation[]>('/api/mobile/quotations')
+}
+
+/** Client decision on a verified quotation; ownership is checked by the API against the JWT. */
+export async function respondToQuotation(quotationId: string, status: 'Accepted' | 'Rejected'): Promise<MobileQuotation> {
+  return api<MobileQuotation>(`/api/mobile/quotations/${encodeURIComponent(quotationId)}/response`, {
+    method: 'PATCH', body: JSON.stringify({ status }),
+  })
 }

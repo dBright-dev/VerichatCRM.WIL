@@ -1,0 +1,90 @@
+@model VerichatCRM.Web.Models.Auth.AskForHelpForm
+@{
+    ViewData["Title"] = "Sign-in help";
+    Layout = "_AuthLayout";
+}
+
+<section class="vc-auth">
+    <aside class="vc-auth-side">
+        <div class="vc-auth-brand">
+            <img class="vc-auth-logo" src="~/images/logo.png" width="40" height="40" alt="Verichat logo" />
+            <div>
+                <div class="vc-auth-brand-name">Verichat</div>
+                <div class="vc-auth-brand-sub">MEDICAL PROCUREMENT</div>
+            </div>
+        </div>
+        <h2 class="vc-auth-headline">Stuck<br />outside?</h2>
+        <p class="vc-auth-lede">A reset link and a confirmation link cover the ordinary ways to be locked out. This form is for the rest, and it goes to a person who can open the account directory.</p>
+        <ul class="vc-auth-points">
+            <li><span class="vc-check">✓</span> Every System Administrator is told, the moment it arrives</li>
+            <li><span class="vc-check">✓</span> It also appears on their Sign-in Help queue, so nothing is lost to a mail server</li>
+            <li><span class="vc-check">✓</span> It grants nothing - an administrator reads it, they do not answer it with access</li>
+        </ul>
+
+        @await Html.PartialAsync("_AuthPolicyFootnote")
+    </aside>
+
+    <div class="vc-auth-main">
+        <div class="vc-auth-card">
+            <h1 class="vc-auth-title">Tell us what is happening</h1>
+            <p class="vc-auth-sub">What you tried, what the screen said, and the address your account was created with.</p>
+
+            <form asp-action="Help" method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="text-critical"></div>
+
+                @* The honeypot. Rendered out of the layout and given aria-hidden and
+                   tabindex -1 so a keyboard user never reaches a field the form does
+                   not acknowledge. A script that fills every input it finds sends this
+                   one, and AccountController.Help answers it with the success screen
+                   without recording anything. *@
+                <div class="vc-auth-honeypot" aria-hidden="true">
+                    <label asp-for="Website">Website</label>
+                    <input asp-for="Website" type="text" tabindex="-1" autocomplete="off" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="Name">Your name</label>
+                    <input asp-for="Name" class="form-input" placeholder="Full name" autocomplete="name" autofocus />
+                    <span asp-validation-for="Name" class="text-critical"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="Email">Email address</label>
+                    <input asp-for="Email" type="email" class="form-input" placeholder="you@example.com" autocomplete="email" />
+                    <span asp-validation-for="Email" class="text-critical"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="ExpectedRole">Role you signed up as</label>
+                    <input asp-for="ExpectedRole" class="form-input" placeholder="Client User, Sales Representative…" />
+                    <span asp-validation-for="ExpectedRole" class="text-critical"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="Message">What is going wrong</label>
+                    <textarea asp-for="Message" class="form-input" rows="5" maxlength="2000"
+                              placeholder="For example: I signed up yesterday as a Client User and the password I set does not open the portal."></textarea>
+                    <span asp-validation-for="Message" class="text-critical"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Send to an administrator</button>
+
+                <p class="vc-auth-note">
+                    Nothing here is checked against the account directory first, and
+                    nothing here changes one. It is a note to a person, so it is worth
+                    writing the way you would to one.
+                </p>
+
+                <p class="vc-auth-switch">
+                    Just need a new password? <a asp-action="ForgotPassword">Send a reset link</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -30,6 +30,11 @@ namespace VerichatCRM.API.DTOs.Requests
         [Range(0, 100)]
         public int? Score { get; set; }
 
+        [MaxLength(30)]
+        public string? Urgency { get; set; }
+
+        public decimal? EstimatedValue { get; set; }
+
         public string? OwnerUserId { get; set; }
     }
 }

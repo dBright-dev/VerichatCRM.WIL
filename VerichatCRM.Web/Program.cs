@@ -1,10 +1,16 @@
+using VerichatCRM.Web.ModelBinding;
 using VerichatCRM.Web.Services;
 using VerichatCRM.Web.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    // Numeric inputs post a dot separator on every locale; binding it with the
+    // host culture turned "2400.00" into 0 on an en-ZA server.
+    options.ModelBinderProviders.Insert(0, new InvariantDecimalModelBinderProvider());
+});
 
 // Session
 builder.Services.AddDistributedMemoryCache();
@@ -15,26 +21,40 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-
 builder.Services.AddHttpContextAccessor();
 
 // HttpClient pointing to the API
+// Register the fallback handler
+builder.Services.AddTransient<ApiFallbackHandler>();
+
+// HttpClient pointing to the API with Backup Fallback
 builder.Services.AddHttpClient<IApiClient, ApiClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]!);
-});
+})
+.AddHttpMessageHandler<ApiFallbackHandler>(); // <-- Add this line
 
 builder.Services.AddScoped<IWebAuthService, WebAuthService>();
 builder.Services.AddScoped<IClientApiService, ClientApiService>();
+builder.Services.AddScoped<ISalesGoalApiService, SalesGoalApiService>();
+builder.Services.AddScoped<IClientFieldApiService, ClientFieldApiService>();
 builder.Services.AddScoped<IQuotationApiService, QuotationApiService>();
 builder.Services.AddScoped<IPipelineApiService, PipelineApiService>();
 builder.Services.AddScoped<ISupportApiService, SupportApiService>();
 builder.Services.AddScoped<IProductApiService, ProductApiService>();
-    builder.Services.AddScoped<IInquiryApiService, InquiryApiService>();
+builder.Services.AddScoped<IInquiryApiService, InquiryApiService>();
 builder.Services.AddScoped<IWarehouseAlertApiService, WarehouseAlertApiService>();
 builder.Services.AddScoped<IAdminApiService, AdminApiService>();
+// The public pages' two calls. Registered apart from the staff services because they
+// reach anonymous endpoints and must not acquire a habit of reading the session.
+builder.Services.AddScoped<IPublicEnquiryApiService, PublicEnquiryApiService>();
+builder.Services.AddScoped<IPublicCatalogApiService, PublicCatalogApiService>();
 
 var app = builder.Build();
+
+// The catalogue's per-product photographs are found by looking at the files actually
+// served from wwwroot, so a tile never links to a picture that is not there.
+CatalogueArt.UseWebRoot(app.Environment.WebRootPath);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -43,6 +63,9 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+// No more 404s
+app.UseStatusCodePagesWithReExecute("/Home/StatusPage", "?code={0}");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

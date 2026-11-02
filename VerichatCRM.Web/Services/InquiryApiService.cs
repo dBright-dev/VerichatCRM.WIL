@@ -59,6 +59,8 @@ namespace VerichatCRM.Web.Services
                     model.ClientId,
                     model.Description,
                     model.Source,
+                    model.Urgency,
+                    model.EstimatedValue,
                     model.Score,
                 });
             }
@@ -83,6 +85,8 @@ namespace VerichatCRM.Web.Services
                     model.ClientId,
                     model.Notes,
                     model.Status,
+                    model.Urgency,
+                    model.EstimatedValue,
                     model.Score,
                 });
             }
@@ -104,6 +108,52 @@ namespace VerichatCRM.Web.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to delete inquiry {Id}.", inquiryId);
+                return false;
+            }
+        }
+
+        public async Task<bool> MarkContactedAsync(string inquiryId, string currentStatus)
+        {
+            try
+            {
+                var result = await _api.PostAsync<object, InquiryViewModel>(
+                    $"/api/inquiry/{inquiryId}/contact", new { });
+                if (result is not null) return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation(ex, "Contact endpoint unavailable, using fallback.");
+            }
+
+            // Temporary fallback until Section 2's endpoint ships. It can only
+            // advance a New lead to Contacted; other stages need the real endpoint.
+            if (currentStatus != "New") return false;
+
+            try
+            {
+                var updated = await _api.PutAsync<object, InquiryViewModel>(
+                    $"/api/inquiry/{inquiryId}", new { Status = "Contacted" });
+                return updated is not null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to mark inquiry {Id} as contacted.", inquiryId);
+                return false;
+            }
+        }
+
+        public async Task<bool> AddFollowUpAsync(string inquiryId, DateTime nextFollowUpDate, string? note)
+        {
+            try
+            {
+                var result = await _api.PostAsync<object, InquiryViewModel>(
+                    $"/api/inquiry/{inquiryId}/follow-up",
+                    new { NextFollowUpDate = nextFollowUpDate, Note = note });
+                return result is not null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to add follow-up for inquiry {Id}.", inquiryId);
                 return false;
             }
         }

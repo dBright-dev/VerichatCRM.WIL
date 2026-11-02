@@ -1,0 +1,75 @@
+@using VerichatCRM.Web.Models.Public
+@model ContactReceiptViewModel
+@{
+    // The screen a submission lands on. Two versions of one page: a filed enquiry shows
+    // its reference, and a bot that filled the hidden field gets the same headline with
+    // nothing recorded behind it. See HomeController.Contact.
+    Layout = "_LandingLayout";
+    ViewData["Title"] = "Enquiry sent";
+
+    // Built here rather than inside the href: an attribute expression that carries string
+    // literals of its own is the one thing Razor will not parse for you.
+    var backupSubject = Model.Reference is null
+        ? "Enquiry from the Verichat contact page"
+        : "Following the enquiry " + Model.Reference;
+    var backupHref = VerichatContact.BackupHref(backupSubject);
+    var greeting = string.IsNullOrWhiteSpace(Model.Name)
+        ? "Thank you"
+        : "Thank you, " + Model.Name.Trim();
+}
+
+<section class="lnd-section lnd-section--top" id="sent">
+    <div class="lnd-wrap">
+        <div class="lnd-doc__masthead">
+            <p class="lnd-kicker">Verichat Quality Projects · Enquiry received</p>
+            <h1 class="lnd-doc__title">We have it.</h1>
+        </div>
+
+        <div class="lnd-receipt" data-reveal>
+            <span class="lnd-receipt__mark" aria-hidden="true">✓</span>
+
+            <h2>@greeting</h2>
+
+            <p>@Model.Message</p>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Reference))
+            {
+                <p>
+                    Quote this reference if you telephone:
+                    <span class="lnd-receipt__ref">@Model.Reference</span>
+                </p>
+            }
+
+            <div class="lnd-receipt__routes">
+                <a href="@backupHref">
+                    <b>Send it by email as well</b>
+                    <span>
+                        @VerichatContact.Email opens in your mail client with the reference in
+                        the subject line. Two routes to the same desk costs nothing, and it is
+                        the answer if the address you typed turns out not to be the one you read.
+                    </span>
+                </a>
+                <a href="@VerichatContact.PhoneHref">
+                    <b>Telephone @VerichatContact.Phone</b>
+                    <span>
+                        @VerichatContact.Street, @VerichatContact.Suburb, @VerichatContact.City.
+                        A second line is published on the contact page for the hours the first
+                        is busy.
+                    </span>
+                </a>
+            </div>
+        </div>
+
+        <div class="lnd-linkrow">
+            <a class="lnd-btn lnd-btn--ghost" href="/contact">Send another enquiry</a>
+            <a class="lnd-btn lnd-btn--ghost" href="/gallery">Look at the catalogue</a>
+            <a class="lnd-btn lnd-btn--ghost" href="/">Back to the front page</a>
+        </div>
+
+        <p class="lnd-fineprint">
+            Nothing else is sent to the address you gave. The enquiry and its correspondence
+            are what the <a href="/privacy">privacy notice</a> describes, and it stays in the
+            queue until a representative closes it.
+        </p>
+    </div>
+</section>

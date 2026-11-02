@@ -18,5 +18,8 @@ namespace VerichatCRM.API.DTOs.Responses
 
         [JsonPropertyName("lastSyncAt")]
         public DateTime? LastSyncAt { get; set; }
+
+        [JsonPropertyName("externalId")]
+        public string? ExternalId { get; set; }
     }
 }

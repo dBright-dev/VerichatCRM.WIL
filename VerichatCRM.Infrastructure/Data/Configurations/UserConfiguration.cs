@@ -17,6 +17,10 @@ namespace VerichatCRM.Infrastructure.Data.Configurations
             builder.HasIndex(u => u.Email).IsUnique();
             builder.Property(u => u.PasswordHash).IsRequired();
             builder.Property(u => u.Role).IsRequired().HasMaxLength(50);
+
+            builder.Property(u => u.PasswordResetToken).HasMaxLength(256);
+            builder.Property(u => u.EmailVerificationToken).HasMaxLength(256);
+            builder.Property(u => u.DeviceToken).HasMaxLength(512);
         }
     }
 }

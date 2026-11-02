@@ -1,0 +1,157 @@
+{
+  "project": "VerichatMobile",
+  "lastUpdated": "2026-10-25",
+  "features": [
+    {
+      "id": "client-dashboard-and-theme",
+      "name": "Client dashboard and shared brand theme",
+      "status": "implemented",
+      "description": "The home dashboard groups order summaries, equipment, quotations, shortcuts, and consultation status using the same navy, blue, slate, and surface palette as Profile. The tab bar uses the shared CRM palette.",
+      "files": [
+        "src/app/clientHomescreen.tsx",
+        "src/components/app-tabs.tsx",
+        "src/constants/crmTheme.ts"
+      ],
+      "api": [
+        "GET /api/mobile/dashboard",
+        "GET /api/asset/mine",
+        "GET /api/mobile/quotations",
+        "GET /api/appointments"
+      ],
+      "database": "API persists CRM records through EF Core AppDbContext; dashboard values are read from orders, assets, quotations, and appointments."
+    },
+    {
+      "id": "fresh-database-catalogue",
+      "name": "Live equipment catalogue",
+      "status": "implemented",
+      "description": "The catalogue requests current product rows from the API on screen focus, pull-to-refresh, and app foreground. It does not silently replace a failed live request with stale cached catalog data. Displayed stock, price, SKU, name, category, and image URL are mapped from the API response; mock ratings were removed.",
+      "files": [
+        "src/app/medicalCatalogueShop.tsx",
+        "src/constants/catalogueService.ts",
+        "src/constants/api.ts"
+      ],
+      "api": [
+        "GET /api/product"
+      ],
+      "database": "VerichatCRM.API ProductService queries AppDbContext.Products (SQL Server Products table). The mobile and website defaults point to the same API host; EXPO_PUBLIC_API_URL can override the mobile API host."
+    },
+    {
+      "id": "account-activity-route-and-refresh",
+      "name": "Account activity and independent request handling",
+      "status": "implemented",
+      "description": "Orders and quotations are fetched independently so one endpoint failure does not hide both lists. Activity refreshes when the route is focused, on app foreground, and periodically while open. Duplicate API route registration for GET /api/mobile/quotations was removed; the remaining endpoint returns records scoped to the authenticated user's ID.",
+      "files": [
+        "src/app/cartScreen.tsx",
+        "src/constants/catalogueService.ts",
+        "VerichatCRM.API/Controllers/MobileAccountController.cs",
+        "VerichatCRM.API/Controllers/QuotationController.cs"
+      ],
+      "api": [
+        "GET /api/mobile/orders",
+        "GET /api/mobile/quotations",
+        "POST /api/quotation/request"
+      ],
+      "database": "Orders and quotations are read from and written to CRM SQL Server records through AppDbContext and API services."
+    },
+    {
+      "id": "consultation-tracking-and-web-management",
+      "name": "Consultation tracking and staff management",
+      "status": "implemented",
+      "description": "Clients book consultations and track Pending → Approved/Declined → Completed. Admins, sales representatives, and procurement managers manage requests on the website; assigned support engineers can view their requests. Staff can save a representative-created HTTPS meeting link, which the client can open from the mobile tracker. The API does not create a call with a meeting provider.",
+      "files": [
+        "src/app/BookAppointmentScreen.tsx",
+        "src/app/clientHomescreen.tsx",
+        "VerichatCRM.API/Controllers/AppointmentController.cs",
+        "VerichatCRM.Core/Entities/Appointment.cs",
+        "VerichatCRM.Infrastructure/Migrations/20261025174339_AddAppointmentMeetingLinks.cs",
+        "VerichatCRM.Web/Controllers/TelehealthController.cs",
+        "VerichatCRM.Web/Views/Sales/Appointments.cshtml",
+        "VerichatCRM.Web/Authorization/Perm.cs",
+        "VerichatCRM.Web/Views/Shared/_Sidebar.cshtml"
+      ],
+      "api": [
+        "POST /api/appointments",
+        "GET /api/appointments",
+        "GET /api/appointments/assignees",
+        "PATCH /api/appointments/{id}"
+      ],
+      "database": "AppointmentController reads/writes Appointments and joins Clients for contact information. MeetingUrl is added as nullable nvarchar(1000) by migration 20261025174339_AddAppointmentMeetingLinks. The migration is generated but not applied in the current environment because SQL Server LocalDB could not start."
+    },
+    {
+      "id": "editable-client-profile-details",
+      "name": "Editable account contact and business details",
+      "status": "implemented",
+      "description": "The profile screen lets the signed-in user update account contact name, phone, company, VAT number, and delivery address. The sign-in email is shown as read-only because the profile update contract does not change the authentication identity.",
+      "files": [
+        "src/app/profileScreen.tsx",
+        "src/constants/profileService.ts",
+        "VerichatCRM.API/Controllers/MobileAccountController.cs"
+      ],
+      "api": [
+        "GET /api/mobile/profile",
+        "PATCH /api/mobile/profile"
+      ],
+      "database": "MobileAccountController reads and updates the authenticated user's profile fields through EF Core AppDbContext, persisting them to the CRM SQL Server user/client account records."
+    },
+    {
+      "id": "mobile-quote-review-and-response",
+      "name": "Client quote submission, staff review, and client response",
+      "status": "implemented",
+      "description": "Only Client User accounts can submit a cart quote. API validates current SKUs/prices and creates a Draft. Admin, sales, and procurement staff receive live notification; Sales Representatives/System Administrators review it on Pipeline, move Draft to Reviewed then Sent, and the client can Accept or Decline a sent quote in the app. SignalR failure after database persistence is logged without returning a false submission failure.",
+      "files": [
+        "src/constants/api.ts",
+        "src/constants/authService.ts",
+        "src/constants/catalogueService.ts",
+        "src/app/cartScreen.tsx",
+        "src/app/index.tsx",
+        "src/components/app-tabs.tsx",
+        "VerichatCRM.API/Controllers/QuotationController.cs",
+        "VerichatCRM.Web/Controllers/QuotationController.cs",
+        "VerichatCRM.Web/Controllers/PipelineController.cs",
+        "VerichatCRM.Web/Views/Pipeline/Index.cshtml",
+        "VerichatCRM.Web/wwwroot/js/signalr.js",
+        "VerichatCRM.Web/wwwroot/js/signalr.js"
+      ],
+      "api": [
+        "POST /api/quotation/request",
+        "GET /api/mobile/quotations",
+        "PATCH /api/quotation/{id}/status",
+        "PATCH /api/mobile/quotations/{id}/response"
+      ],
+      "database": "Quotes and response states use existing Quotations, QuotationLineItems, Deals, and Products tables through AppDbContext. No schema migration is required for this quote workflow."
+    },
+    {
+      "id": "staff-mobile-role-gating",
+      "name": "Staff-only mobile entry and client/staff home separation",
+      "status": "implemented",
+      "description": "The landing-page Staff/Admin login accepts only System Administrator, Sales Representative, Procurement Manager, and Field Support Engineer. Client User accounts use Client sign-in. JWT role controls the post-login home screen and hides client-only consultation, asset, and catalogue tabs from staff.",
+      "files": [
+        "src/app/index.tsx",
+        "src/app/adminLogin.tsx",
+        "src/components/app-tabs.tsx",
+        "src/constants/api.ts",
+        "src/constants/authService.ts"
+      ],
+      "api": ["POST /api/auth/login"],
+      "database": "Login reads the existing Users record and role; this change adds no database fields or migration."
+    }
+  ],
+  "verification": {
+    "mobileTypeScript": "passed: tsc --noEmit",
+    "mobileLint": "passed: expo lint",
+    "apiBuild": "passed: dotnet build VerichatCRM.API",
+    "webBuild": "passed: dotnet build VerichatCRM.Web",
+    "notes": "Mobile TypeScript and Expo lint, API build, and Web build passed. Existing System.Security.Cryptography.Pkcs vulnerability warnings remain. EF migration generated; database update was attempted but the configured SQL Server LocalDB instance could not start, so it is not applied."
+  },
+  "suggestedCommitMessages": [
+    "fix(mobile): refresh client dashboard and consultation status",
+    "fix(mobile): load catalogue from the live product API",
+    "fix(api): remove duplicate mobile quotations route",
+    "feat(appointments): add staff assignment and client contact details",
+    "style(mobile): apply shared CRM palette across primary screens",
+    "feat(mobile): let users edit account contact and business details",
+    "feat(quotes): add mobile quote review and client response workflow",
+    "fix(mobile): separate staff and client account navigation",
+    "feat(appointments): add meeting links and completion tracking"
+  ]
+}

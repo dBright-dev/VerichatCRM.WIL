@@ -1,0 +1,90 @@
+@model VerichatCRM.Web.Models.Admin.CreateUserViewModel
+@using VerichatCRM.Core.Entities
+@{
+    ViewData["Title"] = "Add user";
+    var staffRoles = new[]
+    {
+        UserRoles.SystemAdministrator,
+        UserRoles.SalesRepresentative,
+        UserRoles.ProcurementManager,
+        UserRoles.FieldSupportEngineer,
+        UserRoles.Logistics
+    };
+    var clientRoles = new[] { UserRoles.ClientUser, UserRoles.MedicalStudent };
+}
+
+<div class="auth-card" style="max-width:640px; margin:0 auto;">
+    <h1 class="auth-title">Add user</h1>
+    <p class="auth-subtitle">
+        The account works the moment you save it. Give the person this password and they
+        sign in with it — there is nothing to approve and no link to wait for.
+    </p>
+
+    <form asp-action="CreateUser" method="post">
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly" class="text-critical"></div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="DisplayName">Full name</label>
+            <input asp-for="DisplayName" class="form-input" placeholder="Thandiwe Nkosi" autocomplete="off" />
+            <span asp-validation-for="DisplayName" class="text-critical"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="Email">Email address</label>
+            <input asp-for="Email" class="form-input" placeholder="thandiwe@verichat.co.za" autocomplete="off" />
+            <span class="form-hint">
+                Sign-in is by this address, and it is where a password reset is sent. The
+                address is marked unverified until the account owner confirms a link.
+            </span>
+            <span asp-validation-for="Email" class="text-critical"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="Password">Temporary password</label>
+            <input asp-for="Password" type="text" class="form-input" minlength="8"
+                   autocomplete="new-password" placeholder="At least 8 characters" />
+            <span class="form-hint">
+                Shown as plain text on purpose — this value is meant to be read back to
+                somebody. No complexity rules are enforced, so choose something the person
+                can remember and change later.
+            </span>
+            <span asp-validation-for="Password" class="text-critical"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="Role">Role</label>
+            <select asp-for="Role" class="form-select">
+                <option value="">Choose a role…</option>
+                <optgroup label="Work inside Verichat">
+                    @foreach (var r in staffRoles)
+                    {
+                        <option value="@r">@r</option>
+                    }
+                </optgroup>
+                <optgroup label="Client accounts">
+                    @foreach (var r in clientRoles)
+                    {
+                        <option value="@r">@r</option>
+                    }
+                </optgroup>
+            </select>
+            <span class="form-hint">
+                The role decides the landing screen and the whole menu. A client or student
+                account also gets the CRM client record that orders and quotations are keyed
+                on, so it can be used immediately.
+            </span>
+            <span asp-validation-for="Role" class="text-critical"></span>
+        </div>
+
+        <div style="display:flex; gap:.6rem;">
+            <button type="submit" class="btn btn-primary">Create account</button>
+            <a class="btn btn-secondary" asp-action="Users">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,288 @@
+/* Sign-in and sign-up
+   Both screens share this file - the panel used to be duplicated inside a <style>
+   block in each view, with its own copy of the palette. The colours are the theme
+   tokens now, so the auth screen follows the rest of the product when they change. */
+
+.vc-auth {
+    display: grid;
+    grid-template-columns: minmax(360px, 1fr) minmax(420px, 1.35fr);
+    min-height: 100vh;
+}
+
+.vc-auth-side {
+    background: linear-gradient(160deg, var(--vc-navy) 0%, var(--vc-navy-light) 100%);
+    color: var(--vc-text-inverse);
+    padding: 3rem 2.75rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: .35rem;
+}
+
+.vc-auth-brand {
+    display: flex;
+    gap: .7rem;
+    align-items: center;
+    margin-bottom: 2.4rem;
+}
+
+.vc-auth-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--vc-radius-sm);
+    background: var(--vc-plate);
+    object-fit: contain;
+    padding: 3px;
+    flex: none;
+}
+
+.vc-auth-brand-name {
+    font-family: var(--vc-font-heading);
+    font-weight: 700;
+    font-size: 1.05rem;
+    line-height: 1.1;
+}
+
+.vc-auth-brand-sub {
+    font-size: .62rem;
+    letter-spacing: .14em;
+    color: var(--vc-text-inverse-muted);
+}
+
+.vc-auth-headline {
+    font-size: clamp(1.5rem, 2.4vw, 1.95rem);
+    line-height: 1.25;
+    color: var(--vc-surface);
+    margin: 0 0 .8rem;
+}
+
+.vc-auth-lede {
+    color: var(--vc-text-inverse-muted);
+    font-size: .9rem;
+    line-height: 1.6;
+    margin: 0 0 1.8rem;
+    max-width: 38ch;
+}
+
+.vc-auth-points {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    font-size: .85rem;
+    color: var(--vc-text-inverse-muted);
+}
+
+.vc-check {
+    color: var(--vc-accent);
+    font-weight: 700;
+    margin-right: .45rem;
+}
+
+.vc-auth-main {
+    background: var(--vc-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+}
+
+.vc-auth-title {
+    font-family: var(--vc-font-heading);
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0 0 .25rem;
+}
+
+.vc-auth-sub {
+    color: var(--vc-text-muted);
+    font-size: .85rem;
+    margin: 0 0 1.6rem;
+}
+
+.vc-auth-switch {
+    text-align: center;
+    font-size: .82rem;
+    color: var(--vc-text-muted);
+    margin: 1.4rem 0 0;
+}
+
+/* The sentence that explains what the form will and will not do - e.g. that a
+   reset request says nothing about whether the address is registered. Quieter
+   than the field copy because it is about the system, not about what to type. */
+.vc-auth-note {
+    font-size: .78rem;
+    line-height: 1.5;
+    color: var(--vc-text-muted);
+    border-left: 2px solid var(--vc-border);
+    padding: .1rem 0 .1rem .7rem;
+    margin: 1.1rem 0 0;
+}
+
+/* Honeypot field: off the layout rather than display:none, because a stylesheet
+   rule is the first thing a spam script is written to ignore, and a hidden-by-
+   position input still has to be filled in by a human who somehow reaches it. */
+.vc-auth-honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* The privacy footnote at the foot of the brand panel (see _AuthPolicyFootnote).
+   Every screen that uses this shell is one a person reaches before they have an
+   account, which is the point at which a policy has to be readable. */
+.vc-auth-policy {
+    margin-top: 2.4rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--vc-navy-border);
+    display: grid;
+    gap: .3rem;
+}
+
+    .vc-auth-policy a {
+        color: var(--vc-text-inverse);
+        font-size: .84rem;
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    .vc-auth-policy span {
+        color: var(--vc-text-inverse-muted);
+        font-size: .76rem;
+        line-height: 1.55;
+        max-width: 34ch;
+    }
+
+/* One-click demo sign-in — see Views/Shared/_DemoQuickLogin.cshtml.
+   Development-only markup, so this block styles a panel a deployed site never
+   renders. The dot colours are the seven theme status tokens, and the mobile chip
+   row uses the same seven hex values so one account reads as one colour on both
+   clients. */
+.vc-auth-demo {
+    margin-top: 1.6rem;
+    padding-top: 1.2rem;
+    border-top: 1px dashed var(--vc-border);
+}
+
+.vc-auth-demo-label {
+    font-family: var(--vc-font-heading);
+    font-size: .68rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--vc-text-muted);
+    margin-bottom: .7rem;
+}
+
+.vc-auth-demo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .55rem;
+}
+
+    /* Each button is wrapped in its own form, because the shortcut posts a demo code
+       with its own anti-forgery token rather than borrowing the sign-in form's.
+       contents lets those forms drop out of the layout and the buttons tile two
+       across anyway. */
+    .vc-auth-demo-grid form {
+        display: contents;
+    }
+
+.vc-auth-demo-btn {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    width: 100%;
+    padding: .55rem .7rem;
+    background: var(--vc-surface);
+    border: 1px solid var(--vc-border);
+    border-radius: var(--vc-radius);
+    cursor: pointer;
+    text-align: left;
+    font-family: var(--vc-font-body);
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+    .vc-auth-demo-btn:hover {
+        border-color: var(--vc-accent);
+        box-shadow: var(--vc-shadow);
+    }
+
+    .vc-auth-demo-btn:focus-visible {
+        outline: 2px solid var(--vc-accent);
+        outline-offset: 2px;
+    }
+
+.vc-auth-demo-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--vc-neutral);
+    flex: none;
+}
+
+.vc-auth-demo-text {
+    display: grid;
+    gap: 1px;
+    min-width: 0;
+}
+
+.vc-auth-demo-role {
+    font-size: .84rem;
+    font-weight: 600;
+    color: var(--vc-text);
+}
+
+.vc-auth-demo-opens {
+    font-size: .7rem;
+    color: var(--vc-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.vc-auth-demo-note {
+    margin: .85rem 0 0;
+    font-size: .7rem;
+    line-height: 1.5;
+    color: var(--vc-text-muted);
+}
+
+.vc-auth-demo-dot[data-demo="admin"] { background: var(--vc-accent); }
+.vc-auth-demo-dot[data-demo="sales"] { background: var(--vc-warning); }
+.vc-auth-demo-dot[data-demo="procurement"] { background: var(--vc-success); }
+.vc-auth-demo-dot[data-demo="engineer"] { background: var(--vc-danger); }
+.vc-auth-demo-dot[data-demo="logistics"] { background: var(--vc-cyan); }
+.vc-auth-demo-dot[data-demo="student"] { background: var(--vc-info); }
+.vc-auth-demo-dot[data-demo="client"] { background: var(--vc-neutral); }
+
+/* The notice screen leads with a banner instead of a heading, so it needs the
+   card's own rhythm rather than the dashboard's page-level margins. */
+.vc-auth-card .alert-banner {
+    margin: 0 0 1.2rem;
+}
+
+/* The validation summary sits above the fields; without this it renders as
+   unstyled text and reads as part of the form's copy. */
+.vc-auth-card .text-critical ul {
+    padding-left: 1.1rem;
+    margin: 0 0 1rem;
+}
+
+@media (max-width: 900px) {
+    /* The marketing panel is the part a phone cannot show, but the brand line
+       still belongs - so it collapses to a strip rather than disappearing and
+       leaving an unbranded form. */
+    .vc-auth { grid-template-columns: 1fr; min-height: 100vh; }
+    .vc-auth-side { padding: 1.1rem 1.25rem; gap: .2rem; }
+    .vc-auth-brand { margin-bottom: .5rem; }
+    .vc-auth-headline { font-size: 1.1rem; margin-bottom: 0; }
+    .vc-auth-lede, .vc-auth-points { display: none; }
+    .vc-auth-main { padding: 1.75rem 1.25rem 2.5rem; }
+    .vc-auth-card { padding: 1.4rem; box-shadow: none; }
+}

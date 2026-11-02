@@ -4,9 +4,7 @@
     {
         public List<StockAlertRow> Alerts { get; set; } = new();
         public int CriticalCount { get; set; }
-        public int LowCount { get; set; }
         public string CriticalItemName { get; set; } = string.Empty;
-        public List<StockLevelPoint> StockLevels { get; set; } = new();
     }
 
     public class StockAlertRow
@@ -17,13 +15,23 @@
         public int MinStock { get; set; }
         public int ReorderQty { get; set; }
         public string Supplier { get; set; } = string.Empty;
-        public string Status { get; set; } = "OK"; // OK, Low, Critical
-    }
 
-    public class StockLevelPoint
-    {
-        public string Month { get; set; } = string.Empty;
-        public int Desktop { get; set; }
-        public int Mobile { get; set; }
+        /// <summary>
+        /// Starting value for the purchase-order line cost. The catalogue holds a
+        /// selling price and no purchase cost, so the buyer confirms or corrects
+        /// this rather than the system implying a margin.
+        /// </summary>
+        public decimal SuggestedUnitCost { get; set; }
+
+        public bool CanReorder => ReorderQty > 0;
+
+        /// <summary>
+        /// The alert feed's own word — "Critical" or "Warning" — carried straight
+        /// through rather than renamed. This screen used to translate Warning to
+        /// "Low", which is a priority word, so the buyer's two stock screens showed
+        /// the same shortage under two different names and the badge mapping had to
+        /// give "Low" two meanings to cope.
+        /// </summary>
+        public string Severity { get; set; } = string.Empty;
     }
 }

@@ -24,6 +24,30 @@ namespace VerichatCRM.API.DTOs.Requests
 
         [Required]
         public string Type { get; set; } = "other";
+
+        /// <summary>Optional BLE peripheral id so the app can reconnect to the same physical device.</summary>
+        public string? ExternalId { get; set; }
+    }
+
+    /// <summary>A single reading pulled from a connected device during sync.</summary>
+    public class DeviceSyncReadingDto
+    {
+        [Required]
+        public string Type { get; set; } = string.Empty; // bloodPressure | heartRate | bloodGlucose | temperature | bodyWeight
+
+        [Required]
+        public string Value { get; set; } = string.Empty;
+
+        public string Unit { get; set; } = string.Empty;
+        public string StatusLabel { get; set; } = "Normal";
+        public bool InRange { get; set; } = true;
+        public DateTime? RecordedAt { get; set; }
+    }
+
+    /// <summary>Body of POST /api/mobile/devices/{id}/sync — readings are optional.</summary>
+    public class SyncDeviceRequest
+    {
+        public List<DeviceSyncReadingDto>? Readings { get; set; }
     }
 
     public class UpdateGoalRequest

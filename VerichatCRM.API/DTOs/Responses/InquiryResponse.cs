@@ -14,6 +14,8 @@ namespace VerichatCRM.API.DTOs.Responses
         public string Source { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public int Score { get; set; }
+        public string? Urgency { get; set; }
+        public decimal? EstimatedValue { get; set; }
         public string? OwnerUserId { get; set; }
         public string? Notes { get; set; }
         public DateTime? ResponseDueAt { get; set; }

@@ -1,0 +1,138 @@
+@model VerichatCRM.Web.ViewModels.Portal.PortalHomeViewModel
+@{
+    ViewData["Title"] = "My Verichat";
+
+    string FirstLine(string name) =>
+        string.IsNullOrWhiteSpace(name) ? "there" : name.Split(' ')[0];
+}
+
+<partial name="_PortalAlert" />
+
+<section class="vc-portal-hero">
+    <div>
+        <h2>Welcome back, @FirstLine(Model.DisplayName).</h2>
+        <p>
+            This is your own corner of Verichat: the catalogue, the quotes raised on
+            your account, the deliveries on their way and anything you have asked
+            support about. Nothing here belongs to another organisation.
+        </p>
+    </div>
+    <div class="vc-portal-hero__actions">
+        <a class="btn btn-primary" asp-action="Catalogue">Browse catalogue</a>
+        <a class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.45);" asp-action="Tickets">Raise a ticket</a>
+    </div>
+</section>
+
+<div class="vc-portal-kpis">
+    <div class="vc-portal-kpi">
+        <div class="vc-portal-kpi__label">Awaiting your answer</div>
+        <div class="vc-portal-kpi__value vc-accent">@Model.AwaitingResponse</div>
+        <div class="vc-portal-kpi__hint">sent quotations not yet accepted or declined</div>
+    </div>
+    <div class="vc-portal-kpi">
+        <div class="vc-portal-kpi__label">Open tickets</div>
+        <div class="vc-portal-kpi__value">@Model.OpenTickets</div>
+        <div class="vc-portal-kpi__hint">support requests still being worked</div>
+    </div>
+    <div class="vc-portal-kpi">
+        <div class="vc-portal-kpi__label">In transit</div>
+        <div class="vc-portal-kpi__value">@Model.InTransit</div>
+        <div class="vc-portal-kpi__hint">deliveries dispatched and not yet received</div>
+    </div>
+    <div class="vc-portal-kpi">
+        <div class="vc-portal-kpi__label">Quoted value open</div>
+        <div class="vc-portal-kpi__value">R @Model.PendingValue.ToString("N0")</div>
+        <div class="vc-portal-kpi__hint">incl. 15% VAT, across the quotes awaiting you</div>
+    </div>
+</div>
+
+<div class="vc-portal-columns">
+    <div class="vc-portal-panel">
+        <div class="vc-portal-panel__head">
+            <h3>Latest quotations</h3>
+            <a class="btn btn-sm btn-outline" asp-action="Quotations">View all</a>
+        </div>
+        <div class="vc-portal-panel__body">
+            @if (Model.LatestQuotations.Count == 0)
+            {
+                <div class="vc-portal-empty">
+                    No quotations yet. Add quantities in the catalogue and a sales
+                    representative will send you a priced offer.
+                </div>
+            }
+            @foreach (var q in Model.LatestQuotations)
+            {
+                <div class="vc-portal-row">
+                    <div class="vc-portal-row__main">
+                        <div class="vc-portal-row__title">@q.LineItems.Count line(s) · @q.QuoteReference</div>
+                        <div class="vc-portal-row__meta">
+                            Raised @q.DateGenerated.ToLocalTime().ToString("dd MMM yyyy")
+                            · valid to @q.ValidUntil.ToLocalTime().ToString("dd MMM yyyy")
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <strong>R @q.GrandTotal.ToString("N0")</strong>
+                        <span class="badge @Badge.For(q.Status)">@q.Status</span>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="vc-portal-panel">
+        <div class="vc-portal-panel__head">
+            <h3>Recent tickets</h3>
+            <a class="btn btn-sm btn-outline" asp-action="Tickets">Support</a>
+        </div>
+        <div class="vc-portal-panel__body">
+            @if (Model.LatestTickets.Count == 0)
+            {
+                <div class="vc-portal-empty">Nothing open. Anything you raise appears here with its SLA deadline.</div>
+            }
+            @foreach (var t in Model.LatestTickets)
+            {
+                <div class="vc-portal-row">
+                    <div class="vc-portal-row__main">
+                        <div class="vc-portal-row__title">@t.Title</div>
+                        <div class="vc-portal-row__meta vc-portal-ref">@t.TrackingNumber · @t.Priority</div>
+                    </div>
+                    <span class="badge @Badge.For(t.Status)">@t.Status</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="vc-portal-panel">
+    <div class="vc-portal-panel__head">
+        <h3>Deliveries</h3>
+        <span class="vc-portal-row__meta">Tracking numbers come from the order, so staff can be quoted the reference.</span>
+    </div>
+    <div class="vc-portal-panel__body">
+        @if (Model.Deliveries.Count == 0)
+        {
+            <div class="vc-portal-empty">No deliveries against your account yet.</div>
+        }
+        @foreach (var d in Model.Deliveries.OrderByDescending(d => d.EstimatedArrival).Take(6))
+        {
+            <div class="vc-portal-row">
+                <div class="vc-portal-row__main">
+                    <div class="vc-portal-row__title">@d.Destination</div>
+                    <div class="vc-portal-row__meta">
+                        <span class="vc-portal-ref">@d.TrackingNumber</span>
+                        · @d.Origin → @d.Destination
+                        @if (!string.IsNullOrWhiteSpace(d.Carrier)) { <text>· @d.Carrier</text> }
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <span class="vc-portal-row__meta">ETA @d.EstimatedArrival.ToLocalTime().ToString("dd MMM yyyy")</span>
+                    <span class="badge @Badge.For(d.Status)">@d.Status</span>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/pages/portal.css" />
+}

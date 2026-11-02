@@ -1,0 +1,49 @@
+@inject IWebHostEnvironment Env
+@inject IConfiguration Config
+@using VerichatCRM.Core.Models
+@using VerichatCRM.Web.Services
+@*
+    One click per role, and the reason it exists: seven accounts, seven boards, and
+    typing an address and a password out of a README table for every one of them is the
+    slowest way to show that the roles differ. The list is DemoAccounts - the same one
+    DemoUserSeeder writes - so a button cannot name an account that is not there.
+
+    Switched on by DemoAccess, which is the same rule the controller applies to the
+    posted code and the same setting name the API's seeder reads. On a local machine
+    that is Development, so nothing has to be configured; on a deployed host it is
+    appsettings.json, which ships the key set to true so this assessment build offers
+    the panel, and Bootstrap__DemoUsers=false in the host's app settings turns it back
+    off again.
+
+    Each button is its own form rather than script that fills the sign-in inputs, so
+    it works with page script switched off, and the credential never appears in the
+    DOM: the form posts the code and the controller reads the password from the list.
+*@
+@if (DemoAccess.IsEnabled(Config, Env))
+{
+    <div class="vc-auth-demo" role="group" aria-label="Demo accounts, one per role">
+        <div class="vc-auth-demo-label">Demo: quick login</div>
+        <div class="vc-auth-demo-grid">
+            @foreach (var account in DemoAccounts.All)
+            {
+                <form method="post" asp-action="Login" asp-controller="Account">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="demoCode" value="@account.Code" />
+                    <button type="submit" class="vc-auth-demo-btn"
+                            title="@account.Role &mdash; @account.DisplayName (@account.Email) opens @account.Landing">
+                        <span class="vc-auth-demo-dot" data-demo="@account.Code" aria-hidden="true"></span>
+                        <span class="vc-auth-demo-text">
+                            <span class="vc-auth-demo-role">@account.Label</span>
+                            <span class="vc-auth-demo-opens">@account.Landing</span>
+                        </span>
+                    </button>
+                </form>
+            }
+        </div>
+        <p class="vc-auth-demo-note">
+            Seeded accounts, one per role, created by the API's <code>DemoUserSeeder</code>
+            while <code>Bootstrap:DemoUsers</code> is set. Anyone who can reach this
+            address can open any role, including the administrator.
+        </p>
+    </div>
+}

@@ -22,12 +22,14 @@
     <div class="search-bar">
         <input type="text" placeholder="Search products or SKU..." id="catalogSearch" />
     </div>
-    <select class="form-select" style="max-width: 200px;">
-        <option>Sort: Name A-Z</option>
-        <option>Sort: Name Z-A</option>
-        <option>Sort: Price Low-High</option>
-        <option>Sort: Price High-Low</option>
-        <option>Sort: Stock Low-High</option>
+    @* product-catalog.js re-orders the cards on change. The control used to carry
+       no id, no values and no listener, so every choice here redrew nothing. *@
+    <select class="form-select" style="max-width: 200px;" id="catalogSort" aria-label="Sort products">
+        <option value="name-asc">Sort: Name A-Z</option>
+        <option value="name-desc">Sort: Name Z-A</option>
+        <option value="price-asc">Sort: Price Low-High</option>
+        <option value="price-desc">Sort: Price High-Low</option>
+        <option value="stock-asc">Sort: Stock Low-High</option>
     </select>
 </div>
 
@@ -55,21 +57,35 @@
 <div class="product-grid">
     @foreach (var p in Model.Products)
     {
-        <div class="product-card" data-category="@p.Category" data-name="@p.ProductName.ToLower()" data-sku="@p.SKU.ToLower()">
+        @* data-price is invariant-culture on purpose: the "R 1,234" text the card
+           shows is a display string, and parsing that back would depend on the
+           browser's locale. data-name is already lower-cased, so the sort compares
+           like with like. *@
+        <div class="product-card" data-category="@p.Category" data-name="@p.ProductName.ToLower()" data-sku="@p.SKU.ToLower()" data-price="@p.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-stock="@p.StockQty">
             <div class="product-image">
                 @if (!string.IsNullOrWhiteSpace(p.ImageUrl))
                 {
                     <img src="@p.ImageUrl" alt="@p.ProductName" onerror="this.style.display='none'; this.parentElement.classList.add('placeholder')" />
+                }
+                else if (CatalogueArt.ProductImageFor(p.ProductName) is { } photo)
+                {
+                    <img src="@photo" alt="@p.ProductName" onerror="this.style.display='none'; this.parentElement.classList.add('placeholder')" />
+                }
+                else if (CatalogueArt.ImageFor(p.Category) is { } art)
+                {
+                    <img src="@art" alt="" aria-hidden="true" onerror="this.style.display='none'; this.parentElement.classList.add('placeholder')" />
                 }
             </div>
             <div class="product-body">
                 <div class="product-name">@p.ProductName</div>
                 <div class="product-price">R @p.Price.ToString("N0")</div>
                 <div class="product-footer">
-                    <span class="badge @(p.IsLowStock ? "badge-warning" : "badge-success")">
-                        @(p.IsLowStock ? "Low Stock" : "In Stock")
-                    </span>
-                    <span class="product-stock">@p.StockQty in stock</span>
+                    @* Same chip wording as the client portal's catalogue card; the
+                       count the buyer wants sits beside it, not inside it. A zero-
+                       stock line used to reach here with no word of its own. *@
+                    @{ var stockLabel = Badge.StockLabel(p.StockQty, p.IsLowStock); }
+                    <span class="badge @Badge.For(stockLabel)">@stockLabel</span>
+                    <span class="product-stock">@p.StockQty on hand</span>
                 </div>
                 @if (Perm.Has(Context.Session.GetString("UserRole") ?? "", Perm.ProductEdit))
                 {

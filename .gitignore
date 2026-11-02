@@ -427,3 +427,42 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+## ---------------------------------------------------------------------------
+## VerichatCRM additions
+## ---------------------------------------------------------------------------
+
+# Credentials. The database password and the JWT signing key live in the host's
+# secret store (env vars in production, dotnet user-secrets in Development).
+.env
+.env.*
+secrets.json
+appsettings.Production.json
+appsettings.*.local.json
+# ...but the shape of the production file is documented in DEPLOYMENT.md, and a
+# committed template such as appsettings.Production.example.json stays tracked.
+
+# Oversized artefacts and scratch output that must not reach the remote.
+# Note: *.env above (from the upstream template) does not match a dotfile named
+# .env, which is why the explicit patterns are repeated here.
+*.zip
+*.7z
+*.rar
+tmp/
+build-out.txt
+_build.log
+*_build.log
+# Hand-made copies of source files (User.cs.bak sat next to the real User.cs and
+# both were tracked, so a reader had no way to tell which one the code used).
+*.bak
+*.orig
+
+# The two exports that keep regenerating themselves into the repository root,
+# where they duplicate content that is already tracked. `dotnet ef migrations
+# script` with no --output writes migration.sql, which is byte-for-byte
+# Database/azure-sql-full-schema.sql but for its byte-order mark; saving the
+# rendered Gallery page to compare it against the view writes gal.html next to
+# Views/Home/Gallery.cshtml. Both are work in progress, not sources - and the
+# real one is the tracked copy, so a reader must never be able to find two.
+/migration.sql
+/gal.html

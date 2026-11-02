@@ -1,4 +1,5 @@
-﻿using VerichatCRM.API.DTOs.Responses;
+﻿using VerichatCRM.API.DTOs.Requests;
+using VerichatCRM.API.DTOs.Responses;
 using VerichatCRM.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -71,6 +72,34 @@ namespace VerichatCRM.API.Services
                 Unit = reading.Unit,
                 StatusLabel = reading.StatusLabel,
                 InRange = reading.InRange
+            };
+        }
+
+        public async Task<LogHealthMetricResponse> LogHealthMetricAsync(string userId, LogHealthMetricRequest request)
+        {
+            var metric = new HealthMetric
+            {
+                ClientId = request.ClientId,
+                DeviceId = request.DeviceId,
+                MetricType = request.MetricType,
+                Value = request.Value.Trim(),
+                Unit = request.Unit ?? string.Empty,
+                Timestamp = request.Timestamp ?? DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            _db.HealthMetrics.Add(metric);
+            await _db.SaveChangesAsync();
+
+            return new LogHealthMetricResponse
+            {
+                MetricId = metric.MetricId,
+                ClientId = metric.ClientId,
+                DeviceId = metric.DeviceId,
+                MetricType = metric.MetricType,
+                Value = metric.Value,
+                Unit = metric.Unit,
+                Timestamp = metric.Timestamp,
             };
         }
 

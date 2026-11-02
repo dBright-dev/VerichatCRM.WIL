@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using VerichatCRM.Web.Authorization;
-using VerichatCRM.Web.Services;
 using VerichatCRM.Web.Services.Interfaces;
 
 namespace VerichatCRM.Web.Controllers
@@ -9,8 +8,22 @@ namespace VerichatCRM.Web.Controllers
     public class PipelineController : Controller
     {
         private readonly IPipelineApiService _pipeline;
+        private readonly ISalesGoalApiService _goals;
+        private readonly IApiClient _api;
 
-        public PipelineController(IPipelineApiService pipeline) => _pipeline = pipeline;
+        // Two constructors used to compete here, one taking _goals and one taking
+        // _api, so the container could satisfy either and leave the other field
+        // null - and Index() reads both. Whichever candidate it picked wasn't
+        // defined, so the pipeline board was a coin-flip 500.
+        public PipelineController(
+            IPipelineApiService pipeline,
+            ISalesGoalApiService goals,
+            IApiClient api)
+        {
+            _pipeline = pipeline;
+            _goals = goals;
+            _api = api;
+        }
 
         public async Task<IActionResult> Index()
         {
@@ -20,15 +33,21 @@ namespace VerichatCRM.Web.Controllers
             ViewData["Title"] = "Pipeline Board";
             ViewData["Subtitle"] = "Drag cards between stages to update deal progress.";
             ViewData["CurrentRole"] = HttpContext.Session.GetString("UserRole") ?? "Sales Representative";
+            ViewData["GoalProgress"] = await _goals.GetDashboardProgressAsync();
 
             var model = await _pipeline.GetBoardAsync();
+            var quotations = await _api.GetAsync<List<VerichatCRM.Web.Models.Quotation.QuotationDto>>("/api/quotation") ?? new();
+            ViewBag.MobileQuoteRequests = quotations.Where(q => q.Terms.StartsWith("Mobile quote request", StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(q => q.DateGenerated).ToList();
             return View(model);
         }
 
-        [HttpPost]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> MoveDeal([FromBody] MoveDealRequest request)
         {
             if (HttpContext.Session.GetString("JwtToken") == null) return Unauthorized();
+            if (request is null || string.IsNullOrWhiteSpace(request.DealId)) return BadRequest();
+
             var ok = await _pipeline.MoveDealAsync(request.DealId, request.NewStage);
             return ok ? Ok() : BadRequest();
         }

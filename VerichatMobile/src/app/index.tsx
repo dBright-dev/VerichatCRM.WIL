@@ -1,8 +1,11 @@
+import { CRMTheme } from '../constants/crmTheme'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { getAuthToken, subscribeAuth } from '../constants/api'
+import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { getAuthRole, getAuthToken, getBiometricLoginEnabled, isStaffMobileRole, subscribeAuth } from '../constants/api'
+import { authenticateBiometric, hasUsableBiometrics } from '../constants/biometricAuth'
 import ClientHomeScreen from './clientHomescreen'
+import DashboardScreen from './DashboardScreen'
 
 /**
  * Auth gate: when a JWT is present the Home tab renders the client dashboard;
@@ -11,30 +14,114 @@ import ClientHomeScreen from './clientHomescreen'
 const HomeScreen = () => {
   const router = useRouter()
   const [signedIn, setSignedIn] = useState(() => getAuthToken() !== null)
+  const [checkingBiometrics, setCheckingBiometrics] = useState(false)
+  const [biometricFailed, setBiometricFailed] = useState(false)
 
   useEffect(() => {
     return subscribeAuth((token) => setSignedIn(token !== null))
   }, [])
 
+  useEffect(() => {
+    let mounted = true
+    const tryBiometricLogin = async () => {
+      if (!mounted || signedIn) return
+
+      try {
+        const biometricEnabled = await getBiometricLoginEnabled()
+        if (!biometricEnabled) return
+
+        const canUse = await hasUsableBiometrics()
+        if (!canUse) return
+
+        setCheckingBiometrics(true)
+        const success = await authenticateBiometric('Sign in with biometrics')
+        if (!mounted) return
+
+        if (success) {
+          const token = getAuthToken()
+          if (token) {
+            setSignedIn(true)
+          } else {
+            setBiometricFailed(true)
+          }
+        } else {
+          setBiometricFailed(true)
+        }
+      } catch {
+        // Biometric not available or cancelled - fall back to normal login
+      } finally {
+        if (mounted) setCheckingBiometrics(false)
+      }
+    }
+
+    void tryBiometricLogin()
+    return () => { mounted = false }
+    // Mount-only deliberately: tryBiometricLogin already returns when signed in, and
+    // re-running the effect on every session change would re-prompt for biometrics.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleBiometricRetry = async () => {
+    setBiometricFailed(false)
+    setCheckingBiometrics(true)
+    try {
+      const success = await authenticateBiometric('Sign in with biometrics')
+      if (success) {
+        const token = getAuthToken()
+        if (token) setSignedIn(true)
+        else setBiometricFailed(true)
+      } else {
+        setBiometricFailed(true)
+      }
+    } catch {
+      setBiometricFailed(true)
+    } finally {
+      setCheckingBiometrics(false)
+    }
+  }
+
+  if (checkingBiometrics) {
+    return (
+      <View style={styles.biometricContainer}>
+        <ActivityIndicator size="large" color="#ffffff" />
+        <Text style={styles.biometricText}>Signing in with biometrics...</Text>
+      </View>
+    )
+  }
+
+  if (biometricFailed) {
+    return (
+      <View style={styles.biometricFailedContainer}>
+        <Text style={styles.biometricFailedText}>Biometric sign-in failed</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={handleBiometricRetry}>
+          <Text style={styles.retryButtonText}>Try Again</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.backToLoginButton} onPress={() => setBiometricFailed(false)}>
+          <Text style={styles.backToLoginButtonText}>Use Password Instead</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+
   if (signedIn) {
-    return <ClientHomeScreen />
+    return isStaffMobileRole(getAuthRole()) ? <DashboardScreen /> : <ClientHomeScreen />
   }
 
   return (
     <View style={styles.container}>
 
       <View style={styles.Logo}>
-          <Image source={require('../../assets/images/canva/design_pt.png')} style={styles.logo_image} />
+          <Image source={require('../../assets/images/brand/verichat-logo-light.png')} style={styles.logo_image} />
       </View>
 
       <View style={styles.login_section}>
 
-        <Text style={styles.user_login}>Log in As:</Text>
+        <Text style={styles.user_login}>Choose your account</Text>
         <TouchableOpacity style={styles.button} onPress={() => router.push('/clientLogin')}>
           <Text style={styles.button_text}>Client</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => router.push('/adminLogin')}>
-          <Text style={styles.button_text}>Admin</Text>
+          <Text style={styles.button_text}>Staff / Admin</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => router.push('/newUserAccount')}>
           <Text style={styles.button_text}>New User</Text>
@@ -48,11 +135,55 @@ const HomeScreen = () => {
 export default HomeScreen
 
 const styles = StyleSheet.create({
+  biometricContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: CRMTheme.primaryDark,
+    gap: 16,
+  },
+  biometricText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  biometricFailedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: CRMTheme.primaryDark,
+    gap: 12,
+    paddingHorizontal: 32,
+  },
+  biometricFailedText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#ffffff',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: CRMTheme.primaryDark,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  backToLoginButton: {
+    marginTop: 12,
+  },
+  backToLoginButtonText: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 14,
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#004e7a',
+    backgroundColor: CRMTheme.primaryDark,
   },
   Logo: {
     marginBottom: 50,
@@ -80,8 +211,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   logo_image: {
-    width: 200,
-    height: 200,
+    width: 260,
+    height: 158,
     resizeMode: 'contain',
   },
 })
+

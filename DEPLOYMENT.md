@@ -1,0 +1,1316 @@
+# Deployment, secrets and credential rotation
+
+Companion to `README.md`. The README tells a developer how to run the code; this file tells whoever operates the deployed site **where each secret must live**, **what to do about the credentials that were committed to git**, and **what has to be true before the live notification feed works**.
+
+Nothing in this file was executed against the hosting provider. The steps that touch `databaseasp.net`, the Monster ASP control panel, or the shared git remote are deliberately left for an operator with access, because they cannot be done from a working copy and two of them are destructive.
+
+## What runs where
+
+| Piece | Deployed target | Notes |
+| --- | --- | --- |
+| Staff web app (`VerichatCRM.Web`) | `verichat-crm-web.runasp.net` — Monster ASP shared hosting, publish profile `site94515-WebDeploy.pubxml` | Razor MVC. Talks to the API server-side and passes the API base URL to page script. |
+| API (`VerichatCRM.API`) | **`http://api-site.runasp.net/`** — Monster ASP shared hosting, publish profile `site94518-WebDeploy.pubxml` (the duplicate `…WebDeploy1` / `…WebDeploy2` profiles were deleted on 1 Nov) | REST + SignalR hub at `/hubs/notifications`. **Serving, and `Degraded`:** it starts, `/health` answers 200 `Alive` and `/api/health` answers 503 with the database check failing (§7.1). The other Monster name, `verichat-crm-api.runasp.net`, is a **separate site** and still returns 500.30 — the two names answer differently, which settles the question the 1 Nov note left open: they were never the same process. `https://` on either name does not connect at all: no certificate is bound. |
+| Second API copy (`VerichatCRM.API`, deployed to Azure — *not* a hot standby: §7.7 switches cross-database failover off, because the two copies now read two different databases) | `https://verichat-api-aqcbgydhhbgbgha5.eastus-01.azurewebsites.net` — Azure App Service, the target of `BackupApiBaseUrl` | **Serving, but `Degraded`:** it starts and has its `Jwt__Key` and connection string set, then fails every data route because it has no database it can reach (§7.2). Not a working safety net yet. Unlike the Monster names, it does serve HTTPS with a real certificate. |
+| Database | `databaseasp.net` (Monster ASP shared SQL Server) | Reached only by the API, and only by an API running *inside* that hosting family: the published name resolves to the private address `10.0.0.23`, so no connection string naming it works from Azure (§7.2). The web app holds no connection string. |
+| Mobile client (`VerichatMobile`) | EAS builds, installed on devices | Reads `EXPO_PUBLIC_API_URL` at bundle time. |
+
+Publish profiles (`*.pubxml`) are git-ignored and none of them carries a `Password` element, so nothing new leaks there.
+
+**The shipped configuration now names the host the API is actually published to.** Until 1 Nov it did not: `VerichatCRM.Web/appsettings.json` carried `ApiBaseUrl = https://verichat-crm-api.runasp.net`, while the published site is `http://api-site.runasp.net` and `https://` connects to none of the `*.runasp.net` names — re-measured 1 Nov 2026, every `https://` probe fails at `curl` return code 35 (`api-site` and `verichat-crm-web`: handshake failure; `verichat-crm-api`: connection reset). No certificate is bound anywhere. A web app configured that way would have failed every API call even after the 500.30 below is fixed, and the mobile app contradicted itself — `VerichatMobile/.env` said `http://`, the `api.ts` fallback said `https://`. All three now read `http://api-site.runasp.net`:
+
+| File | Value | In git? |
+| --- | --- | --- |
+| `VerichatCRM.Web/appsettings.json` | `"ApiBaseUrl": "http://api-site.runasp.net"` | yes — this is what the deployed web site ships with |
+| `VerichatMobile/src/constants/api.ts` | fallback `'http://api-site.runasp.net'` | yes — the default for any build that sets no env var |
+| `VerichatMobile/.env` | `EXPO_PUBLIC_API_URL=http://api-site.runasp.net` | **no** — `.gitignore:437` ignores `.env`, so this line only fixes the working copy on this machine |
+
+Because `.env` is ignored and there is no checked-in `.env.example`, the `api.ts` fallback is the only committed source of the mobile origin; a fresh clone that never creates `.env` still talks to the right host. A machine that does create `.env` must use the same value, or it silently overrides the fallback.
+
+CORS needs no change: `VerichatCRM.API/appsettings.json` already allows `http://verichat-crm-web.runasp.net` and its `https` variant, and the web origin is the only browser that calls the API cross-origin. `Cors:AllowedOrigins` in `appsettings.json` is for *deployed* origins, which are not secret — that is why the pair is committed rather than being a panel variable; extra local origins go in `Cors__AllowedOrigins__2`.
+
+Two consequences of committing an `http://` origin deliberately:
+
+1. **It is a marker of unfinished work, not a working arrangement.** The scheme is cleartext because no certificate is bound (§5). Bind one to both sites, then change `ApiBaseUrl`, `.env` and the `api.ts` fallback to `https://` in the same commit — an `https` page calling an `http` API is blocked as mixed content, so a half-migration breaks the web app.
+2. **A signed mobile release build is still impossible against it.** Android and iOS block cleartext traffic in release builds, so the EAS `production` profile needs the certificate first. Development builds and Expo Web work as configured.
+
+These values are read at *deploy* time, not build time: after changing any of them, republish the web site (`site94515-WebDeploy.pubxml`) and rebuild the mobile bundle — `EXPO_PUBLIC_*` is inlined into the JS bundle, so a `.env` edit needs a new build to take effect.
+
+## Secrets inventory
+
+| Config key | Read by | Correct home today | Cost of rotating it |
+| --- | --- | --- | --- |
+| `ConnectionStrings:DefaultConnection` | `VerichatCRM.API/Program.cs:28` | Host secret store / `ConnectionStrings__DefaultConnection`. **Never** in `appsettings*.json` outside Development. | API restart. Sessions are unaffected. |
+| `Jwt:Key` | `Program.cs:133` | `Jwt__Key`. The app throws at startup when it is blank. | Every issued token becomes invalid — all staff and all mobile users are signed out. |
+| `Email:Host` / `Port` / `UseSsl` / `Username` / `Password` / `FromAddress` / `FromName` | `VerichatCRM.Infrastructure/Data/External/EmailService.cs:74` | `Email__*` env vars. `Host` is the switch: while it is blank the service logs "would send" and returns without throwing, so every mail route silently no-ops. | Password reset, address verification and the contact-page enquiry still *record* their state but nothing reaches an inbox, which turns the self-service recovery routes into admin-only ones. |
+| `Email:SalesAddress` | `VerichatCRM.API/Services/PublicEnquiryService.cs:161` | `Email__SalesAddress`. Optional — the code already defaults to the published sales mailbox. | Copies of public enquiries go to the default address instead. |
+| `Bootstrap:AdminEmail` / `AdminPassword` / `AdminName` | `AdminBootstrapper` | `Bootstrap__*` env vars, **deleted after the first sign-in**. Only consulted while the user table is empty; leaving them set is a standing admin-account door. | None once accounts exist. |
+| `Bootstrap:DemoUsers` | `DemoUserSeeder` (API) and `DemoAccess` (web) | `appsettings.json` and `appsettings.Development.json`, both `true`. One key, read by both tiers under the same name, is the whole rule: the API seeds the seven accounts and the web tier renders the buttons. A host opts out with `Bootstrap__DemoUsers=false`, which outranks the file. | None — it creates accounts and never changes them. Verified against a scratch database: flag off, 0 rows; flag on, one account per role; restart with the flag still on, still one per role. Re-verified on the web tier: a Production-environment run renders 7 buttons with the key true and 0 with `Bootstrap__DemoUsers=false`. |
+| `Cors:AllowedOrigins` | `Program.cs:198` | `appsettings.json` (deployed origins are not secret) plus `Cors__AllowedOrigins__2` for extra environments. | Browsers stop being able to call the API. |
+| `EXPO_PUBLIC_API_URL` | `VerichatMobile/src/constants/api.ts` | `VerichatMobile/.env` (ignored) or the EAS build environment. | Needs a new app build; it is inlined into the bundle. |
+| `EXPO_PUBLIC_DEMO_LOGIN` | `VerichatMobile/src/components/ui/DemoQuickLogin.tsx` | `eas.json` — `true` in the `preview` and `production` profiles. | Needs a new app build; it is inlined into the bundle. A release bundle built without it has no switch it can flip afterwards. |
+
+`Bootstrap:DemoUsers` used to require the Development environment as well, which kept the one-click panel off every host a reviewer could actually reach. That second condition is gone, so **a publish of the current settings ships an open demonstration on both tiers**: seven role accounts seeded into whatever database the deployed API reaches, and seven buttons on the deployed sign-in page. Anyone holding the URL can open any role including System Administrator, because the passwords are printed in README — which is the point for an assessed build and the wrong state for anything holding real client data. To close a deployment: set `Bootstrap__DemoUsers=false` on the API and the web app, then delete the seven `.test.local` rows from `Users`.
+
+Local development needs only the JWT key. The connection string is already in `appsettings.Development.json` and points at LocalDB with `Encrypt=False;TrustServerCertificate=True`, which is what LocalDB requires — `Program.cs:41` allows that key only in Development, precisely so it can never reach a real host:
+
+```powershell
+dotnet user-secrets set "Jwt:Key" "<64-char random string>" --project VerichatCRM.API
+```
+
+**Do not set `ConnectionStrings:DefaultConnection` in user secrets for local work, and check whether you already have.** Config precedence puts user secrets *above* `appsettings.Development.json`, so a value left over from a hosted rehearsal silently outranks the checked-in LocalDB string. It no longer breaks Visual Studio F5 — both API launch profiles now carry `ConnectionStrings__DefaultConnection` pinned to LocalDB, and an environment variable outranks user secrets (verified: with the stale secret still in place, the profile-launched API reports `Healthy` / `Database reachable` against LocalDB with nothing set in the shell) — but it **does** still hijack every `dotnet ef` command, because the EF tools apply only their own `ASPNETCORE_ENVIRONMENT=Development` default and not the profile's variables (§9). The failure is easy to mistake for a code bug: the API spends its startup trying to reach that server, since the migration block at `Program.cs:266` runs before Kestrel binds and `EnableRetryOnFailure` (`Program.cs:78`) retries it, so `dotnet run` looks like it has hung for a minute or more. When it finally answers, `/api/health` reports `database: Unhealthy — CanConnectAsync returned false` and the web sign-in page says only *"The request failed (HTTP 500)"* — the failure appears three layers away from its cause. Delete the key, since nothing local needs it:
+
+```powershell
+dotnet user-secrets remove "ConnectionStrings:DefaultConnection" --project VerichatCRM.API
+```
+
+Removing it is the safer habit: the secrets store is per-machine and invisible in `git status`, so it is the one place a production connection string can sit without anyone reviewing it.
+
+User secrets are loaded only when `ASPNETCORE_ENVIRONMENT=Development`. They do nothing in production.
+
+The web tier has a matching Development override, and it matters for more than tidiness. `ApiBaseUrl` in `appsettings.json` is the *deployed* API, and `VerichatCRM.Web/Services/ApiFallbackHandler.cs:29` treats an HTTP 500 from the primary as a transient error and retries it against `BackupApiBaseUrl` — the live Azure host. Without the override, a local sign-in does not test your code: it posts the password you typed to production infrastructure and renders whatever error comes back. `appsettings.Development.json` for the web project therefore points `ApiBaseUrl` at `http://localhost:5184` and sets `BackupApiBaseUrl` to empty, which the handler reads as "no backup configured" (`:21`) and stops the failover from ever leaving the machine.
+
+## 1. Rotate the database credential
+
+This is the only step that actually fixes the exposure. Removing a password from files does not un-expose it — the value sat in `VerichatCRM.API/appsettings.json` across seven commits from `a53523c` to `c3f3fb5` (the last of them on 2026-10-26, on `dev2` and `section1---mutsa`, which are both pushed). Anyone with read access to the public repository, a fork, a clone, or GitHub's cached views can recover it with `git log -p`.
+
+1. Sign in to the Monster ASP control panel and open its SQL Server manager for the `db70543` database. Change the login password there. If the panel does not expose the option, ask support to reset it, or run `ALTER LOGIN ... WITH PASSWORD = '<new>'` in the panel's query tool if it grants one. **This cannot be done from a working copy — there is no SQL Server reachable from this repository.**
+2. Confirm nothing else authenticates with that same login. The `db70543` account is scoped to that one database, so no other application should be using it; verify before assuming.
+3. Put the new value into the host's configuration store (see §3) with `Encrypt=True` (see §4).
+4. Restart the API site, then check `http://api-site.runasp.net/api/health`, which reports database readiness.
+
+Old tokens stay valid until §2 is done; the password rotation alone does not sign anyone out.
+
+## 2. Replace the JWT signing key
+
+Two different signing keys were committed: a readable placeholder in `a53523c` and a generated 64-byte base64 key in `c751e3a` → `36b1f29`. Both must be treated as public. Anyone holding either can mint tokens for any role, including `System Administrator`, and the API will accept them.
+
+1. Generate a fresh key: `[Convert]::ToBase64String((1..64 | ForEach-Object { Get-Random -Max 256 } | ForEach-Object { [byte]$_ }))`.
+2. Set `Jwt__Key` on the API host and restart the site.
+3. Expect every session to break. Tell staff to sign in again; the stale `JwtToken` cookie and the stale session value are overwritten on the next successful login (`VerichatCRM.Web/Controllers/AccountController.cs`).
+
+## 3. Giving the API its configuration on shared hosting
+
+ASP.NET Core reads configuration from environment variables and from `appsettings.Production.json`, in that order of precedence (env vars win). Which route Monster ASP's panel supports has to be confirmed once in the control panel — nothing in the repository tells us.
+
+- **Preferred — environment variables.** Set `ConnectionStrings__DefaultConnection`, `Jwt__Key`, and `Cors__AllowedOrigins__0` in the panel's application-settings area, or as `<environmentVariables>` in `web.config` if the site runs out-of-process. Keep `web.config` out of git if it ever carries a value.
+- **Fallback — `appsettings.Production.json` on the server.** Upload it by FTP and leave it out of git; `.gitignore` now lists `appsettings.Production.json`, so an accidental `git add -A` can no longer stage it. On shared hosting you cannot set NTFS ACLs on that file, so treat it as readable by anyone with the hosting control-panel login and prefer the env-var route when it is available.
+- **Not available — user secrets.** Development-only by design.
+
+A tracked template is the way to document the shape without the values: copy `appsettings.json`, add the real key names with empty values, and commit it as `appsettings.Production.example.json`. The ignore rule targets `appsettings.Production.json` only, so the template is not swallowed by it.
+
+## 4. Encryption
+
+`Encrypt=False` was committed with the password, so every production connection ran the TDS session unencrypted — including the login handshake. The API now refuses to start outside Development when the connection string asks for `Encrypt=False` or `Encrypt=no`:
+
+```
+InvalidOperationException: ConnectionStrings:DefaultConnection sets Encrypt=False.
+Remove that key, or set Encrypt=True; TrustServerCertificate=True. See DEPLOYMENT.md.
+```
+
+Recommended shape:
+
+```
+Server=<sql-host>; Database=<db>; User Id=<login>; Password=<rotated>; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True;
+```
+
+`TrustServerCertificate=True` keeps a shared host's certificate — issued for the `databaseasp.net` machine, not for your alias — from failing the handshake, but it means you are encrypting without authenticating the endpoint. Remove it once a certificate the web-server machine trusts is bound to the SQL endpoint. Omitting `Encrypt` entirely is safe: `Microsoft.Data.SqlClient` encrypts by default, which is why the guard rejects only an explicit `False`.
+
+## 5. TLS is a prerequisite, not a nice-to-have
+
+Two things now depend on the API being reachable over HTTPS with a valid certificate:
+
+- **Live notifications.** The JWT is no longer written into page script. The browser authenticates the cross-origin SignalR handshake with the `JwtToken` cookie, which is set as `HttpOnly; Secure; SameSite=None` whenever the web app is served over HTTPS. Browsers refuse to *store* a `SameSite=None` cookie that is not `Secure`, and refuse to *send* a `Secure` cookie over `http://`. So if either site is served over cleartext, the hub cannot authenticate and the toast feed goes quiet — that is a deployment gap, not a code bug.
+- **Mobile release builds.** Android and iOS block cleartext traffic, so today's installs only work as development/preview builds. `Program.cs:288` calls `app.UseHttpsRedirection()`, which *would* make the `http://` origin unreachable — it answers every cleartext request with a redirect to `https://`, and the handshake there fails. Whether it fires depends on the site having a 443 binding for ANCM to discover, and that is not observable on the API today because the process dies before serving a request. The sibling web site ships the same middleware (`VerichatCRM.Web/Program.cs:57`) and demonstrates what happens on this host: measured 1 Nov 2026, `http://verichat-crm-web.runasp.net/` and `/Account/Login` both return **200 with no `Location` header**, so redirection is inert there and cleartext works. If the API site *does* have a 443 binding, expect `307 → https://api-site.runasp.net` the moment it starts, which fails the handshake and looks like "the API is unreachable over http". The panel check is: does that site list an https binding? If it does, remove it or delete `UseHttpsRedirection()` until a certificate is really bound — note also that the redirect happens ahead of `UseCors` (line 289), so a browser cross-origin call would see no CORS headers on the redirect response either.
+
+Until both sites have certificates bound, the practical result is: log in, use every normal feature, and see no live notifications. Bind the certificate, then set `ApiBaseUrl` in `VerichatCRM.Web/appsettings.json` to the `https://` API origin and switch `EXPO_PUBLIC_API_URL` (and the `api.ts` fallback) to `https://`.
+
+## 6. Scrub the git history
+
+**Destructive and not executed.** `dev2`, `main`, `develop`, `api`, `web`, `mobile`, `mutsa`, `section1---mutsa`, `section2--rai`, `feature-debug` and `feature/product-catalog-ordering` are all on the shared remote, so a rewrite means force-pushing every branch and every contributor must discard their clone. Do §1 and §2 first; a rewrite is hygiene, rotation is the fix.
+
+```powershell
+# 0. Tooling: git filter-repo is a separate install, not a git subcommand.
+pip install git-filter-repo
+
+# 1. Work from a fresh mirror so nothing local can be lost.
+git clone --mirror https://github.com/dBright-dev/VerichatCRM.WIL.git verichat-scrub
+Set-Location verichat-scrub
+
+# 2. Build the replacement rules FROM history, outside the repository, so the
+#    secret is never written into a tracked file. Two distinct DB passwords and
+#    two distinct Jwt:Key values are expected; the rules file will list one line
+#    per distinct value.
+$vals = git log -p -- VerichatCRM.API/appsettings.json |
+    Select-String -Pattern 'Password=([^;]+)', '"Key": "([^"]+)"' -AllMatches |
+    ForEach-Object { $_.Matches } | ForEach-Object { $_.Groups[1].Value } |
+    Where-Object { $_ -and $_ -notmatch '^\s*$' } | Sort-Object -Unique
+$vals | ForEach-Object { "$_,<REDACTED-CREDENTIAL>" } |
+    Out-File -Encoding ascii $env:TEMP\verichat-replace.txt
+
+# 3. Rewrite. --invert-paths also drops the large untracked-era leftovers if you
+#    choose to purge paths as well as strings.
+git filter-repo --replace-text $env:TEMP\verichat-replace.txt
+
+# 4. Verify: every command must now print nothing.
+git log --all -S 'databaseasp' --oneline
+git grep -I -E '(Password=[^;<]|"Key": *"[^"]{20,})' $(git rev-list --all) -- VerichatCRM.API/appsettings.json
+
+# 5. Publish. Everyone must re-clone, or fetch and reset; a normal pull re-merges
+#    the old history and re-introduces the secret.
+git push --force --mirror origin
+```
+
+Then: delete the rules file, ask GitHub to clear cached views and detached objects for the repository (a support request — a forced rewrite does not drop the old commits immediately, and any fork or release asset made beforehand still holds them), and confirm nobody is carrying an old clone that will push the secret back.
+
+## 7. Confirm after deployment
+
+| Check | Expected |
+| --- | --- |
+| `GET /api/health` | 200 and database ready |
+| API starts with `ConnectionStrings__DefaultConnection` unset | Dies at `Program.cs:30` with the "not configured" `InvalidOperationException`. Run from the console and that message is printed; behind IIS the same crash is what produces HTTP 500.30 — see §7.1 |
+| API starts with `Encrypt=False` outside Development | Throws the encryption guard from §4 |
+| API starts with `Jwt__Key` unset | Throws "Jwt:Key is missing" |
+| `view-source:` on any staff page | No JWT anywhere in the markup; one `<meta name="request-verification-token">` present |
+| Sign in, then read cookies | `JwtToken` is `HttpOnly`; `Secure` and `SameSite=None` when the site is HTTPS |
+| `GET /api/Delivery/track/<someone else's tracking number>` as a Client User | 403, not the delivery |
+| Live toast | Appears when a ticket is assigned; if it does not, re-read §5 before debugging the JavaScript |
+| A user who signed in before the PBKDF2 change | `Users.PasswordHash` now starts with `pbkdf2-sha256$` |
+| `GET /health` | 200. It returned 500 (`AmbiguousMatchException`) while both `Program.cs` and `HealthController` claimed the route |
+
+### 7.1 The deployed API answers HTTP 500.30
+
+**Status, re-measured 2 November 2026 late: the 500.30 is fixed; the database is not reachable again.** `http://api-site.runasp.net/api/health` answers HTTP 503 as a JSON body rather than the 500.30 HTML page, the process starts, and `Jwt:Key` is present — all of which was the failure this section described. What the payload now says is not what it said earlier the same day:
+
+```json
+{"status":"Degraded","service":"VerichatCRM.API","environment":null,
+ "checks":{"database":{"status":"Unhealthy",
+   "detail":"CanConnectAsync returned false. Check connection string / firewall.","latencyMs":1097},
+   "jwt":{"status":"Healthy","detail":"Jwt:Key present."}}}
+```
+
+Earlier on 2 November the same URL reported the database answering in single-digit milliseconds with `MigrationsPending` and six migrations named, because `CheckDatabaseAsync` is followed by `GetPendingMigrationsAsync()` at [HealthController.cs:112](VerichatCRM.API/Controllers/HealthController.cs) — a schema probe as well as a connectivity probe, which is how it could prove the deployed assembly contained migration 21 and rule Route A out in §8.5. **That reading is superseded, not wrong:** it was taken against a working connection, and the connection has since stopped opening. Something changed on the host between the two probes — the credential the panel holds, the SQL server's state, or the settings on a republished build — and none of the three is visible from this repository. Until the connection opens again, §8.5's schema question cannot be answered by the payload at all, because the migration probe only runs when `dbOk` is true.
+
+The sentence "check connection string / firewall" is the last thing the deployed build can say, and it is deliberately uninformative: `CanConnectAsync` swallows the `SqlException` and returns a bool, so 18456 (login rejected), 4060 (this database cannot be opened) and a TCP timeout all printed the same words. `HealthController` now opens the connection itself and classifies the error number, so the next deployed build names which of those the host is actually suffering; that change is on `dev2` and not yet published.
+
+*Counting note:* the six above is the reading from before the approval gate was removed, and the
+hosted database has not run any of them yet. After publishing the build containing
+`22-RemoveAccountApprovalGate` the same payload names seven; if the panel chain in §8.5 is run first and
+the app restarts before that publish, it names one — the new migration, still pending against the old
+assembly. The runbook counts files, not the health payload, so it is seven either way.
+
+The original failure, kept because the reasoning is what found it:
+
+Re-measured on 1 November 2026 after the API was published again — every path on
+both API host names fails the same way, while the web site on the same hosting
+family is healthy:
+
+| Probe | Result |
+| --- | --- |
+| `http://api-site.runasp.net/` and `/logs/` and `/api/health/live` | **500** — `HTTP Error 500.30 - ASP.NET Core app failed to start` |
+| `http://verichat-crm-api.runasp.net/` | **500** — the same page |
+| `https://api-site.runasp.net/`, `https://verichat-crm-web.runasp.net/` | **does not connect** — `curl` rc 35, TLS handshake failure: no certificate bound (§5) |
+| `https://verichat-crm-api.runasp.net/` | **does not connect** — `curl` rc 35, connection reset before the handshake completed |
+| `http://verichat-crm-web.runasp.net/` | **200** — same .NET target, same host family |
+
+```
+HTTP Error 500.30 - ASP.NET Core app failed to start
+```
+
+500.30 means the process was started and `Program.cs` threw before the app could
+serve a request. It is not an IIS configuration error (that would be 500.19), and
+it is not a missing runtime (500.31) — the sibling web site
+`verichat-crm-web.runasp.net` is the same .NET target on the same host family and
+returns 200, so the stack is installed and healthy.
+
+Reproduced locally against the published output, with no environment variables:
+
+```
+Unhandled exception. System.InvalidOperationException:
+ConnectionStrings:DefaultConnection is not configured. Set the environment variable
+ConnectionStrings__DefaultConnection, or run: dotnet user-secrets set ...
+   at Program.<Main>$(String[] args) in .../VerichatCRM.API/Program.cs:line 30
+```
+
+That is the whole of it. The credential and the signing key used to be read from
+`appsettings.json`; they were removed from git (§1, §2) and the file now ships
+both values empty. An app that is deployed without being *configured* cannot
+start, and there are exactly three checks in front of the first request, in this
+order:
+
+| Order | `Program.cs` | Throws when |
+| --- | --- | --- |
+| 1 | line 28 | no `ConnectionStrings:DefaultConnection` from any source |
+| 2 | line 41 | the string says `Encrypt=False` and the environment is not Development |
+| 3 | line 133 | `Jwt:Key` is blank |
+
+So the fix is in the hosting panel, not in the code:
+
+1. Open the API site's application settings and add
+   `ConnectionStrings__DefaultConnection` with the value from §4 — rotated
+   password, `Encrypt=True; TrustServerCertificate=True`. The string that used to
+   sit in `appsettings.json` will not work even if it is re-added verbatim,
+   because it ends in `Encrypt=False` and check 2 now refuses it.
+2. Add `Jwt__Key` with a fresh 64-character random value (§2). Do not reuse the
+   one that was in git: every token signed with it must be treated as forgeable.
+3. Restart the site, then `GET /api/health`.
+
+If it still fails, read the log rather than guessing. `VerichatCRM.API/web.config`
+turns `stdoutLogEnabled` on, so ANCM writes the startup exception to
+`logs\stdout_<date>_<time>.txt` inside the site folder — open it in the host's file
+manager. The folder is created by the module; if it is empty after a failed start,
+the site is not reading this `web.config` (the deploy is publishing without it, or
+the host injected its own).
+
+The log is **only** reachable that way: `http://api-site.runasp.net/logs/` was
+requested during this investigation and answered 500.30 like every other path,
+because the `<handlers>` entry claims `path="*"`, so a dead app cannot serve its own
+log. Confirmed on 1 Nov that the file does ship — `stdoutLogEnabled="true"` and
+`stdoutLogFile=".\logs\stdout"` are present in the published
+`obj/Release/net10.0/PubTmp/Out/web.config` — so today's failed starts should already
+have written one or more files there, before any further publishing.
+
+Two things that are *not* the cause, because both are caught and logged and the app
+continues in degraded mode: a migration that fails at startup (§8) and seeding the
+starter catalogue. Those make `/api/health` report a problem; they do not produce
+500.30.
+
+**One that was, until `c909aa6`, and is worth reading because it survives step 1 and
+step 2 above.** `Program.cs` also calls `MigrateAsync()` at startup, and on this
+repository that call threw before applying a single migration:
+
+```
+System.InvalidOperationException: An error was generated for warning
+'Microsoft.EntityFrameworkCore.Migrations.PendingModelChangesWarning': The model for
+context 'AppDbContext' has pending changes. Add a new migration before updating the
+database.
+```
+
+EF compares the live model against `AppDbContextModelSnapshot.cs` *before* it touches
+the database, and the snapshot is missing four entity types the context maps —
+`AuditLog`, `HealthMetric`, `ClientTimelineNote`, `Appointment` — because their tables
+came from hand-written migrations, which update nobody's snapshot (§8.2). So the
+sequence on a fresh deployment was: configure the panel correctly, the app starts, the
+migration throws, the catch logs it and continues, and the site comes up against an
+empty database. If that database exists but holds no tables — the hosted case, where
+the panel created it — `/api/health` still reports Healthy, because its database check
+only proves a connection opens. The fix downgrades this one warning to a log line, so the
+migrations run; the snapshot drift itself is still open and is what §8 is about.
+
+### 7.2 The Azure copy starts, and cannot reach any database
+
+Re-measured 1 Nov 2026 at 21:13 UTC against
+`https://verichat-api-aqcbgydhhbgbgha5.eastus-01.azurewebsites.net/api/health`:
+
+```json
+{"status":"Degraded", "jwt":{"status":"Healthy","detail":"Jwt:Key present."},
+ "database":{"status":"Unhealthy","detail":"CanConnectAsync returned false. Check connection string / firewall."},
+ "environment":null, "latencyMs":13926}
+```
+
+Three things follow from that payload, and the first two are good news that is easy to miss
+because the overall status reads as a failure.
+
+**The Azure app is configured; the primary is not.** It answers as JSON, so `Program.cs` got
+past all three startup checks (§7.1), which means `Jwt__Key` **and**
+`ConnectionStrings:DefaultConnection` are both set on that App Service — a blank connection
+string throws before the first request and would show 500.30, exactly like
+`api-site.runasp.net`. The remaining failure is one setting's *value*, not a missing setting.
+
+**`environment: null` is not a misconfiguration.** `HealthController.cs:89` reads the raw
+`ASPNETCORE_ENVIRONMENT` variable, which Azure never sets — the framework supplies
+`Production` as a default without writing the variable. So the payload shows null while the
+app really is running as Production, which is why the `Encrypt=False` rejection at
+`Program.cs:41` is armed on that host. Do not read that field as "no environment".
+
+**The database cannot be reached from Azure, by construction.** The published name for the
+Monster ASP SQL Server, `db70543.databaseasp.net`, resolves to **`10.0.0.23`** — an RFC 1918
+private address — and TCP 1433 against it fails from outside that network (re-verified;
+`Test-NetConnection` reports `TcpTestSucceeded : False`). A DNS record that returns a private
+address is only meaningful to machines already inside the publisher's network. The API is
+normally colocated there, which is precisely why this hosting pair was chosen — but it means
+**no connection string naming that server can ever work on Azure**, so the App Service copy
+needs its own database (Azure SQL plus §8's chain) or it stays `Degraded` permanently. Setting
+`Jwt__Key` there was necessary and is not sufficient.
+
+`latencyMs` is not a health signal either, and should not be compared between probes: the same
+endpoint returned 54 ms and 13,926 ms within minutes of each other. What *is* informative is
+which branch produced the text: `HealthController.cs:37` is the "the call completed and
+answered `false`" path, while `:43` would have surfaced the base exception message instead.
+So the payload tells you the check ran and was refused, not why — the reason is on the host,
+where `:42` logs it as `Health database check failed.`
+
+**The failover is therefore dead at both ends.** `ApiFallbackHandler.cs:29` treats a 500 from
+the primary as transient and retries it against `BackupApiBaseUrl` — this Azure copy. Today
+the primary returns 500.30 for every path and the backup has no reachable data, so the retry
+cannot succeed; it only doubles the latency of a failing request and makes the web app's error
+page report whichever of the two came back last. The safety net becomes a safety net when the
+backup has a database. Until then, either give the App Service its own Azure SQL database, or
+blank `BackupApiBaseUrl` in the deployed web configuration so there is one failure to read
+instead of two — the same reasoning behind §9's warning about the design-time factory, and the
+reason the web project's `appsettings.Development.json` already ships that key empty.
+
+### 7.3 One shared Azure SQL database, so the backup is real
+
+> Written as a plan on 2 Nov and superseded in part by §7.4 the same day: the database that
+> exists uses Entra ID rather than SQL authentication, which removes Monster ASP from the
+> failover, and the rows came from the local development database rather than from Monster.
+> Read §7.4 before repeating any step here.
+
+The plan chosen on 2 Nov: **both copies of the API read one database**, which is what turns the
+failover from a second error into a recovery. It also fixes the token problem in
+`ApiFallbackHandler.cs:62`, which replays the primary's JWT to the backup — with one shared
+`Jwt:Key` that token validates on both hosts.
+
+**Test this first, before provisioning anything, because the whole plan depends on it.** The
+Monster ASP API sits inside a network whose own SQL server is reachable only from there
+(`db70543.databaseasp.net` resolves to the private `10.0.0.23`). Whether it may also make an
+*outbound* connection to Azure SQL on TCP 1433 is a property of that host's egress rules, and it
+is not observable from a working copy. Point the Monster API's `ConnectionStrings__DefaultConnection`
+at the new database and read `/api/health`: `Healthy` means egress is open and the plan works; a
+timeout means shared hosting blocks outbound 1433, and the fallback is to make Azure the only API
+and retire Monster entirely rather than to keep two halves of a failover that cannot both see the
+data.
+
+**Steps, in order.** Every hosted write here needs the panels; none of them can be done from this
+repository, and steps 4 onward change shared infrastructure, so confirm each one before running it.
+
+1. **Create the database.** Azure SQL logical server + database in the same region as the App
+   Service (`eastus-01`), SQL authentication rather than Entra ID, because the connection string
+   the app builds is a SQL-auth one. Add the server's own firewall rule allowing
+   *Azure services*, and `0.0.0.0` only if you intend to administer it from a laptop — which,
+   unlike the Monster server, this one will actually permit.
+2. **Create the schema on the empty database** with `Database/azure-sql-full-schema.sql`. It is
+   `dotnet ef migrations script --idempotent` output covering all 21 migrations and it stamps
+   `__EFMigrationsHistory` for every one of them, so the API reports zero pending migrations the
+   moment it connects. Run it against an *empty* database; on a database that already has some of
+   the tables the idempotent guards make it a no-op for those, which is the intended behaviour,
+   but do not use it as a substitute for the incremental chain in §8.5 against the existing
+   Monster data.
+3. **Move the rows that already exist.** The accounts, clients, catalogue and tickets currently
+   live in the Monster database, which nothing outside that network can read. The export has to
+   run from inside it — the host's own SQL tool in the panel, or a backup file they can hand over.
+   Until this step happens the new database is empty, and an empty shared database is a worse
+   outcome than the current arrangement: both copies would come up `Healthy` over a system with no
+   users in it.
+4. **Repoint both APIs at it** by setting `ConnectionStrings__DefaultConnection` to the same value
+   in the Monster ASP panel and in Azure App Service → Settings → Environment variables. Keep
+   `Encrypt=True;TrustServerCertificate=False`; `Program.cs:41` rejects a Production connection
+   string without encryption, which is why the Azure copy's `environment: null` in §7.2 is not a
+   reprieve.
+5. **Set one shared `Jwt:Key`** in both, before turning failover on. Two different keys and every
+   request that fails over comes back `401`, and on the web tier that reads as the user being
+   logged out by the safety net. §2 already asks for a fresh key — do the rotation once and put
+   the same value in both places.
+6. **Verify both origins** return `Healthy` with no pending migrations, then sign in against one
+   and call an authenticated route against the other with the same token. That single check proves
+   steps 4 and 5 together; a `Healthy` pair does not.
+7. **Only now enable the backup.** Set `BackupApiBaseUrl` on the deployed web tier, and
+   `EXPO_PUBLIC_API_BACKUP_URL` for mobile — in `VerichatMobile/.env` for a local build, and in an
+   `env` block in `VerichatMobile/eas.json` for a cloud one, because no profile sets an `env` block
+   today and a cloud build therefore resolves whatever fallback is committed in `api.ts`. The
+   mobile retry rules are in `fetchWithFailover()`: a read is replayed on `500/502/503/504` or a
+   socket failure, a write only when the primary proved it never ran the handler.
+
+**Cost.** An Azure SQL database is a monthly charge even on the cheapest general-purpose tier, and
+it is the reason this is a decision rather than a task. It also means the Monster SQL subscription
+becomes redundant once step 3 is done.
+
+**Rollback.** Steps 4 and 5 are two app settings each; putting the previous values back returns the
+system to the state described in §7.2. Step 3 is the one that is not reversible from here, which is
+why it should be a copy into the new database rather than a move out of the old one.
+
+### 7.4 The Azure database as it actually exists (2 November 2026)
+
+Provisioned: logical server `verichat-server-2026.database.windows.net`, database `VerichatDB`,
+**Brazil South**. The two App Services are `eastus-01` and `eastus2-01`, so every query crosses the
+ocean. Kept that way deliberately today; the cost is roughly 30-140 ms added per round trip, and a
+dashboard that fires dozens of queries feels it. Recreating the server in the App Service region is
+cheap while the database is young and expensive after it is load-bearing.
+
+Authentication is **Microsoft Entra ID only. There is no SQL password on this database.** A working
+copy connects with `Authentication=Active Directory Default`, which here resolves through the cached
+Visual Studio credential. The Windows-integrated path does not work — `sqlcmd -G` fails with
+*Default account not found* — because this machine is not hybrid-joined to the tenant, so do not
+reach for `-G` when testing.
+
+That choice is what removes Monster from the plan. Entra authentication needs a token, and only two
+kinds of host can produce one without carrying a secret: a developer machine with a signed-in IDE,
+and an Azure App Service with a system-assigned managed identity. Monster ASP is neither, so the API
+belongs on Azure and Monster keeps only the web tier, which never touches SQL because it proxies.
+A real backup is a second App Service with its own identity, not the Monster copy.
+
+Done from the working copy, all of it verifiable:
+
+1. `Database/azure-sql-full-schema.sql` applied. `__EFMigrationsHistory` holds 21 rows, so the API
+   reports nothing pending the first time it connects.
+2. 152 rows copied from the local development database in foreign-key order with `IDENTITY_INSERT`
+   on: `Products` 61, `Users` 34, `Clients` 18, `WellnessGoals` 8, `MobileProfiles` 5,
+   `TicketActivity` 4, `VitalReadings` 3, `QuotationLineItem` 3, `Deals`/`Inquiries`/`Quotations`/
+   `TelehealthAppointments`/`Tickets`/`WeeklyExerciseLogs` 2 each, `MobileSettings` 2, `Orders` 1,
+   `OrderLineItem` 1. Row counts agree on all 38 tables and `CHECKSUM_AGG(BINARY_CHECKSUM(*))` is
+   identical on all 17 populated ones, which is the check that matters — matching counts would also
+   describe a table of right-sized garbage.
+3. Nothing came from Monster. `db70543.databaseasp.net` still resolves to `10.0.0.23` and TCP 1433
+   still times out from here, so its rows move only by an export taken inside that network. What is
+   in `VerichatDB` today is the seeded catalogue and the development accounts, so read §8.2 before
+   treating any of it as real data.
+
+Still to do, and the order is not interchangeable:
+
+1. Azure portal → App Service `verichat-api-aqcbgydhhbgbgha5` → Settings → Identity → **System
+   assigned: On**.
+2. Run `Database/azure-managed-identity-user.sql` against `VerichatDB` as the Entra admin. It cannot
+   run before step 1: `CREATE USER ... FROM EXTERNAL PROVIDER` resolves the name against the
+   directory at the moment it executes, and until the identity is switched on the App Service has no
+   service principal to resolve.
+3. Set `ConnectionStrings__DefaultConnection` in App Service → Environment variables to the Entra
+   string, and confirm `Jwt:Key` is present. The string carries no credential, which is why it is
+   safe to put in a settings blade and in `appsettings.json`.
+4. Read `/api/health` on the Azure origin. `Healthy` with zero pending migrations is the proof the
+   identity chain works end to end; a `Login failed for token` at this point means step 2 did not
+   take, not that the network is closed.
+5. Only then flip `ApiBaseUrl` in `VerichatCRM.Web/appsettings.json`, and `api.ts` plus `.env` on
+   mobile, to the Azure https origin. Flipping the web tier first takes the working site down,
+   because it would be proxying to an API that cannot yet read the data.
+
+**What the latency says, measured 2 November 2026 at 20:02–20:14 UTC.** On 1 Nov the Azure copy took
+**13,926 ms** to fail the same check; today it fails in **1,546–4,526 ms**, consistently, and the
+Monster copy in **1,097–3,100 ms**. That is a change of kind, not of degree. A connection attempt to
+`db70543.databaseasp.net` / `10.0.0.23` from outside that network produces no answer, so it burns a
+connect timeout — which is what 13.9 s was. A failure that returns inside two seconds has been
+*answered* by a server that then refused something. Read against step 3 above, the likely state is
+that the App Service's `ConnectionStrings__DefaultConnection` now names `verichat-server-2026` and
+reaches it, and that what is being refused is the login: step 2, `CREATE USER ... FROM EXTERNAL
+PROVIDER`, has not run. That is step 4's predicted outcome, and it makes §7.4's remaining work an
+Entra-administrator action rather than a networking one.
+
+It is an inference and it should be tested rather than trusted. Two things would falsify it: a fast
+TCP refusal from an intermediate device, or a connection string that still names the Monster server
+and fails for a different reason entirely. `HealthController` on `dev2` distinguishes them by SQL
+error number — 18456 would confirm the login rejection, 4060 would mean the session opens and the
+database itself is off-limits, and one of 53/121/10060/11001 would mean the network is still the
+problem — so publishing that build to either host settles it in one request.
+
+Two things this leaves that need attention:
+
+- The server has a firewall rule `development` spanning `0.0.0.0` - `255.255.255.255`, meaning every
+  address on the internet may attempt a login. Entra makes that far less dangerous than the same
+  rule around a SQL password, but it should go once a named admin address replaces it. `General`
+  (`0.0.0.0` - `0.0.0.0`) is the *Allow Azure services and resources* toggle and has to stay for the
+  App Service to connect at all.
+- The copied `Users` rows include the development seed accounts whose passwords are printed in
+  `README.md`. Those credentials are live the moment the API is reachable from the internet. §8.2
+  describes clearing them.
+
+### 7.6 Why signing in returns HTTP 500 on the hosted API (2 November 2026)
+
+Both deployed copies answer `POST /api/auth/login` with an empty **500**, so web and mobile fail at
+the same place — the web tier only proxies the call, and the mobile app calls the same origin. The
+cause is not the connection string and not the password: it is that the deployed assembly is 21
+migrations deep while the Monster database has 15 recorded, and the first thing `LoginAsync` does is
+`GetByEmailAsync`, which materialises a whole `User`. EF therefore names columns the hosted table has
+never had. Measured on a throwaway LocalDB built to exactly the hosted state — 15 rows in
+`__EFMigrationsHistory`, `Users` with 10 columns — the same `SELECT` fails with
+`Msg 207 Invalid column name 'DeviceToken' / 'ApprovalStatus' / 'RejectionReason' / 'ReviewedAt'`,
+and the same build against the same database once the chain is applied returns
+`401 {"success":false,"message":"Invalid credentials."}`. Same code, same endpoint, only the schema
+different: that is the proof, and it is reproducible from this repository without touching production.
+
+*This measurement predates the approval-gate removal.* The assembly is 22 migrations deep now, and
+migration 22 drops four of the columns named above, so the current build no longer selects them —
+which changes only which names can appear in that `Msg 207`, not the diagnosis. A hosted database
+still at 15 rows fails on `DeviceToken` alone, and the fix is still to run the chain.
+
+`Program.cs:266` calls `MigrateAsync()` at startup and swallows the failure into a log line, so the
+app comes up "running" over a schema it has already outgrown, and `/api/health` is the only thing that
+says so (`MigrationsPending`, latency a few ms because the database is reachable and simply
+incomplete). Two ways out, in this order:
+
+1. **Restart the site.** A restart re-runs startup migration, and that is exactly what closed the gap
+   on the local reproduction without any script being run by hand. Cheapest thing to try, and it is
+   enough if the chain failed for a transient reason.
+2. **If a restart leaves it pending, the chain is failing on the real rows**, which §8.1 predicts. Run
+   `Database/preflight-migration-checks.sql` first — the duplicates it looks for (`Users.Email`,
+   `Tickets.TrackingNumber`, `Assets.SerialNumber`, and the values that would not fit the narrowed
+   columns) are what abort `CREATE UNIQUE INDEX` and roll the whole migration back. Fix or merge those
+   rows, then apply `Database/hosted-migrations/16` → `22` one file at a time in the panel's SQL
+   window and confirm with `verify-migration-state.sql`. §8.5 covers the two failure shapes.
+
+**Expect the sign-in population to change character afterwards, not only work.** Migration 21
+puts every self-claimed Sales Representative, Procurement Manager, Field Support Engineer and
+Logistics account into `Pending`, and migration 22 — which is in the same chain, so on a hosted
+database the two arrive together — turns that unreviewed set into `IsActive = 0` and deletes the
+queue that displayed it (§8.4). So the first thing a staff member whose account the sweep caught
+notices is not a review screen, it is a refusal, and the fix is an administrator's Access switch
+on `/Admin/Users`. A System Administrator must exist and be able to sign in before the chain
+runs.
+
+### 7.7 Two APIs, two databases, so failover is switched off (2 November 2026)
+
+The arrangement chosen on 2 Nov is the opposite of §7.3's premise. `api-site.runasp.net` reads the
+Monster database (`db70543`), and the Azure API reads `VerichatDB`. `/api/health` proves the first
+half already: the Monster copy reports `MigrationsPending` at `latencyMs: 3`, which is a colocated
+SQL Server answering, not a cross-region call to Brazil. Nothing had to be configured for it — the
+App Setting the panel already holds outranks `appsettings.json`, and it is the only reason that copy
+still works after §7.4 moved the committed default to Entra. **Do not delete that app setting when
+next deploying the API to Monster**, and do not put its value in this repository: it is a SQL
+password, and the one that was in use became known in plain text on 2 Nov, so it needs rotating in
+the hosting panel before any of this is written down anywhere.
+
+The consequence is that these two APIs are not copies of each other. A request that fails over does
+not land on a backup of the same data, it lands on a different dataset with different users,
+different clients and different tickets. That is worse than no fallback: a read returns the wrong
+answer and looks like success, and a write commits against the system nobody is looking at. So
+`BackupApiBaseUrl` in `VerichatCRM.Web/appsettings.json` is empty, and
+`ApiFallbackHandler` disables itself on that (`Services/ApiFallbackHandler.cs:21`) rather than
+retrying into the wrong database.
+
+Failover comes back only under §7.3's condition — one database both APIs read, one `Jwt:Key` so a
+token minted by one validates on the other. Until then the honest options are: Azure becomes the
+only API once §7.4 steps 1-4 are done and the real rows have been exported out of the Monster
+network, or Monster stays primary with no backup at all.
+
+## 8. Pre-flight checks before migrating an existing database
+
+**Six migrations are new or rewritten in this working copy.** Read §8.1 before
+running any of them against a database that holds real data, and read §8.4 before
+you let anyone sign in afterwards — two of these migrations narrow columns and add
+unique indexes, and the two newest change who is allowed through the door.
+
+- `20261101151838_SyncSchemaAndAccountLifecycle` is the index-and-precision migration §8.1 used to describe as deferred — it exists now, and it is the heaviest thing in the chain. It adds the seven account-lifecycle columns to `Users` and the `LoginHelpRequests` table, applies the widths and the `decimal(5,4)` the configuration classes have always declared, and creates the indexes no migration ever emitted, including the unique `IX_Users_Email`. **It can fail on live data**, and `Database/preflight-migration-checks.sql` (§8.1) is the script that predicts it.
+- `20261101152359_ReviewSelfClaimedStaffAccounts` runs one `UPDATE` over `Users`, and it is the migration with a business consequence rather than a schema one: every existing Sales Representative, Procurement Manager, Field Support Engineer and Logistics account becomes `Pending`. It still matters on a database that has never run it, because the next migration reads exactly that flag — but the queue it was feeding, `/Admin/Approvals`, no longer exists. See §8.4.
+- `20261102175638_RemoveAccountApprovalGate` is the removal of that gate. It first sets `IsActive = 0` on every row still marked `Pending`, then drops `IX_Users_ApprovalStatus_CreatedAt` and the four approval columns. The order is the point: the new build stops reading `ApprovalStatus`, so without this step the chain would promote every unreviewed self-claimed staff account to a working console login the moment it deployed. Anyone the sweep caught — real employees included, because 21 could not tell them apart — comes back as a disabled row for an administrator to release on `/Admin/Users`.
+- `20261031160000_AddInquiryScoringInputs` does three things and nothing else —
+  it narrows `Inquiries.Status` from `nvarchar(max)` to `nvarchar(30)`, because SQL Server cannot build an index on a `max` column and the queue sorts on `Status` (the values come from `InquiryStatuses`; the longest is nine characters); it adds the two nullable inputs the automatic enquiry score reads, `Inquiries.Urgency` (`nvarchar(30)`) and `Inquiries.EstimatedValue` (`decimal(18,2)`); and it creates the composite index `IX_Inquiries_Status_Score`.
+- `20261030204733_AddTask3Features` was **rewritten**, not added (`113d04d`). It had never run successfully anywhere: three of its foreign-key columns were declared `nvarchar(64)` against `nvarchar(450)` principals, which aborts the whole `CREATE TABLE` with Msg 1753, and its `Up()` also emitted a second `CREATE TABLE SalesGoals` with a shape belonging to no entity in the solution, five days after `20261025111000_AddSalesGoals` had already created that table. Both defects, and the stale `AppDbContextModelSnapshot.cs` / `.Designer.cs` entries that carried them, are corrected. The `HasMaxLength(64)` calls are gone from `AppDbContext` on purpose — the values stored in those columns are `Guid.ToString()` (36 characters), so nothing about the data changed; only the declaration now agrees with the principal it points at.
+- `20261031210000_AddTicketActivityAndDeliveryStatusHistory` is new and hand-written (`f327007`). It creates `TicketActivity` and `DeliveryStatusUpdate` — two tables the model declares, the context maps, and the application writes to, and which **no migration in the chain had ever emitted**. Raising a support ticket therefore died on save with `Invalid object name 'TicketActivity'`, and every delivery status write with the same error. They could not be scaffolded either: both entities are already in the model snapshot, so the differ compares the current model against a snapshot that agrees with it, finds nothing, and prints nothing. A hand-written migration is the only way to add them.
+
+`IX_ClientAssignments_ClientId_SalesRepId_AssignedDate` now emits a create-time
+warning — 1808 theoretical key bytes against SQL Server's 1700 limit, because two
+`nvarchar(450)` columns sit in one key. It is a warning, not an error: the index is
+created, and the rows that actually go through it are GUIDs and dates, about 152 bytes.
+It is listed here because the message appears in the migration output and the next
+person to read it will otherwise look for a failure.
+
+**Two tooling traps on this chain.** `dotnet ef migrations add` still starts from a
+snapshot that is missing four mapped entity types (§7.1), so anything scaffolded today
+begins by proposing `CREATE TABLE` for `Appointments`, `AuditLogs`,
+`ClientTimelineNotes` and `HealthMetrics` — tables every migrated database already has,
+which aborts the script with "There is already an object named …" — and it stays silent
+about genuine gaps the snapshot already describes. Read a scaffolded migration line by
+line before shipping it, or write it by hand the way the other nine were. And do not run
+`dotnet ef migrations remove --force` on this chain: it rebuilds
+`AppDbContextModelSnapshot.cs` from the previous migration's `.Designer.cs`, the
+previous migration (`20261031160000_AddInquiryScoringInputs`) is hand-written and has
+none, and the snapshot came out as a 21-line stub with an empty `BuildModel`. It was
+restored from the commit.
+
+To apply the chain to a database that already exists and already has history, generate
+and run the idempotent script rather than relying on startup, and read the queries below
+first:
+
+```powershell
+dotnet ef migrations script --idempotent `
+  --project VerichatCRM.Infrastructure --startup-project VerichatCRM.API `
+  --output ApplyAllMigrations.sql
+sqlcmd -S <tcp:server> -d <database> -U <login> -I -i ApplyAllMigrations.sql
+```
+
+**The `-I` is not optional.** It sends `SET QUOTED_IDENTIFIER ON` for the session, and
+`sqlcmd` leaves that option OFF by default. Measured on a fresh local database, the same
+script without `-I` commits migrations 1 to 19 and then dies on:
+
+```
+Msg 1934, Level 16, State 1, Line 1
+CREATE INDEX failed because the following SET options have incorrect settings:
+'QUOTED_IDENTIFIER'. Verify that SET options are correct for use with indexed views
+and/or indexes on computed columns and/or filtered indexes ...
+```
+
+Because each migration is its own `BEGIN TRANSACTION ... COMMIT`, everything before the
+failure is already committed when the batch aborts. The result is a database that is
+neither the old schema nor the new one, with 19 of 21 recorded - and the idempotent guards
+mean re-running it later does not undo the mixture, it just continues. With `-I` the script
+finishes: 21 migrations recorded, 39 base tables, matching the development database.
+
+The generated body also starts with a UTF-8 BOM, which is harmless at the top of a file but
+is not harmless after the header `GO`. Strip it (`-replace [char]0xFEFF,''`) or the first
+token of that batch is a BOM the server will not accept.
+
+`Database/apply-pending-migrations.sql` is this script, already generated, with the two SET
+statements asserted inside the file so it is safe in a client you cannot pass flags to -
+which is the case for a hosting panel's SQL window. It was verified by running that file
+twice, once without `-I`, both to completion, and a second time against an already-migrated
+database to confirm the guards make a re-run a no-op. Regenerate it rather than editing it;
+the body is machine output.
+
+**Why the hosted site is stuck at 15, and why that is not this trap.** The deployed API reports
+six pending: `20261027100000_AddUserDeviceToken` through `20261101152359_ReviewSelfClaimedStaffAccounts`,
+i.e. migrations 16 to 21 in id order, with 1 to 15 recorded. That is a clean suffix, so the chain
+is not broken - it simply stopped early. And it stopped at 15, not at the 19 where
+`QUOTED_IDENTIFIER` kills a hand-run script, so the two failures are unrelated. The explanation
+that fits is the one in §8: the build that last migrated successfully contained 15 migrations, and
+the newer build - which does contain all 21, because `/api/health` enumerates the missing six out
+of its own loaded assembly - throws in `MigrateAsync` before it applies anything. `Program.cs:266`
+runs that at startup and the catch keeps the site alive in degraded mode, which is exactly what a
+reachable database with six pending migrations looks like. The check that settles it is the host's
+own stdout log (§7.1 turned `stdoutLogEnabled` on for this reason): look for
+`PendingModelChangesWarning` or any `DbMigrator` exception. If the deployed binary predates
+`c909aa6`, which downgrades that one warning to a log line, publishing the current build lets
+startup finish the migration by itself and no script is needed. Otherwise run
+`Database/apply-pending-migrations.sql` in the panel and restart the app.
+
+Build first — `--no-build` silently reuses the assemblies already on disk, so a fix to a
+migration or to the snapshot will not appear in the regenerated script and the same
+error comes back unchanged, which reads as the fix not working.
+
+`sqlcmd` takes the password interactively when `-U` is given without `-P`, which is how
+it should be run: the credential then reaches neither the script file, the command line,
+nor the shell history. Run it from the directory holding `ApplyAllMigrations.sql` and
+pass that plain relative name — a quoted absolute path with forward slashes is mangled
+into `Error occurred while opening or operating on file C:`. `--idempotent` makes the
+script safe to re-run: it reads `__EFMigrationsHistory` and emits only the migrations the
+database has not recorded, so a partially applied chain finishes rather than repeats.
+
+A database that does not exist yet needs none of this: since `c909aa6` the API creates
+and migrates it at startup. Re-verified against a scratch LocalDB database pointed at by an
+environment variable — **39 base tables, 21 rows in `__EFMigrationsHistory`**, and
+`Appointments`, `AuditLogs`, `ClientTimelineNotes`, `HealthMetrics`, `TicketActivity`,
+`DeliveryStatusUpdate` and `LoginHelpRequests` all present, with `SalesGoals` created
+exactly once, `Quotations.VatRate` at `decimal(5,4)`, `Tickets.Title` at
+`nvarchar(200)` and the five unique indexes built. The same script from §8.1 runs clean
+against that empty database, which is the check that it is safe to point at a host whose
+database the panel created but nothing has ever migrated.
+
+**One rehearsal trap.** That run has to be in `Development`. [Program.cs:41](VerichatCRM.API/Program.cs#L41)
+refuses to start outside Development when the connection string says `Encrypt=False`, and
+LocalDB rejects an encrypted session, so a Production rehearsal dies with
+`ConnectionStrings:DefaultConnection sets Encrypt=False` before it reaches the database.
+The guard is the point — it is what stops a committed `Encrypt=False` opening a plaintext
+session to production SQL — so rehearse in Development and never loosen the guard to make
+a local run quieter.
+
+Pre-flight on an existing database is **not** short any more. `AddInquiryScoringInputs`
+narrows one column and adds nothing but nullables, so on its own it was safe to run
+blind. `SyncSchemaAndAccountLifecycle` re-types 30 columns across seven tables — 28
+string widths plus the decimal precision on `Quotations.VatRate` (`18,2` → `5,4`) and
+`DeliveryLogs.WeightKg` (`18,2` → `10,2`) — creates the `LoginHelpRequests` table and 15
+indexes, five of them unique, and adds seven `Users` columns. A single out-of-shape row
+aborts the script partway and leaves the schema half-changed, so run the §8.1 checklist
+against the live database before this one, then the two queries below:
+
+```sql
+-- The only narrowed column, narrowed to 30. Should return no rows.
+SELECT InquiryId, Status, DATALENGTH(Status) AS Len FROM Inquiries WHERE DATALENGTH(Status) > 30;
+
+-- Urgency, where present, must be one of the four the scorer recognises.
+-- Anything else is not an error - it scores as "not stated" - but it is worth
+-- knowing what is in the column before you train anyone on the ranking.
+SELECT Urgency, COUNT(*) FROM Inquiries WHERE Urgency IS NOT NULL GROUP BY Urgency;
+```
+
+**Existing scores are not recalculated.** The new columns are nullable and no back-fill runs, deliberately: computing a score from data that was never captured would produce a confident-looking number that nobody chose. Enquiries written before this migration keep whatever `Score` their author typed. Re-ranking the queue after upgrading is a human action in the Inquiry form, not a migration step.
+
+**The whole upgrade, in order:**
+
+1. Confirm a **System Administrator** can sign in to the target deployment. Steps 5–8 all
+   depend on it, and after step 6 no other staff account can (§8.4).
+2. Clear the demo and QA residue (§8.2). Do this before step 3, or the pre-flight reports
+   seed rows instead of real ones.
+3. Run `Database/preflight-migration-checks.sql` against the live database (§8.1) and fix
+   every row sections 1–4 return. Write down what section 5 counts.
+4. Apply the chain — see §8.5 for the two ways, and for which of them is actually available on
+   Monster ASP. Only after step 3.
+5. Confirm the schema took: `__EFMigrationsHistory` should hold 22 rows and the database 39
+   base tables, and `Users` must no longer carry `ApprovalStatus` — that is the proof
+   migration 22 ran rather than merely being recorded. Re-running sections 1–4 now proves
+   nothing, because the narrowed columns cannot physically hold an over-length value; they
+   were the prediction, not the check.
+6. Work `/Admin/Users` and turn the Access switch back on for the staff accounts you
+   recognise (§8.4). Migration 22 disabled every account the review had left unjudged, so
+   until you do, the only way into the CRM is the administrator from step 1.
+7. Seed the catalogue (§8.3).
+8. Walk §7's post-deployment confirmations.
+
+### 8.1 The index-and-precision migration — it exists now, and the pre-flight is a gate
+
+`20261031091951_ApplyEntityConfigurationsAndIndexes` was scaffolded, reviewed and **then deleted from this working copy, because it proposed changes that would have failed on the first database it touched.** Two of the reasons it was written that way are now fixed — the duplicate `SalesGoals` rebuild is gone (§8), so a fresh scaffold no longer tries to recreate that table — and one is not: the snapshot still omits the four tables that came from hand-written migrations, so a scaffold today opens with `CREATE TABLE Appointments / AuditLogs / ClientTimelineNotes / HealthMetrics`.
+
+**Its purpose is no longer outstanding.** `20261101151838_SyncSchemaAndAccountLifecycle` is that migration — scaffolded, then edited the way §8.2 now tells you to edit a scaffold: the four phantom `CREATE TABLE` lines the snapshot has never seen were stripped, and what remains is the real delta. Confirmed on the local database after it ran on 2026-11-01 — `__EFMigrationsHistory` holds 21 rows and 39 base tables, `Quotations.VatRate` is `decimal(5,4)`, `Tickets.Title` is `nvarchar(200)`, and all five unique indexes are present: `IX_Users_Email`, `IX_Tickets_TrackingNumber`, `IX_DeliveryLogs_TrackingNumber`, `IX_Quotations_QuoteReference`, `IX_Assets_SerialNumber`. The same database had reported `decimal(18,2)` and no unique index on any of those five columns before this migration existed. The `IEntityTypeConfiguration` classes it applies are the ones `ApplyConfigurationsFromAssembly` has been loading at startup all along — the code always declared these shapes; nothing in the database enforced them until now.
+
+One `Up()` does all of it, in five parts:
+
+- seven columns on `Users` — `ApprovalStatus` `nvarchar(20)` **defaulting to `'Approved'`**, `EmailVerified` `bit` defaulting to `false`, plus `EmailVerificationToken`/`EmailVerificationExpiry`, `RejectionReason`, `ReviewedByUserId` and `ReviewedAt`. Four of those seven (`ApprovalStatus`, `RejectionReason`, `ReviewedByUserId`, `ReviewedAt`) are dropped again by migration 22 — the two token pairs and `EmailVerified` are the account-recovery columns and stay;
+- the `LoginHelpRequests` table the help button writes to;
+- 28 string columns narrowed from `nvarchar(max)` across `Tickets`, `Quotations`, `QuotationLineItem`, `DeliveryLogs`, `Deals`, `Clients` and `Assets` — two of them are GUID foreign keys going to `nvarchar(450)`, which widens and stores 36-character values, so they are carried here for completeness rather than risk;
+- two decimals re-typed: `Quotations.VatRate` `18,2` → `5,4` and `DeliveryLogs.WeightKg` `18,2` → `10,2`;
+- 15 indexes created — five of them unique — and `IX_Tickets_ClientId` dropped so it can come back as the composite `IX_Tickets_ClientId_Status`.
+
+**Run `Database/preflight-migration-checks.sql` against the live database before applying it.** It is read-only, it prints one section per risk, and every section says what a healthy result looks like:
+
+```powershell
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d VerichatCRM -b -i 'Database\preflight-migration-checks.sql'
+sqlcmd -S tcp:<server>.database.windows.net -d <database> -U <login> -b -i 'Database\preflight-migration-checks.sql'
+```
+
+Applied and verified against the local database on 2026-11-01: sections 1–4 returned no rows, and the narrowing sweep was checked for the opposite property too — with one threshold deliberately set to zero it reported the two `Tickets` rows that have descriptions, so an empty result is the sweep finding nothing rather than the sweep doing nothing.
+
+Three things the script encodes that are easy to get wrong by hand:
+
+- **`DATALENGTH` counts bytes; the new maximum is characters.** A 200-character `nvarchar` column holds up to 400 bytes, so the test is `DATALENGTH(col) > @MaxLen * 2`. The earlier inline version of this checklist compared `DATALENGTH` against the character maximum directly, which over-reports by 2× — it flags a 101-character value in a 200-character column. The script does not.
+- **`IX_Users_Email` has no filter.** It is the only one of the five unique indexes built over the whole column, so a second blank address — or a second `NULL`, since SQL Server allows exactly one — aborts the migration just like two real duplicates. The other four exclude `''`, so blank values are safe there and duplicates are not.
+- **`VatRate` is the one that cannot be salvaged by widening.** `decimal(5,4)` fits 0.9999 and below; a rate stored as `15` meaning 15% does not fit, and no index filter can help. Either store it as `0.15` or the row blocks the migration.
+
+On an empty or newly created database all of this applies without complaint. On a database that has been used, any row that violates the new shape aborts the script at that statement, and because the API calls `MigrateAsync()` at startup the app then comes up in degraded mode with the schema half-changed. Fix or trim the offending rows, re-run the script, then migrate.
+
+**`ApprovalStatus` defaulting to `'Approved'` was deliberate and is the reason migration 20 itself was safe.** Adding a `NOT NULL` column to a populated table needs a default, and the alternative — `'Pending'` — would have locked every existing account out of the building in the same second the schema changed. The review that did lock staff accounts out was the *next* migration, and it did it on purpose: §8.4. Migration 22 then removes the column, having first disabled the rows it found unjudged — so on a database that runs the whole chain, this default and that `'Pending'` sweep cancel out into an explicit Access decision by an administrator.
+
+### 8.2 Clear the demo and QA residue before you migrate anything real
+
+`DataSeeder` (defect 17) puts four clients and six products into **every** freshly created database, and the QA database this pass was verified against has accumulated more on top of it. None of that is a schema problem, but all of it distorts the checks above — a duplicate tracking number found in a test row will block a unique index that real data would have satisfied — and it will show up in screenshots, training material and the analytics charts as if it were the customer base. Before pointing a real deployment at a migrated database, look for at least:
+
+- products `70EA9682…` and `3AB2DABC…`, which are seed rows and not catalogue items;
+- purchase orders raised while testing the Warehouse Alerts reorder path, each naming a supplier typed into a form and therefore meaningless;
+- user accounts created to exercise role assignment, including client-role accounts whose `Clients` row was created by the new role-change path;
+- at least one `HealthMetrics` row written while confirming that table actually exists after the `AddHealthMetricTable` fix below.
+
+Delete them by key, not by pattern, and re-run the §8.1 queries after — not before — or you will be validating the seed data instead of the real data.
+
+**One schema note specific to this upgrade.** `20261023000000_AddHealthMetricTable`
+was written by hand without a `[Migration]` attribute, and EF only collects
+migration classes that carry it, so the migration had never run anywhere and
+`dbo.HealthMetrics` does not exist on a database built before this was fixed. The
+attribute is now present and the migration applies normally, as verified on an
+existing database. If a site has already created that table by hand, the migration
+will fail with "There is already an object named 'HealthMetrics'"; record it as
+applied instead of dropping the table:
+
+```sql
+INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion)
+VALUES (N'20261023000000_AddHealthMetricTable', N'10.0.12');
+```
+
+**On the missing `.Designer.cs` files.** Nine of the twenty-one migrations are
+hand-written: the seven listed in §12.4 of the technical report
+(`AddHealthMetricTable`, `AddClientTimelineNotes`, `AddB2BAppointments`,
+`AddSalesGoals`, `AddUserPasswordResetFields`, `AddAuditLogs`,
+`AddUserDeviceToken`), plus `20261031160000_AddInquiryScoringInputs` and
+`20261031210000_AddTicketActivityAndDeliveryStatusHistory` added in this pass. They
+carry `[DbContext]` and `[Migration]` inline instead of having generated Designer files.
+That is not a defect: the Designer exists to hold those two attributes plus a
+`TargetModel` snapshot, and the attributes are what EF actually needs to discover and
+order a migration. `dotnet ef migrations list` shows all twenty-one in timestamp order and
+`MigrateAsync()` applies them cleanly — which it only started doing at `c909aa6`; before
+that the same call aborted on the pending-model-changes check without running any of
+them (§7.1). A fabricated `TargetModel` would be worse than none — it would assert a
+database state nobody observed, and `dotnet ef migrations remove` would then restore the
+wrong model, which is precisely the trap described in §8.
+
+The two newest — `20261101151838_SyncSchemaAndAccountLifecycle` and
+`20261101152359_ReviewSelfClaimedStaffAccounts` — were scaffolded rather than written, so
+they do have Designer files and the hand-written count has not grown. §8.1's migration is
+the first one built the way this paragraph has always told people to build it: scaffolded,
+then stripped of the phantom `CREATE TABLE` lines the stale snapshot invents, then read
+line by line before it shipped.
+
+What the nine do cost is the snapshot drift behind all of this: a hand-written migration
+updates no snapshot, so `AppDbContextModelSnapshot.cs` describes a database that does not
+exist. Write new migrations by hand the way those nine were, or scaffold one and delete
+the `CREATE TABLE` lines for the four tables the snapshot has never seen — and check
+every remaining line, because the differ's other blind spot is a table that is *in* the
+snapshot but was never emitted by any migration, which is exactly how `TicketActivity`
+and `DeliveryStatusUpdate` went missing for a whole release.
+
+### 8.3 The catalogue seed
+
+`Database/seed-catalogue.sql` is the 60-line public catalogue behind `/gallery`,
+the client portal and the procurement list. It is separate from the schema chain
+on purpose — migrations change the shape of `Products`, this changes its contents
+— and it is upsert-by-SKU, so it is re-runnable.
+
+**Upsert does not delete.** `VC-AM-001 Anoscopy Model - Adult Medium` was withdrawn
+from the list on 2 Nov 2026 along with its photograph, and re-running this script leaves
+the row exactly where it was, because the script only touches SKUs it carries. A database
+that already holds a withdrawn product needs the row removed by name:
+`DELETE FROM Products WHERE SKU = N'VC-AM-001';`. Until that happens the gallery keeps
+showing the tile, with the category photograph standing in for the deleted one — see
+`CatalogueArt` and `GalleryViewModel.cs:87`, which fall back per item, then per category.
+
+```powershell
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d VerichatCRM -b -i Database\seed-catalogue.sql
+```
+
+Applied and verified against the local database on 2026-11-01: the first run
+re-filed six legacy categories and upserted 57 rows to a total of 61 (40 clinical,
+14 education and research, 7 mining and industrial); the second run reported
+`0 rows touched`, and a price and stock quantity deliberately changed on
+`VC-CN-101` between the two runs survived both. That is the property the script
+is designed around: a matched row has its name and category reconciled, but never
+its price, count or threshold, because those are live data once the warehouse is
+transacting and a re-seed must not reset them.
+
+**Read the header before running it anywhere real.** The rows were written from
+the sectors the company publishes, not from a stock count, and the sales desk has
+not signed them off. `Price` is indicative and the schema has no currency column
+while the staff views print `R`, so these numbers are not a price list yet.
+
+Two things the script assumes, both worth checking on a database you did not
+create yourself:
+
+- **Categories are validated, not free text.** `CreateProductRequestValidator`
+  accepts only the eight values in `ProductCategories`, and the vocabulary grew
+  from five to eight in this pass — `Clinical Consumables`, `Mining & Industrial`
+  and `Teaching & Simulation` were added because the company sells into all three
+  and had no name for them. Rows written under the old `Clinical` / `Rehab` /
+  `Education` labels would have been unsaveable from the product form, so step 1
+  re-files them. The script ends by failing loudly if any row is still outside the
+  list; adding a ninth category means code, seed and pick-list together.
+- **`ImageUrl` stays NULL.** Product photographs are found by filename —
+  `wwwroot/images/catalogue/products/<product name, slugged>.jpg`, with the
+  category image standing in — rather than stored in the row. An absolute URL in
+  the database would only be true on the host it was written for, and the mobile
+  app loads `ImageUrl` directly.
+
+### 8.4 After the migration: the accounts the removed gate was holding
+
+The approval gate is gone from the application, and migration 22 removes the columns
+that stored it. Read this section before running the chain on a database that has ever
+used the gate, because 22 is the one migration in the chain that changes who can sign in.
+
+The three migrations involved, in order:
+
+```sql
+-- 20-SyncSchemaAndAccountLifecycle: adds the gate.
+ALTER TABLE [Users] ADD [ApprovalStatus] nvarchar(20) NOT NULL DEFAULT N'Approved';
+
+-- 21-ReviewSelfClaimedStaffAccounts: parks four staff roles in the queue.
+UPDATE [Users] SET [ApprovalStatus] = N'Pending'
+WHERE [Role] IN (N'Sales Representative', N'Procurement Manager',
+                 N'Field Support Engineer', N'Logistics');
+
+-- 22-RemoveAccountApprovalGate: withdraws access from what is still unreviewed,
+-- then drops the queue's storage.
+UPDATE [Users] SET [IsActive] = 0 WHERE [ApprovalStatus] = N'Pending';
+DROP INDEX [IX_Users_ApprovalStatus_CreatedAt] ON [Users];
+ALTER TABLE [Users] DROP COLUMN [ApprovalStatus];  -- plus RejectionReason,
+                                                   -- ReviewedAt, ReviewedByUserId
+```
+
+**Why 22 disables rows instead of leaving them alone.** Deploying the new code *is* the
+removal — nothing reads `ApprovalStatus` any more, so the moment the build goes out every
+`Pending` account is simply a live account. On a database that ran 21, that set includes
+the self-claimed staff roles 21 deliberately parked for a reviewer. So 22 fails closed
+first, then drops the columns: the unaudited accounts come back as `IsActive = 0` rows an
+administrator can see and judge on `/Admin/Users`, rather than as console logins nobody
+approved. Nothing is deleted. Approved and Rejected rows are untouched — the second were
+already out through `IsActive`, which 22 does not modify.
+
+**The cost is that the accounts 21 swept up indiscriminately stay disabled.** 21 pended
+every account in those four roles, including ones an administrator created for real
+employees, because nothing in the `Users` row records who created it. After 22 those
+people are disabled rather than waiting, which reads the same to them and is fixed the
+same way: the Access switch on `/Admin/Users`.
+
+Do this, in this order:
+
+1. **Before migrating**, sign in to the deployment with a **System Administrator**
+   account and confirm it works. It is outside the sweep — the sign-up form never offered
+   that role, and still does not.
+2. **Migrate.** The order in §8's numbered runbook: §8.2's cleanup, then §8.1's
+   pre-flight, then the chain, then §8.3's catalogue.
+3. **Open `/Admin/Users` and re-enable the staff you recognise.** Section 5 of
+   `Database/preflight-migration-checks.sql` counted the accounts in the four swept roles
+   before you migrated; `verify-migration-state.sql` run afterwards groups `Users` by
+   `Role, IsActive`, so the difference between the two numbers is the list to work
+   through. Sign in as yourself first — the administrator account is the one that must not
+   be disabled while you are doing this.
+4. **Tell anyone who cannot get in what happened.** They have `/Account/Help` and the help
+   button on the sign-in screen, and their notes land at `/Admin/HelpRequests` for the
+   three roles holding `Perm.SignInHelp` — System Administrator, Sales Representative and
+   Procurement Manager ([Perm.cs:82](VerichatCRM.Web/Authorization/Perm.cs#L82)).
+   Two of those three may themselves be sitting disabled after step 2, so the
+   administrator is again the only account guaranteed to be able to work the queue.
+
+There is no escape-hatch `UPDATE` for `ApprovalStatus` any more, because after 22 there is
+no such column. The equivalent is naming the accounts you want back:
+
+```sql
+UPDATE [Users] SET [IsActive] = 1
+WHERE [Email] IN (N'thao@verichat.example', N'procurement@verichat.example');
+```
+
+Run it *after* the chain, and by address rather than by role — a `WHERE [Role] IN (...)`
+here would re-enable the self-claimed accounts too, which is the one thing this migration
+exists to prevent.
+
+Verified on the local database on 2026-11-02, which had run 20 and 21 and held 22
+migrations afterwards:
+
+- 8 rows came out of the `Pending` state as `IsActive = 0` — 2 self-registered `Client
+  User` accounts, and 6 staff-role accounts, most of them `*.probe.*@test.local` rows
+  written while exercising the review screen by hand, plus one `thabo.rep@test.local`;
+- every documented demonstration account survived: `admin@`, `sales@`, `procurement@`,
+  `engineer@`, `logistics@`, `client@` and `student@verichat.test.local` all still read
+  `IsActive = 1`, so the credentials in `README.md` keep working without re-enabling
+  anything;
+- `Users` is down to its 14 non-approval columns, and the application signs a
+  self-registered `Client User` straight in — `/Account/Register` returns no token by
+  design, the web tier exchanges the just-chosen password through `LoginAsync`, and the
+  mobile `registerClient` does the same against `/api/mobile/login`.
+
+So the procedure in this section is the one that was actually walked, not a reconstruction
+of it. No account was re-enabled by hand during that verification.
+
+### 8.5 Applying the chain on Monster ASP: use the files in `Database/hosted-migrations`
+
+**Route A — "deploy and let the API migrate at startup" — is not available as a fix right now,
+and the proof is in the health payload itself.** `/api/health` builds its pending list from
+`GetPendingMigrationsAsync()` ([HealthController.cs:71](VerichatCRM.API/Controllers/HealthController.cs)),
+which compares the **running assembly's** migrations against `__EFMigrationsHistory`. The 2 Nov
+payload named `20261101152359_ReviewSelfClaimedStaffAccounts` as pending, so the assembly serving
+`api-site.runasp.net` already contains migration 21 of 21 — and therefore also `c909aa6`
+(31 Oct 22:22), the commit that downgrades `PendingModelChangesWarning` from fatal to logged.
+`await context.Database.MigrateAsync()` at [Program.cs:266](VerichatCRM.API/Program.cs) already
+runs unconditionally on that host, and the `catch` at :269 logs `"Database migration failed at
+startup"` and lets the app come up degraded. `MigrationsPending` *is* that caught failure.
+Nothing in the working copy is newer than what is deployed, so republishing ships the same six
+migrations into the same swallowed exception.
+
+If you do deploy — to get a fresh stdout log with a clean timestamp, which is the only
+diagnostic value it has — use the profile that actually targets that host. Three of the four
+profiles in `VerichatCRM.API/Properties/PublishProfiles` point somewhere else:
+
+| Profile | Destination | Reachable DB |
+| --- | --- | --- |
+| `site103828-WebDeploy` (MSDeploy) | `site103828.siteasp.net` → **`api-site.runasp.net`** | yes, the `db70543` the health check reaches in single-digit ms |
+| `FTPProfile` (FTP) | same host, `site103828.siteasp.net` | same — the fallback when MSDeploy from Visual Studio faults (§10) |
+| `verichat-api - Web Deploy` | `verichat-api-aqcbgydhhbgbgha5.scm.eastus-01.azurewebsites.net` | **no** — Azure cannot route to `10.0.0.23` (§7.2), so publishing here leaves the hosted schema at 15 forever |
+| `site94518-WebDeploy` | `site94518.siteasp.net` → `verichat-crm-api.runasp.net` | the retired earlier site |
+
+**Route B, and why it is seven files instead of one.** `Database/apply-pending-migrations.sql`
+carries 23 `GO` separators, and it genuinely needs them: the generated bodies declare
+`@var` again in later blocks, and `DECLARE` scope is the batch, so the whole script pasted as
+one batch dies with *"The variable name '@var' has already been declared."* `GO` is not T-SQL —
+it is a client-side separator — and a hosting panel's web SQL window submits the text as one
+batch, so the monolithic script cannot run there at all. `Database/hosted-migrations/` holds the
+seven pending regions split out, one file per migration, each of them:
+
+- a single legal batch with no `GO`, so it pastes into any client;
+- prefixed with `SET QUOTED_IDENTIFIER ON; SET ANSI_NULLS ON;` rather than trusting the client's
+  default — `sqlcmd` leaves it off without `-I`, and migration 20's five unique filtered indexes
+  are built through `EXEC(N'CREATE UNIQUE INDEX …')`, which fails with Msg 1934 when it is off;
+- wrapped in `BEGIN TRY … BEGIN CATCH` with `IF XACT_STATE() <> 0 ROLLBACK TRANSACTION` and the
+  original message re-raised at severity 16 — and opening with `IF @@TRANCOUNT > 0 ROLLBACK
+  TRANSACTION;`, because the wrapper is not universal. See the two failure shapes below;
+- still guarded per statement by `IF NOT EXISTS (… __EFMigrationsHistory …)`, so re-running a file
+  that already succeeded is a no-op, and each file records its own `MigrationId`.
+
+Splitting also buys attribution: one 2308-line paste gives you one anonymous error, seven pastes
+tell you which migration failed — either by printing its own `Step n/22 … FAILED` line, or, for
+the errors that abort before the handler runs, by being the file you just pasted.
+
+**Measured on 2 Nov, against a database frozen in the then-hosted state.** Created with
+`dotnet ef database update 20261025174339_AddAppointmentMeetingLinks` — 15 rows in
+`__EFMigrationsHistory`, max id `…AddAppointmentMeetingLinks`, i.e. migrations 16–21 pending —
+then each file run through `sqlcmd -b` **deliberately without `-I`**, so the batch is single and
+`QUOTED_IDENTIFIER` starts off, which is the worst-case panel behaviour:
+
+- 16 → 21 all succeed. No Msg 1934, so the in-file `SET` does the job the `-I` flag used to do.
+- `__EFMigrationsHistory` goes 15 → 21, `MAX(MigrationId)` = `20261101152359_ReviewSelfClaimedStaffAccounts`.
+- `dotnet ef migrations list` against it reports zero pending.
+- Re-running `16-AddUserDeviceToken.sql` prints `Step 16/22 - AddUserDeviceToken applied (or
+  already recorded).` and changes nothing. (That line read `Step 16/21` when it was observed; the
+  files now count to 22, which does not change what was measured.)
+
+**Measured on 2 Nov, against a database frozen at migration 21 — this is the 22 run.** Created with
+`dotnet ef database update 20261101152359_ReviewSelfClaimedStaffAccounts` — 21 rows in
+`__EFMigrationsHistory`, i.e. only migration 22 pending — then `22-RemoveAccountApprovalGate.sql`
+run through `sqlcmd -b` **without `-I`**, with three seeded accounts holding each approval state.
+What that run found, in order:
+
+- the first version of the file failed with `ALTER TABLE DROP COLUMN ApprovalStatus failed because
+  one or more objects access this column` — migration 20 added that column as
+  `NOT NULL DEFAULT N'Approved'`, so it owns a generated default constraint, and a hand-written
+  panel file has to drop it before the column. The batch rolled back and recorded nothing, which is
+  the behaviour §8.5 documents; the whole chain is never left half-applied by this class of error.
+  The file now walks the four columns with a cursor that drops each constraint it finds first.
+- after that fix: the `Pending` row came out `IsActive = 0`, the `Approved` row stayed `1`, the
+  already-`Rejected` row (which was disabled by the old queue) stayed `0`, the four columns and
+  `IX_Users_ApprovalStatus_CreatedAt` are gone, and `Step 22/22 - … applied` printed once.
+- re-running the same file prints `Step 22/22 - RemoveAccountApprovalGate applied (or already
+  recorded).` and changes nothing — including the `UPDATE`, which is the statement that made this
+  file's column references dynamic in the first place.
+- the same migration applied through `dotnet ef database update` against the development database
+  produced the identical end state: 22 rows in history, `Users` down to its 14 non-approval
+  columns, and the eight accounts that had been sitting `Pending` (six QA probe rows, one
+  `thabo.rep@test.local`, two self-registered clients) disabled rather than released. Every
+  `README.md` demonstration account stayed enabled.
+- the throwaway database was dropped afterwards.
+
+**The failure handling has two shapes, and assuming they are the same is how you end up trusting
+a message that never arrives.** Both were produced on purpose:
+
+*Execution errors are caught.* A duplicate key raised inside `EXEC(N'…')` — the exact shape of
+migration 20's five unique filtered indexes — reaches the outer `CATCH`, which prints
+`Step n/21 … FAILED - rolled back, nothing recorded.`, prints the server's own message, and
+re-raises it at severity 16. That is the most likely way this chain fails on real data, and it is
+the well-behaved one.
+
+*DDL compile errors abort the batch before `CATCH` is ever entered.* With the history row for
+migration 16 deleted while its `DeviceToken` column still existed — i.e. the schema-drift case —
+file 16 returned only:
+
+```
+Msg 2705, Level 16, State 4, Server …, Line 40
+Column names in each table must be unique. Column name 'DeviceToken' in table 'Users' is
+specified more than once.
+```
+
+No `Step 16/21` line at all, in either the success or the failure wording. `Msg 2714` "There is
+already an object named …" behaves the same way. The consequences are narrower than they look but
+you have to know them: **the migration is not recorded**, because the `INSERT` into
+`__EFMigrationsHistory` sits after the statement that died inside the same uncommitted transaction,
+so `verify-migration-state.sql` still reports the truth and the chain is resumable; but the
+transaction opened by the aborted batch can outlive it on a connection the panel keeps pooled, which
+is why every file now begins with an unconditional `IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;` before
+`BEGIN TRY` — a re-run cannot inherit an orphan from the failed attempt.
+
+So read a failure by its shape: a `Step n/21 … FAILED` line means the migration rolled itself back
+cleanly and the message is the cause; a bare `Msg 2705`/`Msg 2714` with no `Step` line means the
+hosted schema does not match its own history, and §8.1's drift note applies — do not delete the
+object to make the message go away.
+
+One thing the run produced is worth knowing about rather than panicking at: file 17 emits
+*"Warning! The maximum key length for a nonclustered index is 1700 bytes. The index
+`IX_ClientAssignments_ClientId_SalesRepId_AssignedDate` has maximum length of 1808 bytes."*
+It is a warning, the index is created and the migration commits. The cost is real but deferred —
+`ClientId` and `SalesRepId` are both `nvarchar(450)`, so a row whose two ids are simultaneously
+near the full width cannot be indexed and the `INSERT` fails. No such row exists in practice
+because those are identity-style values, so it is left as a model defect to note rather than fix
+mid-deployment.
+
+**The procedure**, in order — the same seven steps as §8's runbook, with step 4 replaced:
+
+1. §8 step 1: confirm a System Administrator can sign in. Migration 21 pends every other staff
+   account and migration 22 then disables those, so the administrator is the only way in
+   afterwards (§8.4).
+2. `Database/hosted-migrations/verify-migration-state.sql` — read-only. Expect `AppliedCount 15`,
+   seven rows marked `PENDING`, and `ApprovalStatus does not exist yet`. Record the output, plus the
+   `Role, IsActive` grouping at the bottom — that is the list to compare against after step 5.
+3. `Database/preflight-migration-checks.sql` (§8.1) and fix every row its sections 1–4 return.
+   This is not optional for Route B either: migration 20's five unique indexes and its narrowed
+   columns fail on the same duplicates and over-length values, and on hosted data they have never
+   been tested against. Section 5 tells you how many staff accounts migration 21 will pend and
+   therefore how many migration 22 will disable.
+4. Run `16-…sql`, then `17-…`, `18-…`, `19-…`, `20-…`, `21-…`, `22-…` — one file at a time, one paste
+   each. Stop at the first failure; it has rolled itself back. Step 22 prints the number of rows it
+   disabled; if that is more than step 2 counted, say so out loud before continuing.
+5. `verify-migration-state.sql` again. Expect `AppliedCount 22`, no `PENDING` rows, and the
+   `ApprovalStatus does not exist` line - which is the proof that 22 ran rather than merely being
+   recorded. Read the `Role, IsActive` grouping for the accounts §8.4's step 3 must re-enable.
+6. Restart the site, then `GET /api/health`: `status Healthy`, `database.status Healthy`. If it
+   still says `MigrationsPending` after 22 rows are recorded, the app is pointing at a *different*
+   database — which is a panel configuration problem, not a schema one.
+7. §8 steps 6–8: release the pended staff accounts, seed the catalogue, walk §7.
+
+A failure tells you which problem it is, and only the first two are fixable by hand:
+
+| The panel says | Cause | What to do |
+| --- | --- | --- |
+| `Cannot insert duplicate key row … IX_…` | the hosted rows already violate a uniqueness rule migration 20 formalises | de-duplicate per §8.1 section 3, then re-run that file — the guards make it resumable |
+| `String or binary data would be truncated` / `ALTER TABLE … is not allowed because table … has null` | a value does not fit a narrowed width, or a column has `NULL` where the model says `NOT NULL` | §8.1 sections 1–2 name the rows; fix the data, re-run the file |
+| `There is already an object named …` (Msg 2714) / `Column names in each table must be unique` (Msg 2705) — **and no `Step n/21` line** | the hosted schema drifted from migration 15 — someone changed it in the panel. The missing `Step` line is the tell: this class aborts the batch before `CATCH` runs | do **not** delete the object. Stop, run `verify-migration-state.sql` to confirm the chain did not advance, then treat it as a schema-repair task; the guarded script assumes history matches reality |
+| `Invalid object name …` | a table the chain expects is missing, so the host is not really at 15 | run `verify-migration-state.sql` and read which of 1–15 are missing before touching anything else |
+| `Permission denied` on `ALTER`/`CREATE` | the shared SQL login lacks DDL rights | a hosting-panel job, not a script change |
+| syntax error on a construct LocalDB accepts | the hosted engine is older than the LocalDB the rehearsal used | report the version from `SELECT @@VERSION` with the failing file |
+
+## 9. Running the EF commands from Visual Studio
+
+Two things go wrong before a single `UPDATE` reaches a database, and both fail in ways that
+look like the tool misbehaving rather than the tool being pointed somewhere you did not
+choose.
+
+**The Package Manager Console had four candidate owners of `AppDbContext`.**
+`Update-Database -Project VerichatCRM.Infrastructure -StartupProject VerichatCRM.API` failed
+with *"More than one DbContext named 'AppDbContext' was found. Specify which one by providing
+its full type name or its project."* `Microsoft.EntityFrameworkCore.Tools` was referenced by
+every project in the solution — API, Core, Infrastructure and Web — and each of them can
+resolve `VerichatCRM.Infrastructure.Data.AppDbContext`, since three of the four reference the
+project that defines it, so nothing in the repository says which project owns the command. The
+same pair of projects run from the CLI (`dotnet ef migrations list --project
+VerichatCRM.Infrastructure --startup-project VerichatCRM.API`) finds the context once and
+without complaint, which is why the console's project selection is the layer worth fixing
+rather than the code. `Tools` is now referenced by `VerichatCRM.API` alone — EF's own rule is
+one project, the startup — so set **Default project to `VerichatCRM.API`** before using any of
+these cmdlets. If a context is ever ambiguous again, name it in full:
+`-Context VerichatCRM.Infrastructure.Data.AppDbContext`. All four references were
+`PrivateAssets="all"`, so this is design-time only and nothing at runtime can notice —
+verified: Release build clean with 0 warnings, `dotnet ef database update --project
+VerichatCRM.Infrastructure --startup-project VerichatCRM.API` still resolves the context and
+the migrations assembly, and all 141 tests pass.
+
+**Migration commands do not inherit the Development connection string.** The design-time
+factory at `VerichatCRM.API/DesignTimeAppDbContextFactory.cs` is what `Update-Database`
+reaches, deliberately, so script generation works without a JWT key. It reads
+`appsettings.json` and `appsettings.<Environment>.json`, then user secrets at `:23`, then
+environment variables at `:24` — the same order as the running app, with the same consequence:
+a `ConnectionStrings:DefaultConnection` left in user secrets from a hosted rehearsal sends the
+migration tool to the **production** database rather than to LocalDB. It does not refuse. It
+prints *"An error occurred while accessing the database. Continuing without the information
+provided by the database"*, lists the migrations with no applied-or-pending column, and if the
+host *is* reachable it applies them there. Observed on a laptop that cannot route to that
+server: `migrations list` with the correct project pair failed with a SQL network error and
+that exact "continuing" line, and could not report pending status at all.
+
+Pin the target, and the ambiguity in the second problem disappears with it:
+
+```powershell
+$env:ConnectionStrings__DefaultConnection = 'Server=(localdb)\MSSQLLocalDB;Database=VerichatCRM;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True'
+dotnet ef database update --project VerichatCRM.Infrastructure --startup-project VerichatCRM.API
+```
+
+**The launch profiles' LocalDB pin does not reach these commands.** Both profiles in
+`VerichatCRM.API/Properties/launchSettings.json` now set `ConnectionStrings__DefaultConnection`
+to LocalDB, and that is what makes Visual Studio F5 work on a machine with a stale secret — but
+re-measured after that change, `dotnet ef migrations list --project VerichatCRM.Infrastructure
+--startup-project VerichatCRM.API` with nothing in the shell still answers *"An error occurred
+while accessing the database. Continuing without the information provided by the database"*
+with no applied-or-pending column. The EF tools apply their own `ASPNETCORE_ENVIRONMENT`
+default, which is how the design-time factory ends up in Development, but they do not apply the
+profile's other environment variables. So the shell assignment above is what decides where a
+migration command goes when you do not say otherwise — set it in the same line, every time.
+
+**There is a better lever, and it is the one to use from the Package Manager Console.** Both the
+CLI and the cmdlets accept an explicit connection string, which `MigrationsOperations` uses
+instead of asking the design-time factory at all:
+
+```powershell
+# Package Manager Console
+Update-Database -Project VerichatCRM.Infrastructure -StartupProject VerichatCRM.API `
+  -Connection 'Server=(localdb)\MSSQLLocalDB;Database=VerichatCRM;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True' `
+  -ConnectionProvider 'Microsoft.Data.SqlClient'
+
+# CLI equivalent - note --connection is not accepted by every command; dbcontext info rejects it
+dotnet ef migrations list --project VerichatCRM.Infrastructure --startup-project VerichatCRM.API `
+  --connection 'Server=(localdb)\MSSQLLocalDB;Database=VerichatCRM;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True'
+```
+
+This beats the environment variable on two counts: it cannot be forgotten, because it is on
+every command rather than remembered in a shell, and it cannot be poisoned by a stale secret.
+
+Measured here, on the machine as it is configured now, which is what prompted the rewrite:
+
+- `dotnet ef dbcontext info` with the correct project pair reports **`Data source:
+  db70543.databaseasp.net`, `Database name: db70543`** — the stale user secret wins, so an
+  unqualified `Update-Database` is an attempt on the production database, and from a laptop it
+  dies on the private address (§7.2) as `Named Pipes Provider, error: 40 ... The specified
+  network name is no longer available`. SqlClient tried TCP, failed, and fell back to pipes;
+  the error never mentioned LocalDB because LocalDB was not involved.
+- **Setting `ASPNETCORE_ENVIRONMENT=Development` does not fix it.** Tried specifically, because
+  it is the obvious guess: `dbcontext info` still reported `db70543.databaseasp.net`. The
+  factory adds the environment file at `:22` and user secrets *after* it at `:23`, so the
+  secret outranks the Development string. Only the variable added last (`:24`) or an explicit
+  `--connection` beats it.
+- `migrations list --connection '...localdb...'` connects and enumerates normally. The cmdlet
+  parameter is real because the operation underneath takes it — the failing stack trace ends
+  in `MigrationsOperations.UpdateDatabase(String targetMigration, String connectionString,
+  String contextType)`.
+
+**Ignore the advice in that exception.** *"Consider enabling transient error resiliency by
+adding 'EnableRetryOnFailure'"* is EF's generic tail for any connection failure. The running
+app already enables it (`Program.cs:78`); the design-time factory does not
+(`DesignTimeAppDbContextFactory.cs:36-38` builds bare `UseSqlServer` options), which is only
+why the message surfaces here at all. Retrying does not help a server that resolves to `10.0.0.23`
+from a network that cannot route to it — the fix is pointing the command somewhere else, not
+repeating the attempt.
+
+Two reasons not to use `Update-Database` against a database you did not create, even with the
+connection string pinned. `--idempotent` script generation (§8) is reviewable before anything
+executes, and `sqlcmd -U` takes the password interactively, so the credential appears in no
+script file, command line or shell history — whereas the design-time factory reads it out of a
+per-machine store nobody audited. And the API migrates itself at startup (`Program.cs:266`),
+so a development database the API has already booted against is current without any of this:
+`__EFMigrationsHistory` on the development box holds 21 applied migrations, latest
+`20261101152359_ReviewSelfClaimedStaffAccounts`, which is why the command above answers *"No
+migrations were applied. The database is already up to date."*
+
+
+## 10. Publish fails with "An equivalent project is already present in the project collection"
+
+Visual Studio's Publish dialog stops with:
+
+```
+Publish has encountered an error.
+An equivalent project (a project with the same global properties and tools version) is
+already present in the project collection, with the path
+"...\VerichatCRM.API\Properties\PublishProfiles\verichat-api - Web Deploy.pubxml.user".
+To load an equivalent into this project collection, unload this project first.
+```
+
+**No code was compiled and nothing was deployed when this throws.** The diagnostic log's stack
+says so: the throwing frame is
+`Microsoft.Publish.Framework.NewFx.Persistence.MsBuildFilePersister.UpdatePropertyAsync`, reached
+from `ServerProjectProfilesManager.PersistOperationPropertiesAsync`, and underneath it
+`ProjectCollection.OnAfterRenameLoadedProject` → `LoadedProjectCollection.AddProject`. That is the
+publish *UI writing the "last used" properties back into the profile's `.user` file*, not the
+Web Deploy build. Visual Studio loads each `.pubxml.user` into one solution-wide in-memory
+`ProjectCollection`, keyed by the file's path plus its global properties and tools version, and
+it does not remove the entry when an earlier publish in the same session aborts. The next publish
+tries to add the same identity again and MSBuild refuses, because two projects with one identity
+cannot both be loaded.
+
+This repository makes the collision likely rather than rare: all four of the API's profiles and
+all three of the web app's declare the same identity, `Release` / `Any CPU`. Any profile persist
+for a project can therefore collide with any other profile of that project still sitting in the
+collection - and the earlier attempts did abort, because the deployed site answered 500.30 (§7.1).
+
+**Confirming it is session state, before you spend time on anything else.** Compare the age of the
+Visual Studio process with the timestamps of the publish logs:
+
+```powershell
+(Get-Process devenv).StartTime                      # when this session began
+Get-ChildItem $env:TEMP -Filter 'tmp*.tmp' |        # the publish diagnostics
+  Where-Object { (Get-Content $_ -TotalCount 1) -match '^20' } |
+  Sort-Object LastWriteTime -Descending | Select-Object -First 6 Name,LastWriteTime
+```
+
+Read on this machine: `devenv` started 23:50:47, and the *same* exception was logged at 00:31:50,
+00:36:31 and 00:37:59 - three attempts inside one unbroken session, each adding to the leak. The
+logs from the sessions before it hold different faults entirely (`FormatException` in
+`ProjectProfilesManager.RunPublishStepsAsync` at 15:52 and 19:59, `WebToolsException: Build failed`
+at 20:39). So this error belongs to a process, not to the repository, and the cure is to empty that
+process. Note also that a retry does not recover: once the collection is dirty, every further
+publish in that session fails the same way.
+
+Fix it in this order.
+
+1. **Close Visual Studio completely and reopen.** This is the reliable cure and the only thing
+   that empties the collection. Check no build nodes survive the close:
+   `Get-Process MSBuild,VBCSCompiler,devenv -ErrorAction SilentlyContinue`.
+2. **Unload then reload `VerichatCRM.API`** in Solution Explorer (right-click → Unload Project,
+   then Reload Project) if you cannot close the IDE. It drops that project's entries and is what
+   the error text asks for, but the collection is solution-wide, so a stale entry belonging to
+   `VerichatCRM.Web` can still collide - which is why it is worth trying, not why it is enough.
+3. **Publish from the command line**, which never touches Visual Studio's collection:
+
+   ```powershell
+   dotnet publish VerichatCRM.API -c Release -o publish-api    # packages, contacts nobody
+   ```
+4. Optionally delete the profiles for hosts you no longer use - `site94518-WebDeploy`,
+   `site103828-WebDeploy`, `FTPProfile` are leftovers from earlier hosting attempts. Fewer
+   profiles sharing one identity means fewer things that can collide. They are the only untracked
+   copies of those hosts' settings, so confirm you do not still need them first.
+
+Never delete a `.pubxml.user` file to fix this. It holds the publish credential, encrypted with
+the Windows user's DPAPI key; removing it does not fix the collection - which is in memory, not
+on disk - and it destroys a secret that cannot be recovered except by downloading a fresh
+publish settings file from the hosting panel. The `.user` files are ignored by `.gitignore:9`
+(`*.user`) and are not tracked, which is why they do not appear in `git status`.
+
+Step 3 is verified: `dotnet publish VerichatCRM.API -c Release -o <folder>` completes and produces
+64 files including `VerichatCRM.API.dll`, `VerichatCRM.Core.dll`,
+`VerichatCRM.Infrastructure.dll`, `appsettings.json` and the `web.config` that §7.1 says the panel
+needs. The project and its publish targets are sound, which is what makes this a Visual Studio
+session-state fault rather than a repository defect. Note that publishing to a *folder* only
+packages the output; `--profile` with an MSDeploy profile contacts the live host and overwrites
+what is deployed there, so run that deliberately and only when the deployment is the goal.

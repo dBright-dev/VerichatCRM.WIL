@@ -1,83 +1,140 @@
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using VerichatCRM.Web.Models;
+using VerichatCRM.Web.Models.Public;
+using VerichatCRM.Web.Services.Interfaces;
 using VerichatCRM.Web.ViewModels.Home;
 
 namespace VerichatCRM.Web.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IPublicEnquiryApiService _enquiries;
+        private readonly IPublicCatalogApiService _catalog;
+
+        public HomeController(IPublicEnquiryApiService enquiries, IPublicCatalogApiService catalog)
+        {
+            _enquiries = enquiries;
+            _catalog = catalog;
+        }
+
         public IActionResult Index()
         {
             var model = new HomeViewModel
             {
                 IsAuthenticated = HttpContext.Session.GetString("JwtToken") != null,
                 UserName = HttpContext.Session.GetString("UserName"),
-                UserRole = HttpContext.Session.GetString("UserRole"),
-                QuickActions = GetQuickActions(),
-                Roles = GetRoles()
+                UserRole = HttpContext.Session.GetString("UserRole")
             };
             return View(model);
         }
 
+        /// <summary>
+        /// The four pages a visitor with no account reads before deciding to trust this
+        /// company. They sit on the landing shell, so they need URLs a person can guess -
+        /// <c>/about</c> rather than <c>/Home/About</c> - and the footer and navigation of
+        /// that shell link the short forms.
+        /// </summary>
+        [Route("about")]
+        public IActionResult About() => View();
+
+        [Route("services")]
+        public IActionResult Services() => View();
+
+        [Route("gallery")]
+        public async Task<IActionResult> Gallery() =>
+            View(GalleryViewModel.From(await _catalog.GetProductsAsync()));
+
+        [HttpGet]
+        [Route("contact")]
+        public IActionResult Contact() => View(new PublicEnquiryForm());
+
+        /// <summary>
+        /// Files the enquiry through the API's public door and shows the receipt.
+        /// </summary>
+        [HttpPost]
+        [Route("contact")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Contact(PublicEnquiryForm form)
+        {
+            // A filled-in field that no reader of this page was shown means the submitter
+            // was not a reader. Answered with the same screen and the same headline as a
+            // real enquiry, minus the reference, so a script scanning the responses learns
+            // only that posting here always looks like it worked.
+            if (!string.IsNullOrWhiteSpace(form.Website))
+                return View("ContactSent", Receipt(form, null));
+
+            if (!ModelState.IsValid) return View(form);
+
+            var result = await _enquiries.SubmitAsync(form);
+
+            // Refusal is not a receipt. The visitor still has the enquiry in front of them
+            // and the page still names the two ways round it that do not need this server.
+            if (!result.Success)
+            {
+                ModelState.AddModelError(string.Empty, result.Message);
+                return View(form);
+            }
+
+            return View("ContactSent", Receipt(form, result));
+        }
+
+        private static ContactReceiptViewModel Receipt(PublicEnquiryForm form, PublicEnquiryResult? result) => new()
+        {
+            Name = form.Name,
+            Email = form.Email,
+            Message = result?.Message ??
+                "Your enquiry is with the sales desk. Expect an answer at " + form.Email +
+                " within one working day.",
+            Reference = result?.Reference
+        };
+
+        /// <summary>
+        /// The published notice. One URL, <c>/privacy</c>, which the staff sidebar, the
+        /// sign-in footnote and the landing footer all now point at: a policy that exists
+        /// at two addresses is two chances for one of them to be out of date.
+        /// </summary>
+        [Route("privacy")]
         public IActionResult Privacy() => View();
 
-        public IActionResult Error() => View();
-
-        private static List<QuickAction> GetQuickActions() => new()
-    {
-        new() { Title = "New Quotation",   Description = "Generate a branded PDF quote",  Icon = "📄", Url = "/quotation/create", Role = "Sales Representative",    Color = "cyan" },
-        new() { Title = "Log Inquiry",     Description = "Capture and rank a new lead",   Icon = "📊", Url = "/inquiries/create", Role = "Sales Representative",    Color = "blue" },
-        new() { Title = "Place Order",     Description = "Reorder medical consumables",   Icon = "🛒", Url = "/orders/create",    Role = "Procurement Manager",    Color = "green" },
-        new() { Title = "Track Delivery",  Description = "Live dispatch & route status",  Icon = "🚚", Url = "/logistics",        Role = "Procurement Manager",    Color = "orange" },
-        new() { Title = "Open Ticket",     Description = "Log a complaint or issue",      Icon = "🎫", Url = "/tickets/create",   Role = "Procurement Manager",    Color = "purple" },
-        new() { Title = "View Inventory",  Description = "Stock levels & alerts",         Icon = "📦", Url = "/warehouse",        Role = "Procurement Manager",    Color = "red" },
-        new() { Title = "Pipeline Board",  Description = "Visual sales progress",         Icon = "📈", Url = "/pipeline",         Role = "Sales Representative",    Color = "indigo" },
-        new() { Title = "User Management", Description = "Roles & permissions",           Icon = "👥", Url = "/admin/users",      Role = "System Administrator",    Color = "teal" }
-    };
-
-        private static List<RoleCard> GetRoles() => new()
-    {
-        new()
+        // Target of UseExceptionHandler for unhandled exceptions.
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
         {
-            Name = "System Administrator",
-            Tagline = "Platform Control",
-            Description = "Configure roles, monitor system health, manage security rules and global analytics.",
-            Icon = "⚙",
-            Color = "admin",
-            Features = new() { "User & role management", "Global analytics dashboard", "Security rules engine", "System audit logs" },
-            DashboardUrl = "/admin/dashboard"
-        },
-        new()
-        {
-            Name = "Sales Representative",
-            Tagline = "Revenue Engine",
-            Description = "Rank inquiries, manage the pipeline, and generate quotes in seconds.",
-            Icon = "📈",
-            Color = "sales",
-            Features = new() { "Ranked inquiry queue", "Visual pipeline board", "One-click PDF quotations", "Revenue forecasting" },
-            DashboardUrl = "/sales/pipeline"
-        },
-        new()
-        {
-            Name = "Procurement Manager",
-            Tagline = "Supply & Logistics",
-            Description = "Reorder consumables, track deliveries, and monitor warehouse stock in real time.",
-            Icon = "📦",
-            Color = "procurement",
-            Features = new() { "Self-service reordering", "Logistics & delivery tracking", "Low-stock alerts", "Complaint & ticket hub" },
-            DashboardUrl = "/procurement/dashboard"
-        },
-        new()
-        {
-            Name = "Field Support Engineer",
-            Tagline = "On-Site Resolution",
-            Description = "Receive SLA-routed tickets, log service history, and update job status from any device.",
-            Icon = "🛠",
-            Color = "support",
-            Features = new() { "SLA-based ticket routing", "Mobile job updates", "Equipment service history", "Escalation tracking" },
-            DashboardUrl = "/support/tickets"
+            Response.StatusCode = StatusCodes.Status500InternalServerError;
+            return View("Error", BuildStatusModel(500));
         }
-    };
+
+        // Target of UseStatusCodePagesWithReExecute. Renders a branded page for 404 / 403 / other errors and sends 401 back to the login screen.
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult StatusPage(int code = 404)
+        {
+            // Missing images/css/js: don't render an HTML page into an asset request.
+            var original = HttpContext.Features.Get<IStatusCodeReExecuteFeature>();
+            if (original is not null && Path.HasExtension(original.OriginalPath))
+                return StatusCode(code);
+
+            if (code == StatusCodes.Status401Unauthorized)
+                return RedirectToAction("Login", "Account");
+
+            if (code < 400 || code > 599) code = 404;
+            Response.StatusCode = code;
+
+            return code switch
+            {
+                404 => View("NotFound", BuildStatusModel(404)),
+                403 => View("Unauthorized", BuildStatusModel(403)),
+                _ => View("Error", BuildStatusModel(code))
+            };
+        }
+
+        private StatusPageViewModel BuildStatusModel(int code) =>
+            StatusPageViewModel.For(
+                code,
+                HttpContext.Session.GetString("UserRole"),
+                HttpContext.Session.GetString("JwtToken") != null,
+                Activity.Current?.Id ?? HttpContext.TraceIdentifier);
+
     }
 }
