@@ -456,3 +456,13 @@ _build.log
 # both were tracked, so a reader had no way to tell which one the code used).
 *.bak
 *.orig
+
+# The two exports that keep regenerating themselves into the repository root,
+# where they duplicate content that is already tracked. `dotnet ef migrations
+# script` with no --output writes migration.sql, which is byte-for-byte
+# Database/azure-sql-full-schema.sql but for its byte-order mark; saving the
+# rendered Gallery page to compare it against the view writes gal.html next to
+# Views/Home/Gallery.cshtml. Both are work in progress, not sources - and the
+# real one is the tracked copy, so a reader must never be able to find two.
+/migration.sql
+/gal.html
