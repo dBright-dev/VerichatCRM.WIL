@@ -1,5 +1,15 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
+#
+# Both dotnet steps name VerichatCRM.Web.csproj. The generated version of this file
+# ran them bare, and at this repository's root bare means "the one solution here", so
+# publish walked all six projects into one folder and died on NETSDK1152 - Core,
+# Infrastructure, API, Web and Tests all carry an appsettings.json and a
+# dotnet-tools.json at the same relative path. The job never produced an artifact, so
+# every push to dev2 failed this workflow and the Azure web app kept whatever it was
+# last published with by hand. VerichatCRM.API has the same fix in
+# dev2_verichat-api.yml; each workflow must name its own project, because the two
+# deploy to different apps and one artifact folder cannot hold both.
 
 name: Build and deploy ASP.Net Core app to Azure Web App - VerichatCRM
 
@@ -24,10 +34,10 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build VerichatCRM.Web/VerichatCRM.Web.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish VerichatCRM.Web/VerichatCRM.Web.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
