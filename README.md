@@ -1,7 +1,24 @@
 # Verichat CRM and Medical Logistics System
 
-Verichat is a role-based CRM and medical-supplies workflow with a browser-based staff application, an ASP.NET Core API, a SQL Server database, and an Expo mobile client. This README describes the code that is in this repository. 
-https://youtu.be/sKW-5iuRPyI 
+Verichat is a role-based CRM and medical-supplies workflow with a browser-based staff application, an ASP.NET Core API, a SQL Server database, and an Expo mobile client. This README describes the code that is in this repository.
+
+A recorded walkthrough of the running system is at [https://youtu.be/sKW-5iuRPyI](https://youtu.be/sKW-5iuRPyI).
+
+## Documentation in this repository
+
+Seven documents are part of the repository and refer to each other. If you are looking for one question, this table says which file answers it.
+
+| Document | Answers | Length |
+| --- | --- | --- |
+| `README.md` | What the system is, how to run it, what is live and what is not. | this file |
+| [`userguide.md`](userguide.md) | How each of the seven roles works the system, screen by screen. | ~1,300 lines |
+| [`documentation.md`](documentation.md) | Every requirement in the two project proposals, against the code that meets it or does not. | ~900 lines |
+| [`VerichatCRM_FeatureWalkthrough.md`](VerichatCRM_FeatureWalkthrough.md) | What the delivered features do, in the order a person clicks through them. | ~300 lines |
+| [`DEPLOYMENT.md`](DEPLOYMENT.md) | Hosting, where each secret belongs, credential rotation, the migration runbook. | ~1,300 lines |
+| [`TRAINING-PLAN.md`](TRAINING-PLAN.md) | Rollout, training sequence, risks and mitigations. | ~350 lines |
+| [`DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md) | The brand mark, the palette and the rule that decides whether a screen belongs to it. | ~280 lines |
+
+What is *not* here: the Final Report and the EXPO pack are submitted through the assessment portal rather than versioned with the code, so a reader who looks for them in this repository will not find them and should not assume they were skipped.
 
 ## Hosted applications
 
