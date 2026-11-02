@@ -87,6 +87,11 @@ namespace VerichatCRM.API.Controllers
         /// </summary>
         internal static string DescribeFailure(int number, byte severity) => number switch
         {
+            // What both deployed APIs report. SQL gives no error number when the
+            // session died before the engine could answer, and severity 20 is the
+            // fatal-transport band, so the socket was opened and then lost during
+            // login - not a wrong password, which is 18456 at severity 14.
+            0 when severity >= 20 => "the connection was established and then dropped before SQL Server answered - a transport or TLS failure at the network layer, not a credential this server rejected",
             18456 => "the server answered and rejected the login - a SQL password that no longer matches the user, or an Entra token whose identity has no user in this database",
             4060 or 916 or 229 => "the login opened a session but this database cannot be opened - wrong catalog, or the user has no access to it",
             18451 => "the server named in the connection string is not one this host can resolve or reach",
