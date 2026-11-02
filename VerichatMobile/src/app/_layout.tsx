@@ -7,7 +7,8 @@ import { useEffect, useState } from 'react';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
 import OfflineStatusBanner from '@/components/offline-status-banner';
-import { getAuthToken, hydrateAuthToken, startOfflineSync, subscribeAuth } from '@/constants/api';
+import ReleaseOriginScreen from '@/components/release-origin-screen';
+import { getAuthToken, hydrateAuthToken, RELEASE_ORIGIN_PROBLEM, startOfflineSync, subscribeAuth } from '@/constants/api';
 import { emitGlobalRefresh } from '@/utils/refreshEvents';
 import { registerBackgroundAssignmentSync } from '@/utils/backgroundFetch';
 import { applyDarkMode, followSystemTheme, restoreDarkMode } from '@/constants/appTheme';
@@ -79,8 +80,10 @@ export default function TabLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <AnimatedSplashOverlay />
-        {hydrated && <OfflineStatusBanner />}
-        {!hydrated ? null : signedIn ? (
+        {hydrated && !RELEASE_ORIGIN_PROBLEM && <OfflineStatusBanner />}
+        {RELEASE_ORIGIN_PROBLEM ? (
+          <ReleaseOriginScreen detail={RELEASE_ORIGIN_PROBLEM} />
+        ) : !hydrated ? null : signedIn ? (
           <AppTabs />
         ) : (
           <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>

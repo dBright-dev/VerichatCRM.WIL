@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import { authenticateBiometric, hasUsableBiometrics } from './biometricAuth';
+import { describeReleaseOriginProblem } from './releaseGuard';
 
 // Verichat CRM API — shared base URL resolution.
 // Set EXPO_PUBLIC_API_URL in your .env / EAS config; falls back to the deployed
@@ -12,18 +13,14 @@ export const API_BASE_URL =
     'http://api-site.runasp.net')
 
 // That fallback is a development convenience and nothing else. A signed build that
-// resolves to a cleartext origin cannot reach the API on a phone at all — iOS refuses
-// it outright and Android does too unless the manifest opts back in — so the app would
-// install, open and then sit on a spinner with nothing to explain itself. Throwing here
-// means the first launch of a misconfigured release build is a crash that names the
-// setting, which is a far shorter route to the fix than an unexplained empty screen.
-// Dev and the static web export are deliberately unaffected: both can reach http.
-if (!__DEV__ && Platform.OS !== 'web' && API_BASE_URL.startsWith('http://')) {
-  throw new Error(
-    `Release builds need EXPO_PUBLIC_API_URL pointing at an https API origin; got ${API_BASE_URL}. ` +
-    'See "Publish a release" in VerichatMobile/README.md.'
-  )
-}
+// resolves to a cleartext origin cannot reach the API on a phone at all, so instead of
+// dying at import time it records why it cannot work and the root layout renders that
+// answer. See releaseGuard.ts for the rule and for why this used to throw.
+export const RELEASE_ORIGIN_PROBLEM = describeReleaseOriginProblem({
+  isDev: __DEV__,
+  platform: Platform.OS,
+  baseUrl: API_BASE_URL,
+})
 
 const TOKEN_KEY = 'verichat.auth.token'
 const BIOMETRIC_LOGIN_KEY = 'verichat.auth.biometric-login'
