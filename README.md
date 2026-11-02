@@ -39,7 +39,7 @@ The two causes are different and both are already known:
 - **Monster ASP** reaches the SQL Server that came with the hosting plan. That server accepts connections from the host's own private network only, and its `sa`-equivalent credential has been rotated once since the connection string was written, so the deployed string and the server no longer agree. `DEPLOYMENT.md` §9 has the rotation runbook.
 - **Azure** reaches `verichat-server-2026` / `VerichatDB` with an Entra token minted by the App Service's managed identity. The database exists and the token is valid, but that identity has never been added as a user inside the database, so the server has nothing to authorise it against. `Database/azure-managed-identity-user.sql` is the script that creates that user; it needs to be run by someone who can connect to the server as its Entra administrator.
 
-`18456` (login rejected) and `4060` (cannot open this database) are different failures with different fixes, and the payload quoted above cannot tell them apart because both hosts still run the build that answers `CanConnectAsync` with one sentence for all of them. `HealthController` now opens the connection itself and classifies the SQL error number, so the next deployed build names which of the two each host needs. Push to `dev2` deploys the Azure copy automatically (see [GitHub Actions](#github-actions)).
+`18456` (login rejected) and `4060` (cannot open this database) are different failures with different fixes, and the payload quoted above cannot tell them apart because both hosts still run the build that answers `CanConnectAsync` with one sentence for all of them. `HealthController` now opens the connection itself and classifies the SQL error number, so the next deployed build names which of the two each host needs; `dev2` is the branch the Azure publish workflows watch (see [GitHub Actions](#github-actions)).
 
 `api-site.runasp.net` and `verichat-crm-api.runasp.net` are two separate sites, not two names for one: they now answer differently, which they could not do if they shared a process. The second has no application settings at all — it is the deployment the publish profile was generated for and never completed — and `DEPLOYMENT.md` §7.1 is the runbook for finishing it.
 
@@ -277,6 +277,24 @@ It is not a complete integration or end-to-end suite: there are no API contract 
 
 ## GitHub Actions
 
-`.github/workflows/ci.yml` restores, tests, and builds the .NET solution and runs Expo lint and TypeScript checks on pull requests and pushes to `main` or `master`. This workflow is CI only: it does not deploy the API, web app, or database. GitHub branch protection, reviewer requirements, deployment environments, and production secrets must be configured in the repository settings separately.
+Three workflows are checked in, and only one of them is CI.
+
+`.github/workflows/ci.yml` runs on pull requests and on pushes to `main` or `master`, in two jobs: `dotnet` restores `VerichatCRM.slnx`, runs the test project and builds the solution in Release; `mobile` runs `npm ci`, `npx expo lint` and `npx tsc --noEmit` in `VerichatMobile`. It does not deploy anything.
+
+The other two are Azure's own generated publish workflows, and they **run on every push to `dev2`**:
+
+| Workflow | Deploys | To |
+| --- | --- | --- |
+| `dev2_verichat-api.yml` | `dotnet publish` of the repository | Azure Web App `verichat-api` (Production slot) |
+| `dev2_verichatcrm.yml` | `dotnet publish` of the repository | Azure Web App `VerichatCRM` (Production slot) |
+
+`dev2` is therefore not a quiet integration branch: pushing it queues a rebuild and a republish of both Azure apps without anyone pressing a button, so a push that breaks the build is also a deployment attempt. Whether the deployment then succeeds is the question below it.
+
+Neither publish workflow names a project. Both run bare `dotnet build --configuration Release` and `dotnet publish -c Release` at the repository root, where the file is `VerichatCRM.slnx` — a solution with six projects and no designated startup project — so each workflow publishes whatever the root resolves to rather than the one assembly that app needs, and both apps receive the same artifact. The fix is `dotnet publish VerichatCRM.API` in the API workflow and `dotnet publish VerichatCRM.Web` in the web one, and it has not been applied.
+
+Whether those pushes actually republished either Azure app could not be confirmed from the repository. Nine minutes after the health-check change landed on `dev2`, the Azure endpoint was still answering with the sentence the previous build produces; the run log, which needs repository settings access to read, is the only thing that distinguishes a job that failed from a job that is still in the queue.
+
+GitHub branch protection, reviewer requirements, deployment environments and production secrets are configured in the repository and portal settings, not here; no workflow holds a credential, since the Azure jobs authenticate with the GitHub connection's service principal.
+
 
 
