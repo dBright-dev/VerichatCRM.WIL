@@ -35,13 +35,22 @@ namespace VerichatCRM.API.Controllers
         /// while their real causes were different (one a credential, the other an
         /// identity with no user in the database), and the payload could not tell them
         /// apart.
+        /// <para>
+        /// The connection is built from the context's connection string rather than
+        /// taken from <c>GetDbConnection()</c>. That returns the context's own pooled
+        /// connection, and this method's <c>await using</c> would dispose the object
+        /// the context is still holding - so the migration probe underneath this one,
+        /// running in the same request on the same context, threw "The ConnectionString
+        /// property has not been initialized" and every healthy database reported
+        /// <c>MigrationCheckFailed</c> even though it was reachable and fully migrated.
+        /// </para>
         /// </summary>
         private async Task<(bool ok, string detail, long latencyMs)> CheckDatabaseAsync()
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             try
             {
-                await using var connection = _db.Database.GetDbConnection();
+                await using var connection = new SqlConnection(_db.Database.GetConnectionString());
                 await connection.OpenAsync();
                 sw.Stop();
                 return (true, "Database reachable.", sw.ElapsedMilliseconds);
