@@ -342,6 +342,11 @@ reason the web project's `appsettings.Development.json` already ships that key e
 
 ### 7.3 One shared Azure SQL database, so the backup is real
 
+> Written as a plan on 2 Nov and superseded in part by §7.4 the same day: the database that
+> exists uses Entra ID rather than SQL authentication, which removes Monster ASP from the
+> failover, and the rows came from the local development database rather than from Monster.
+> Read §7.4 before repeating any step here.
+
 The plan chosen on 2 Nov: **both copies of the API read one database**, which is what turns the
 failover from a second error into a recovery. It also fixes the token problem in
 `ApiFallbackHandler.cs:62`, which replays the primary's JWT to the backup — with one shared
@@ -404,6 +409,71 @@ becomes redundant once step 3 is done.
 **Rollback.** Steps 4 and 5 are two app settings each; putting the previous values back returns the
 system to the state described in §7.2. Step 3 is the one that is not reversible from here, which is
 why it should be a copy into the new database rather than a move out of the old one.
+
+### 7.4 The Azure database as it actually exists (2 November 2026)
+
+Provisioned: logical server `verichat-server-2026.database.windows.net`, database `VerichatDB`,
+**Brazil South**. The two App Services are `eastus-01` and `eastus2-01`, so every query crosses the
+ocean. Kept that way deliberately today; the cost is roughly 30-140 ms added per round trip, and a
+dashboard that fires dozens of queries feels it. Recreating the server in the App Service region is
+cheap while the database is young and expensive after it is load-bearing.
+
+Authentication is **Microsoft Entra ID only. There is no SQL password on this database.** A working
+copy connects with `Authentication=Active Directory Default`, which here resolves through the cached
+Visual Studio credential. The Windows-integrated path does not work — `sqlcmd -G` fails with
+*Default account not found* — because this machine is not hybrid-joined to the tenant, so do not
+reach for `-G` when testing.
+
+That choice is what removes Monster from the plan. Entra authentication needs a token, and only two
+kinds of host can produce one without carrying a secret: a developer machine with a signed-in IDE,
+and an Azure App Service with a system-assigned managed identity. Monster ASP is neither, so the API
+belongs on Azure and Monster keeps only the web tier, which never touches SQL because it proxies.
+A real backup is a second App Service with its own identity, not the Monster copy.
+
+Done from the working copy, all of it verifiable:
+
+1. `Database/azure-sql-full-schema.sql` applied. `__EFMigrationsHistory` holds 21 rows, so the API
+   reports nothing pending the first time it connects.
+2. 152 rows copied from the local development database in foreign-key order with `IDENTITY_INSERT`
+   on: `Products` 61, `Users` 34, `Clients` 18, `WellnessGoals` 8, `MobileProfiles` 5,
+   `TicketActivity` 4, `VitalReadings` 3, `QuotationLineItem` 3, `Deals`/`Inquiries`/`Quotations`/
+   `TelehealthAppointments`/`Tickets`/`WeeklyExerciseLogs` 2 each, `MobileSettings` 2, `Orders` 1,
+   `OrderLineItem` 1. Row counts agree on all 38 tables and `CHECKSUM_AGG(BINARY_CHECKSUM(*))` is
+   identical on all 17 populated ones, which is the check that matters — matching counts would also
+   describe a table of right-sized garbage.
+3. Nothing came from Monster. `db70543.databaseasp.net` still resolves to `10.0.0.23` and TCP 1433
+   still times out from here, so its rows move only by an export taken inside that network. What is
+   in `VerichatDB` today is the seeded catalogue and the development accounts, so read §8.2 before
+   treating any of it as real data.
+
+Still to do, and the order is not interchangeable:
+
+1. Azure portal → App Service `verichat-api-aqcbgydhhbgbgha5` → Settings → Identity → **System
+   assigned: On**.
+2. Run `Database/azure-managed-identity-user.sql` against `VerichatDB` as the Entra admin. It cannot
+   run before step 1: `CREATE USER ... FROM EXTERNAL PROVIDER` resolves the name against the
+   directory at the moment it executes, and until the identity is switched on the App Service has no
+   service principal to resolve.
+3. Set `ConnectionStrings__DefaultConnection` in App Service → Environment variables to the Entra
+   string, and confirm `Jwt:Key` is present. The string carries no credential, which is why it is
+   safe to put in a settings blade and in `appsettings.json`.
+4. Read `/api/health` on the Azure origin. `Healthy` with zero pending migrations is the proof the
+   identity chain works end to end; a `Login failed for token` at this point means step 2 did not
+   take, not that the network is closed.
+5. Only then flip `ApiBaseUrl` in `VerichatCRM.Web/appsettings.json`, and `api.ts` plus `.env` on
+   mobile, to the Azure https origin. Flipping the web tier first takes the working site down,
+   because it would be proxying to an API that cannot yet read the data.
+
+Two things this leaves that need attention:
+
+- The server has a firewall rule `development` spanning `0.0.0.0` - `255.255.255.255`, meaning every
+  address on the internet may attempt a login. Entra makes that far less dangerous than the same
+  rule around a SQL password, but it should go once a named admin address replaces it. `General`
+  (`0.0.0.0` - `0.0.0.0`) is the *Allow Azure services and resources* toggle and has to stay for the
+  App Service to connect at all.
+- The copied `Users` rows include the development seed accounts whose passwords are printed in
+  `README.md`. Those credentials are live the moment the API is reachable from the internet. §8.2
+  describes clearing them.
 
 ## 8. Pre-flight checks before migrating an existing database
 
