@@ -235,7 +235,21 @@ The administrator account is how a staff login is created: `/Admin/Users` → **
 
 ## Database and schema
 
-The source of truth is SQL Server, not Firestore. EF Core entities and mappings live in Core and Infrastructure; migrations are in `VerichatCRM.Infrastructure/Migrations`. API startup applies migrations. Do not use production data when demonstrating or testing locally.
+The source of truth is SQL Server, not Firestore. EF Core entities and mappings live in Core and Infrastructure; the migration chain is in `VerichatCRM.Infrastructure/Migrations` and runs to 22 migrations. On a machine that can reach its database, API startup applies that chain before it binds a port, which is why a local clone needs nothing but LocalDB and a JWT key. Do not use production data when demonstrating or testing locally.
+
+**The hosted database is not migrated, and it is a separate step.** Because both deployed API copies fail on the connection itself (see [Hosted applications](#hosted-applications)), the startup migration never runs there — the hosted schema is whatever was last applied by hand, and nothing in the code can tell you which that was. The scripts in `Database/` are how it is brought forward, in this order:
+
+| Script | What it does |
+| --- | --- |
+| `hosted-migrations/verify-migration-state.sql` | Read-only. Prints the migrations the target database has recorded and the tables it has, so you know what is pending before you run anything. |
+| `preflight-migration-checks.sql` | Read-only. Whether the columns that `SyncSchemaAndAccountLifecycle` and its successors widen currently hold data that would not fit, and whether any e-mail, tracking number, quote reference or serial is duplicated where a unique index is about to be created. |
+| `apply-pending-migrations.sql` | Applies the whole chain idempotently. Every statement is wrapped in `IF NOT EXISTS (… [MigrationId] …)`, so it is safe to run twice and it skips what is already there. Its opening `SET QUOTED_IDENTIFIER ON` is not decoration: without it the batch stops at migration 19 of 22 with a `CREATE INDEX` failure and the earlier transactions already committed. Regenerate it with the command in its header rather than hand-editing it. |
+| `hosted-migrations/16-…sql` … `22-…sql` | The same chain one migration at a time, for a database that should be moved step by step and checked between steps. |
+| `azure-sql-full-schema.sql` | The entire schema as one script, for a database with nothing in it yet. |
+| `seed-catalogue.sql` | The public product catalogue, applied after the schema exists. |
+| `azure-managed-identity-user.sql` | Not a schema change: creates the database user for the Azure App Service's managed identity. It must be run by the server's Entra administrator, because it cannot be run by the identity it creates. |
+
+`apply-pending-migrations.sql` was executed twice against the same database to prove the second run is a no-op, and the result was 22 migrations and 39 tables with no errors.
 
 The startup seeder adds example clients and products only when the relevant tables are empty, and stops there — tickets, quotations and anything the business actually records are entered by a user. It does not create ordinary user accounts on a deployment; the development sign-in accounts above are a separate, doubly guarded step. Configure the bootstrap administrator credentials as secrets and clear them after initial provisioning.
 
