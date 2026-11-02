@@ -1,6 +1,6 @@
 import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
-import { API_BASE_URL, getAuthToken, hydrateAuthToken } from '../constants/api';
+import { fetchWithFailover, getAuthToken, hydrateAuthToken } from '../constants/api';
 
 const ASSIGNMENT_SYNC_TASK = 'verichat-assignment-sync-v2';
 
@@ -12,7 +12,7 @@ TaskManager.defineTask(ASSIGNMENT_SYNC_TASK, async () => {
 
     // Refresh the mobile dashboard endpoint, which includes the signed-in
     // user's current CRM work/assignment summary.
-    const response = await fetch(`${API_BASE_URL}/api/mobile/dashboard`, {
+    const response = await fetchWithFailover('/api/mobile/dashboard', {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!response.ok) return BackgroundTask.BackgroundTaskResult.Failed;

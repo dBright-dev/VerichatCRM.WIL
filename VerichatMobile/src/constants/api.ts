@@ -12,6 +12,13 @@ export const API_BASE_URL =
   (process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/+$/, '') ||
     'http://api-site.runasp.net')
 
+// The second origin a request is retried against when the first one cannot serve it,
+// mirroring BackupApiBaseUrl on the web tier (VerichatCRM.Web/Services/ApiFallbackHandler.cs).
+// Empty by default, which means no failover and one honest error instead of two stacked ones.
+// Both hosts must validate against the SAME Jwt:Key and read the SAME database, or a request
+// that survives the switch comes back 401 or comes back about different data.
+export const API_BACKUP_URL = process.env.EXPO_PUBLIC_API_BACKUP_URL?.trim().replace(/\/+$/, '') || ''
+
 // That fallback is a development convenience and nothing else. A signed build that
 // resolves to a cleartext origin cannot reach the API on a phone at all, so instead of
 // dying at import time it records why it cannot work and the root layout renders that
@@ -141,7 +148,7 @@ export async function flushQueuedActions(): Promise<void> {
       const action = queue[0]
       let response: Response
       try {
-        response = await fetch(`${API_BASE_URL}${action.path}`, {
+        response = await fetchWithFailover(action.path, {
           method: action.method,
           headers: authHeaders(action.body ? { 'Idempotency-Key': action.id } : undefined, ownerToken),
           body: action.body,
@@ -343,6 +350,48 @@ function authHeaders(extra?: Record<string, string>, token = authToken): Record<
   return headers
 }
 
+/** Statuses that mean "this host could not serve that", not "your request was wrong". */
+const RETRYABLE_STATUSES = new Set([500, 502, 503, 504])
+
+/**
+ * Whether a request that just failed may be sent to the next origin.
+ *
+ * A read can always be tried again. A write only when the previous origin showed it never
+ * ran the application handler — no connection at all, or a gateway status raised in front
+ * of the app. A 500 means the handler ran and may have committed part of the change before
+ * throwing, so replaying that against the backup would double the write.
+ */
+function shouldReplay(isRead: boolean, previous: Response | undefined): boolean {
+  if (isRead || !previous) return true
+  return previous.status === 502 || previous.status === 503 || previous.status === 504
+}
+
+/**
+ * Send a request to the primary origin, and to the backup only when the primary
+ * demonstrably did not run the application code for it.
+ *
+ * `init.body` is a string at every call site here, so reusing it across two fetches is
+ * safe; a stream or FormData would be consumed by the first attempt.
+ */
+export async function fetchWithFailover(path: string, init: RequestInit): Promise<Response> {
+  const isRead = (init.method ?? 'GET').toUpperCase() === 'GET'
+  const origins = API_BACKUP_URL ? [API_BASE_URL, API_BACKUP_URL] : [API_BASE_URL]
+  let previous: Response | undefined
+
+  for (let index = 0; index < origins.length; index += 1) {
+    if (index > 0 && !shouldReplay(isRead, previous)) break
+    try {
+      previous = await fetch(`${origins[index]}${path}`, init)
+    } catch (error) {
+      previous = undefined
+      if (index === origins.length - 1) throw error
+    }
+    if (previous && !RETRYABLE_STATUSES.has(previous.status)) return previous
+  }
+
+  return previous as Response
+}
+
 /** Typed fetch wrapper: attaches JWT, throws a readable Error on non-2xx. */
 export async function api<T>(path: string, init?: RequestInit, options: { allowCachedFallback?: boolean } = {}): Promise<T> {
   const allowCachedFallback = options.allowCachedFallback !== false
@@ -371,7 +420,7 @@ export async function api<T>(path: string, init?: RequestInit, options: { allowC
 
   let response: Response
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
+    response = await fetchWithFailover(path, {
       ...init,
       headers: authHeaders(init?.headers as Record<string, string> | undefined),
     })

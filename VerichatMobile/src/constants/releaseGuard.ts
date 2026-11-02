@@ -24,17 +24,23 @@ export type ReleaseOriginInput = {
  *
  * Development bundles and the static web export are exempt on purpose: both can
  * reach an HTTP host, and the web bundle is how the app gets reviewed without a
- * device. Everything else that resolves to a cleartext origin is a build that
- * will fail every request — iOS refuses cleartext outright and Android does too
- * unless the manifest opts back in.
+ * device. Android release builds are exempt too, because `app.json` hands
+ * `usesCleartextTraffic: true` to `expo-build-properties`, so the generated
+ * manifest asks Android to permit cleartext. That is a deliberate, temporary
+ * concession to the API host having no certificate — it means the sign-in
+ * password and the JWT cross the network unreadable by nobody but whoever is
+ * listening to it, so it should go the moment HTTPS is bound.
+ *
+ * iOS has no equivalent switch, so a cleartext origin there still fails every
+ * request and this returns the sentence explaining it.
  */
 export function describeReleaseOriginProblem({ isDev, platform, baseUrl }: ReleaseOriginInput): string | null {
-  if (isDev || platform === 'web') return null
+  if (isDev || platform === 'web' || platform === 'android') return null
   if (!baseUrl.startsWith('http://')) return null
 
   return (
-    `This build resolves the API to ${baseUrl}, served over plain HTTP. ` +
-    'A release build is not allowed to send a cleartext request, so every screen would load empty. ' +
+    `This build resolves the API to ${baseUrl}, served over plain HTTP, and iOS refuses a ` +
+    'cleartext request outright, so every screen would load empty. ' +
     'Set EXPO_PUBLIC_API_URL to an HTTPS API origin before building, or bind a certificate to the host.'
   )
 }
