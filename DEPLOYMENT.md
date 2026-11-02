@@ -178,6 +178,16 @@ Then: delete the rules file, ask GitHub to clear cached views and detached objec
 
 ### 7.1 The deployed API answers HTTP 500.30
 
+**Status, re-measured 2 November 2026: this one is fixed.** `http://api-site.runasp.net/api/health`
+now returns HTTP 503 with a real JSON body rather than the 500.30 HTML page - the process starts,
+`Jwt:Key` is present, and its database answers in 5 ms. What it reports instead is
+`MigrationsPending`, six of them, so §7.1 below is history and §8 is the live problem. Note that
+`/api/health` proves the panel settings are right and proves nothing about the schema; its
+database check only opens a connection, which is why a reachable-but-unmigrated site still looks
+almost healthy.
+
+The original failure, kept because the reasoning is what found it:
+
 Re-measured on 1 November 2026 after the API was published again — every path on
 both API host names fails the same way, while the web site on the same hosting
 family is healthy:
@@ -369,8 +379,52 @@ first:
 dotnet ef migrations script --idempotent `
   --project VerichatCRM.Infrastructure --startup-project VerichatCRM.API `
   --output ApplyAllMigrations.sql
-sqlcmd -S <tcp:server> -d <database> -U <login> -i ApplyAllMigrations.sql
+sqlcmd -S <tcp:server> -d <database> -U <login> -I -i ApplyAllMigrations.sql
 ```
+
+**The `-I` is not optional.** It sends `SET QUOTED_IDENTIFIER ON` for the session, and
+`sqlcmd` leaves that option OFF by default. Measured on a fresh local database, the same
+script without `-I` commits migrations 1 to 19 and then dies on:
+
+```
+Msg 1934, Level 16, State 1, Line 1
+CREATE INDEX failed because the following SET options have incorrect settings:
+'QUOTED_IDENTIFIER'. Verify that SET options are correct for use with indexed views
+and/or indexes on computed columns and/or filtered indexes ...
+```
+
+Because each migration is its own `BEGIN TRANSACTION ... COMMIT`, everything before the
+failure is already committed when the batch aborts. The result is a database that is
+neither the old schema nor the new one, with 19 of 21 recorded - and the idempotent guards
+mean re-running it later does not undo the mixture, it just continues. With `-I` the script
+finishes: 21 migrations recorded, 39 base tables, matching the development database.
+
+The generated body also starts with a UTF-8 BOM, which is harmless at the top of a file but
+is not harmless after the header `GO`. Strip it (`-replace [char]0xFEFF,''`) or the first
+token of that batch is a BOM the server will not accept.
+
+`Database/apply-pending-migrations.sql` is this script, already generated, with the two SET
+statements asserted inside the file so it is safe in a client you cannot pass flags to -
+which is the case for a hosting panel's SQL window. It was verified by running that file
+twice, once without `-I`, both to completion, and a second time against an already-migrated
+database to confirm the guards make a re-run a no-op. Regenerate it rather than editing it;
+the body is machine output.
+
+**Why the hosted site is stuck at 15, and why that is not this trap.** The deployed API reports
+six pending: `20261027100000_AddUserDeviceToken` through `20261101152359_ReviewSelfClaimedStaffAccounts`,
+i.e. migrations 16 to 21 in id order, with 1 to 15 recorded. That is a clean suffix, so the chain
+is not broken - it simply stopped early. And it stopped at 15, not at the 19 where
+`QUOTED_IDENTIFIER` kills a hand-run script, so the two failures are unrelated. The explanation
+that fits is the one in §8: the build that last migrated successfully contained 15 migrations, and
+the newer build - which does contain all 21, because `/api/health` enumerates the missing six out
+of its own loaded assembly - throws in `MigrateAsync` before it applies anything. `Program.cs:266`
+runs that at startup and the catch keeps the site alive in degraded mode, which is exactly what a
+reachable database with six pending migrations looks like. The check that settles it is the host's
+own stdout log (§7.1 turned `stdoutLogEnabled` on for this reason): look for
+`PendingModelChangesWarning` or any `DbMigrator` exception. If the deployed binary predates
+`c909aa6`, which downgrades that one warning to a log line, publishing the current build lets
+startup finish the migration by itself and no script is needed. Otherwise run
+`Database/apply-pending-migrations.sql` in the panel and restart the app.
 
 Build first — `--no-build` silently reuses the assemblies already on disk, so a fix to a
 migration or to the snapshot will not appear in the regenerated script and the same
