@@ -86,18 +86,27 @@ The API uses .NET 10, ASP.NET Core controllers, EF Core, and SQL Server. The mob
 VerichatCRM.API/Controllers/       HTTP endpoints and access policies
 VerichatCRM.API/Services/          Business operations
 VerichatCRM.API/DTOs/              API request and response contracts
-VerichatCRM.Core/Entities/         Domain and persisted entities
+VerichatCRM.API/Validators/        FluentValidation rules for request bodies
+VerichatCRM.API/Middleware/        Request body sanitisation
+VerichatCRM.API/Hubs/              SignalR hub for live staff notifications
+VerichatCRM.Core/Entities/         Persisted domain entities, and the role constants
+VerichatCRM.Core/Enums/            Asset, delivery and ticket status vocabularies
+VerichatCRM.Core/Interfaces/       Repository and service contracts
+VerichatCRM.Core/Models/           Per-area view models, and the shared demo account list
 VerichatCRM.Infrastructure/Data/   EF Core context, migrations, repositories
 VerichatCRM.Web/Controllers/       Staff MVC actions
 VerichatCRM.Web/Views/             Razor screens
+VerichatCRM.Web/wwwroot/css/       The design tokens every stylesheet reads
+VerichatCRM.Web/wwwroot/pages/     The public landing pages' stylesheets
 VerichatMobile/src/app/            Expo Router screens
-VerichatMobile/src/constants/      API clients and mobile state helpers
+VerichatMobile/src/constants/      API clients, mobile state, the mirrored demo list
 VerichatCRM.Tests/                 xUnit automated tests
-.github/workflows/ci.yml           Pull request and branch CI checks
-documentation.md                   Proposal-versus-implementation gap analysis
-userguide.md                       Role-by-role operator guide and training plan
-DEPLOYMENT.md                      Secret placement, credential rotation, TLS prerequisites
+Database/                          Hosted migration and schema scripts, applied by hand
+.github/workflows/                 CI, plus the two Azure publish workflows
+start-local.ps1                    Starts both tiers in the right order, and stops them
 ```
+
+The six documents the map does not list - `documentation.md`, `userguide.md`, `DEPLOYMENT.md`, `TRAINING-PLAN.md`, `DESIGN-SYSTEM.md` and `VerichatCRM_FeatureWalkthrough.md` - are described in [Documentation in this repository](#documentation-in-this-repository) above, and the scripts in `Database/` are the ones [Database and schema](#database-and-schema) explains.
 
 ### Projects and dependencies
 
