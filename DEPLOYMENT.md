@@ -735,8 +735,52 @@ re-measured after that change, `dotnet ef migrations list --project VerichatCRM.
 while accessing the database. Continuing without the information provided by the database"*
 with no applied-or-pending column. The EF tools apply their own `ASPNETCORE_ENVIRONMENT`
 default, which is how the design-time factory ends up in Development, but they do not apply the
-profile's other environment variables. So the shell assignment above is the only thing that
-decides where a migration command goes — set it in the same line, every time.
+profile's other environment variables. So the shell assignment above is what decides where a
+migration command goes when you do not say otherwise — set it in the same line, every time.
+
+**There is a better lever, and it is the one to use from the Package Manager Console.** Both the
+CLI and the cmdlets accept an explicit connection string, which `MigrationsOperations` uses
+instead of asking the design-time factory at all:
+
+```powershell
+# Package Manager Console
+Update-Database -Project VerichatCRM.Infrastructure -StartupProject VerichatCRM.API `
+  -Connection 'Server=(localdb)\MSSQLLocalDB;Database=VerichatCRM;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True' `
+  -ConnectionProvider 'Microsoft.Data.SqlClient'
+
+# CLI equivalent - note --connection is not accepted by every command; dbcontext info rejects it
+dotnet ef migrations list --project VerichatCRM.Infrastructure --startup-project VerichatCRM.API `
+  --connection 'Server=(localdb)\MSSQLLocalDB;Database=VerichatCRM;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True'
+```
+
+This beats the environment variable on two counts: it cannot be forgotten, because it is on
+every command rather than remembered in a shell, and it cannot be poisoned by a stale secret.
+
+Measured here, on the machine as it is configured now, which is what prompted the rewrite:
+
+- `dotnet ef dbcontext info` with the correct project pair reports **`Data source:
+  db70543.databaseasp.net`, `Database name: db70543`** — the stale user secret wins, so an
+  unqualified `Update-Database` is an attempt on the production database, and from a laptop it
+  dies on the private address (§7.2) as `Named Pipes Provider, error: 40 ... The specified
+  network name is no longer available`. SqlClient tried TCP, failed, and fell back to pipes;
+  the error never mentioned LocalDB because LocalDB was not involved.
+- **Setting `ASPNETCORE_ENVIRONMENT=Development` does not fix it.** Tried specifically, because
+  it is the obvious guess: `dbcontext info` still reported `db70543.databaseasp.net`. The
+  factory adds the environment file at `:22` and user secrets *after* it at `:23`, so the
+  secret outranks the Development string. Only the variable added last (`:24`) or an explicit
+  `--connection` beats it.
+- `migrations list --connection '...localdb...'` connects and enumerates normally. The cmdlet
+  parameter is real because the operation underneath takes it — the failing stack trace ends
+  in `MigrationsOperations.UpdateDatabase(String targetMigration, String connectionString,
+  String contextType)`.
+
+**Ignore the advice in that exception.** *"Consider enabling transient error resiliency by
+adding 'EnableRetryOnFailure'"* is EF's generic tail for any connection failure. The running
+app already enables it (`Program.cs:78`); the design-time factory does not
+(`DesignTimeAppDbContextFactory.cs:36-38` builds bare `UseSqlServer` options), which is only
+why the message surfaces here at all. Retrying does not help a server that resolves to `10.0.0.23`
+from a network that cannot route to it — the fix is pointing the command somewhere else, not
+repeating the attempt.
 
 Two reasons not to use `Update-Database` against a database you did not create, even with the
 connection string pinned. `--idempotent` script generation (§8) is reviewable before anything
