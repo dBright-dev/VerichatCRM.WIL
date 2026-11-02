@@ -28,48 +28,24 @@ namespace VerichatCRM.Core.Entities
 
         /// <summary>
         /// Roles a person may choose for themselves when self-registering on the
-        /// web or mobile sign-up form.
+        /// web or mobile sign-up form, and they are only the two client-facing ones.
         ///
-        /// System Administrator is in this list because the role is meant to be
-        /// claimable from the form, and it is listed in <see cref="ApprovalExempt"/>
-        /// so the account it creates signs in without waiting for a reviewer.
-        /// Read the consequence there before removing it from either list.
+        /// This list is the whole of the access control on the sign-up form. It used
+        /// to be seven roles wide and backstopped by an employee approval queue;
+        /// that queue is gone, so nothing reviews a claim any more - which means a
+        /// claim must not be able to buy a staff login. A Sales Representative or
+        /// Procurement Manager account is created by an employee at /Admin/Users, or
+        /// by a role change there, and the API's registration service refuses
+        /// anything not listed here.
         /// </summary>
         public static readonly string[] SelfRegisterable =
         {
-            SystemAdministrator,
-            SalesRepresentative,
-            ProcurementManager,
-            FieldSupportEngineer,
-            Logistics,
             ClientUser,
             // Students sign themselves up to use the mobile catalogue and quick
             // cart. They get no staff screens, so the risk this would otherwise
             // open - claiming a role with permissions from a public form - is nil.
             MedicalStudent
         };
-
-        /// <summary>
-        /// Roles whose self-registered account is written as Approved rather than
-        /// Pending, so the holder can sign in immediately and never appears in
-        /// /Admin/Approvals.
-        ///
-        /// The review gate exists because a claim on a public form is not evidence
-        /// of the thing claimed. Exempting a role switches that check off for it:
-        /// /Account/Register is anonymous, so anyone who reaches it can create an
-        /// approved System Administrator and then read every client record, edit
-        /// every staff account and approve or reject other people's applications.
-        /// To put the gate back for this role, remove it from this array - new
-        /// sign-ups queue again, and accounts already created keep their Approved
-        /// status until someone changes it at /Admin/Approvals or in the database.
-        /// </summary>
-        public static readonly string[] ApprovalExempt =
-        {
-            SystemAdministrator
-        };
-
-        public static bool IsApprovalExempt(string? role) =>
-            role != null && ApprovalExempt.Contains(role);
 
 
         /// <summary>

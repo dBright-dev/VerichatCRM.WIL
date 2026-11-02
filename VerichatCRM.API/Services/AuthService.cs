@@ -10,11 +10,13 @@ namespace VerichatCRM.API.Services
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _users;
+        private readonly IMobileService _mobile;
         private readonly JwtHelper _jwt;
 
-        public AuthService(IUserRepository users, JwtHelper jwt)
+        public AuthService(IUserRepository users, IMobileService mobile, JwtHelper jwt)
         {
             _users = users;
+            _mobile = mobile;
             _jwt = jwt;
         }
 
@@ -36,32 +38,6 @@ namespace VerichatCRM.API.Services
                 await _users.UpdateAsync(user);
             }
 
-            // The approval check runs after the password check and never before it.
-            // "This account is waiting for an employee" is a fact about the address
-            // that anyone could learn from the sign-up form, so handing it out before
-            // the password is proved would turn the login screen into a list of who
-            // has registered. Once the password is right, the person already holds
-            // the account, and the reason is the useful answer.
-            if (UserApproval.IsPending(user.ApprovalStatus))
-                return new AuthResponse
-                {
-                    Success = false,
-                    Message = "Your account is created and waiting for a Verichat employee to approve it. You will be able to sign in as soon as it is.",
-                    User = Map(user),
-                    ApprovalStatus = user.ApprovalStatus
-                };
-
-            if (UserApproval.IsRejected(user.ApprovalStatus))
-                return new AuthResponse
-                {
-                    Success = false,
-                    Message = string.IsNullOrWhiteSpace(user.RejectionReason)
-                        ? "A Verichat employee reviewed this account and did not approve it. Contact Verichat if you believe that was a mistake."
-                        : $"A Verichat employee reviewed this account and did not approve it: {user.RejectionReason}",
-                    User = Map(user),
-                    ApprovalStatus = user.ApprovalStatus
-                };
-
             user.LastLoginAt = DateTime.UtcNow;
             await _users.UpdateAsync(user);
 
@@ -70,53 +46,94 @@ namespace VerichatCRM.API.Services
                 Success = true,
                 Message = "Login successful.",
                 Token = _jwt.GenerateToken(user),
-                User = Map(user),
-                ApprovalStatus = user.ApprovalStatus
+                User = Map(user)
             };
         }
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
         {
-            // The role a person posts has to be one the form is allowed to hand out.
-            // System Administrator is in SelfRegisterable now, so it passes here and
-            // is exempted from review further down - see UserRoles.ApprovalExempt.
+            // The role a person posts has to be one the form is allowed to hand out,
+            // and that set is now only the two client-facing roles. It is the whole
+            // of the access control on this form: the account is live the moment it
+            // is written and nobody reviews it, so the form must not be able to
+            // award a staff login. "I am a Procurement Manager" used to buy a place
+            // in a queue and the stock dashboard as soon as someone read it; now it
+            // buys a refusal, and a staff account comes from an employee at
+            // /Admin/Users instead. Refusing at the door is shorter than recording a
+            // claim and waiting for somebody to disbelieve it.
             if (!UserRoles.SelfRegisterable.Contains(request.Role))
-                return new AuthResponse { Success = false, Message = "That role cannot be self-assigned. Ask an administrator to create the account." };
+                return new AuthResponse
+                {
+                    Success = false,
+                    Message = "The sign-up form opens a client or student account. A staff account is " +
+                              "created by a Verichat employee - use the contact page and ask for one."
+                };
 
             if (await _users.EmailExistsAsync(request.Email))
                 return new AuthResponse { Success = false, Message = "Email is already registered." };
 
-            // Nothing a person says about themselves on a public form is
-            // evidence. "I am a Procurement Manager" buys the stock dashboard,
-            // the warehouse alerts and the logistics tracker; "I am a Client
-            // User" buys a purchase order line. So the account is written down
-            // as an application, and the employee who reviews it decides whether
-            // it is what it claims to be. No token is issued here: the applicant
-            // has a login, but the login does not open anything yet.
-            // The one exception is a role named in UserRoles.ApprovalExempt -
-            // System Administrator - which is recorded as Approved and therefore
-            // does open the system the moment it is created.
-            var approvedOnArrival = UserRoles.IsApprovalExempt(request.Role);
             var user = new User
             {
                 DisplayName = request.DisplayName.Trim(),
                 Email = request.Email.Trim().ToLowerInvariant(),
                 PasswordHash = PasswordHasher.Hash(request.Password),
-                Role = request.Role,
-                ApprovalStatus = approvedOnArrival ? UserApproval.Approved : UserApproval.Pending
+                Role = request.Role
             };
 
             await _users.AddAsync(user);
 
+            // Orders, quotations and the enquiry queue are keyed on Clients.ClientId,
+            // which is the UserId. That row used to be written when an employee
+            // accepted the application; with no review step it is written here, or the
+            // person signs in to a portal with nothing to order against.
+            if (UserRoles.ClientAudience.Contains(user.Role))
+                await _mobile.EnsureClientAccountAsync(user.UserId);
+
+            // No token here on purpose: the web and mobile sign-up screens both hold
+            // the password the person just chose and sign them in with it, so the
+            // session is issued by the one code path that verifies a password rather
+            // than by a second copy of the minting rule.
             return new AuthResponse
             {
                 Success = true,
-                Message = approvedOnArrival
-                    ? $"Account created as {request.Role}. This role needs no review, so sign in with the address and password you just chose."
-                    : "Application received. A Verichat employee will review it, and you can sign in once it is approved. " +
-                      "Check your inbox for a link to confirm this email address.",
-                User = Map(user),
-                ApprovalStatus = user.ApprovalStatus
+                Message = "Your account is ready. Check your inbox for a link to confirm this address.",
+                User = Map(user)
+            };
+        }
+
+        /// <summary>
+        /// Creates an account on an administrator's instruction. The only difference
+        /// from <see cref="RegisterAsync"/> is who vouched for the role: here a signed-in
+        /// System Administrator named the person, so all seven roles are on the table -
+        /// including the five the public form refuses, which is how a staff login exists
+        /// at all now that self-registration cannot ask for one.
+        /// </summary>
+        public async Task<AuthResponse> CreateAccountByAdminAsync(RegisterRequest request)
+        {
+            if (!UserRoles.All.Contains(request.Role))
+                return new AuthResponse { Success = false, Message = "Select a valid role." };
+
+            if (await _users.EmailExistsAsync(request.Email))
+                return new AuthResponse { Success = false, Message = "Email is already registered." };
+
+            var user = new User
+            {
+                DisplayName = request.DisplayName.Trim(),
+                Email = request.Email.Trim().ToLowerInvariant(),
+                PasswordHash = PasswordHasher.Hash(request.Password),
+                Role = request.Role
+            };
+
+            await _users.AddAsync(user);
+
+            if (UserRoles.ClientAudience.Contains(user.Role))
+                await _mobile.EnsureClientAccountAsync(user.UserId);
+
+            return new AuthResponse
+            {
+                Success = true,
+                Message = $"{user.DisplayName} can sign in with this password now.",
+                User = Map(user)
             };
         }
 

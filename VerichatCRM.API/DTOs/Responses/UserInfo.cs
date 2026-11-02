@@ -9,8 +9,8 @@
 
         /// <summary>
         /// Whether the owner has clicked the link sent to this address. Front ends
-        /// show it as a nudge, never as a wall - an employee's approval is what
-        /// grants access here, and approval is the stronger claim.
+        /// show it as a nudge, never as a wall - a confirmed address proves the
+        /// mailbox is read, but the account already signs in without it.
         /// </summary>
         public bool EmailVerified { get; set; }
     }

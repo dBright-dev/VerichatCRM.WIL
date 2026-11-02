@@ -11,7 +11,7 @@ import { useKeyboardAutoScroll } from '../hooks/useKeyboardAutoScroll'
 
 /**
  * The way out of a sign-in screen that will not let somebody through, for the cases a
- * reset link cannot reach: an application that was declined, an account that exists and
+ * reset link cannot reach: an account that was switched off, an account that exists and
  * does not behave, an address typed one letter wrong at sign-up.
  *
  * It is deliberately not a support ticket. There is no thread and no status to follow -
@@ -86,8 +86,8 @@ const LoginHelpScreen = () => {
             <>
               <Text style={styles.note}>
                 A reset link is no help if the account itself is the problem. This goes
-                to a Verichat administrator, who can see the approval queue and the
-                user list - the two places a locked-out account is actually fixed.
+                to a Verichat administrator, who can see the user list and the roles on
+                it - the place a locked-out account is actually fixed.
               </Text>
 
               <FloatingInput

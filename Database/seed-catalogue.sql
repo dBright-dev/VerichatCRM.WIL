@@ -50,8 +50,8 @@
      is not there.
 
    NOT YET THE HOSTED DATABASE
-     The hosted schema is behind the local one - the account-lifecycle and
-     approval migrations (47 to 50) are still pending there, see task 32. Apply
+     The hosted schema is behind the local one - the account-lifecycle, review and
+     approval-removal migrations (20 to 22) are still pending there, see task 32. Apply
      this to a local database, and apply it to the hosted one only once those
      migrations are in and the sales desk has been through these rows.
    ========================================================================== */

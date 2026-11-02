@@ -88,8 +88,7 @@ namespace VerichatCRM.API.Services
 
         public async Task<List<LoginHelpResponse>> GetOpenAsync()
         {
-            // Oldest first: unlike an approval queue, where a new application is a
-            // fresh one, every row here is somebody who cannot work right now, and
+            // Oldest first: every row here is somebody who cannot work right now, and
             // the one who has waited longest is the one to read first.
             var open = await _context.LoginHelpRequests
                 .Where(h => h.Status == LoginHelpStatus.Open)
@@ -122,19 +121,17 @@ namespace VerichatCRM.API.Services
         /// The recipients are read from the user table rather than from a configured
         /// address, because there is no address in this system that means
         /// "administrator" - the Bootstrap admin is a credential, not a mailbox, and a
-        /// support alias would be a second place to keep the same fact. Every active,
-        /// approved System Administrator is a person who can approve an application,
-        /// change a role or deactivate an account, which is the whole list of fixes a
-        /// sign-in problem needs. On a brand-new install the query is empty, the note
-        /// stays in the queue, and the log says so; losing the mail is not the same as
-        /// losing the note.
+        /// support alias would be a second place to keep the same fact. Every active
+        /// System Administrator is a person who can change a role or deactivate an
+        /// account, which is the whole list of fixes a sign-in problem needs. On a
+        /// brand-new install the query is empty, the note stays in the queue, and the
+        /// log says so; losing the mail is not the same as losing the note.
         /// </para>
         /// </summary>
         private async Task TellAdministratorsAsync(LoginHelpRequest note)
         {
             var recipients = await _context.Users
-                .Where(u => u.Role == UserRoles.SystemAdministrator && u.IsActive
-                            && u.ApprovalStatus == UserApproval.Approved)
+                .Where(u => u.Role == UserRoles.SystemAdministrator && u.IsActive)
                 .Select(u => u.Email)
                 .ToListAsync();
 
@@ -152,7 +149,7 @@ namespace VerichatCRM.API.Services
                     ? "</p>"
                     : $" They signed up as <strong>{WebUtility.HtmlEncode(note.ExpectedRole)}</strong>.</p>") +
                 $"<p>{BreakLines(WebUtility.HtmlEncode(note.Message))}</p>" +
-                "<p>Read their application in the account approvals queue, or check the address on the users screen.</p>";
+                "<p>Check the address on the users screen, and the role it carries.</p>";
 
             foreach (var recipient in recipients)
             {

@@ -167,19 +167,20 @@ public class AccountRecoveryServiceTests
     }
 
     [Fact]
-    public async Task ResetPassword_OnAPendingApplication_DoesNotPromiseASignIn()
+    public async Task ResetPassword_PromisesTheSignInItHasEarned()
     {
         var (users, email, service) = Create();
-        var user = await AddUserAsync(users, UserApproval.Pending);
+        var user = await AddUserAsync(users);
         await service.ForgotPasswordAsync(user.Email);
 
         var result = await service.ResetPasswordAsync(LastToken(email, "ResetPassword"), "new-enough-password");
 
-        // A reset proves the mailbox, not the application. Telling this person to sign
-        // in would send them to a login screen that refuses them.
+        // There used to be a second message for an account still in the approval queue,
+        // because a reset proved the mailbox but not the application. With no application
+        // to wait on, a finished reset always means the password works.
         Assert.True(result.Success);
-        Assert.Equal(UserApproval.Pending, result.ApprovalStatus);
-        Assert.Contains("approve", result.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("Your password is set. Sign in with it now.", result.Message);
+        Assert.True(PasswordHasher.Verify("new-enough-password", user.PasswordHash));
     }
 
     [Fact]
@@ -289,16 +290,14 @@ public class AccountRecoveryServiceTests
         return (users, email, service);
     }
 
-    private static async Task<User> AddUserAsync(
-        FakeUserRepository users, string approvalStatus = UserApproval.Approved)
+    private static async Task<User> AddUserAsync(FakeUserRepository users)
     {
         var user = new User
         {
             DisplayName = "Recovery Tester",
             Email = $"{Guid.NewGuid():N}@example.com",
             PasswordHash = PasswordHasher.Hash("existing-password"),
-            Role = UserRoles.ClientUser,
-            ApprovalStatus = approvalStatus
+            Role = UserRoles.ClientUser
         };
         await users.AddAsync(user);
         return user;

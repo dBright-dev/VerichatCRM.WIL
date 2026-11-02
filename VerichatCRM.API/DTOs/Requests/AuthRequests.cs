@@ -18,9 +18,9 @@ namespace VerichatCRM.API.DTOs.Requests
     /// <para>
     /// <see cref="ExpectedRole"/> is free text and is never read as an instruction:
     /// it says what the person believed they were signing up as, which is the first
-    /// thing an administrator needs in order to tell "my application is stuck" from
-    /// "I was given the wrong role". Approving anything is still
-    /// <c>AccountApprovalsController</c>'s job, from the approval queue, not here.
+    /// thing an administrator needs in order to tell "I was given the wrong role" from
+    /// "my account does not behave". Changing a role is still the users screen's job,
+    /// from an authenticated administrator's session, not here.
     /// </para>
     /// </summary>
     public class AskForHelpRequest

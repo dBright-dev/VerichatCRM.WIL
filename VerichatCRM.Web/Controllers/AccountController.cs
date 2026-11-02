@@ -43,15 +43,6 @@ namespace VerichatCRM.Web.Controllers
 
             if (!result.Success || result.Token == null || result.User == null)
             {
-                // The right password in a queue. Approval is checked here as well as
-                // in the API, and the two cannot disagree because this reads the
-                // state the API sent rather than its wording: a person whose account
-                // is waiting, or was declined, is told which - on a screen that says
-                // what happens next - instead of being handed the same form and a
-                // line that looks like a typo in their password.
-                if (UserApproval.IsPending(result.ApprovalStatus) || UserApproval.IsRejected(result.ApprovalStatus))
-                    return View("Review", AccountReviewViewModel.From(result, request.Email));
-
                 ModelState.AddModelError("", RefusedWith(result, "We could not sign you in just now. Check your address and password, then try again."));
                 return View(request);
             }
@@ -61,9 +52,9 @@ namespace VerichatCRM.Web.Controllers
 
         /// <summary>
         /// Writes the signed-in session and sends the user to the board their role
-        /// owns. Shared with the sign-up path, because an approval-exempt role is
-        /// signed in by the form that just created it rather than bounced to the
-        /// login screen to prove the password it chose a second earlier.
+        /// owns. Shared with the sign-up path, so the form that just chose a password
+        /// signs the person in with it instead of bouncing them to the login screen to
+        /// type the same password a second time.
         /// </summary>
         private IActionResult CompleteSignIn(AuthResponse result)
         {
@@ -110,10 +101,9 @@ namespace VerichatCRM.Web.Controllers
             // the set the API enforces (UserRoles.SelfRegisterable), not the full
             // role list - otherwise the form accepts a role the server will refuse
             // and the refusal arrives as an opaque error instead of a field message.
-            // System Administrator is in that set, and in UserRoles.ApprovalExempt,
-            // so choosing it on this form creates an account that signs in at once;
-            // Client User and Medical Student are there too and still queue for
-            // review. See the consequence recorded on ApprovalExempt.
+            // That set is only the two client-facing roles: this form opens a client
+            // or student account, and a staff account is created by an employee on
+            // /Admin/Users.
             if (!UserRoles.SelfRegisterable.Contains(request.Role))
             {
                 ModelState.AddModelError("Role", "Select a valid role.");
@@ -129,28 +119,24 @@ namespace VerichatCRM.Web.Controllers
                 return View(request);
             }
 
-            // A role the API recorded as Approved is not an application, and the
-            // "waiting for approval" screen would be describing a queue this account
-            // is not in. Sign the person straight in with the credentials they just
-            // submitted rather than asking them to prove the password a second time.
-            if (UserApproval.IsApproved(result.ApprovalStatus))
+            // The account is live the moment the API writes it, so the person who just
+            // chose the password is signed in with it. Nothing is reviewed, and no
+            // "wait for approval" screen is shown - the only gate left on this form is
+            // the role list above.
+            var signedIn = await _auth.LoginAsync(new LoginRequest
             {
-                var signedIn = await _auth.LoginAsync(new LoginRequest
-                {
-                    Email = request.Email,
-                    Password = request.Password
-                });
+                Email = request.Email,
+                Password = request.Password
+            });
 
-                if (signedIn.Success && signedIn.Token != null && signedIn.User != null)
-                    return CompleteSignIn(signedIn);
-            }
+            if (signedIn.Success && signedIn.Token != null && signedIn.User != null)
+                return CompleteSignIn(signedIn);
 
-            // Everything else creates an application, not a session. Nothing is written
-            // to the session and no token is issued here, because the credentials the
-            // applicant just chose do not open the system until an employee has read
-            // the application - the whole point being that a claim on a public form
-            // ("I am a Procurement Manager") is not evidence of the thing claimed.
-            return View("Review", AccountReviewViewModel.From(result, request.Email));
+            // The account exists but this sign-in did not complete - e.g. the session
+            // store refused the write. Say so with the login form rather than claiming
+            // a session that was never issued.
+            ModelState.AddModelError("", "Your account is created. Sign in with the address and password you just chose.");
+            return View("Login", new LoginRequest { Email = request.Email });
         }
 
         /// <summary>
@@ -216,11 +202,7 @@ namespace VerichatCRM.Web.Controllers
                 return View(request);
             }
 
-            // A password reset does not approve an application, and the message the
-            // API returns says which of the two the person now has.
-            return View("Recovery", result.ApprovalStatus == UserApproval.Pending
-                ? RecoveryNoticeViewModel.Worked("Password changed, still in the queue", result.Message)
-                : RecoveryNoticeViewModel.Worked("Password changed", result.Message));
+            return View("Recovery", RecoveryNoticeViewModel.Worked("Password changed", result.Message));
         }
 
         /// <summary>
@@ -247,9 +229,9 @@ namespace VerichatCRM.Web.Controllers
         }
 
         /// <summary>
-        /// "I cannot get in", for the cases the three flows above do not cover. Reachable
-        /// from the sign-in form and from the review screen, because somebody whose
-        /// application was declined has just been told no and has nowhere else to argue.
+        /// "I cannot get in", for the cases the two flows above do not cover. Reachable
+        /// from the sign-in form, for somebody whose address is mistyped, whose role is
+        /// wrong, or whose account simply does not behave.
         /// </summary>
         [HttpGet]
         public IActionResult Help() => View(new AskForHelpForm());

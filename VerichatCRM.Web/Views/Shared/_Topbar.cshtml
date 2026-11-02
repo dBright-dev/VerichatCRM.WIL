@@ -15,12 +15,10 @@
             }
         </div>
     </div>
-    <div class="vc-topbar__actions">
-        <button class="vc-icon-btn" aria-label="Notifications" type="button" id="vc-notification-bell">
-            <span class="vc-notification-badge" id="vc-notification-badge" style="display:none;">0</span>
-            <span class="vc-dot" aria-hidden="true"></span>
-            🔔
-        </button>
-        <button class="vc-icon-btn" aria-label="Settings (coming soon)" title="Settings coming soon" type="button" disabled aria-disabled="true">⚙</button>
-    </div>
+    @* The bell and the gear are gone. Neither did anything when clicked: the badge
+       they showed was never fed (no script reads #vc-notification-badge), while the
+       live alerts themselves arrive as toasts drawn by notifications.js at the bottom
+       of the screen. The gear was a disabled placeholder. A control that advertises a
+       count it cannot produce is worse than no control, so the whole actions cluster
+       was removed rather than left half-alive. *@
 </header>

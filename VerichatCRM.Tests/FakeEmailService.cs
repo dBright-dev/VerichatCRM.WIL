@@ -3,7 +3,7 @@ using VerichatCRM.Infrastructure.Data.External;
 namespace VerichatCRM.Tests;
 
 /// <summary>
-/// An SMTP transport that remembers what it was asked to send. The approval tests
+/// An SMTP transport that remembers what it was asked to send. The recovery and sign-in help tests
 /// read it to check the applicant is told either way, without a mail server.
 /// </summary>
 internal sealed class FakeEmailService : IEmailService

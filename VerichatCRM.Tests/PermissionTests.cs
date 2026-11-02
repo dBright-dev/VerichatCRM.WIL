@@ -42,23 +42,24 @@ public class PermissionTests
     }
 
     [Fact]
-    public void AccountApprovals_IsHeldByTheThreeRolesThatCanJudgeAnApplicant()
+    public void SignInHelp_IsHeldByTheThreeRolesThatCanFixAnAccount()
     {
         // The administrator always, plus the two roles that meet the people on the
-        // other end of a sign-up form. Deliberately not Field Support or Logistics,
-        // who read tickets and dispatch notes rather than identities, and never the
-        // client audience - which would be letting an applicant approve themselves.
+        // other end of a sign-up form and can change what they see. Deliberately not
+        // Field Support or Logistics, who read tickets and dispatch notes rather than
+        // identities, and never the client audience - which would be letting a person
+        // read the note about their own account.
         foreach (var role in new[] { Roles.SystemAdministrator, Roles.SalesRepresentative, Roles.ProcurementManager })
-            Assert.True(Perm.Has(role, Perm.AccountApprovals), $"{role} should have {nameof(Perm.AccountApprovals)}");
+            Assert.True(Perm.Has(role, Perm.SignInHelp), $"{role} should have {nameof(Perm.SignInHelp)}");
 
         foreach (var role in new[] { Roles.FieldSupportEngineer, Roles.Logistics, Roles.ClientUser, Roles.MedicalStudent })
-            Assert.False(Perm.Has(role, Perm.AccountApprovals), $"{role} should not have {nameof(Perm.AccountApprovals)}");
+            Assert.False(Perm.Has(role, Perm.SignInHelp), $"{role} should not have {nameof(Perm.SignInHelp)}");
     }
 
     [Fact]
-    public void AccountApprovals_DoesNotOpenTheStaffScreensItSitsBeside()
+    public void SignInHelp_DoesNotOpenTheStaffScreensItSitsBeside()
     {
-        // Reviewing an application is not the same act as reassigning roles or
+        // Reading a sign-in note is not the same act as reassigning roles or
         // reading the client directory, and a Sales Representative who holds the
         // queue must not inherit either of those from it.
         Assert.False(Perm.Has(Roles.SalesRepresentative, Perm.ClientAssign));

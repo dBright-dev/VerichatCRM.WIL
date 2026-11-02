@@ -38,14 +38,17 @@ Three role sets in [Core/Entities/UserRoles.cs](VerichatCRM.Core/Entities/UserRo
 decide the rest:
 
 - `All` — what an administrator can assign from Users &amp; Roles.
-- `SelfRegisterable` — the six roles the public sign-up form offers. System Administrator
-  is excluded on purpose; it comes from the one-time configuration bootstrap or an
-  existing administrator.
+- `SelfRegisterable` — the two roles the public sign-up form offers: Client User and Medical
+  Student. Every staff role is excluded on purpose, because nothing reviews a self-claimed
+  account any more; a staff login is created by an administrator from Users &amp; Roles, and the
+  first System Administrator comes from the one-time configuration bootstrap.
 - `ClientAudience` — Client User and Medical Student. Both need a row in `Clients`,
   because orders, quotations and the enquiry queue are keyed on `Clients.ClientId`, and
   that row uses the `UserId` as its key. So the row is created wherever the account
-  becomes one of these roles: at self-registration (`API/Controllers/AuthController.cs:42`)
-  and when an administrator changes someone into it (`UsersController.cs:50`).
+  becomes one of these roles: at self-registration
+  ([API/Services/AuthService.cs](VerichatCRM.API/Services/AuthService.cs#L90)) and when an
+  administrator changes someone into it
+  ([API/Controllers/UsersController.cs](VerichatCRM.API/Controllers/UsersController.cs#L51)).
 
 | Role | Lands on | Reachable screens |
 | --- | --- | --- |
@@ -65,10 +68,9 @@ The generic `/Dashboard` workspace is a staff screen too: it is gated on
 This vertical is new in this pass: the client audience previously had mobile screens only,
 and on the web a Client User who signed in reached a staff shell with zeros in it.
 
-1. **`/Account/Register`.** The role dropdown now offers six choices in two groups. The
-   client pair first — `Client User — buy, request quotes, raise support`,
-   `Medical Student — browse and request, no purchasing` — then the four self-assignable
-   staff roles.
+1. **`/Account/Register`.** The role dropdown offers exactly two choices — `Client User — buy,
+   request quotes, raise support` and `Medical Student — browse and request, no purchasing` —
+   and a note under it says why nothing else is listed. There is no staff option to mis-click.
 2. **Submit.** The controller validates the role against `UserRoles.SelfRegisterable`
    before posting, so a hand-typed `System Administrator` arrives as a field error
    ("Select a valid role.") rather than as an opaque server refusal. The API creates the
@@ -82,7 +84,7 @@ and on the web a Client User who signed in reached a staff shell with zeros in i
    product name or SKU. Each card carries a quantity box.
 5. **Set quantities, add a note, Request quote.** Only `qty-<SKU>` fields with a positive
    whole number become lines — the SKU is the field name, so a catalogue of
-   `VC-AM-001` posts `qty-VC-AM-001=5`. Text that is not a number names the product
+   `VC-CM-003` posts `qty-VC-CM-003=5`. Text that is not a number names the product
    ("… is not a whole number of units."), and a single line is capped at 10,000 units with
    a message that says so. Nothing is priced from the browser: the form posts SKUs and
    quantities to `/api/quotation/request`, and the API reads prices from the catalogue and
@@ -140,7 +142,7 @@ onto the portal's own HTML. No file crossed.
    send `0.15` — the earlier behaviour reached SQL Server as `'15,0000'` and returned 500.
 4. **`Generate PDF`** streams the branded document; the client sees it on the portal
    (step 7 above) and answers it there. The status flip fires a SignalR notification, so
-   the sales rep's bell updates without a refresh.
+   the sales rep's screen raises a live toast without a refresh.
 5. **`/Pipeline`** is where the accepted quote becomes a deal you can see.
 
 ## 5. Walkthrough C — a fault becomes a resolution
@@ -194,9 +196,19 @@ replayed, which is the feature to show first in a demo.
 
 ## 8. The public landing page and the auth screens
 
-- **Logo.** `wwwroot/images/logo.png` — the Verichat mark — used in the landing header and
-  footer (`_LandingLayout.cshtml`), the staff/portal sidebar (`_Sidebar.cshtml`) and both
-  auth panels. The generated "V" monogram is gone from every surface.
+- **Logo.** The real Verichat identity, extracted from the company profile and
+  committed in `4e36b22`, which replaced a generated "V" placeholder. Two lock-ups
+  are in play and the split is deliberate — see `DESIGN-SYSTEM.md` §1.3. The square
+  **mark** (`wwwroot/images/logo.png`, byte-identical to
+  `images/brand/verichat-mark.png`) is the chrome: the landing header
+  (`_LandingLayout.cshtml:31`), the staff/portal sidebar (`_Sidebar.cshtml:3`) and
+  both auth panels (`Login.cshtml:10`, `Register.cshtml:10`). The wide **wordmark**
+  is the statement: the marketing footer
+  (`_LandingLayout.cshtml:69` → `brand/verichat-logo-light.png`) and every mobile
+  sign-in and home header. Two surfaces still show somebody else's logo — the iOS
+  app icon is the Expo default and the web cold-start splash renders
+  `expo-logo.png` — recorded as open items 10 and 11 in that register; the native
+  splash now uses the Verichat wordmark.
 - **Team section.** "The people behind it" lists **company roles, not developers**: Chief
   Executive Officer (executive sponsor), Procurement &amp; Logistics Manager (supply chain),
   Client Support Manager (client services), each with what that role owns once the system is

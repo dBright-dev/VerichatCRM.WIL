@@ -5,12 +5,9 @@ namespace VerichatCRM.Web.Services.Interfaces
     public interface IAdminApiService
     {
         Task<List<UserListItem>> GetUsersAsync();
-        Task<UserListItem?> CreateUserAsync(CreateUserRequest request);
+        Task<CreateUserOutcome> CreateUserAsync(CreateUserRequest request);
         Task<bool> UpdateUserRoleAsync(string userId, string role);
         Task<bool> DeactivateUserAsync(string userId);
-        Task<List<PendingAccount>> GetPendingAccountsAsync();
-        Task<ApprovalOutcome> ApproveAccountAsync(string userId);
-        Task<ApprovalOutcome> RejectAccountAsync(string userId, string reason);
         Task<List<HelpRequestItem>> GetHelpRequestsAsync();
         Task<HelpOutcome> ResolveHelpRequestAsync(string id);
         Task<bool> RunSlaCheckAsync();
@@ -26,14 +23,6 @@ namespace VerichatCRM.Web.Services.Interfaces
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; }
         public DateTime? LastLoginAt { get; set; }
-
-        /// <summary>
-        /// Pending / Approved / Rejected. A row here is an application until an
-        /// employee says otherwise, so the list cannot claim an account is live from
-        /// <see cref="IsActive"/> alone - that column has been true since sign-up.
-        /// </summary>
-        public string ApprovalStatus { get; set; } = string.Empty;
-        public string? RejectionReason { get; set; }
     }
 
     public class CreateUserRequest
@@ -45,41 +34,11 @@ namespace VerichatCRM.Web.Services.Interfaces
     }
 
     /// <summary>
-    /// One application in the approval queue, as the reviewer sees it.
+    /// What the API said about a create attempt. The sentence matters: "Email is
+    /// already registered." is the answer an administrator needs, and a bare
+    /// failure would only let the form say that the save did not happen.
     /// </summary>
-    public class PendingAccount
-    {
-        public string UserId { get; set; } = string.Empty;
-        public string DisplayName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string Role { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; }
-
-        /// <summary>
-        /// True when the role they asked for is a staff role rather than a client
-        /// one, i.e. when approving them hands out console access. The API computes
-        /// it from the same role list the app uses to route a signed-in user.
-        /// </summary>
-        public bool IsStaffRole { get; set; }
-
-        /// <summary>
-        /// Whether the applicant clicked the link sent to this address. It is not
-        /// identity proof, but it is the difference between an applicant who answers
-        /// their own email - and so will read the approval or the decline - and one
-        /// who may never see either.
-        /// </summary>
-        public bool EmailVerified { get; set; }
-
-        public int DaysWaiting => Math.Max(0, (int)(DateTime.UtcNow - CreatedAt).TotalDays);
-    }
-
-    /// <summary>
-    /// What the API said about a decision. A review screen must show why a click did
-    /// not take - it was already decided, it was your own application - so the
-    /// server's sentence travels with the flag rather than being replaced by a
-    /// generic "could not be saved".
-    /// </summary>
-    public class ApprovalOutcome
+    public class CreateUserOutcome
     {
         public bool Success { get; set; }
         public string Message { get; set; } = string.Empty;

@@ -36,9 +36,9 @@ namespace VerichatCRM.API.Controllers
             ?? throw new UnauthorizedAccessException("No user id claim.");
 
         /// <summary>
-        /// Client self-registration → a "Client User" application. No token is
-        /// returned: the account waits in the approval queue until an employee
-        /// approves it, which is also when its CRM client record opens.
+        /// Client self-registration. The account is live as soon as it is written; the
+        /// CRM client record the order and enquiry screens key on is created by the
+        /// registration service, inside the same transaction as this call.
         /// </summary>
         [HttpPost("register")]
         [AllowAnonymous]
@@ -46,7 +46,7 @@ namespace VerichatCRM.API.Controllers
         {
             // Registration spans Users and MobileProfiles, in the same CRM database.
             // Commit them together so a failed profile insert cannot leave a
-            // half-created application behind.
+            // half-created account behind.
             var strategy = _db.Database.CreateExecutionStrategy();
             var result = await strategy.ExecuteAsync(async () =>
             {
@@ -81,7 +81,7 @@ namespace VerichatCRM.API.Controllers
                 return BadRequest(result);
 
             // Outside the transaction, so a rolled-back profile write never leaves a
-            // confirmation link pointing at an application that is not in the
+            // confirmation link pointing at an account that is not in the
             // database. Same flow the web sign-up uses - see AuthController.Register.
             await _recovery.SendConfirmationEmailAsync(result.User.UserId);
 

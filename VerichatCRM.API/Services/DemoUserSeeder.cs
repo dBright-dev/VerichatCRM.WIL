@@ -13,10 +13,10 @@ namespace VerichatCRM.API.Services
     /// Roles here are not decoration: each one reaches a different board, a
     /// different slice of the client directory and a different set of buttons, and
     /// two of them reach only the mobile app. A reviewer cannot judge any of that
-    /// from a role list, and the approval queue makes it worse - a self-registered
-    /// account stops at Pending, so the ordinary way to obtain a Sales Representative
-    /// login is to ask an administrator for one, which on a fresh machine nobody is.
-    /// This closes that gap by seeding the accounts rather than by weakening the gate.
+    /// from a role list, and the sign-up form makes it worse - it now opens only the
+    /// two client-facing roles, so the ordinary way to obtain a Sales Representative
+    /// login is an administrator creating it, which on a fresh machine nobody is.
+    /// This closes that gap by seeding the accounts rather than by widening the form.
     /// </para>
     /// <para>
     /// <strong>Two independent conditions must both hold before anything is
@@ -33,7 +33,7 @@ namespace VerichatCRM.API.Services
     {
         /// <summary>
         /// Every address ends in .test.local, which is not a routable domain. These
-        /// accounts receive approval notices and can be pointed at by a password
+        /// accounts receive a confirmation mail and can be pointed at by a password
         /// reset, so the suffix is what guarantees neither can ever reach a real
         /// mailbox - and what stops a demo row in the client directory reading like
         /// a customer Verichat signed.
@@ -81,20 +81,17 @@ namespace VerichatCRM.API.Services
                     Role = account.Role,
                     IsActive = true,
 
-                    // Approved and verified at birth, for the reason AdminBootstrapper
-                    // gives: both states exist to distrust the public sign-up form,
-                    // and these rows did not come from it. They also have to be
-                    // approved for the demo to work at all - a Pending account signs
-                    // in to a queue notice, not to a dashboard.
-                    ApprovalStatus = UserApproval.Approved,
+                    // Verified at birth, for the reason AdminBootstrapper gives: the
+                    // flag exists to distrust the public sign-up form, and these rows
+                    // did not come from it.
                     EmailVerified = true,
                 });
                 await context.SaveChangesAsync();
                 created++;
 
                 // A client-role account is only useful once it has the CRM record
-                // that orders, quotations and the enquiry queue are keyed on, which
-                // is the same call the approval queue makes when it accepts one.
+                // that orders, quotations and the enquiry queue are keyed on, which is
+                // the same call the registration service makes for a signed-up client.
                 // Without it the demo client opens the app to an empty portal.
                 if (UserRoles.ClientAudience.Contains(account.Role))
                 {

@@ -27,11 +27,10 @@ namespace VerichatCRM.API.Controllers
         }
 
         /// <summary>
-        /// Public sign-up. It creates an application, not an account that works:
-        /// the response carries no token, and the login path refuses the credentials
-        /// until an employee approves them in the approval queue. That queue is also
-        /// where a client-role applicant's CRM record opens - see
-        /// <see cref="AccountApprovalsController.Approve"/>.
+        /// Public sign-up. The account works the moment it is written - the response
+        /// carries no token only because the form on the other side of this call
+        /// already holds the password and signs the person in with it. Staff roles are
+        /// refused here; see <see cref="AuthService.RegisterAsync"/>.
         /// </summary>
         [HttpPost("register")]
         [AllowAnonymous]
@@ -42,12 +41,11 @@ namespace VerichatCRM.API.Controllers
             if (!result.Success || result.User == null)
                 return BadRequest(result);
 
-            // Asked for after the application is committed rather than inside the
-            // write: the address the applicant typed is where every later notice goes
-            // - the approval, the decline, a reset - and nobody has yet proved they
-            // read mail there. Confirming it while the application waits gives the
-            // reviewer a fact to weigh, and a link sent before the row exists would
-            // dangle if the write were rolled back.
+            // Asked for after the account is committed rather than inside the write:
+            // the address the person typed is where every later notice goes - the
+            // confirmation, a reset - and nobody has yet proved they read mail there.
+            // A link sent before the row exists would dangle if the write were rolled
+            // back.
             await _recovery.SendConfirmationEmailAsync(result.User.UserId);
 
             return Ok(result);

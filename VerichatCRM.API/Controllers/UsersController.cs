@@ -13,15 +13,34 @@ namespace VerichatCRM.API.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserRepository _users;
+        private readonly VerichatCRM.API.Services.Interfaces.IAuthService _auth;
 
-        public UsersController(IUserRepository users) => _users = users;
+        public UsersController(IUserRepository users, VerichatCRM.API.Services.Interfaces.IAuthService auth)
+        {
+            _users = users;
+            _auth = auth;
+        }
+
+        /// <summary>
+        /// Creates a staff or client account on an administrator's instruction.
+        /// Every role in <see cref="UserRoles.All"/> is available here, because the
+        /// person naming it is already authenticated as the role that owns user
+        /// management - which is the whole reason the public sign-up form is allowed
+        /// to offer only the two client-facing ones.
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] RegisterRequest request)
+        {
+            var result = await _auth.CreateAccountByAdminAsync(request);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<object>>> GetAll([FromServices] VerichatCRM.Infrastructure.Data.AppDbContext db)
         {
             var users = await System.Threading.Tasks.Task.Run(() =>
                 db.Users.OrderByDescending(u => u.CreatedAt)
-                    .Select(u => new { u.UserId, u.DisplayName, u.Email, u.Role, u.IsActive, u.CreatedAt, u.LastLoginAt, u.ApprovalStatus, u.RejectionReason })
+                    .Select(u => new { u.UserId, u.DisplayName, u.Email, u.Role, u.IsActive, u.CreatedAt, u.LastLoginAt })
                     .ToList());
             return Ok(users);
         }

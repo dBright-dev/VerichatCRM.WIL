@@ -19,8 +19,8 @@ namespace VerichatCRM.API.Services.Interfaces
 
         /// <summary>
         /// Consumes a reset link: sets the new password, invalidates the token, and
-        /// says so. A pending application stays pending afterwards - a forgotten
-        /// password is not an approval.
+        /// says so. The account is usable afterwards whatever else is true of it - a
+        /// forgotten password is not a new account.
         /// </summary>
         Task<AuthResponse> ResetPasswordAsync(string token, string newPassword);
 

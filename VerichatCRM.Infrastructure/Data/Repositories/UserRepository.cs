@@ -46,14 +46,6 @@ namespace VerichatCRM.Infrastructure.Data.Repositories
                 .FirstOrDefaultAsync(u => u.EmailVerificationToken == tokenHash);
         }
 
-        public async Task<IEnumerable<User>> GetByApprovalStatusAsync(string approvalStatus)
-        {
-            return await _context.Users
-                .Where(u => u.ApprovalStatus == approvalStatus)
-                .OrderBy(u => u.CreatedAt)
-                .ToListAsync();
-        }
-
         public async Task<bool> EmailExistsAsync(string email)
         {
             return await ((System.Linq.IQueryable<User>)_context.Users)

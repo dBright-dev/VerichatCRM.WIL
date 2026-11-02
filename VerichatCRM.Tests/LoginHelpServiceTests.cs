@@ -42,9 +42,8 @@ public class LoginHelpServiceTests
     {
         var (db, email, service) = Create();
         await AddAdministratorAsync(db, "live@verichat.test");
-        // An administrator who has not been approved yet cannot open the queue, and a
-        // deactivated one cannot either - mailing them reads as a handover to nobody.
-        await AddAdministratorAsync(db, "pending@verichat.test", approvalStatus: UserApproval.Pending);
+        // A deactivated administrator cannot open the queue or fix anything, so
+        // mailing them reads as a handover to nobody.
         await AddAdministratorAsync(db, "gone@verichat.test", isActive: false);
         await AddUserAsync(db, "sales@verichat.test", UserRoles.SalesRepresentative);
 
@@ -86,7 +85,7 @@ public class LoginHelpServiceTests
         var (db, email, service) = Create();
         await AddAdministratorAsync(db, "admin@verichat.test");
 
-        await service.SubmitAsync(Ask("Ruth", "ruth@clinic.test", message: "Still waiting on approval."));
+        await service.SubmitAsync(Ask("Ruth", "ruth@clinic.test", message: "The portal will not open."));
         var again = await service.SubmitAsync(Ask("Ruth", "ruth@clinic.test", message: "Also still waiting."));
 
         Assert.True(again.Success);
@@ -271,7 +270,7 @@ public class LoginHelpServiceTests
     }
 
     private static async Task AddAdministratorAsync(
-        AppDbContext db, string email, bool isActive = true, string approvalStatus = UserApproval.Approved)
+        AppDbContext db, string email, bool isActive = true)
     {
         db.Users.Add(new User
         {
@@ -279,8 +278,7 @@ public class LoginHelpServiceTests
             Email = email,
             PasswordHash = "pbkdf2-sha256$210000$c2FsdA==$aGFzaA==",
             Role = UserRoles.SystemAdministrator,
-            IsActive = isActive,
-            ApprovalStatus = approvalStatus
+            IsActive = isActive
         });
         await db.SaveChangesAsync();
     }

@@ -9,20 +9,19 @@ namespace VerichatCRM.API.Controllers
     /// <summary>
     /// The way out of a sign-in screen that will not let somebody through.
     /// <para>
-    /// <see cref="AuthController"/> on the same prefix answers three problems - a
-    /// forgotten password, an unconfirmed address, an application still in the queue -
+    /// <see cref="AuthController"/> on the same prefix answers two problems - a
+    /// forgotten password and an unconfirmed address -
     /// and each of them assumes the account underneath is basically sound. This route
-    /// is for the rest: a declined application they cannot dispute, an address typed
-    /// one letter wrong, an account that exists but does not behave. Somebody has to
+    /// is for the rest: an address typed one letter wrong, an account that exists but
+    /// does not behave, a role the person cannot change themselves. Somebody has to
     /// be able to say that to another human being without first authenticating, which
     /// is the one thing they demonstrably cannot do.
     /// </para>
     /// <para>
-    /// The queue is readable by the same three roles that read the approval queue
-    /// (<see cref="UserRoles.SystemAdministrator"/>, Sales, Procurement), because they
-    /// are the roles that can fix what is reported. It is not open to Field Support or
-    /// Logistics: a note about an account is an identity matter, and a ticket handler
-    /// reading it could do nothing but forward it.
+    /// The queue is readable by <see cref="UserRoles.SystemAdministrator"/>, Sales and
+    /// Procurement, because they are the roles that can fix what is reported. It is
+    /// not open to Field Support or Logistics: a note about an account is an identity
+    /// matter, and a ticket handler reading it could do nothing but forward it.
     /// </para>
     /// </summary>
     [ApiController]

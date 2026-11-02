@@ -12,31 +12,19 @@ namespace VerichatCRM.Web.Services
         public async Task<List<UserListItem>> GetUsersAsync() =>
             await _api.GetAsync<List<UserListItem>>("/api/auth/users") ?? new();
 
-        public async Task<UserListItem?> CreateUserAsync(CreateUserRequest request) =>
-            await _api.PostAsync<CreateUserRequest, UserListItem>("/api/auth/users", request);
+        public async Task<CreateUserOutcome> CreateUserAsync(CreateUserRequest request) =>
+            await _api.SendForBodyAsync<CreateUserRequest, CreateUserOutcome>(
+                HttpMethod.Post, "/api/auth/users", request)
+            ?? new CreateUserOutcome
+            {
+                Message = _api.LastError ?? "The user service could not be reached."
+            };
 
         public async Task<bool> UpdateUserRoleAsync(string userId, string role) =>
             await _api.PutAsync<object, object>($"/api/auth/users/{userId}/role", new { Role = role }) != null;
 
         public async Task<bool> DeactivateUserAsync(string userId) =>
             await _api.PutAsync<object, object>($"/api/auth/users/{userId}/deactivate", new { }) != null;
-
-        public async Task<List<PendingAccount>> GetPendingAccountsAsync() =>
-            await _api.GetAsync<List<PendingAccount>>("/api/auth/approvals/pending") ?? new();
-
-        public async Task<ApprovalOutcome> ApproveAccountAsync(string userId) =>
-            await DecideAsync(userId, "approve", new { });
-
-        public async Task<ApprovalOutcome> RejectAccountAsync(string userId, string reason) =>
-            await DecideAsync(userId, "reject", new { reason });
-
-        /// <summary>
-        /// The server's own answer to a decision, read off the body whether it came
-        /// on 200 or on 400: a refused review still has something to say.
-        /// </summary>
-        private async Task<ApprovalOutcome> DecideAsync(string userId, string verb, object body) =>
-            await _api.SendForBodyAsync<object, ApprovalOutcome>(HttpMethod.Put, $"/api/auth/approvals/{userId}/{verb}", body)
-            ?? new ApprovalOutcome { Message = _api.LastError ?? "The approvals service could not be reached." };
 
         public async Task<List<HelpRequestItem>> GetHelpRequestsAsync() =>
             await _api.GetAsync<List<HelpRequestItem>>("/api/auth/help/open") ?? new();

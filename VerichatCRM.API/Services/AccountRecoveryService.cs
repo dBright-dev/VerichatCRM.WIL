@@ -25,7 +25,8 @@ namespace VerichatCRM.API.Services
         private static readonly TimeSpan ResetLinkLife = TimeSpan.FromHours(1);
 
         // A week for a click that proves nothing but that the mailbox is read - the
-        // applicant may be waiting days for an approval before they look again.
+        // link has to survive however long it takes somebody to get back to their
+        // inbox.
         private static readonly TimeSpan ConfirmLinkLife = TimeSpan.FromDays(7);
 
         private const int MinimumPasswordLength = 8;
@@ -92,31 +93,10 @@ namespace VerichatCRM.API.Services
 
             _logger.LogInformation("Password reset completed for {UserId}.", user.UserId);
 
-            // A reset proves the mailbox, not the application. Somebody whose account
-            // is still waiting must not be told to sign in.
-            if (UserApproval.IsPending(user.ApprovalStatus))
-                return new AuthResponse
-                {
-                    Success = true,
-                    Message = "Your password is set. Your account is still waiting for a Verichat employee " +
-                              "to approve it, so sign in once that has happened.",
-                    ApprovalStatus = user.ApprovalStatus
-                };
-
-            if (UserApproval.IsRejected(user.ApprovalStatus))
-                return new AuthResponse
-                {
-                    Success = true,
-                    Message = "Your password is set. An employee reviewed this account's application and did " +
-                              "not approve it, so it still cannot sign in.",
-                    ApprovalStatus = user.ApprovalStatus
-                };
-
             return new AuthResponse
             {
                 Success = true,
-                Message = "Your password is set. Sign in with it now.",
-                ApprovalStatus = user.ApprovalStatus
+                Message = "Your password is set. Sign in with it now."
             };
         }
 
@@ -138,8 +118,7 @@ namespace VerichatCRM.API.Services
             return new AuthResponse
             {
                 Success = true,
-                Message = $"This address, {user.Email}, is confirmed. Thank you.",
-                ApprovalStatus = user.ApprovalStatus
+                Message = $"This address, {user.Email}, is confirmed. Thank you."
             };
         }
 

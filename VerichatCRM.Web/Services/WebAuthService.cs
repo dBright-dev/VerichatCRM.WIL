@@ -16,9 +16,8 @@ namespace VerichatCRM.Web.Services
         {
             // API contract is { email, password } only — never forward the UI role picker.
             // A sign-in the API refuses is still an answer with content: "invalid
-            // credentials", "this account is waiting for approval" and "an employee
-            // declined this application" are three different screens, and the last two
-            // arrive on 401. Reading only 2xx here would flatten all three into
+            // credentials" arrives on 401 with a sentence that says what to try next.
+            // Reading only 2xx here would flatten it into
             // "No response from server."
             var payload = new { email = request.Email, password = request.Password };
             return await _api.SendForBodyAsync<object, AuthResponse>(HttpMethod.Post, "/api/auth/login", payload)

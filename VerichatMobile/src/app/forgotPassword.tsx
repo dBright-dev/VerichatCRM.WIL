@@ -109,8 +109,7 @@ const ForgotPasswordScreen = () => {
               <Text style={styles.note}>{sentMessage}</Text>
               <Text style={styles.note}>
                 Open the link in your email to set a new password. If nothing arrives,
-                the address has no Verichat account - create one, and an employee will
-                read the application.
+                the address has no Verichat account - create one and start ordering.
               </Text>
 
               <AnimatedButton style={styles.button} onPress={() => setSentMessage(null)}>

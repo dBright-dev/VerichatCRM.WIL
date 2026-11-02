@@ -2187,3 +2187,90 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261102175638_RemoveAccountApprovalGate'
+)
+BEGIN
+    UPDATE [Users]
+                      SET [IsActive] = 0
+                      WHERE [ApprovalStatus] = N'Pending';
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261102175638_RemoveAccountApprovalGate'
+)
+BEGIN
+    DROP INDEX [IX_Users_ApprovalStatus_CreatedAt] ON [Users];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261102175638_RemoveAccountApprovalGate'
+)
+BEGIN
+    DECLARE @var39 nvarchar(max);
+    SELECT @var39 = QUOTENAME([d].[name])
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Users]') AND [c].[name] = N'ApprovalStatus');
+    IF @var39 IS NOT NULL EXEC(N'ALTER TABLE [Users] DROP CONSTRAINT ' + @var39 + ';');
+    ALTER TABLE [Users] DROP COLUMN [ApprovalStatus];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261102175638_RemoveAccountApprovalGate'
+)
+BEGIN
+    DECLARE @var40 nvarchar(max);
+    SELECT @var40 = QUOTENAME([d].[name])
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Users]') AND [c].[name] = N'RejectionReason');
+    IF @var40 IS NOT NULL EXEC(N'ALTER TABLE [Users] DROP CONSTRAINT ' + @var40 + ';');
+    ALTER TABLE [Users] DROP COLUMN [RejectionReason];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261102175638_RemoveAccountApprovalGate'
+)
+BEGIN
+    DECLARE @var41 nvarchar(max);
+    SELECT @var41 = QUOTENAME([d].[name])
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Users]') AND [c].[name] = N'ReviewedAt');
+    IF @var41 IS NOT NULL EXEC(N'ALTER TABLE [Users] DROP CONSTRAINT ' + @var41 + ';');
+    ALTER TABLE [Users] DROP COLUMN [ReviewedAt];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261102175638_RemoveAccountApprovalGate'
+)
+BEGIN
+    DECLARE @var42 nvarchar(max);
+    SELECT @var42 = QUOTENAME([d].[name])
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Users]') AND [c].[name] = N'ReviewedByUserId');
+    IF @var42 IS NOT NULL EXEC(N'ALTER TABLE [Users] DROP CONSTRAINT ' + @var42 + ';');
+    ALTER TABLE [Users] DROP COLUMN [ReviewedByUserId];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261102175638_RemoveAccountApprovalGate'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261102175638_RemoveAccountApprovalGate', N'10.0.12');
+END;
+
+COMMIT;
+GO
+

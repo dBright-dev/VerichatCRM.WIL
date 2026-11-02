@@ -99,17 +99,32 @@ a {
 .vc-brand-text { font-family: var(--vc-font-heading); font-weight: 600; font-size: 1.05rem; color: var(--vc-text-inverse); }
 .vc-brand-sub { display: block; font-size: .62rem; letter-spacing: .14em; color: var(--vc-text-inverse-muted); }
 .vc-sidebar__nav { flex: 1; padding: .75rem; }
-.vc-sidebar__section-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--vc-text-inverse-muted); padding: .9rem .75rem .35rem; }
-.vc-sidebar__link { display: flex; align-items: center; gap: .65rem; padding: .55rem .75rem; border-radius: var(--vc-radius-sm); color: var(--vc-text-inverse-muted); font-size: .92rem; margin-bottom: .15rem; border-left: 3px solid transparent; text-decoration: none; }
+/* Section headings sit over a group of links rather than beside one, so they are
+   set in the heading face, lighter and wider-tracked than before, and pushed
+   further from the row above. */
+.vc-sidebar__section-label { font-family: var(--vc-font-heading); font-size: .66rem; font-weight: 600; text-transform: uppercase; letter-spacing: .13em; color: var(--vc-text-inverse-muted); opacity: .75; padding: 1.2rem .8rem .4rem; }
+/* The old row carried a 3px transparent left border whose only job was to be
+   swapped for a coloured one when active, which meant every label was indented
+   3px more than the brand block above it and the "bar" was really a box-shadow
+   fighting the border-radius. The active state is now a soft accent wash. */
+.vc-sidebar__link { display: flex; align-items: center; gap: .7rem; padding: .5rem .8rem; border-radius: 8px; color: var(--vc-text-inverse-muted); font-size: .9rem; margin-bottom: 2px; text-decoration: none; transition: background-color .15s ease, color .15s ease; }
 .vc-sidebar__link:hover { background: var(--vc-navy-light); color: var(--vc-text-inverse); text-decoration: none; }
-.vc-sidebar__link.active, .vc-sidebar__link[aria-current="page"] { background: var(--vc-navy-light); color: var(--vc-surface); box-shadow: inset 3px 0 0 var(--vc-accent); font-weight: 500; }
-.vc-sidebar__icon { font-style: normal; width: 20px; text-align: center; }
+.vc-sidebar__link.active, .vc-sidebar__link[aria-current="page"] { background: linear-gradient(90deg, rgba(47, 111, 237, .26), rgba(47, 111, 237, .07)); color: var(--vc-surface); font-weight: 500; }
+/* The stroke icons in _NavIcon.cshtml draw themselves in currentColor, so the
+   icon is dimmed by opacity and only the active one is pulled to the accent -
+   which is the half of "elegant" that emoji could never do. */
+.vc-nav-icon { flex: none; opacity: .7; transition: opacity .15s ease; }
+.vc-sidebar__link:hover .vc-nav-icon, .vc-sidebar__link.active .vc-nav-icon, .vc-sidebar__link[aria-current="page"] .vc-nav-icon { opacity: 1; }
+.vc-sidebar__link.active .vc-nav-icon, .vc-sidebar__link[aria-current="page"] .vc-nav-icon { color: var(--vc-accent); }
 .vc-sidebar__footer { padding: 1rem 1.25rem; border-top: 1px solid var(--vc-navy-border); font-size: .85rem; color: var(--vc-text-inverse-muted); }
 .vc-user { display: flex; align-items: center; gap: .6rem; margin-bottom: .5rem; }
 .vc-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,var(--vc-accent),var(--vc-cyan)); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--vc-surface); }
 .vc-user-name { font-size: 13px; font-weight: 600; color: var(--vc-surface); }
 .vc-user-role { font-size: 11px; color: var(--vc-text-inverse-muted); }
-.vc-logout { color: var(--vc-navy-link); background: none; border: none; cursor: pointer; font-size: 13px; padding: 0; }
+/* Same rhythm as a nav row, so the last action in the column reads as part of
+   the navigation rather than a stray link parked under a border. */
+.vc-logout { display: flex; align-items: center; gap: .7rem; color: var(--vc-navy-link); background: none; border: none; cursor: pointer; font-size: .9rem; padding: .4rem .8rem; border-radius: 8px; transition: background-color .15s ease, color .15s ease; }
+.vc-logout:hover { background: var(--vc-navy-light); color: var(--vc-text-inverse); }
 /* Sits above Sign out in the same block; quieter than the links in the nav because
    it leaves the application shell entirely. */
 .vc-sidebar__policy { display: block; margin-bottom: .5rem; font-size: 13px; color: var(--vc-text-inverse-muted); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--vc-navy-border); }
@@ -118,17 +133,16 @@ a {
 .vc-topbar { background: var(--vc-surface); border-bottom: 1px solid var(--vc-border); padding: 1rem 1.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; position: sticky; top: 0; z-index: 10; }
 .vc-topbar__title { font-size: 1.3rem; margin: 0; }
 .vc-topbar__subtitle { color: var(--vc-text-muted); font-size: .88rem; margin: .1rem 0 0; }
-.vc-topbar__actions { display: flex; gap: .5rem; }
 .vc-topbar__lead { display: flex; align-items: center; gap: .75rem; min-width: 0; }
 /* Hidden on desktop, where the sidebar is always on screen. */
 .vc-topbar__menu { display: none; align-items: center; justify-content: center; flex: none; }
 /* One declaration. There used to be two, 200 lines apart, and the later one won —
    so the bordered 40px square described first never applied to any button. This
    is the shape that was actually rendering, kept pixel-for-pixel.
-   _Topbar.cshtml:10,15. */
-.vc-icon-btn { width: 40px; height: 40px; border-radius: var(--vc-radius-sm); background: none; border: none; color: var(--vc-text-muted); font-size: 1.5rem; line-height: 1; cursor: pointer; position: relative; }
+   The `position: relative` and the 8px red .vc-dot that hung off it went with the
+   topbar bell: nothing else ever used either. */
+.vc-icon-btn { width: 40px; height: 40px; border-radius: var(--vc-radius-sm); background: none; border: none; color: var(--vc-text-muted); font-size: 1.5rem; line-height: 1; cursor: pointer; }
 .vc-icon-btn:hover { color: var(--vc-accent); }
-.vc-dot { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--vc-danger); }
 /* Panels.
    One surface recipe. It used to be written out thirteen times: .vc-card, .card,
    .stat-card, .kpi-card, .shipment-card/.ticket-row, .auth-card, .vc-table-wrap
@@ -388,22 +402,4 @@ a {
   cursor: pointer;
   padding: 0;
   line-height: 1;
-}
-
-/* Notification bell badge */
-.vc-notification-badge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background: var(--vc-danger);
-  color: var(--vc-surface);
-  font-size: 0.65rem;
-  font-weight: 700;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 4px;
 }

@@ -151,7 +151,7 @@ The Development HTTPS URL is `https://localhost:7266`. No `$env:ApiBaseUrl` is n
 
 The web app is a proxy, so **it needs the API window running**. If it is not, sign-in fails with `HttpRequestException: No connection could be made because the target machine actively refused it. (localhost:5184)` — that is not a database or credential problem, it is the other project. In Visual Studio, set both `VerichatCRM.API` and `VerichatCRM.Web` as Multiple startup projects before pressing F5.
 
-The first administrator comes from the API bootstrap configuration (`Bootstrap__AdminEmail`, `Bootstrap__AdminPassword`, and `Bootstrap__AdminName`), or from the development sign-in accounts listed below. Self-registration is otherwise not a way to obtain a staff login: every role the public form offers except **System Administrator** is written as `Pending` and waits in the approval queue for an administrator to release it — so on a fresh machine with no administrator, six of the seven roles still cannot get in. System Administrator is approval-exempt by design (`UserRoles.ApprovalExempt`), which means the public `/Account/Register` page can mint an administrator; that is a deliberate trade-off, documented in the user guide §4.3 and in the code comment on that array.
+The first administrator comes from the API bootstrap configuration (`Bootstrap__AdminEmail`, `Bootstrap__AdminPassword`, and `Bootstrap__AdminName`), or from the development sign-in accounts listed below. Self-registration is not a way to obtain a staff login: the public `/Account/Register` form offers **only `Client User` and `Medical Student`** — exactly `UserRoles.SelfRegisterable` — and any other role in the posted form is refused before a row is written. Every staff account, System Administrator included, is created by an authenticated administrator on `/Admin/Users`. A client or student account is live the moment it is created and signs in immediately; there is no review step, and `Access` on the users screen is the only thing that can turn it off again.
 
 ### Start the mobile application
 
@@ -168,7 +168,7 @@ Physical devices need an API URL they can reach and a trusted HTTPS certificate.
 
 ### Sign in as any role
 
-A fresh development database is given one account per role, so every screen in the system can be opened without first working through the approval queue seven times. `DemoUserSeeder` writes them at API startup, and only while **both** conditions hold: the host is running in the Development environment, and `Bootstrap:DemoUsers` reads `true` — set in `VerichatCRM.API/appsettings.Development.json`. Turn either off and no such account is created on that machine; a deployment would have to be handed the Development settings file *and* `ASPNETCORE_ENVIRONMENT=Development` before a single row appeared.
+A fresh development database is given one account per role, so every screen in the system can be opened without typing seven accounts into the users screen by hand. `DemoUserSeeder` writes them at API startup, and only while **both** conditions hold: the host is running in the Development environment, and `Bootstrap:DemoUsers` reads `true` — set in `VerichatCRM.API/appsettings.Development.json`. Turn either off and no such account is created on that machine; a deployment would have to be handed the Development settings file *and* `ASPNETCORE_ENVIRONMENT=Development` before a single row appeared.
 
 Sign in at `https://localhost:7266/Account/Login`, or point the mobile app at the API. Each role is dropped on its own board:
 
@@ -184,11 +184,11 @@ Sign in at `https://localhost:7266/Account/Login`, or point the mobile app at th
 
 The two client roles share `/Portal` because they share what they are allowed to see; the mobile app gives each of them its own screens.
 
-**These are development credentials and nothing more.** They are not passwords for the hosted system and cannot be: the hosted API does not run in Development, so the accounts are never created there, and `Bootstrap__AdminEmail` / `Bootstrap__AdminPassword` remain the only way an administrator is born. The `.test.local` domain is deliberately not routable — approval notices, email-verification links and password resets addressed to these accounts can never reach a real mailbox.
+**These are development credentials and nothing more.** They are not passwords for the hosted system and cannot be: the hosted API does not run in Development, so the accounts are never created there, and `Bootstrap__AdminEmail` / `Bootstrap__AdminPassword` remain the only way an administrator is born. The `.test.local` domain is deliberately not routable — email-verification links and password resets addressed to these accounts can never reach a real mailbox.
 
-The `Client User` and `Medical Student` accounts also receive the CRM client record that orders, quotations and the enquiry queue are keyed on. That is the same call the approval queue makes when it accepts a client, and without it the portal and the mobile app would open on an empty list rather than a usable account.
+The `Client User` and `Medical Student` accounts also receive the CRM client record that orders, quotations and the enquiry queue are keyed on. That is the same call `AuthService.RegisterAsync` now makes for anybody who signs up through the public form, and without it the portal and the mobile app would open on an empty list rather than a usable account.
 
-With the administrator account, the approval gate itself becomes demoable: register an eighth account through the public sign-up form, leave it `Pending`, and approve or decline it from `/Admin/Approvals`.
+The administrator account is how a staff login is created: `/Admin/Users` → **+ Add user** (`/Admin/CreateUser`) → choose one of the five staff roles. There is no queue to approve anything in, because the sign-up form cannot ask for a staff role — an unapproved self-registration is no longer a state the system can be in.
 
 ## Database and schema
 

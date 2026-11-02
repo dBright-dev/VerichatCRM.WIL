@@ -36,7 +36,7 @@ const SECTIONS: { title: string; body: string; bullets?: string[] }[] = [
     title: '2. What we hold about you',
     body: 'Only what the work needs. If a field exists, it exists because a screen reads it.',
     bullets: [
-      'Your account: name, email address, the role you applied for, whether an employee has approved it, and a salted hash of your password - never the password itself.',
+      'Your account: name, email address, the role it holds and whether it is switched on, and a salted hash of your password - never the password itself.',
       'Your organisation: sector, contract status, a named contact with phone and email, a street address, and the latitude and longitude of the site so a delivery can be routed and an engineer can find it.',
       'Business with us: enquiries, quotations, orders, deliveries and their tracking numbers, service tickets with the photos you attach, and the calibration history of equipment we installed.',
       'This app: a push token for the device, the device name and type, and the last time it synchronised.',
@@ -47,8 +47,8 @@ const SECTIONS: { title: string; body: string; bullets?: string[] }[] = [
   {
     title: '3. Why we hold it',
     body:
-      'To supply, deliver and service the goods, which is the contract you have with us. To keep an ' +
-      'unapproved account from reading another organisation\'s prices, and to make a disputed delivery ' +
+      'To supply, deliver and service the goods, which is the contract you have with us. ' +
+      'To keep one organisation\'s prices and orders inside that organisation, and to make a disputed delivery ' +
       'note explainable years later, which is a legitimate interest. For calibration records, which is a ' +
       'professional obligation. Push notifications and the health screens run on consent, and you can ' +
       'switch notifications off at any time in Settings.',
@@ -68,16 +68,16 @@ const SECTIONS: { title: string; body: string; bullets?: string[] }[] = [
       'their own quote requests, never a client file. Sales sees the accounts assigned to them; Procurement ' +
       'the suppliers and stock; Logistics the delivery addresses; a Field Support Engineer the assets at the ' +
       'sites they attend. A System Administrator sees everything, including the audit trail, and is the role ' +
-      'that approves accounts. Nobody at another company gets access, and we do not sell or licence your data.',
+      'that creates and edits staff accounts. Nobody at another company gets access, and we do not sell or licence your data.',
   },
   {
     title: '6. Accounts and the links we email',
     body:
-      'Signing up is an application, not access: a Verichat employee checks that you really are a client ' +
-      'before the system opens. Confirmation and reset links carry a random one-time code. We store only a ' +
+      'Signing up gives you a client account and nothing else: the form cannot choose a staff role, so a console ' +
+      'that reads other organisations\' records is made by a System Administrator. Confirmation and reset links carry a random one-time code. We store only a ' +
       'SHA-256 hash of that code, never the code. A reset link expires in one hour and stops working once ' +
       'used; a confirmation link lasts seven days. Resetting a password proves you hold the mailbox - it does ' +
-      'not approve an application or reopen a declined account. The answer to a forgotten password is the same ' +
+      'not change the role on the account or reopen one that was switched off. The answer to a forgotten password is the same ' +
       'sentence whether or not the address has an account, so the form cannot be used to find out who registered.',
   },
   {
@@ -94,7 +94,7 @@ const SECTIONS: { title: string; body: string; bullets?: string[] }[] = [
     title: '8. Other services',
     body:
       'Our hosting provider runs the portal, the API and the SQL Server database. An SMTP provider sends ' +
-      'confirmation, approval, reset, help and delivery notices on our behalf - they move the message and the ' +
+      'confirmation, reset, help and delivery notices on our behalf - they move the message and the ' +
       'body is not copied into the database. The app build and its push channel pass through Expo, and the ' +
       'store you install from records the download. We do not give any of them your data for their own use.',
   },
@@ -127,7 +127,7 @@ const SECTIONS: { title: string; body: string; bullets?: string[] }[] = [
     title: '12. Status of this notice',
     body:
       'Version 1.0, published 1 November 2026, written against the running system. It has not yet been reviewed by ' +
-      'a legal practitioner. If we change what we collect, who can read it or what we do with it, approved accounts ' +
+      'a legal practitioner. If we change what we collect, who can read it or what we do with it, account holders ' +
       'are emailed before it takes effect and the new notice is shown at the next sign-in.',
   },
 ]
@@ -187,7 +187,7 @@ export default function PrivacyScreen() {
             <ContactRow icon="email-outline" label={CONTACT.email} onPress={() => openUrl(`mailto:${CONTACT.email}`)} />
             <Text style={styles.contactNote}>
               Cannot sign in at all? The “Cannot sign in?” link on the sign-in screen sends your
-              problem to an administrator who can see the approval queue - the only place a
+              problem to an administrator who can see the user list - the only place a
               locked-out account can actually be fixed.
             </Text>
           </View>

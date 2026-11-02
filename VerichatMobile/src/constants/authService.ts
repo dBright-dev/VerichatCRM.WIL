@@ -1,15 +1,15 @@
 // Verichat CRM API — auth endpoints for the mobile app.
 // POST /api/auth/login            { email, password }   → { success, token, user }
-// POST /api/auth/register         staff application     → { success, approvalStatus, user } (no token)
-// POST /api/mobile/register       client application    → { success, approvalStatus, user } (no token)
+// POST /api/mobile/register       client account        → { success, user } (then signed in here)
 // POST /api/auth/forgot-password  { email }              → { success, message } (same answer either way)
 // POST /api/auth/reset-password   { token, newPassword } → { success, message } | 400 with the reason
 // POST /api/auth/help             { name, email, expectedRole, message, channel } → { success, message }
 //
-// Sign-up on either path is an application, not access: the account is written down
-// and waits for a Verichat employee to approve it, so no token comes back and the
-// caller has to say so. Signing in is refused with the same wording until then.
-// A password reset does not change that - it proves the mailbox, not the applicant.
+// A self-registered account is a client or student account, and it is live the moment
+// the API writes it, so registerClient signs the person in with the password they just
+// chose. Staff accounts are not created from an app at all - an administrator makes
+// them on the web console - so /api/auth/register refuses any staff role.
+// A password reset does not change a role; it proves the mailbox.
 import { api, setAuthToken, STAFF_MOBILE_ROLES } from './api'
 
 export type AuthUser = {
@@ -24,7 +24,6 @@ export type AuthResponse = {
   message: string
   token?: string
   user?: AuthUser
-  approvalStatus?: string
 }
 
 function fail(response: AuthResponse): never {
@@ -53,7 +52,12 @@ export async function login(email: string, password: string, audience?: 'client'
   return data
 }
 
-/** Client self-registration → a "Client User" application, not a signed-in session. */
+/**
+ * Client self-registration → a "Client User" account, signed in on the spot. The API
+ * writes the account and its CRM client record together and returns no token; the
+ * password the person just chose is theirs, so this exchanges it for a session with
+ * the same call sign-in uses, rather than sending them back to the sign-in form.
+ */
 export async function registerClient(payload: {
   displayName: string
   email: string
@@ -65,27 +69,7 @@ export async function registerClient(payload: {
     body: JSON.stringify(payload),
   })
   if (!data.success) fail(data)
-  // A token only exists once an employee has approved the account. Nothing is
-  // stored here, so the applicant lands on the sign-in screen and the API refuses
-  // those credentials until then - the same rule the web app applies.
-  if (data.token) setAuthToken(data.token)
-  return data
-}
-
-/** Staff registration — also an application. See the file header. */
-export async function registerStaff(payload: {
-  displayName: string
-  email: string
-  password: string
-  role: string
-}): Promise<AuthResponse> {
-  const data = await api<AuthResponse>('/api/auth/register', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  })
-  if (!data.success) fail(data)
-  if (data.token) setAuthToken(data.token)
-  return data
+  return login(payload.email, payload.password, 'client')
 }
 
 /** Sign out — clears the stored JWT. */
@@ -124,8 +108,8 @@ export async function resetPassword(token: string, newPassword: string): Promise
 
 /**
  * Sends an "I cannot get in" note to a Verichat administrator, for the cases a reset
- * link cannot reach: a declined application, a deactivated account, an address typed
- * one letter wrong.
+ * link cannot reach: a deactivated account, an address typed one letter wrong, a role
+ * that is not the one the person wanted.
  *
  * `channel` says which app it came from, which is the mobile app's own fact to state -
  * it is not a claim about the person, and it is what makes a spike from one build

@@ -105,18 +105,29 @@ PRINT '    is not an error - it scores as "not stated" - but know what is in';
 PRINT '    the column before training anyone on the ranking.';
 SELECT Urgency, COUNT(*) AS N FROM Inquiries WHERE Urgency IS NOT NULL GROUP BY Urgency;
 
-/* -- 5. What the account-review migration is about to do -------------------
-   ReviewSelfClaimedStaffAccounts sets every Sales Representative, Procurement
-   Manager, Field Support Engineer and Logistics row to Pending, and a Pending
-   account cannot sign in. This is the list of people who will need approving
-   afterwards - see DEPLOYMENT.md section 8.4. Run it before migrating and
-   write the numbers down; they are a heads-up, not a failure.              */
+/* -- 5. What the two account migrations are about to do --------------------
+   ReviewSelfClaimedStaffAccounts (21) sets every Sales Representative,
+   Procurement Manager, Field Support Engineer and Logistics row to Pending, and
+   RemoveAccountApprovalGate (22) - which is in the same chain, so on a hosted
+   database the two arrive together - turns that unreviewed set into IsActive = 0
+   and deletes the queue that displayed it. This is therefore the list of people
+   who cannot sign in until an administrator flips their Access switch on
+   /Admin/Users - see DEPLOYMENT.md section 8.4. Run it before migrating and
+   write the numbers down; they are a heads-up, not a failure.
 
-PRINT '5. Staff accounts the review migration will pend (expected, but count them):';
-SELECT Role, COUNT(*) AS AccountsGoingToPending
-FROM Users
-WHERE Role IN (N'Sales Representative', N'Procurement Manager',
-               N'Field Support Engineer', N'Logistics')
-GROUP BY Role;
+   On a database that has already run 22 there is no ApprovalStatus left to read,
+   so the same section reports the rows 22 disabled instead: the same list seen
+   from the other side of the migration.                               */
+
+PRINT '5. Staff accounts the review will pend and the removal will disable (expected, but count them):';
+IF COL_LENGTH(N'[Users]', N'ApprovalStatus') IS NULL
+    SELECT Role, COUNT(*) AS AccountsAlreadyDisabled
+    FROM Users WHERE IsActive = 0 GROUP BY Role;
+ELSE
+    SELECT Role, COUNT(*) AS AccountsGoingToPending
+    FROM Users
+    WHERE Role IN (N'Sales Representative', N'Procurement Manager',
+                   N'Field Support Engineer', N'Logistics')
+    GROUP BY Role;
 
 DROP TABLE #checks, #results;

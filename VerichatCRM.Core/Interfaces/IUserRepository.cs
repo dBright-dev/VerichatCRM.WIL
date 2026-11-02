@@ -18,12 +18,6 @@ namespace VerichatCRM.Core.Interfaces
         Task<User?> GetByResetTokenAsync(string tokenHash);
         /// <summary>The account holding this <b>hashed</b> email-confirmation token.</summary>
         Task<User?> GetByVerificationTokenAsync(string tokenHash);
-        /// <summary>
-        /// Accounts sitting in one approval state, oldest first: the queue an
-        /// employee works down. Only the approval gate reads it, so the ordering is
-        /// the reviewer's ordering - whoever applied first is waiting longest.
-        /// </summary>
-        Task<IEnumerable<User>> GetByApprovalStatusAsync(string approvalStatus);
         Task<bool> EmailExistsAsync(string email);
         Task<User> AddAsync(User user);
         Task UpdateAsync(User user);

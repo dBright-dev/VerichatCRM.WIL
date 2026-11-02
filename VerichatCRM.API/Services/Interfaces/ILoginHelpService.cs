@@ -8,10 +8,10 @@ namespace VerichatCRM.API.Services.Interfaces
     /// <para>
     /// Kept deliberately narrow. This is not a helpdesk: there is no thread, no
     /// status beyond open-or-closed, and nothing here grants access. It exists
-    /// because the three recovery routes - password reset, email confirmation, the
-    /// approval queue - all assume the account is basically sound, and a person
-    /// whose application has sat unread for a week, or who typed their employer's
-    /// address instead of their own, has nowhere else to say so.
+    /// because the two recovery routes - password reset and email confirmation -
+    /// both assume the account is basically sound, and a person who typed their
+    /// employer's address instead of their own, or who was given the wrong role, has
+    /// nowhere else to say so.
     /// </para>
     /// </summary>
     public interface ILoginHelpService

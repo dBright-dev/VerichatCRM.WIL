@@ -143,12 +143,13 @@ Rules, all verified in `AdminBootstrapper`:
 
 - It runs **only when the user table is completely empty**. Restarting the app can never resurrect or overwrite an administrator.
 - If the user table is empty *and* these variables are missing, the API logs a warning and starts anyway — and then nobody can sign in. That is the cause of "the login page rejects every password" on a fresh install (§17).
-- `System Administrator` is the one self-service role that needs no approval: choosing it on
-  `/Account/Register` writes the account as already approved and signs you straight into the
-  console. Anyone who reaches that page can therefore create an administrator, so treat the
-  sign-up route as part of the trusted perimeter (§18). To give the role to someone who already
-  has an account instead, sign in as an administrator and change their role in
-  **Users & Roles** (§7.2) — that path is reviewed by a human.
+- `System Administrator` is not obtainable from `/Account/Register` at all. The sign-up form
+  offers the two client-facing roles and nothing else, and the API refuses any other posting
+  before writing a row, so this bootstrap is the only way an administrator is born on a
+  deployment — the alternative is an existing administrator creating one in
+  **Users & Roles** (§7.2). The sign-up route no longer has to be treated as part of the
+  trusted perimeter for that reason; it still should be treated as one for volume reasons,
+  because every account it accepts is live immediately (§4.3).
 
 **After the first sign-in, change the password** (there is no password-change screen; see §18) and delete the two `Bootstrap__` variables.
 
@@ -181,29 +182,34 @@ Errors appear above the form, not in a popup. A wrong password, an unknown addre
 
 ▷ **Create account** — `/Account/Register`, linked from the sign-in card as *Create one*.
 
-Fields: **Full name**, **Email address**, **Password**, and **What will you do here?** — the
-role select, laid out as three labelled groups:
+Fields: **Full name**, **Email address**, **Password**, and **What will you do here?** — a role
+select with exactly two options:
 
-- *Order from Verichat* — `Client User — buy, request quotes, raise support`, `Medical Student — browse and request, no purchasing`
-- *Work inside Verichat* — `Sales Representative — revenue engine`, `Procurement Manager — supply & logistics`, `Field Support Engineer — on-site resolution`, `Logistics — delivery & transport`
-- *Run Verichat* — `System Administrator — full control, no review needed`
+- `Client User — buy, request quotes, raise support`
+- `Medical Student — browse and request, no purchasing`
 
-The first option a visitor sees is `Client User`. A dropdown with no selection displays its
-first entry, and this page is anonymous, so the administrator choice is deliberately listed
-last rather than pre-chosen.
+That list is `UserRoles.SelfRegisterable`, and it is the whole of the access control on this page:
+the form offers only the roles whose holder reaches nothing but their own portal, which is why
+nothing has to review what is posted to it. The screen says so under the select — staff roles "are
+created by an employee, so they are not offered here".
 
-What happens when you submit depends on the role:
+What happens when you submit does not depend on the role:
 
-- **System Administrator** is signed in on the spot and sent to ▷ Admin Dashboard. The account
-  is written as approved, because this is the one role exempt from the review queue.
-- **Every other role** creates an application, not a session. The account is stored as
-  `Pending`, the page shows *Waiting for approval*, and signing in before an employee approves
-  it shows that screen again rather than letting you in. Approval happens in
-  ▷ Users & Roles (§7.2).
+- **Both** create a live account and sign you in. The form itself returns no session token; the
+  web tier immediately exchanges the password you just chose through the ordinary
+  `/Account/Login` route, so there is one code path that mints a token and you land on ▷ *My
+  Verichat* (`/Portal`) with nothing to wait for.
+- **Any other role** is refused before a row is written, with *The sign-up form opens a client or
+  student account. A staff account is created by a Verichat employee — use the contact page and ask
+  for one.* There is no queue, no `Pending` state and no review screen: a self-claimed
+  `Sales Representative` used to buy a place in a queue and the stock dashboard as soon as someone
+  read it, and it now buys a refusal. A staff account is created by an authenticated administrator
+  in ▷ Users & Roles (§7.2), which is where an administrator's Access switch also lives.
 
 Signing up as Client User or Medical Student also creates the client record your quotes, orders
 and tickets hang off — the API opens a `Clients` row keyed to your new user id, so nothing has
 to be typed twice.
+
 **Password length is enforced, on every path that sets or checks one.** Signing up requires at
 least 8 characters (`[Required, MinLength(8)]` on `RegisterRequest.Password`), a reset requires at
 least 8 (`MinimumPasswordLength` in `AccountRecoveryService.cs:31`, checked at `:82`), and signing
@@ -212,12 +218,14 @@ the database is queried. So a short password never reaches the hashing code, and
 with a validation problem naming the field rather than a message you have to interpret. What is
 **not** enforced anywhere is complexity — no digit, no symbol, no dictionary check — so
 `aaaaaaaa` satisfies all three today.
+
 **What the screen promises about a confirmation link is true.** Once the account row is
 committed, the API issues an address-verification token and emails its link to the address just
-typed (`AuthController.Register` -> `AccountRecoveryService.SendConfirmationEmailAsync`), for every
-role including System Administrator. The link opens `/Account/VerifyEmail` (§18), confirms the
-address in one click without a button, and expires after 7 days. It is not the approval itself: an
-unconfirmed address is merely a harder one for a reviewer to approve. When no SMTP host is
+typed (`AuthController.Register` -> `AccountRecoveryService.SendConfirmationEmailAsync`). The link
+opens `/Account/VerifyEmail` (§18), confirms the
+address in one click without a button, and expires after 7 days. It confirms the address, not the
+person: the account signs in whether or not the link is ever clicked, and what an unconfirmed
+address costs you is a password reset nobody can route to you. When no SMTP host is
 configured the send is logged rather than delivered, so on a local run the link appears in
 `logs/api.log` instead of an inbox — and because the link is built from the configured web origin,
 a local registration writes a `verichat-crm-web.runasp.net` URL that only works once the deployed
@@ -230,8 +238,7 @@ is what stops someone editing the HTML of the form and posting a role string tha
 Both client roles can also sign up from the mobile app's **New User** button (§12.1); the two
 paths produce the same account, and the same client record.
 
-`[SG-03]` — the registration form with the role dropdown open, showing the seven choices in
-their three groups.
+`[SG-03]` — the registration form with the role dropdown open, showing the two client choices.
 
 ### 4.4 Signing in on mobile
 
@@ -395,7 +402,6 @@ Every signed-in web page uses the same frame (`_Layout` → `_Sidebar` + `_Topba
 │ [logo] Verichat  │ Page title                                       │
 │ MEDICAL          │ Subtitle line                                    │
 │ PROCUREMENT      │                                                  │
-│                  │        topbar:  [bell]   [gear]                  │
 │ YOUR NAME        ├──────────────────────────────────────────────────┤
 │ ROLE             │   the page content                               │
 │                  │                                                  │
@@ -408,7 +414,7 @@ Every signed-in web page uses the same frame (`_Layout` → `_Sidebar` + `_Topba
 └──────────────────┴──────────────────────────────────────────────────┘
 ```
 
-The diagram above is drawn with single-width characters on purpose so that its borders line up in any monospace font. Where it says `[logo]`, `[bell]` and `[gear]`, the running app shows real icons: the Verichat **mark** from `~/images/logo.png` (the square V/C ligature, not the wide wordmark — see `DESIGN-SYSTEM.md` §1.3 for which lock-up goes where), the 🔔 Notifications button and the ⚙ Settings button.
+The diagram above is drawn with single-width characters on purpose so that its borders line up in any monospace font. Where it says `[logo]`, the running app shows the Verichat **mark** from `~/images/logo.png` (the square V/C ligature, not the wide wordmark — see `DESIGN-SYSTEM.md` §1.3 for which lock-up goes where). Each sidebar row carries its own line icon: `_NavIcon.cshtml` draws them as inline SVG strokes in `currentColor`, which is why a hovered or active row brightens its icon along with its label. They replaced the emoji that used to sit in those rows, and emoji rendered differently on every operating system and took no colour at all.
 
 - **Avatar + name + role** at the top of the sidebar is read from your session; the role is shown in capitals. Before anyone signs in it reads `Verichat User` / `GUEST`.
 - **Page title and subtitle** come from the screen, not from you. The subtitle usually carries the live count ("3 enquiries", "4 open • 1 escalated • 2 SLA breaches").
@@ -422,7 +428,8 @@ This is the single most important navigation fact in the product: **the links yo
 
 | Section | Links | Who sees them |
 |---|---|---|
-| **OVERVIEW** | *Admin Dashboard* (Admin) / *Dashboard* (Sales) / *My Verichat* (the two client roles) | each role's own landing screen |
+| **OVERVIEW** | *Admin Dashboard* (Admin) / *Stock Dashboard* (Procurement) / *Dispatch Dashboard* (Logistics) / *Support Dashboard* (Field Support) / *Pipeline Board* (Sales) / *My Verichat* (the two client roles) | each role's own landing screen |
+| | *Workspace Analytics* | every staff role **except** Admin — the admin board renders the same charts with the breach banner, the event log and the controls on top, so the second link was a duplicate |
 | **MY ACCOUNT** | *Catalogue*, *My Quotations*, *Support* | Client User, Medical Student — and nobody else |
 | **CLIENTS** | *Client Directory* | Admin, Sales, Procurement |
 | | *Asset Tracking* | Admin, Sales, Field Support, Logistics |
@@ -433,6 +440,7 @@ This is the single most important navigation fact in the product: **the links yo
 | **SUPPORT** | *Ticket Hub* | Admin, Procurement, Field Support, Logistics |
 | | *Logistics Tracker* | Admin, Procurement, Logistics — **not** Field Support |
 | **OPERATIONS** | *Warehouse Alerts* | Admin, Procurement |
+| **ACCOUNTS** | *Sign-in Help* | Admin, Sales, Procurement |
 | **ADMIN** | *Users & Roles*, *Rules Engine* | Admin |
 | footer | *→ Sign out* | everyone |
 
@@ -442,10 +450,9 @@ A Client User or Medical Student signing in to the web app gets the **MY ACCOUNT
 
 ### 6.3 The topbar
 
-Two controls:
+On a desktop-width window the topbar carries the page title and subtitle and nothing else. Below 1024px the sidebar becomes an off-canvas drawer, and a **☰** button appears at the left of the bar to open it.
 
-- **🔔 Notifications** — present on every page. **Note:** It is currently **decorative**: nothing is wired to the button or its badge counter. Live notifications arrive as a **toast in the top-right corner** instead (§6.5). Do not tell users to click the bell.
-- **⚙ Settings** — rendered disabled with the title *Settings coming soon*.
+Two buttons used to sit at the right of the bar and are now gone: **🔔 Notifications**, which had nothing wired to it or to its badge count, and **⚙ Settings**, rendered disabled with the title *Settings coming soon*. A control that advertises a number it can never produce is worse than no control at all. Live alerts still arrive — as a **toast in the top-right corner** (§6.5) drawn by `notifications.js` over the SignalR hub — the bell was only ever decoration beside them.
 
 ### 6.4 The three status pages
 
@@ -504,7 +511,7 @@ Two conditions stop the hub from connecting at all, both silent by design: `ApiB
 
 **Note:** Three things to know before you use this screen.
 
-1. **There is no "add user" button here**, despite what older notes say. Accounts appear by self-registration (§4.3 web, §12.2 mobile) or from the bootstrap. Your job on this screen is to *correct* a role, not to create people.
+1. **➕ Add user** sits in the header of this screen (`/Admin/CreateUser`) and creates any of the seven roles; the account works the moment you save it. That is the only staff-account path in the product — the self-registration forms (§4.3 web, §12.2 mobile) offer the two client roles and nothing else, and the bootstrap (`Bootstrap__AdminEmail`) makes exactly one administrator. Use the screen for colleagues; use this list to *correct* a role afterwards.
 2. **Deactivate has no opposite.** The button appears on active accounts; once a person is inactive the row offers nothing, and they are told `Invalid credentials.` at sign-in. Until an "activate" path exists, re-activating someone is a database edit (§18).
 3. **Changing someone to `Client User` or `Medical Student` moves them off the staff console and onto the client path** — four portal screens on the web (§12.8) and the client tabs on the phone. The API creates the `Clients` row that path needs when the role changes, keyed to that person's user id. Warn them first: every staff link they had disappears at once.
 
@@ -512,7 +519,7 @@ Two conditions stop the hub from connecting at all, both silent by design: `ApiB
 
 The card at the bottom of ▷ Users & Roles, *"Manually trigger the SLA escalation job (normally runs every 5 minutes)"* → **Run SLA check now**. It scans open tickets past their deadline, bumps each to `Escalated`, raises `EscalationLevel` by 1 and writes an activity entry. You will normally not need it — the background service does the same sweep every 5 minutes; use the button when you want the effect *now* for a demo or after an outage.
 
-`[SG-18]` — ▷ Users & Roles with three users at different roles; annotate the role dropdown, Save, Deactivate and the SLA card.
+`[SG-18]` — ▷ Users & Roles with three users at different roles; annotate **+ Add user**, the role dropdown, Save, Deactivate and the SLA card. `[SG-18b]` — `/Admin/CreateUser` with the role dropdown open, showing all seven roles.
 
 ### 7.4 Rules Engine
 
@@ -685,7 +692,7 @@ Save refuses, in this order, with the reason in the status line: no client (`Att
 
 ▷ `/Procurement/ProductCatalog`
 
-- **Category chips**, a **search box** (matches name or SKU, live as you type) and a **sort** select: *Name A-Z / Name Z-A / Price Low-High / Price High-Low / Stock Low-High*.
+- **Category chips**, a **search box** (matches name or SKU, live as you type) and a **sort** select: *Name A-Z / Name Z-A / Price Low-High / Price High-Low / Stock Low-High*. The sort re-orders the cards in the browser, so it composes with the chips and the search: what you are looking at stays filtered, only its order changes. (This select used to be decoration with no script behind it.)
 - Cards show name, `R price` (whole rand), an **In Stock** / **Low Stock** badge and the unit count.
 - **Note:** You have read-only access. There is no **+ New product** button for your role (product creation is admin-only by design, and it is stated on the Rules Engine page), and no **Edit** link (that needs `products.edit`, held by Admin and Sales). If a product needs changing, §7 or Sales.
 
@@ -949,7 +956,7 @@ Use these four in training and in the EXPO demo; each step names the role, the s
 
 No staff action is needed to start or finish this one, which is the point of the portal.
 
-1. *Client:* ▷ **Create one** from the sign-in card → *Order from Verichat* → **Client User** → the account and its client record are created in one step, and you land on `/Portal` `[SG-03]` `[SG-48]`.
+1. *Client:* ▷ **Create one** from the sign-in card → **Client User** → the account and its client record are created in one step, and you land on `/Portal` `[SG-03]` `[SG-48]`.
 2. *Client:* ▷ Catalogue → quantities and a note → **Request quote** → a *Draft* quotation appears under your own reference `[SG-49]`.
 3. *Sales, web:* the draft is in the Pipeline Board's mobile-quote panel → reviewed, priced, saved, **sent** (§13.1).
 4. *Client:* ▷ My Quotations → **PDF** to read the offer → **Accept** `[SG-50]`. A Medical Student at this step gets the 403 page instead — requesting is allowed, answering is not `[SG-52]`.
@@ -967,7 +974,7 @@ What each field does, in the words the screen uses. "Required" means the server 
 
 **Sign in** — *Email address* (required), *Password* (required). Errors: `Invalid credentials.`
 
-**Create Account (web)** — *Full Name*, *Email Address*, *Password* (required, min. 8 — enforced), *Role* (one of the seven choices in three groups, §4.3). Errors: `Email is already registered.`, `Select a valid role.`, `That role cannot be self-assigned. Ask an administrator to create the account.`
+**Create Account (web)** — *Full Name*, *Email Address*, *Password* (required, min. 8 — enforced), *Role* (two choices, `Client User` and `Medical Student`, §4.3). Errors: `Email is already registered.`, `Select a valid role.` — the second is what a hand-crafted post for a staff role gets, because the form does not offer one. Submitting successfully signs you straight in.
 
 **Add New Client** *(Admin only)* — *Client Name* (required, ≤200), *Sector* (required: Mining / Clinical / Education / Rehab / Manufacturing / Waste Management), *Contact Person* (≤150), *Contact Phone* (≤30), *Contact Email* (valid email, ≤200), *Address* (≤500). Tip panel on the right: the client starts as **Prospect**, a rep can be assigned after creation, key personnel come from the profile.
 
@@ -1009,14 +1016,16 @@ Screens you open for information and cannot change from, whatever your role: **L
    emails a link that opens `/Account/ResetPassword`, works once and expires in an hour. A person
    with no administrator access can also be reset by an administrator; there is still no screen
    where you change your password while signed in (§18).
-3. *I signed up and chose System Administrator.* That role is offered on the form and is the
-   one exempt from review, so the account works the moment it is created and lands on
-   ▷ Admin Dashboard. A posting of any role outside `UserRoles.SelfRegisterable` is refused
-   with `Select a valid role.`, and an existing administrator can demote the account again in
-   ▷ Users & Roles (§7.2).
-4. *I signed up and my screen says* *Waiting for approval.* Your role is queued for review — the
-   right password in a pending account returns that screen on purpose (§4.3). An employee
-   approves it in ▷ Users & Roles, then sign in again.
+3. *I signed up and chose System Administrator.* You could not — the role dropdown only carries
+   `Client User` and `Medical Student`, and a post for anything else is refused with
+   `Select a valid role.` before a row is written. A staff account, administrator included, is
+   created for you by an employee on ▷ Users & Roles (§7.2); the contact page is how you ask.
+4. *I signed up and my screen says* *Waiting for approval.* There is no such screen. The approval
+   gate was removed: a client or student account is live the moment it is created, and sign-up
+   signs you in with the password you just chose (§4.3). If your address really is refused with
+   `Invalid credentials.`, the account has been **deactivated** — that is now the only way a
+   signed-up account can be shut, and an administrator toggles it on ▷ Users & Roles (question 1
+   above).
 5. *My client account signs in on the phone and gets "no access" on the web.* You are on a staff URL. Client roles have their own four screens — ▷ *My Verichat*, *Catalogue*, *My Quotations*, *Support* — reached from `/Portal` (§12.8); a client who types `/Pipeline` is refused on purpose, and the 403 page links back to `/Portal`.
 6. *I changed someone's role and their menu changed instantly.* Menus are built per request from the role; that is the expected behaviour, and it is why the sidebar is the best indicator of what you are allowed to do.
 7. *Everything on my dashboard is 0 or empty.* Usually an expired 120-minute token (§4.5): sign out and back in. Otherwise the API or the database is down — §17.
@@ -1084,7 +1093,6 @@ Work top-down: is the API up? is the database reachable? is *my* session valid? 
 | Map is a grey rectangle | OpenStreetMap tiles blocked | allow `tile.openstreetmap.org`; pins and the panel still work |
 | Pipeline drag does nothing at all | JavaScript disabled, or `site.js` failed to load | enable script; the per-card **stage dropdown** is the no-script path |
 | Toast never appears although events are expected | `ApiBaseUrl` empty (hub refuses to connect silently) or the SignalR CDN is blocked | check the value in `VerichatCRM.Web/appsettings.json` and the browser console for `[SignalR]` |
-| Notification bell does nothing when clicked | it is not wired (§6.3) | expected; watch for the top-right toast |
 | PDF button greyed | the quotation has not been saved once | save it; the status line reports why if the save failed |
 | `Attach a client first…` when saving | you opened the builder from the sidebar instead of a client | open the client's profile → **Start a Quotation** |
 | Reorder refuses to submit | **Supplier** empty or unit cost < 0.01 | both are required inputs on the row |
@@ -1111,42 +1119,40 @@ The honest page. Give this to every new user with the training pack; the system 
 1. **No way to change your password while signed in.** `ChangePasswordRequest` exists as a DTO with no route behind it. The only self-service path is the one-time reset link from `/Account/ForgotPassword` (§4.5), which requires access to the mailbox on the account; an administrator cannot set one either, so a person locked out of their email needs direct database access.
 2. **Password length is enforced; complexity is not.** At least 8 characters at sign-up (`[MinLength(8)]` on `RegisterRequest.Password`) and at reset (`MinimumPasswordLength`, `AccountRecoveryService.cs:31`), at least 6 at sign-in (`[MinLength(6)]` on `LoginRequest.Password`) — but no digit, symbol or dictionary rule anywhere, so `aaaaaaaa` satisfies all three.
 3. **Deactivate has no Activate.** A deactivated account cannot be restored from ▷ Users & Roles.
-4. **No user creation in the web UI by an administrator** — self-registration (the five self-assignable staff roles, or either client role) and the bootstrap admin are the only paths; there is no "create a colleague" form on ▷ Users & Roles despite what some older notes claim. An administrator can *change* an existing person's role, which is how staff accounts become client accounts.
+4. **An administrator-created account starts with a password only the administrator knows.** ▷ Users & Roles → **➕ Add user** posts `POST /api/users/create` (`AuthService.CreateAccountByAdminAsync`) and the account signs in immediately, but the temporary password is plain text on the form by design and there is no forced change on first sign-in, so tell the person to run a reset (§4.5) to move off a value that was read aloud. Self-registration stays limited to the two client roles.
 5. The 403 page does not tell you **which permission** was missing.
 
 **Screen and data behaviour**
 
-6. **The notification bell and its badge are not wired.** Live updates come as toasts only (§6.3).
-7. **Settings (⚙) in the topbar is disabled** — *Settings coming soon*.
-8. **Logistics Tracker is read-only for every role**, including the administrator, and its own subtitle promises route management. Status changes require the API.
-9. **Staff cannot create a ticket from the web app** — ▷ Ticket Hub is read-and-work only, so a fault logged on someone's behalf has to be raised on mobile or through the API. The client portal can raise one (§12.8): that is the client's own ticket on the client's own account, which is the case the form was written for. The portal itself stays deliberately small — four screens, no appointment booking, no health record, no offline cart; those remain mobile-only (§12.4, §12.6, §12.7), and deliveries are listed on *My Verichat* rather than tracked page by page.
-10. **Warehouse Alerts has no acknowledge/resolve control.** The `Admin/ResolveAlert` endpoint exists but no button reaches it, and alerts persist until the stock number changes.
-11. **`Assets › Schedule Service` is a plain link to the Ticket Hub.** It does not carry the asset, and it creates no ticket.
-12. **Two Razor views are dead files** — `Views/Procurement/Dashboard.cshtml` and `Views/Support/Dashboard.cshtml` are not rendered by any action; all four dashboards share `Views/Dashboard/Index.cshtml`.
-13. **Client Appointments shows a raw user id** in the assignee column for roles that cannot manage (Field Support).
-14. **The Rules Engine screen is static.** No thresholds, weights or SLA hours are configurable from it.
-15. **Pipeline deals are not filtered per representative** — anyone holding `pipeline.board` sees every deal.
-16. **`Ticket › SlaEscalated` activity logs "Escalated → Escalated"** (the status is assigned before the from-value is read), so the timeline's arrow is cosmetic.
-17. **Time is mixed**: ticket detail and SLA in UTC, pipeline/timeline/mobile in local time.
+6. **Logistics Tracker is read-only for every role**, including the administrator, and its own subtitle promises route management. Status changes require the API.
+7. **Staff cannot create a ticket from the web app** — ▷ Ticket Hub is read-and-work only, so a fault logged on someone's behalf has to be raised on mobile or through the API. The client portal can raise one (§12.8): that is the client's own ticket on the client's own account, which is the case the form was written for. The portal itself stays deliberately small — four screens, no appointment booking, no health record, no offline cart; those remain mobile-only (§12.4, §12.6, §12.7), and deliveries are listed on *My Verichat* rather than tracked page by page.
+8. **Warehouse Alerts has no acknowledge/resolve control.** The `Admin/ResolveAlert` endpoint exists but no button reaches it, and alerts persist until the stock number changes.
+9. **`Assets › Schedule Service` is a plain link to the Ticket Hub.** It does not carry the asset, and it creates no ticket.
+10. **Two Razor views are dead files** — `Views/Procurement/Dashboard.cshtml` and `Views/Support/Dashboard.cshtml` are not rendered by any action; all four dashboards share `Views/Dashboard/Index.cshtml`.
+11. **Client Appointments shows a raw user id** in the assignee column for roles that cannot manage (Field Support).
+12. **The Rules Engine screen is static.** No thresholds, weights or SLA hours are configurable from it.
+13. **Pipeline deals are not filtered per representative** — anyone holding `pipeline.board` sees every deal.
+14. **`Ticket › SlaEscalated` activity logs "Escalated → Escalated"** (the status is assigned before the from-value is read), so the timeline's arrow is cosmetic.
+15. **Time is mixed**: ticket detail and SLA in UTC, pipeline/timeline/mobile in local time.
 
 **Mobile app**
 
-18. **Push Notifications is a preference only** — no token registration, so nothing is delivered. `expo-notifications` is installed and its service files are **never imported** (`PushNotifications.ts`, `NotificationsService.ts`, `RealTimeTracker.ts` are dead code, and two of them use `window.*`, so they would only work in a browser anyway).
-19. **No SignalR in the mobile app** at all; freshness is 30/60-second polling plus foreground refresh.
-20. **Log Service Ticket hard-codes `Medium` priority and `Technical` category.**
-21. **"Log in with SSO" is a stub.**
-22. **Privacy, Terms and Conditions and About Verichat** all answer *"This information is not available in the mobile API yet."*
-23. **Four coded screens are unreachable** — `Dashboard.tsx`, `ClientCommunicationScreen.tsx`, `ClientTimelineScreen.tsx` and `explore.tsx` (a duplicate, unauthenticated login) have no navigation path to them.
-24. **The staff sign-in note omits Logistics** even though the role is allowed.
-25. **The scanner's asset filter applies non-matching codes** and shows the "no equipment" message rather than reporting an unknown code.
-26. **No automated tests exist for the mobile app.** The 71 passing tests cover .NET only.
+16. **Push Notifications is a preference only** — no token registration, so nothing is delivered. `expo-notifications` is installed and its service files are **never imported** (`PushNotifications.ts`, `NotificationsService.ts`, `RealTimeTracker.ts` are dead code, and two of them use `window.*`, so they would only work in a browser anyway).
+17. **No SignalR in the mobile app** at all; freshness is 30/60-second polling plus foreground refresh.
+18. **Log Service Ticket hard-codes `Medium` priority and `Technical` category.**
+19. **"Log in with SSO" is a stub.**
+20. **Privacy, Terms and Conditions and About Verichat** all answer *"This information is not available in the mobile API yet."*
+21. **Four coded screens are unreachable** — `Dashboard.tsx`, `ClientCommunicationScreen.tsx`, `ClientTimelineScreen.tsx` and `explore.tsx` (a duplicate, unauthenticated login) have no navigation path to them.
+22. **The staff sign-in note omits Logistics** even though the role is allowed.
+23. **The scanner's asset filter applies non-matching codes** and shows the "no equipment" message rather than reporting an unknown code.
+24. **No automated tests exist for the mobile app.** The 71 passing tests cover .NET only.
 
 **Platform**
 
-27. **No certificates on the Free Monster ASP plan**, so the deployed HTTPS endpoints depend on the platform's own TLS; the `.runasp.net` origins must match `Cors:AllowedOrigins` exactly.
-28. **NU1902/NU1903 build warnings — cleared in this build.** `System.Security.Cryptography.Pkcs` used to resolve to 9.0.11 (a transitive dependency of `Microsoft.Data.SqlClient 6.1.6`, reached via EF Core SqlServer 10.0.12) and carried a moderate and a high advisory, twenty warnings and zero errors. It is now pinned to **10.0.14** in `VerichatCRM.Core.csproj`, which raises it for every project underneath, and the restore is warning-free. The number stays in this list so that anyone comparing builds knows the warning they used to see is *fixed*, not suppressed. Detail in [documentation.md](documentation.md) §18 item 60.
-29. **No global exception handler in the web app**, so an unexpected failure surfaces as the standard 500 page.
-30. **Currency and culture are host-dependent**: quotation totals and the PDF follow the server's locale (en-ZA → rand), which is why the page and the script share the culture explicitly.
+25. **No certificates on the Free Monster ASP plan**, so the deployed HTTPS endpoints depend on the platform's own TLS; the `.runasp.net` origins must match `Cors:AllowedOrigins` exactly.
+26. **NU1902/NU1903 build warnings — cleared in this build.** `System.Security.Cryptography.Pkcs` used to resolve to 9.0.11 (a transitive dependency of `Microsoft.Data.SqlClient 6.1.6`, reached via EF Core SqlServer 10.0.12) and carried a moderate and a high advisory, twenty warnings and zero errors. It is now pinned to **10.0.14** in `VerichatCRM.Core.csproj`, which raises it for every project underneath, and the restore is warning-free. The number stays in this list so that anyone comparing builds knows the warning they used to see is *fixed*, not suppressed. Detail in [documentation.md](documentation.md) §18 item 60.
+27. **No global exception handler in the web app**, so an unexpected failure surfaces as the standard 500 page.
+28. **Currency and culture are host-dependent**: quotation totals and the PDF follow the server's locale (en-ZA → rand), which is why the page and the script share the culture explicitly.
 
 **What this release does not do at all**, so nobody has to discover it mid-demo: no payment, no checkout, no invoice generation, no email/SMS sending, no supplier portal, no goods receipt, no stock receipt, no document storage (product images are external URLs), no telehealth media (a meeting link is a link, not a call), no student discount, no report export, and no multi-company tenancy.
 
@@ -1168,7 +1174,7 @@ The honest page. Give this to every new user with the training pack; the system 
 | **Permission** | One of the 26 strings in `Perm.cs`; roles hold sets of them, and screens demand one. |
 | **Role** | One of the seven named job types in `UserRoles`; the server reads it from the database at sign-in. |
 | **Session** | The web app's cookie holding your name, role and token; separate from the API token and its 120-minute life. |
-| **Toast** | The top-right live notification. Distinct from the unwired bell. |
+| **Toast** | The top-right live notification, drawn by `notifications.js` over the SignalR hub. The only alert surface in the web app. |
 | **Weighted forecast** | Pipeline value adjusted by stage probability, on the board's KPI row. |
 
 ---
@@ -1232,7 +1238,7 @@ The rubric requires a high-quality annotated screenshot for **every major step**
 |---|---|---|---|
 | SG-01 | `/Account/Login` | empty | (1) email (2) password (3) Sign In (4) *Create one* |
 | SG-02 | `/Account/Login` | failed attempt | (1) validation summary `Invalid credentials.` |
-| SG-03 | `/Account/Register` | dropdown open | (1) full name (2) email (3) password hint (4) the seven roles, in their three groups (5) *System Administrator — full control, no review needed* (6) Create Account |
+| SG-03 | `/Account/Register` | dropdown open | (1) full name (2) email (3) password hint (4) *What will you do here?* with the two client choices (5) the note that staff roles are created by an employee (6) Create account |
 | SG-04 | mobile *Choose your account* | cold start | (1) Client (2) Staff / Admin (3) New User |
 | SG-05 | mobile client login | empty | (1) email (2) password (3) Sign In (4) Create account |
 | SG-06 | mobile New User | mid-entry | (1)–(5) the five fields (6) Sign up |
@@ -1241,9 +1247,10 @@ The rubric requires a high-quality annotated screenshot for **every major step**
 | SG-09…13 | sidebar only, Admin / Sales / Procurement / Field Support / Logistics | one role each | (1) the links that differ from the previous frame |
 | SG-14 | `/Account/NoAccess` | Client User typing `/Dashboard` | (1) the role it shows (2) the link back to `/Portal` |
 | SG-15 | 404 page | any bad id | (1) return link |
-| SG-16 | any page + toast | live event | (1) toast (2) its × (3) the unwired bell |
+| SG-16 | any page + toast | live event | (1) toast (2) its × |
 | SG-17 | `/Admin/Dashboard` | populated | (1) KPIs (2) three charts (3) Timeline (4) Recent activity |
-| SG-18 | `/Admin/Users` | 3 users | (1) role dropdown (2) Save (3) Status badge (4) Last login (5) Deactivate (6) SLA Control |
+| SG-18 | `/Admin/Users` | 3 users | (1) **+ Add user** (2) role dropdown (3) Save (4) Status badge (5) Last login (6) Deactivate (7) SLA Control |
+| SG-18b | `/Admin/CreateUser` | role dropdown open | (1) the seven roles in two groups (2) the plain-text password hint |
 | SG-19 | `/Admin/Rules` | as is | (1) four rules (2) the "no editing here" note |
 | SG-20 | `/Pipeline` | mid-drag | (1) goal card (2) KPI trio (3) column header totals (4) stale red card (5) dropdown (6) banner area |
 | SG-21 | `/Pipeline` mobile requests | one Draft | (1) items (2) estimate (3) **Mark reviewed** |

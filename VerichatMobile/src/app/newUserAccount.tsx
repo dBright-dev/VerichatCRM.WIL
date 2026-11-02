@@ -39,30 +39,29 @@ const CreateAccountScreen = () => {
       return
     }
 
-    // Creates a "Client User" application against the CRM API. A Verichat employee
-    // reads it before the credentials open anything, so this signs nobody in: the
-    // response carries no token, and the person is sent back to sign-in to wait.
+    // Creates a "Client User" account against the CRM API and signs it in with the
+    // password chosen above, so the person lands on their own home screen instead of
+    // being sent back to a form to type the same password twice.
     setBusy(true)
     try {
-      const result = await registerClient({
+      await registerClient({
         displayName: fullName.trim(),
         email: email.trim(),
         password,
         companyName: companyName.trim(),
       })
 
-      if (!result.token) {
-        Alert.alert(
-          'Application submitted',
-          result.message || 'A Verichat employee will review your account. You can sign in once it is approved.',
-          [{ text: 'Sign in', onPress: () => router.replace('/clientLogin') }],
-        )
-        return
-      }
-
       router.replace('/')
     } catch (e) {
-      Alert.alert('Sign up failed', e instanceof Error ? e.message : 'Something went wrong.')
+      // The account write and the sign-in are two calls, so a failure here may still
+      // have created the account. Say that, because "try again" would hit an address
+      // already registered.
+      Alert.alert(
+        'Could not finish signing you in',
+        `${e instanceof Error ? e.message : 'Something went wrong.'} ` +
+          'If your account was created, use the sign-in screen with the password you just chose.',
+        [{ text: 'Sign in', onPress: () => router.replace('/clientLogin') }],
+      )
     } finally {
       setBusy(false)
     }

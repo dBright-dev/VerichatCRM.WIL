@@ -14,7 +14,7 @@
             </div>
         </div>
         <h2 class="vc-auth-headline">Stuck<br />outside?</h2>
-        <p class="vc-auth-lede">A reset link, a confirmation link and the approval queue cover most ways to be locked out. This form is for the rest, and it goes to a person who can open the account directory.</p>
+        <p class="vc-auth-lede">A reset link and a confirmation link cover the ordinary ways to be locked out. This form is for the rest, and it goes to a person who can open the account directory.</p>
         <ul class="vc-auth-points">
             <li><span class="vc-check">✓</span> Every System Administrator is told, the moment it arrives</li>
             <li><span class="vc-check">✓</span> It also appears on their Sign-in Help queue, so nothing is lost to a mail server</li>
@@ -65,7 +65,7 @@
                 <div class="form-group">
                     <label class="form-label" asp-for="Message">What is going wrong</label>
                     <textarea asp-for="Message" class="form-input" rows="5" maxlength="2000"
-                              placeholder="For example: I signed up three days ago as a Client User and the screen still says my account is waiting for approval."></textarea>
+                              placeholder="For example: I signed up yesterday as a Client User and the password I set does not open the portal."></textarea>
                     <span asp-validation-for="Message" class="text-critical"></span>
                 </div>
 

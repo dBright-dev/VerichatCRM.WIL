@@ -41,7 +41,7 @@ These values are read at *deploy* time, not build time: after changing any of th
 | --- | --- | --- | --- |
 | `ConnectionStrings:DefaultConnection` | `VerichatCRM.API/Program.cs:28` | Host secret store / `ConnectionStrings__DefaultConnection`. **Never** in `appsettings*.json` outside Development. | API restart. Sessions are unaffected. |
 | `Jwt:Key` | `Program.cs:133` | `Jwt__Key`. The app throws at startup when it is blank. | Every issued token becomes invalid — all staff and all mobile users are signed out. |
-| `Email:Host` / `Port` / `UseSsl` / `Username` / `Password` / `FromAddress` / `FromName` | `VerichatCRM.Infrastructure/Data/External/EmailService.cs:74` | `Email__*` env vars. `Host` is the switch: while it is blank the service logs "would send" and returns without throwing, so every mail route silently no-ops. | Password reset, address verification, account approval and the contact-page enquiry still *record* their state but nothing reaches an inbox, which turns the self-service recovery routes into admin-only ones. |
+| `Email:Host` / `Port` / `UseSsl` / `Username` / `Password` / `FromAddress` / `FromName` | `VerichatCRM.Infrastructure/Data/External/EmailService.cs:74` | `Email__*` env vars. `Host` is the switch: while it is blank the service logs "would send" and returns without throwing, so every mail route silently no-ops. | Password reset, address verification and the contact-page enquiry still *record* their state but nothing reaches an inbox, which turns the self-service recovery routes into admin-only ones. |
 | `Email:SalesAddress` | `VerichatCRM.API/Services/PublicEnquiryService.cs:161` | `Email__SalesAddress`. Optional — the code already defaults to the published sales mailbox. | Copies of public enquiries go to the default address instead. |
 | `Bootstrap:AdminEmail` / `AdminPassword` / `AdminName` | `AdminBootstrapper` | `Bootstrap__*` env vars, **deleted after the first sign-in**. Only consulted while the user table is empty; leaving them set is a standing admin-account door. | None once accounts exist. |
 | `Bootstrap:DemoUsers` | `DemoUserSeeder` | `appsettings.Development.json` only. It and the Development environment are two separate conditions and both must hold, so a host that is not Development ignores the key completely. | None — it creates accounts and never changes them. Verified against a scratch database: flag off, 0 rows; flag on, one account per role; restart with the flag still on, still one per role. |
@@ -188,6 +188,12 @@ the payload for what it is: a 503 `Degraded` whose database check reports single
 It is a schema probe as well as a connectivity probe, which is exactly why it can prove the
 deployed assembly contains migration 21 — see §8.5, where that fact rules Route A out. Latency
 alone would have proved only that a connection opens.
+
+*Counting note:* the six above is the reading from before the approval gate was removed, and the
+hosted database has not run any of them yet. After publishing the build containing
+`22-RemoveAccountApprovalGate` the same payload names seven; if the panel chain in §8.5 is run first and
+the app restarts before that publish, it names one — the new migration, still pending against the old
+assembly. The runbook counts files, not the health payload, so it is seven either way.
 
 The original failure, kept because the reasoning is what found it:
 
@@ -489,6 +495,11 @@ and the same build against the same database once the chain is applied returns
 `401 {"success":false,"message":"Invalid credentials."}`. Same code, same endpoint, only the schema
 different: that is the proof, and it is reproducible from this repository without touching production.
 
+*This measurement predates the approval-gate removal.* The assembly is 22 migrations deep now, and
+migration 22 drops four of the columns named above, so the current build no longer selects them —
+which changes only which names can appear in that `Msg 207`, not the diagnosis. A hosted database
+still at 15 rows fails on `DeviceToken` alone, and the fix is still to run the chain.
+
 `Program.cs:266` calls `MigrateAsync()` at startup and swallows the failure into a log line, so the
 app comes up "running" over a schema it has already outgrown, and `/api/health` is the only thing that
 says so (`MigrationsPending`, latency a few ms because the database is reachable and simply
@@ -501,13 +512,17 @@ incomplete). Two ways out, in this order:
    `Database/preflight-migration-checks.sql` first — the duplicates it looks for (`Users.Email`,
    `Tickets.TrackingNumber`, `Assets.SerialNumber`, and the values that would not fit the narrowed
    columns) are what abort `CREATE UNIQUE INDEX` and roll the whole migration back. Fix or merge those
-   rows, then apply `Database/hosted-migrations/16` → `21` one file at a time in the panel's SQL
+   rows, then apply `Database/hosted-migrations/16` → `22` one file at a time in the panel's SQL
    window and confirm with `verify-migration-state.sql`. §8.5 covers the two failure shapes.
 
-**Expect the sign-in to change character afterwards, not only work.** Migration 21 puts every
-self-claimed Sales Representative, Procurement Manager, Field Support Engineer and Logistics account
-back to `Pending` (§8.4), so the first thing a real staff member sees after the fix is "waiting for a
-Verichat employee to approve it", and the approving administrator has to exist before that clears.
+**Expect the sign-in population to change character afterwards, not only work.** Migration 21
+puts every self-claimed Sales Representative, Procurement Manager, Field Support Engineer and
+Logistics account into `Pending`, and migration 22 — which is in the same chain, so on a hosted
+database the two arrive together — turns that unreviewed set into `IsActive = 0` and deletes the
+queue that displayed it (§8.4). So the first thing a staff member whose account the sweep caught
+notices is not a review screen, it is a refusal, and the fix is an administrator's Access switch
+on `/Admin/Users`. A System Administrator must exist and be able to sign in before the chain
+runs.
 
 ### 7.7 Two APIs, two databases, so failover is switched off (2 November 2026)
 
@@ -536,13 +551,14 @@ network, or Monster stays primary with no backup at all.
 
 ## 8. Pre-flight checks before migrating an existing database
 
-**Five migrations are new or rewritten in this working copy.** Read §8.1 before
+**Six migrations are new or rewritten in this working copy.** Read §8.1 before
 running any of them against a database that holds real data, and read §8.4 before
-you let anyone sign in afterwards — two of these migrations narrow columns, add
-unique indexes and put existing staff accounts back in the approval queue.
+you let anyone sign in afterwards — two of these migrations narrow columns and add
+unique indexes, and the two newest change who is allowed through the door.
 
 - `20261101151838_SyncSchemaAndAccountLifecycle` is the index-and-precision migration §8.1 used to describe as deferred — it exists now, and it is the heaviest thing in the chain. It adds the seven account-lifecycle columns to `Users` and the `LoginHelpRequests` table, applies the widths and the `decimal(5,4)` the configuration classes have always declared, and creates the indexes no migration ever emitted, including the unique `IX_Users_Email`. **It can fail on live data**, and `Database/preflight-migration-checks.sql` (§8.1) is the script that predicts it.
-- `20261101152359_ReviewSelfClaimedStaffAccounts` runs one `UPDATE` over `Users`, and it is the migration with a business consequence rather than a schema one: every existing Sales Representative, Procurement Manager, Field Support Engineer and Logistics account becomes `Pending` and **cannot sign in** until a System Administrator approves it at `/Admin/Approvals`. That is the whole point of the migration — self-registered staff had no gate before this — but it is indistinguishable from an outage to the people affected. See §8.4.
+- `20261101152359_ReviewSelfClaimedStaffAccounts` runs one `UPDATE` over `Users`, and it is the migration with a business consequence rather than a schema one: every existing Sales Representative, Procurement Manager, Field Support Engineer and Logistics account becomes `Pending`. It still matters on a database that has never run it, because the next migration reads exactly that flag — but the queue it was feeding, `/Admin/Approvals`, no longer exists. See §8.4.
+- `20261102175638_RemoveAccountApprovalGate` is the removal of that gate. It first sets `IsActive = 0` on every row still marked `Pending`, then drops `IX_Users_ApprovalStatus_CreatedAt` and the four approval columns. The order is the point: the new build stops reading `ApprovalStatus`, so without this step the chain would promote every unreviewed self-claimed staff account to a working console login the moment it deployed. Anyone the sweep caught — real employees included, because 21 could not tell them apart — comes back as a disabled row for an administrator to release on `/Admin/Users`.
 - `20261031160000_AddInquiryScoringInputs` does three things and nothing else —
   it narrows `Inquiries.Status` from `nvarchar(max)` to `nvarchar(30)`, because SQL Server cannot build an index on a `max` column and the queue sorts on `Status` (the values come from `InquiryStatuses`; the longest is nine characters); it adds the two nullable inputs the automatic enquiry score reads, `Inquiries.Urgency` (`nvarchar(30)`) and `Inquiries.EstimatedValue` (`decimal(18,2)`); and it creates the composite index `IX_Inquiries_Status_Score`.
 - `20261030204733_AddTask3Features` was **rewritten**, not added (`113d04d`). It had never run successfully anywhere: three of its foreign-key columns were declared `nvarchar(64)` against `nvarchar(450)` principals, which aborts the whole `CREATE TABLE` with Msg 1753, and its `Up()` also emitted a second `CREATE TABLE SalesGoals` with a shape belonging to no entity in the solution, five days after `20261025111000_AddSalesGoals` had already created that table. Both defects, and the stale `AppDbContextModelSnapshot.cs` / `.Designer.cs` entries that carried them, are corrected. The `HasMaxLength(64)` calls are gone from `AppDbContext` on purpose — the values stored in those columns are `Guid.ToString()` (36 characters), so nothing about the data changed; only the declaration now agrees with the principal it points at.
@@ -684,11 +700,14 @@ SELECT Urgency, COUNT(*) FROM Inquiries WHERE Urgency IS NOT NULL GROUP BY Urgen
    every row sections 1–4 return. Write down what section 5 counts.
 4. Apply the chain — see §8.5 for the two ways, and for which of them is actually available on
    Monster ASP. Only after step 3.
-5. Confirm the schema took: `__EFMigrationsHistory` should hold 21 rows and the database 39
-   base tables. Re-running sections 1–4 now proves nothing, because the narrowed columns
-   cannot physically hold an over-length value; they were the prediction, not the check.
-6. Work `/Admin/Approvals` and release the staff accounts the review migration pended
-   (§8.4). Until you do, the only way into the CRM is the administrator from step 1.
+5. Confirm the schema took: `__EFMigrationsHistory` should hold 22 rows and the database 39
+   base tables, and `Users` must no longer carry `ApprovalStatus` — that is the proof
+   migration 22 ran rather than merely being recorded. Re-running sections 1–4 now proves
+   nothing, because the narrowed columns cannot physically hold an over-length value; they
+   were the prediction, not the check.
+6. Work `/Admin/Users` and turn the Access switch back on for the staff accounts you
+   recognise (§8.4). Migration 22 disabled every account the review had left unjudged, so
+   until you do, the only way into the CRM is the administrator from step 1.
 7. Seed the catalogue (§8.3).
 8. Walk §7's post-deployment confirmations.
 
@@ -700,7 +719,7 @@ SELECT Urgency, COUNT(*) FROM Inquiries WHERE Urgency IS NOT NULL GROUP BY Urgen
 
 One `Up()` does all of it, in five parts:
 
-- seven columns on `Users` — `ApprovalStatus` `nvarchar(20)` **defaulting to `'Approved'`**, `EmailVerified` `bit` defaulting to `false`, plus `EmailVerificationToken`/`EmailVerificationExpiry`, `RejectionReason`, `ReviewedByUserId` and `ReviewedAt`;
+- seven columns on `Users` — `ApprovalStatus` `nvarchar(20)` **defaulting to `'Approved'`**, `EmailVerified` `bit` defaulting to `false`, plus `EmailVerificationToken`/`EmailVerificationExpiry`, `RejectionReason`, `ReviewedByUserId` and `ReviewedAt`. Four of those seven (`ApprovalStatus`, `RejectionReason`, `ReviewedByUserId`, `ReviewedAt`) are dropped again by migration 22 — the two token pairs and `EmailVerified` are the account-recovery columns and stay;
 - the `LoginHelpRequests` table the help button writes to;
 - 28 string columns narrowed from `nvarchar(max)` across `Tickets`, `Quotations`, `QuotationLineItem`, `DeliveryLogs`, `Deals`, `Clients` and `Assets` — two of them are GUID foreign keys going to `nvarchar(450)`, which widens and stores 36-character values, so they are carried here for completeness rather than risk;
 - two decimals re-typed: `Quotations.VatRate` `18,2` → `5,4` and `DeliveryLogs.WeightKg` `18,2` → `10,2`;
@@ -723,7 +742,7 @@ Three things the script encodes that are easy to get wrong by hand:
 
 On an empty or newly created database all of this applies without complaint. On a database that has been used, any row that violates the new shape aborts the script at that statement, and because the API calls `MigrateAsync()` at startup the app then comes up in degraded mode with the schema half-changed. Fix or trim the offending rows, re-run the script, then migrate.
 
-**`ApprovalStatus` defaulting to `'Approved'` is deliberate and is the reason the migration itself is safe.** Adding a `NOT NULL` column to a populated table needs a default, and the alternative — `'Pending'` — would have locked every existing account out of the building in the same second the schema changed. The review that does lock staff accounts out is the *next* migration, and it does it on purpose: §8.4.
+**`ApprovalStatus` defaulting to `'Approved'` was deliberate and is the reason migration 20 itself was safe.** Adding a `NOT NULL` column to a populated table needs a default, and the alternative — `'Pending'` — would have locked every existing account out of the building in the same second the schema changed. The review that did lock staff accounts out was the *next* migration, and it did it on purpose: §8.4. Migration 22 then removes the column, having first disabled the rows it found unjudged — so on a database that runs the whole chain, this default and that `'Pending'` sweep cancel out into an explicit Access decision by an administrator.
 
 ### 8.2 Clear the demo and QA residue before you migrate anything real
 
@@ -831,61 +850,95 @@ create yourself:
   the database would only be true on the host it was written for, and the mobile
   app loads `ImageUrl` directly.
 
-### 8.4 After the migration: release the staff accounts the review swept up
+### 8.4 After the migration: the accounts the removed gate was holding
 
-`20261101152359_ReviewSelfClaimedStaffAccounts` runs one statement:
+The approval gate is gone from the application, and migration 22 removes the columns
+that stored it. Read this section before running the chain on a database that has ever
+used the gate, because 22 is the one migration in the chain that changes who can sign in.
+
+The three migrations involved, in order:
 
 ```sql
+-- 20-SyncSchemaAndAccountLifecycle: adds the gate.
+ALTER TABLE [Users] ADD [ApprovalStatus] nvarchar(20) NOT NULL DEFAULT N'Approved';
+
+-- 21-ReviewSelfClaimedStaffAccounts: parks four staff roles in the queue.
 UPDATE [Users] SET [ApprovalStatus] = N'Pending'
 WHERE [Role] IN (N'Sales Representative', N'Procurement Manager',
                  N'Field Support Engineer', N'Logistics');
+
+-- 22-RemoveAccountApprovalGate: withdraws access from what is still unreviewed,
+-- then drops the queue's storage.
+UPDATE [Users] SET [IsActive] = 0 WHERE [ApprovalStatus] = N'Pending';
+DROP INDEX [IX_Users_ApprovalStatus_CreatedAt] ON [Users];
+ALTER TABLE [Users] DROP COLUMN [ApprovalStatus];  -- plus RejectionReason,
+                                                   -- ReviewedAt, ReviewedByUserId
 ```
 
-It has no `WHERE` on the current status, so it pends **every account in those four roles that exists at the moment it runs**, including the ones an administrator created for real employees and the ones your own staff registered years ago. That is the design, and the comment above the migration says the cost out loud: nothing in the `Users` row records who created the account, so the sweep cannot tell a genuine employee from someone who typed a staff role into the sign-up form.
+**Why 22 disables rows instead of leaving them alone.** Deploying the new code *is* the
+removal — nothing reads `ApprovalStatus` any more, so the moment the build goes out every
+`Pending` account is simply a live account. On a database that ran 21, that set includes
+the self-claimed staff roles 21 deliberately parked for a reviewer. So 22 fails closed
+first, then drops the columns: the unaudited accounts come back as `IsActive = 0` rows an
+administrator can see and judge on `/Admin/Users`, rather than as console logins nobody
+approved. Nothing is deleted. Approved and Rejected rows are untouched — the second were
+already out through `IsActive`, which 22 does not modify.
 
-**The consequence is that the morning after a migration, your staff cannot sign in.** [AuthService.cs:45](VerichatCRM.API/Services/AuthService.cs#L45) refuses a `Pending` account before issuing a token, and [AccountController.cs:52](VerichatCRM.Web/Controllers/AccountController.cs#L52) sends the right password to the `Account/Review` screen instead of a dashboard. Web and mobile both read the same flag, so the same person is locked out of both. The message is honest — *"Your account is created and waiting for a Verichat employee to approve it"* — but to anyone who has not read this section it is indistinguishable from an outage. Section 5 of `Database/preflight-migration-checks.sql` counts these accounts before you migrate; write the number down.
+**The cost is that the accounts 21 swept up indiscriminately stay disabled.** 21 pended
+every account in those four roles, including ones an administrator created for real
+employees, because nothing in the `Users` row records who created it. After 22 those
+people are disabled rather than waiting, which reads the same to them and is fixed the
+same way: the Access switch on `/Admin/Users`.
 
 Do this, in this order:
 
-1. **Before migrating**, sign in to the deployment with a **System Administrator** account and confirm it works. `System Administrator`, `Client User` and `Medical Student` are outside the sweep — the admin role because the sign-up form never offers it, the other two because they reach nothing but their own portal.
-2. **Migrate.** The order in §8's numbered runbook: §8.2's cleanup, then §8.1's pre-flight, then the chain, then §8.3's catalogue.
-3. **Sign in as that System Administrator** and open `/Admin/Approvals`. Three roles hold `Perm.AccountApprovals` — System Administrator, Sales Representative and Procurement Manager ([Perm.cs:82](VerichatCRM.Web/Authorization/Perm.cs#L82)) — but the latter two are themselves `Pending` after step 2, so **the administrator is the only account that can work the queue.** A `Pending` administrator would have no way back in: `AccountApprovalService.ApproveAsync` refuses self-review, so the sweep leaving that role alone is load-bearing, not an oversight.
-4. **Approve the accounts you know, one at a time.** There is no bulk approve, deliberately — it is the same yes-or-no decision as a normal application, and a queue of forty is a sign the sweep ran against a database it should not have. A reviewer cannot change the role while approving: the applicant stays in the role they asked for.
-5. Tell the staff who signed themselves up what happened. Anyone who cannot get in has `/Account/Help` and the help button on both the sign-in and the review screen, and their notes land next to the queue at `/Admin/HelpRequests`.
+1. **Before migrating**, sign in to the deployment with a **System Administrator**
+   account and confirm it works. It is outside the sweep — the sign-up form never offered
+   that role, and still does not.
+2. **Migrate.** The order in §8's numbered runbook: §8.2's cleanup, then §8.1's
+   pre-flight, then the chain, then §8.3's catalogue.
+3. **Open `/Admin/Users` and re-enable the staff you recognise.** Section 5 of
+   `Database/preflight-migration-checks.sql` counted the accounts in the four swept roles
+   before you migrated; `verify-migration-state.sql` run afterwards groups `Users` by
+   `Role, IsActive`, so the difference between the two numbers is the list to work
+   through. Sign in as yourself first — the administrator account is the one that must not
+   be disabled while you are doing this.
+4. **Tell anyone who cannot get in what happened.** They have `/Account/Help` and the help
+   button on the sign-in screen, and their notes land at `/Admin/HelpRequests` for the
+   three roles holding `Perm.SignInHelp` — System Administrator, Sales Representative and
+   Procurement Manager ([Perm.cs:82](VerichatCRM.Web/Authorization/Perm.cs#L82)).
+   Two of those three may themselves be sitting disabled after step 2, so the
+   administrator is again the only account guaranteed to be able to work the queue.
 
-If the queue genuinely cannot be worked — a demonstration, a migration onto a database whose staff are all already vetted — this is the escape hatch, and it is exactly the migration's own `Down()`:
+There is no escape-hatch `UPDATE` for `ApprovalStatus` any more, because after 22 there is
+no such column. The equivalent is naming the accounts you want back:
 
 ```sql
-UPDATE [Users] SET [ApprovalStatus] = N'Approved'
-WHERE [Role] IN (N'Sales Representative', N'Procurement Manager',
-                 N'Field Support Engineer', N'Logistics')
-  AND [ApprovalStatus] = N'Pending'
-  AND [ReviewedByUserId] IS NULL;
+UPDATE [Users] SET [IsActive] = 1
+WHERE [Email] IN (N'thao@verichat.example', N'procurement@verichat.example');
 ```
 
-`ReviewedByUserId` is only ever written by the queue, so this releases the accounts the sweep caught and leaves anything a reviewer has since decided by hand — including a rejection — exactly as they left it. Running it undoes the protection this feature exists to provide, so run it to unblock a room, then work the queue properly.
+Run it *after* the chain, and by address rather than by role — a `WHERE [Role] IN (...)`
+here would re-enable the self-claimed accounts too, which is the one thing this migration
+exists to prevent.
 
-Verified end to end on the local deployment, which went through both migrations on
-2026-11-01:
+Verified on the local database on 2026-11-02, which had run 20 and 21 and held 22
+migrations afterwards:
 
-- the pre-flight script counted **12** staff accounts in the four swept roles (3 Sales
-  Representative, 5 Procurement Manager, 2 Field Support Engineer, 2 Logistics); after
-  the migrations ran, 6 of them sat `Pending` and 6 `Approved` — the pending half being
-  the accounts that existed before the sweep, the approved half the per-role
-  demonstration accounts `DemoUserSeeder` creates after it with `ApprovalStatus` set
-  explicitly in code;
-- a fresh Sales Representative registered through `/Account/Register` and signed in with
-  the **right** password: held on the review screen, with the "waiting for a Verichat
-  employee" wording, no session issued;
-- the `admin@verichat.test.local` System Administrator reached `/Admin/Dashboard`, opened
-  `/Admin/Approvals`, and found 7 applicants — the 6 above plus the new one;
-- its Approve button posted `/Admin/ApproveAccount`, returned to the queue, and the
-  account was no longer listed;
-- the held account's same credentials then signed straight in and landed on `/Pipeline`,
-  the Sales Representative board.
+- 8 rows came out of the `Pending` state as `IsActive = 0` — 2 self-registered `Client
+  User` accounts, and 6 staff-role accounts, most of them `*.probe.*@test.local` rows
+  written while exercising the review screen by hand, plus one `thabo.rep@test.local`;
+- every documented demonstration account survived: `admin@`, `sales@`, `procurement@`,
+  `engineer@`, `logistics@`, `client@` and `student@verichat.test.local` all still read
+  `IsActive = 1`, so the credentials in `README.md` keep working without re-enabling
+  anything;
+- `Users` is down to its 14 non-approval columns, and the application signs a
+  self-registered `Client User` straight in — `/Account/Register` returns no token by
+  design, the web tier exchanges the just-chosen password through `LoginAsync`, and the
+  mobile `registerClient` does the same against `/api/mobile/login`.
 
 So the procedure in this section is the one that was actually walked, not a reconstruction
-of it. The escape-hatch `UPDATE` was not run.
+of it. No account was re-enabled by hand during that verification.
 
 ### 8.5 Applying the chain on Monster ASP: use the files in `Database/hosted-migrations`
 
@@ -913,13 +966,13 @@ profiles in `VerichatCRM.API/Properties/PublishProfiles` point somewhere else:
 | `verichat-api - Web Deploy` | `verichat-api-aqcbgydhhbgbgha5.scm.eastus-01.azurewebsites.net` | **no** — Azure cannot route to `10.0.0.23` (§7.2), so publishing here leaves the hosted schema at 15 forever |
 | `site94518-WebDeploy` | `site94518.siteasp.net` → `verichat-crm-api.runasp.net` | the retired earlier site |
 
-**Route B, and why it is six files instead of one.** `Database/apply-pending-migrations.sql`
+**Route B, and why it is seven files instead of one.** `Database/apply-pending-migrations.sql`
 carries 23 `GO` separators, and it genuinely needs them: the generated bodies declare
 `@var` again in later blocks, and `DECLARE` scope is the batch, so the whole script pasted as
 one batch dies with *"The variable name '@var' has already been declared."* `GO` is not T-SQL —
 it is a client-side separator — and a hosting panel's web SQL window submits the text as one
 batch, so the monolithic script cannot run there at all. `Database/hosted-migrations/` holds the
-six pending regions split out, one file per migration, each of them:
+seven pending regions split out, one file per migration, each of them:
 
 - a single legal batch with no `GO`, so it pastes into any client;
 - prefixed with `SET QUOTED_IDENTIFIER ON; SET ANSI_NULLS ON;` rather than trusting the client's
@@ -931,11 +984,11 @@ six pending regions split out, one file per migration, each of them:
 - still guarded per statement by `IF NOT EXISTS (… __EFMigrationsHistory …)`, so re-running a file
   that already succeeded is a no-op, and each file records its own `MigrationId`.
 
-Splitting also buys attribution: one 2215-line paste gives you one anonymous error, six pastes
-tell you which migration failed — either by printing its own `Step n/21 … FAILED` line, or, for
+Splitting also buys attribution: one 2308-line paste gives you one anonymous error, seven pastes
+tell you which migration failed — either by printing its own `Step n/22 … FAILED` line, or, for
 the errors that abort before the handler runs, by being the file you just pasted.
 
-**Measured, on 2 Nov, against a database frozen in exactly the hosted state.** Created with
+**Measured on 2 Nov, against a database frozen in the then-hosted state.** Created with
 `dotnet ef database update 20261025174339_AddAppointmentMeetingLinks` — 15 rows in
 `__EFMigrationsHistory`, max id `…AddAppointmentMeetingLinks`, i.e. migrations 16–21 pending —
 then each file run through `sqlcmd -b` **deliberately without `-I`**, so the batch is single and
@@ -944,9 +997,34 @@ then each file run through `sqlcmd -b` **deliberately without `-I`**, so the bat
 - 16 → 21 all succeed. No Msg 1934, so the in-file `SET` does the job the `-I` flag used to do.
 - `__EFMigrationsHistory` goes 15 → 21, `MAX(MigrationId)` = `20261101152359_ReviewSelfClaimedStaffAccounts`.
 - `dotnet ef migrations list` against it reports zero pending.
-- Re-running `16-AddUserDeviceToken.sql` prints `Step 16/21 - AddUserDeviceToken applied (or
-  already recorded).` and changes nothing.
-- The throwaway database was dropped afterwards.
+- Re-running `16-AddUserDeviceToken.sql` prints `Step 16/22 - AddUserDeviceToken applied (or
+  already recorded).` and changes nothing. (That line read `Step 16/21` when it was observed; the
+  files now count to 22, which does not change what was measured.)
+
+**Measured on 2 Nov, against a database frozen at migration 21 — this is the 22 run.** Created with
+`dotnet ef database update 20261101152359_ReviewSelfClaimedStaffAccounts` — 21 rows in
+`__EFMigrationsHistory`, i.e. only migration 22 pending — then `22-RemoveAccountApprovalGate.sql`
+run through `sqlcmd -b` **without `-I`**, with three seeded accounts holding each approval state.
+What that run found, in order:
+
+- the first version of the file failed with `ALTER TABLE DROP COLUMN ApprovalStatus failed because
+  one or more objects access this column` — migration 20 added that column as
+  `NOT NULL DEFAULT N'Approved'`, so it owns a generated default constraint, and a hand-written
+  panel file has to drop it before the column. The batch rolled back and recorded nothing, which is
+  the behaviour §8.5 documents; the whole chain is never left half-applied by this class of error.
+  The file now walks the four columns with a cursor that drops each constraint it finds first.
+- after that fix: the `Pending` row came out `IsActive = 0`, the `Approved` row stayed `1`, the
+  already-`Rejected` row (which was disabled by the old queue) stayed `0`, the four columns and
+  `IX_Users_ApprovalStatus_CreatedAt` are gone, and `Step 22/22 - … applied` printed once.
+- re-running the same file prints `Step 22/22 - RemoveAccountApprovalGate applied (or already
+  recorded).` and changes nothing — including the `UPDATE`, which is the statement that made this
+  file's column references dynamic in the first place.
+- the same migration applied through `dotnet ef database update` against the development database
+  produced the identical end state: 22 rows in history, `Users` down to its 14 non-approval
+  columns, and the eight accounts that had been sitting `Pending` (six QA probe rows, one
+  `thabo.rep@test.local`, two self-registered clients) disabled rather than released. Every
+  `README.md` demonstration account stayed enabled.
+- the throwaway database was dropped afterwards.
 
 **The failure handling has two shapes, and assuming they are the same is how you end up trusting
 a message that never arrives.** Both were produced on purpose:
@@ -992,19 +1070,25 @@ mid-deployment.
 
 **The procedure**, in order — the same seven steps as §8's runbook, with step 4 replaced:
 
-1. §8 step 1: confirm a System Administrator can sign in. Migration 21 will lock every other
-   staff account out (§8.4), so the administrator is the only way in afterwards.
+1. §8 step 1: confirm a System Administrator can sign in. Migration 21 pends every other staff
+   account and migration 22 then disables those, so the administrator is the only way in
+   afterwards (§8.4).
 2. `Database/hosted-migrations/verify-migration-state.sql` — read-only. Expect `AppliedCount 15`,
-   six rows marked `PENDING`, and `ApprovalStatus does not exist yet`. Record the output.
+   seven rows marked `PENDING`, and `ApprovalStatus does not exist yet`. Record the output, plus the
+   `Role, IsActive` grouping at the bottom — that is the list to compare against after step 5.
 3. `Database/preflight-migration-checks.sql` (§8.1) and fix every row its sections 1–4 return.
    This is not optional for Route B either: migration 20's five unique indexes and its narrowed
    columns fail on the same duplicates and over-length values, and on hosted data they have never
-   been tested against. Section 5 tells you how many staff accounts migration 21 will pend.
-4. Run `16-…sql`, then `17-…`, `18-…`, `19-…`, `20-…`, `21-…` — one file at a time, one paste each.
-   Stop at the first failure; it has rolled itself back.
-5. `verify-migration-state.sql` again. Expect `AppliedCount 21` and no `PENDING` rows.
+   been tested against. Section 5 tells you how many staff accounts migration 21 will pend and
+   therefore how many migration 22 will disable.
+4. Run `16-…sql`, then `17-…`, `18-…`, `19-…`, `20-…`, `21-…`, `22-…` — one file at a time, one paste
+   each. Stop at the first failure; it has rolled itself back. Step 22 prints the number of rows it
+   disabled; if that is more than step 2 counted, say so out loud before continuing.
+5. `verify-migration-state.sql` again. Expect `AppliedCount 22`, no `PENDING` rows, and the
+   `ApprovalStatus does not exist` line - which is the proof that 22 ran rather than merely being
+   recorded. Read the `Role, IsActive` grouping for the accounts §8.4's step 3 must re-enable.
 6. Restart the site, then `GET /api/health`: `status Healthy`, `database.status Healthy`. If it
-   still says `MigrationsPending` after 21 rows are recorded, the app is pointing at a *different*
+   still says `MigrationsPending` after 22 rows are recorded, the app is pointing at a *different*
    database — which is a panel configuration problem, not a schema one.
 7. §8 steps 6–8: release the pended staff accounts, seed the catalogue, walk §7.
 

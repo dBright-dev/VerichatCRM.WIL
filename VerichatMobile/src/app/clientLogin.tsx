@@ -101,7 +101,7 @@ const ClientLoginScreen = () => {
             <Text style={styles.back_text}>Forgotten the password?</Text>
           </TouchableOpacity>
 
-          {/* The other way out. A reset link does nothing for a declined application
+          {/* The other way out. A reset link does nothing for a deactivated account
               or a typo'd address, and until now a person with one of those had no way
               to say so from inside the app they cannot reach. */}
           <TouchableOpacity style={styles.back} onPress={() => router.push('/loginHelp')}>

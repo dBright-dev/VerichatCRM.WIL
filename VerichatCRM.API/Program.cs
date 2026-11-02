@@ -94,10 +94,8 @@ builder.Services.AddScoped<IQuotationRepository, QuotationRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
-// The reviewer's half of the same gate AuthService applies to the applicant.
-builder.Services.AddScoped<IAccountApprovalService, AccountApprovalService>();
 // Password resets and email confirmations: the two flows a person uses when the
-// credentials they have do not work, before and after approval.
+// credentials they have do not work.
 builder.Services.AddScoped<IAccountRecoveryService, AccountRecoveryService>();
 // The third way in, for the accounts the two above cannot reach: a note to an
 // administrator from somebody standing outside the sign-in screen.
@@ -311,7 +309,7 @@ using (var scope = app.Services.CreateScope())
     {
         logger.LogError(ex,
             "Development sign-in accounts could not be seeded. The system still runs; " +
-            "sign up through the UI and approve the account instead.");
+            "sign up through the UI instead.");
     }
 }
 

@@ -13,12 +13,12 @@
                 <div class="vc-auth-brand-sub">MEDICAL PROCUREMENT</div>
             </div>
         </div>
-        <h2 class="vc-auth-headline">Create an account<br />and get to work.</h2>
-        <p class="vc-auth-lede">Choose how you use Verichat. Staff roles run the supply chain from the console; client roles order from it and follow their own quotes, deliveries and support.</p>
+        <h2 class="vc-auth-headline">Create an account<br />and start ordering.</h2>
+        <p class="vc-auth-lede">This form opens the self-service side of Verichat: buy, request quotes, follow your own deliveries and raise support. Staff consoles are not self-serve - a Verichat employee creates those.</p>
         <ul class="vc-auth-points">
-            <li><span class="vc-check">✓</span> Staff consoles for sales, procurement, support and logistics</li>
             <li><span class="vc-check">✓</span> A self-service portal for clients and students</li>
             <li><span class="vc-check">✓</span> One login for the web app and the mobile app</li>
+            <li><span class="vc-check">✓</span> Works the moment you create it - no waiting for anyone</li>
         </ul>
 
         @await Html.PartialAsync("_AuthPolicyFootnote")
@@ -29,11 +29,12 @@
             <h1 class="vc-auth-title">Create account</h1>
             <p class="vc-auth-sub">All fields are required except where marked.</p>
             <p class="vc-auth-sub">
-                For every role except System Administrator, a Verichat employee reads the
-                application before these credentials open anything, so sign in again once you
-                have been approved. We also send a link
-                to confirm this address is yours - clicking it is what tells the reviewer
-                the notice will reach you.
+                Sign in with the address and password you choose here - the account is ready
+                straight away. We also send a link to confirm this address is yours; clicking
+                it is what tells us the notices we send - a reset link, a quote, a delivery
+                update - will actually reach you. Need a staff console? Use the
+                <a asp-action="Contact" asp-controller="Home">contact page</a> and an employee
+                will set it up.
             </p>
 
             <form asp-action="Register" method="post">
@@ -61,30 +62,20 @@
 
                 <div class="form-group">
                     <label class="form-label" asp-for="Role">What will you do here?</label>
+                    @* Exactly UserRoles.SelfRegisterable, and nothing else. The API
+                       refuses any role outside that list, so offering a staff role
+                       here would only produce a refusal on a form that appeared to
+                       accept it. *@
                     <select asp-for="Role" class="form-select">
-                        <optgroup label="Order from Verichat">
-                            <option value="Client User">Client User — buy, request quotes, raise support</option>
-                            <option value="Medical Student">Medical Student — browse and request, no purchasing</option>
-                        </optgroup>
-                        <optgroup label="Work inside Verichat">
-                            <option value="Sales Representative">Sales Representative — revenue engine</option>
-                            <option value="Procurement Manager">Procurement Manager — supply &amp; logistics</option>
-                            <option value="Field Support Engineer">Field Support Engineer — on-site resolution</option>
-                            <option value="Logistics">Logistics — delivery &amp; transport</option>
-                        </optgroup>
-                        @* Last, not first: an unselected <select> shows its first
-                           option, and this form is anonymous. System Administrator
-                           is listed but must never be the pre-chosen answer. *@
-                        <optgroup label="Run Verichat">
-                            <option value="System Administrator">System Administrator — full control, no review needed</option>
-                        </optgroup>
+                        <option value="Client User">Client User — buy, request quotes, raise support</option>
+                        <option value="Medical Student">Medical Student — browse and request, no purchasing</option>
                     </select>
                     <span asp-validation-for="Role" class="text-critical"></span>
                     <p class="vc-auth-sub" style="margin:.5rem 0 0;">
-                        System Administrator is on this list and is the one role that
-                        skips the review queue: choosing it creates an account that can
-                        sign in immediately. Every other role here waits for an employee
-                        to approve it.
+                        Both of these open the self-service portal and sign in as soon as
+                        the account is created. Staff roles - sales, procurement, support,
+                        logistics, administrator - are created by an employee, so they are
+                        not offered here.
                     </p>
                 </div>
 

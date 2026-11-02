@@ -51,8 +51,8 @@
                 <span>Your password is stored as a salted PBKDF2 hash. We could not read it back if somebody asked.</span>
             </div>
             <div class="lnd-doc__glance-item">
-                <b>Access is a decision</b>
-                <span>A registration is an application. A Verichat employee approves it before any data opens.</span>
+                <b>Access is scoped</b>
+                <span>A self-registered account sees only its own orders, quotes and deliveries. A console that reads client data is created by an administrator.</span>
             </div>
         </div>
     </div>
@@ -87,7 +87,7 @@
                 <h2>1. What this notice covers</h2>
                 <p>
                     It applies to <strong>verichat.co.zw</strong> and the pages on it
-                    (including this notice), the signed-in portal an approved account uses,
+                    (including this notice), the signed-in portal an account uses,
                     the API behind it, and the Verichat mobile application. It covers both
                     the public enquiry forms and everything we hold about people who already
                     have an account.
@@ -119,9 +119,9 @@
                 <div class="lnd-legal__group">
                     <h3>Your Verichat account</h3>
                     <ul class="lnd-points">
-                        <li>Your name, your email address, the role you applied for and whether the account is switched on.</li>
+                        <li>Your name, your email address, the role the account holds and whether it is switched on.</li>
                         <li>A salted hash of your password - never the password itself.</li>
-                        <li>Whether an employee has approved the account, and who approved or declined it.</li>
+                        <li>Whether the address has been confirmed, plus the date the account was created and the time it last signed in.</li>
                         <li>The signed-out time of a one-use token that proves you control that mailbox, and of a one-use token that lets a new password be set.</li>
                     </ul>
                 </div>
@@ -197,8 +197,8 @@
                             <td>Performance of a contract</td>
                         </tr>
                         <tr>
-                            <td>Approval state, audit trail, IP address</td>
-                            <td>Stop an unapproved account reading another organisation's prices, and make a disputed record explainable.</td>
+                            <td>Audit trail, IP address</td>
+                            <td>Make a disputed record explainable, and an unauthorised change traceable.</td>
                             <td>Legitimate interest - fraud and dispute control</td>
                         </tr>
                         <tr>
@@ -274,25 +274,28 @@
                         </tr>
                         <tr>
                             <td>System Administrator</td>
-                            <td>Everything, including the audit trail and the user list. This role approves accounts.</td>
+                            <td>Everything, including the audit trail and the user list. This role creates and edits staff accounts.</td>
                         </tr>
                     </tbody>
                 </table>
                 <p>
-                    Approving a self-registered account is limited to System Administrator,
-                    Sales Representative and Procurement Manager. Nobody outside these roles,
-                    and nobody at another company, is given access to your records. We do not
-                    sell or licence them.
+                    Creating or changing a staff account belongs to the System Administrator
+                    alone. Sales Representative and Procurement Manager can read the sign-in
+                    help notes, because those are the roles that can fix what a note reports.
+                    Nobody outside these roles, and nobody at another company, is given access
+                    to your records. We do not sell or licence them.
                 </p>
             </section>
 
             <section id="accounts">
-                <h2>5. Accounts, approval and the recovery links</h2>
+                <h2>5. Accounts and the recovery links</h2>
                 <p>
-                    <strong>Signing up is an application, not access.</strong> The record is
-                    written down and waits; a Verichat employee checks that the applicant is
-                    genuinely a client and not somebody registering as staff, and only an
-                    approved, confirmed account can sign in.
+                    <strong>Signing up gives you the portal, not the console.</strong> The form
+                    opens a Client User or Medical Student account, which can see only its own
+                    enquiries, quotes, orders and tickets. Everything that reads another
+                    organisation's records - sales, procurement, support, logistics,
+                    administrator - is created by a Verichat employee, so a role is never
+                    something a person can award themselves from a public form.
                 </p>
                 <p>
                     <strong>Confirmation and reset links.</strong> Both links carry a random
@@ -303,9 +306,8 @@
                 </p>
                 <p>
                     <strong>What a reset proves.</strong> Resetting a password proves you can
-                    receive mail at that address. It does not turn a pending application into
-                    an approved account, and it does not reopen an account that was declined or
-                    switched off.
+                    receive mail at that address. It does not change the role the account holds,
+                    and it does not reopen an account that was switched off.
                 </p>
                 <p>
                     <strong>Forgot-password answers are deliberately neutral.</strong> The
@@ -330,7 +332,7 @@
                 <h2>7. Services we depend on</h2>
                 <ul class="lnd-points">
                     <li><strong>Hosting.</strong> The portal and API run on our contracted application hosting provider. The database is on managed SQL Server with them. If your data is processed outside Zimbabwe, that is the reason - we will name the region for you on request.</li>
-                    <li><strong>Email.</strong> An SMTP provider sends confirmation, approval, reset, help and delivery notices on our behalf. They move the message; they do not get to keep a business record of you, and the message body is not copied into the database - only the fact that a notice went out.</li>
+                    <li><strong>Email.</strong> An SMTP provider sends confirmation, reset, help and delivery notices on our behalf. They move the message; they do not get to keep a business record of you, and the message body is not copied into the database - only the fact that a notice went out.</li>
                     <li><strong>Expo / app stores.</strong> The mobile build and its push channel pass through Expo, and the store you install from records your download. Both have their own privacy statements.</li>
                     <li><strong>Maps.</strong> Any embedded map on a contact page loads tiles from a third party, which sees your IP address while the map is displayed.</li>
                 </ul>
@@ -347,7 +349,7 @@
                     those periods, not convenience.
                 </p>
                 <ul class="lnd-points">
-                    <li>An application that was never approved does not have to sit in the queue forever - ask us and we clear it.</li>
+                    <li>An account you no longer use does not have to stay on the register - ask us and we deactivate or delete it.</li>
                     <li>Sign-in help notes stay open until an administrator closes them; a closed note is kept with the name of whoever closed it.</li>
                     <li>Recovery codes expire on their own - one hour and seven days - and cannot be replayed after use.</li>
                     <li>Deactivating an account stops access immediately. The record itself is kept so the orders it placed still read correctly, which is why a deletion request is the one we take most care over.</li>
@@ -368,7 +370,7 @@
                     <li>Every read and write is authorised on the server against your role and, where records belong to a client, against your own account.</li>
                     <li>Forms carry an anti-forgery token, and free text is sanitised on the way in so that markup typed into a message box cannot become part of a page.</li>
                     <li>Database credentials live in the deployment environment, not in the source code.</li>
-                    <li>Only the roles that need a permission have it; approval rights are limited to three roles.</li>
+                    <li>Only the roles that need a permission have it; the right to create or change a staff account belongs to the System Administrator alone.</li>
                 </ul>
                 <p>
                     No system can promise that nothing will ever go wrong. If we become aware
@@ -405,7 +407,7 @@
                 <p>
                     The date at the top of the page is the date this version was published, and
                     every version is numbered. If we change what we collect, who can read it or
-                    what we do with it, approved accounts get an email before the change takes
+                    what we do with it, account holders get an email before the change takes
                     effect and the portal shows the new notice at the next sign-in. Continuing
                     to use the service after that is your agreement to the revised notice.
                 </p>
@@ -419,7 +421,7 @@
                 <p>
                     If you cannot sign in at all, the shortest route is the
                     <a href="/account/help">sign-in help form</a> - it reaches an
-                    administrator who can see the approval queue and the user list, which is
+                    administrator who can see the user list and the roles on it, which is
                     the only place a locked-out account can actually be fixed.
                 </p>
             </section>

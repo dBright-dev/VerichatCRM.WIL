@@ -1,17 +1,17 @@
 -- ============================================================================
--- Migration 16 of 21: 20261027100000_AddUserDeviceToken
+-- Migration 16 of 22: 20261027100000_AddUserDeviceToken
 -- Route B step for the hosted database on site103828 (api-site.runasp.net).
 --
 -- One self-contained batch with no GO separators, because a hosting panel web
 -- SQL window submits its text as one batch and GO is a client-side separator.
--- Run 16, then 17, 18, 19, 20, 21, one file at a time. Every statement keeps the
+-- Run 16, then 17, 18, 19, 20, 21, 22, one file at a time. Every statement keeps the
 -- IF NOT EXISTS guard on __EFMigrationsHistory, so a file that already succeeded
 -- is a no-op and a file that failed can be re-run once its cause is fixed.
 --
 -- Two failure shapes, and they are NOT interchangeable (measured 2 Nov):
 --   * an execution error - duplicate key on one of the five unique indexes,
 --     truncation into a narrowed column, a NULL where the column turns NOT NULL -
---     enters the CATCH below, prints the Step n/21 FAILED line, rolls the whole
+--     enters the CATCH below, prints the Step n/22 FAILED line, rolls the whole
 --     migration back and re-raises the original message.
 --   * a DDL compile error - Msg 2714 There is already an object named, Msg 2705
 --     Column names in each table must be unique - ABORTS the batch without ever
@@ -51,12 +51,12 @@ BEGIN TRY
     
     COMMIT;
 
-    PRINT N'Step 16/21 - AddUserDeviceToken applied (or already recorded).';
+    PRINT N'Step 16/22 - AddUserDeviceToken applied (or already recorded).';
 END TRY
 BEGIN CATCH
     IF XACT_STATE() <> 0 ROLLBACK TRANSACTION;
     DECLARE @err16 nvarchar(4000) = ERROR_MESSAGE();
-    PRINT N'Step 16/21 - AddUserDeviceToken FAILED - rolled back, nothing recorded.';
+    PRINT N'Step 16/22 - AddUserDeviceToken FAILED - rolled back, nothing recorded.';
     PRINT N'      ' + @err16;
     DECLARE @raise16 nvarchar(4000) = REPLACE(@err16, N'%', N'%%');
     RAISERROR(@raise16, 16, 1);

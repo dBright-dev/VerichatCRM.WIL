@@ -21,7 +21,7 @@ Consolidated from the gap analysis so that the guide writer never has to redisco
 | Warehouse Alerts → stock chart | **[Broken]** — renders empty; the series it expects is `Month / Desktop / Mobile`, which is meaningless for consumables | say nothing; don't demo | — |
 | Inquiry **priority score** | **[Built]** — computed from value/sector/contract/urgency when left blank; a typed score overrides it and is never recalculated | "the number is a starting position — overrule it and say why in a follow-up" | §20-11 |
 | **Over-stock order** | **[Broken]** — rejected outright, not warned about | "split or reduce the order; the system will not let you oversell" | §8 |
-| Catalogue **sort dropdown** | **[Broken]** — decorative, does nothing | "Sort is not available" | §19.3 |
+| Catalogue **sort dropdown** | **[Working]** — re-orders the cards client-side and composes with the chips and the search | no caveat needed | §19.3 |
 | Assets → **Schedule Service** | **[Broken]** — only links to Ticket Hub | "Use Consult to book" | §19.3 |
 | Ticket from an **asset** | **[Broken]** — always Medium/Technical | "If critical, phone us" | D47 |
 | In-app **push / live updates** (mobile) | **[Broken]** — none | "Pull to refresh" | D35-D38, D44 |
@@ -30,7 +30,7 @@ Consolidated from the gap analysis so that the guide writer never has to redisco
 | **Client User / Medical Student** on web | **[Broken]** — by design → proper 403 page now, not a crash | "Clients use the app" | `Perm.cs`, was D53 |
 | **Logistics** on mobile | **[Built]** — staff dashboard, as of this pass | train it — their job is in the field | was D39 |
 | **Idle session** in mobile | **[Broken]** — hard sign-out, cart lost | "Don't leave the app open mid-quote" | D40, D41 |
-| Global **notification bell** (web) | **[Partial]** — points at the right hub now, but still silent on the deployed pair: the session cookie cannot cross from the web host to the API host | "Alerts appear on the ticket and dashboard screens, not as a popup" | D9, defect 9 |
+| Global **live toast** (web, `notifications.js`) | **[Partial]** — points at the right hub now, but still silent on the deployed pair: the session cookie cannot cross from the web host to the API host | "Alerts appear on the ticket and dashboard screens, not as a popup" | D9, defect 9 |
 | **Password reset** | **[Broken]** — no UI, no endpoint | "Ask Admin" | D18 |
 | Outbound **email** of any kind | **[Broken]** — `EmailService` is registered but injected by nobody | "No confirmation emails are sent" | D18, UAT-03 |
 | Any **permission denial** | **[Built]** — was a server error; now the branded 403 page | trainees will see a real message, so teach what it means | was D53 |
@@ -78,7 +78,7 @@ The finished artefacts I would want in the pack:
 - [ ] **FAQ / troubleshooting page** seeded from the broken-paths table in §5: "I clicked Reorder Now and nothing happened", "Where's my PDF?", "Why can't I sign in on my phone?", "My cart disappeared", "Do I get an email? (No.)"
 - [ ] **A glossary** — Inquiry vs Lead vs Deal vs Quotation vs Order vs Ticket vs Asset, plus SLA, tracking number, quote reference, warranty vs calibration expiry. Half of the support load in a CRM is vocabulary.
 - [ ] **"Known limitations in this release"** page (from §5) with a *target fix version* per line, and a date.
-- [ ] **Roles & access request form** — who can approve which role, and what a user does when a link is missing.
+- [ ] **Roles & access request form** — who creates which role (only an administrator, on ▷ Users & Roles — the sign-up form offers client and student accounts), and what a user does when a link is missing.
 - [ ] **A feedback route.** The proposal specified a feedback form; none exists (§19.2). Without it we get no signal from training.
 - [ ] **Version and date on every page**, plus an owner. The gap analysis found three documents in this repo already stale in different ways (§11.2 README, D34 walkthrough, the eleven-case test count) — the guide must be dated or it will join them.
 - [ ] **Accessibility + language pass.** Verichat's clients are South African clinics and institutions; consider plain-language English and a second language for the client handbook.
@@ -236,7 +236,7 @@ Legend: **F** full · **R** read-only · **—** not permitted (link hidden, URL
 `_LandingLayout.cshtml` — its own navigation bar with **Sign in** and **Client portal**, a
 hero, a three-step workflow, a reference-only product gallery with click-to-zoom, the sector
 cards and a meet-the-team band — and it deliberately does **not** load the sidebar, the topbar
-or the notification bell. Everything a trainee sees after signing in is the `_Layout` shell
+or the live notification client. Everything a trainee sees after signing in is the `_Layout` shell
 described above, so screenshots of the two must not be mixed in the same page of the handbook.
 The landing copy and the four showcased items live in `ViewModels/Home/LandingContent.cs`; the
 product names there follow the seeded catalogue, so if the seed data changes the page needs a
@@ -262,7 +262,7 @@ DAILY     Inquiry Queue → score 0-100 (I choose; no auto-ranking) → follow u
           Pipeline Board → drag card to next stage
           Quotation Builder → add catalogue lines → issue to client
 CAN'T     create a client (Admin only) · see tickets (ask Support) · download PDF yet
-WATCH OUT Quotation PDF button is disabled. Sort dropdowns do nothing.
+WATCH OUT Quotation PDF button is disabled until the quote is saved once.
 IF STUCK  #faq · my super user is ______
 ```
 
