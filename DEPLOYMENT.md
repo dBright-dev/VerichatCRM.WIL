@@ -472,6 +472,24 @@ Still to do, and the order is not interchangeable:
    mobile, to the Azure https origin. Flipping the web tier first takes the working site down,
    because it would be proxying to an API that cannot yet read the data.
 
+**What the latency says, measured 2 November 2026 at 20:02–20:14 UTC.** On 1 Nov the Azure copy took
+**13,926 ms** to fail the same check; today it fails in **1,546–4,526 ms**, consistently, and the
+Monster copy in **1,097–3,100 ms**. That is a change of kind, not of degree. A connection attempt to
+`db70543.databaseasp.net` / `10.0.0.23` from outside that network produces no answer, so it burns a
+connect timeout — which is what 13.9 s was. A failure that returns inside two seconds has been
+*answered* by a server that then refused something. Read against step 3 above, the likely state is
+that the App Service's `ConnectionStrings__DefaultConnection` now names `verichat-server-2026` and
+reaches it, and that what is being refused is the login: step 2, `CREATE USER ... FROM EXTERNAL
+PROVIDER`, has not run. That is step 4's predicted outcome, and it makes §7.4's remaining work an
+Entra-administrator action rather than a networking one.
+
+It is an inference and it should be tested rather than trusted. Two things would falsify it: a fast
+TCP refusal from an intermediate device, or a connection string that still names the Monster server
+and fails for a different reason entirely. `HealthController` on `dev2` distinguishes them by SQL
+error number — 18456 would confirm the login rejection, 4060 would mean the session opens and the
+database itself is off-limits, and one of 53/121/10060/11001 would mean the network is still the
+problem — so publishing that build to either host settles it in one request.
+
 Two things this leaves that need attention:
 
 - The server has a firewall rule `development` spanning `0.0.0.0` - `255.255.255.255`, meaning every
