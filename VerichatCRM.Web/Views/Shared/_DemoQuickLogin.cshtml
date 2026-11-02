@@ -1,0 +1,44 @@
+@inject IWebHostEnvironment Env
+@using VerichatCRM.Core.Models
+@*
+    One click per role, and the reason it exists: seven accounts, seven boards, and
+    typing an address and a password from a README table for every one of them is the
+    slowest way to show that the roles differ. The list is DemoAccounts - the same one
+    DemoUserSeeder writes - so a button cannot name an account that is not there.
+
+    Development only, on both sides of the shortcut. This renders the buttons only
+    while the web host is in Development, and the accounts themselves are written only
+    while the API is in Development with Bootstrap:DemoUsers=true. A deployment has
+    neither, and the controller refuses a demoCode it cannot resolve.
+
+    Each button is its own form rather than script that fills the sign-in inputs, so
+    it works with page script switched off, and the credential never appears in the
+    DOM: the form posts the code and the controller reads the password from the list.
+*@
+@if (Env.IsDevelopment())
+{
+    <div class="vc-auth-demo" role="group" aria-label="Development demo accounts">
+        <div class="vc-auth-demo-label">Demo: quick login</div>
+        <div class="vc-auth-demo-grid">
+            @foreach (var account in DemoAccounts.All)
+            {
+                <form method="post" asp-action="Login" asp-controller="Account">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="demoCode" value="@account.Code" />
+                    <button type="submit" class="vc-auth-demo-btn"
+                            title="@account.Role &mdash; @account.DisplayName (@account.Email) opens @account.Landing">
+                        <span class="vc-auth-demo-dot" data-demo="@account.Code" aria-hidden="true"></span>
+                        <span class="vc-auth-demo-text">
+                            <span class="vc-auth-demo-role">@account.Label</span>
+                            <span class="vc-auth-demo-opens">@account.Landing</span>
+                        </span>
+                    </button>
+                </form>
+            }
+        </div>
+        <p class="vc-auth-demo-note">
+            Seeded development accounts, one per role. They exist only while the API
+            runs in Development with <code>Bootstrap:DemoUsers</code> set.
+        </p>
+    </div>
+}

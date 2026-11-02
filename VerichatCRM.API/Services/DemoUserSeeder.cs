@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using VerichatCRM.API.Helpers;
 using VerichatCRM.API.Services.Interfaces;
 using VerichatCRM.Core.Entities;
+using VerichatCRM.Core.Models;
 using VerichatCRM.Infrastructure.Data;
 
 namespace VerichatCRM.API.Services
@@ -32,22 +33,12 @@ namespace VerichatCRM.API.Services
     public static class DemoUserSeeder
     {
         /// <summary>
-        /// Every address ends in .test.local, which is not a routable domain. These
-        /// accounts receive a confirmation mail and can be pointed at by a password
-        /// reset, so the suffix is what guarantees neither can ever reach a real
-        /// mailbox - and what stops a demo row in the client directory reading like
-        /// a customer Verichat signed.
+        /// The list lives in <see cref="DemoAccounts"/> because the sign-in screens
+        /// advertise these accounts with one-click buttons, and a button that names an
+        /// address this seeder did not write is a button that fails. See that file for
+        /// why the addresses end in .test.local.
         /// </summary>
-        private static readonly (string Role, string Email, string Name, string Password)[] Accounts =
-        {
-            (UserRoles.SystemAdministrator,   "admin@verichat.test.local",      "Dumisani Ncube",   "Demo!Admin2026"),
-            (UserRoles.SalesRepresentative,   "sales@verichat.test.local",      "Chipiya Mwanza",   "Demo!Sales2026"),
-            (UserRoles.ProcurementManager,    "procurement@verichat.test.local","Naledi Mokoena",   "Demo!Stock2026"),
-            (UserRoles.FieldSupportEngineer,  "engineer@verichat.test.local",   "Sipho Dlamini",    "Demo!Fix2026"),
-            (UserRoles.Logistics,             "logistics@verichat.test.local",  "Thabo Rasheed",    "Demo!Move2026"),
-            (UserRoles.MedicalStudent,        "student@verichat.test.local",    "Keerthi Naidoo",   "Demo!Study2026"),
-            (UserRoles.ClientUser,            "client@verichat.test.local",     "Reneé Fisher",     "Demo!Client2026"),
-        };
+        private static readonly IReadOnlyList<DemoAccount> Accounts = DemoAccounts.All;
 
         public static async Task SeedAsync(
             AppDbContext context,
@@ -76,7 +67,7 @@ namespace VerichatCRM.API.Services
                 context.Users.Add(new User
                 {
                     Email = email,
-                    DisplayName = account.Name,
+                    DisplayName = account.DisplayName,
                     PasswordHash = PasswordHasher.Hash(account.Password),
                     Role = account.Role,
                     IsActive = true,

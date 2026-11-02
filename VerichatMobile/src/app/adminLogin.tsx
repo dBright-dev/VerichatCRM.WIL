@@ -7,6 +7,7 @@ import {
 import { login } from '../constants/authService'
 import FloatingInput from '../components/ui/FloatingInput'
 import AnimatedButton from '../components/ui/AnimatedButton'
+import DemoQuickLogin from '../components/ui/DemoQuickLogin'
 import { useKeyboardAutoScroll } from '../hooks/useKeyboardAutoScroll'
 
 const AdminLoginScreen = () => {
@@ -18,21 +19,38 @@ const AdminLoginScreen = () => {
   const passwordInput = useRef<TextInput>(null)
   const { scrollRef, contentRef, onFieldFocus } = useKeyboardAutoScroll()
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     if (!email.trim() || !password) {
       Alert.alert('Missing details', 'Enter your email address and password to log in.')
       return
     }
 
+    void submit(email.trim(), password)
+  }
+
+  /**
+   * The sign-in path both entries share, taking the credential as arguments rather
+   * than reading the fields: a demo chip supplies its own account and still goes
+   * through the same call, so there is one place where a session is issued.
+   */
+  const submit = async (mail: string, pass: string) => {
     setBusy(true)
     try {
-      await login(email.trim(), password, 'staff')
+      await login(mail, pass, 'staff')
       router.replace('/')
     } catch (e) {
       Alert.alert('Sign in failed', e instanceof Error ? e.message : 'Something went wrong.')
     } finally {
       setBusy(false)
     }
+  }
+
+  // The chip signs in and leaves the address in the field, so the person can see
+  // which of the seven accounts the board they landed on belongs to.
+  const handleDemoPick = (mail: string, pass: string) => {
+    setEmail(mail)
+    setPassword(pass)
+    void submit(mail, pass)
   }
 
   const handleSSOLogin = () => {
@@ -119,6 +137,8 @@ const AdminLoginScreen = () => {
           <TouchableOpacity style={styles.link} onPress={() => router.push('/privacy')}>
             <Text style={styles.link_text}>Privacy notice — what we hold about you</Text>
           </TouchableOpacity>
+
+          <DemoQuickLogin audience="staff" onPick={handleDemoPick} disabled={busy} />
         </View>
         </View>
       </ScrollView>
@@ -216,9 +236,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 14,
   },
+  // These three links sit inside the pale card, so the near-white this used to ask
+  // for rendered them invisible - the client screen's #424242 is the same weight on
+  // the same background.
   link_text: {
     fontSize: 13,
-    color: '#e6e6e6',
+    color: '#424242',
     fontWeight: '600',
   },
 })

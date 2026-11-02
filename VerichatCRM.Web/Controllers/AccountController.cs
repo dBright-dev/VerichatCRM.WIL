@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using VerichatCRM.Core.Entities;
+using VerichatCRM.Core.Models;
 using VerichatCRM.Web.Authorization;
 using VerichatCRM.Web.Models;
 using VerichatCRM.Web.Models.Auth;
@@ -10,10 +11,12 @@ namespace VerichatCRM.Web.Controllers
     public class AccountController : Controller
     {
         private readonly IWebAuthService _auth;
+        private readonly IWebHostEnvironment _env;
 
-        public AccountController(IWebAuthService auth)
+        public AccountController(IWebAuthService auth, IWebHostEnvironment env)
         {
             _auth = auth;
+            _env = env;
         }
 
         [HttpGet]
@@ -35,8 +38,26 @@ namespace VerichatCRM.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginRequest request)
+        public async Task<IActionResult> Login(LoginRequest request, string? demoCode)
         {
+            // One-click demo sign-in, and the reason the button posts a code rather
+            // than an address and password: the credential is read from the same list
+            // the API's seeder writes, so it never reaches the page and a caller
+            // cannot post an arbitrary address at this form. Outside Development the
+            // seeded accounts do not exist, so the code is refused here instead of
+            // being handed to the API to fail against.
+            if (!string.IsNullOrWhiteSpace(demoCode))
+            {
+                var account = _env.IsDevelopment() ? DemoAccounts.Find(demoCode) : null;
+                if (account is null)
+                {
+                    ModelState.AddModelError("", "Demo sign-in is only available while the API is seeding development accounts.");
+                    return View(request);
+                }
+
+                request = new LoginRequest { Email = account.Email, Password = account.Password };
+            }
+
             if (!ModelState.IsValid) return View(request);
 
             var result = await _auth.LoginAsync(request);

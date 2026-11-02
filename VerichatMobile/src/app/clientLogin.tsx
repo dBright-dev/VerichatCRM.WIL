@@ -7,6 +7,7 @@ import {
 import { login } from '../constants/authService'
 import FloatingInput from '../components/ui/FloatingInput'
 import AnimatedButton from '../components/ui/AnimatedButton'
+import DemoQuickLogin from '../components/ui/DemoQuickLogin'
 import { useKeyboardAutoScroll } from '../hooks/useKeyboardAutoScroll'
 
 const ClientLoginScreen = () => {
@@ -18,21 +19,38 @@ const ClientLoginScreen = () => {
   const passwordInput = useRef<TextInput>(null)
   const { scrollRef, contentRef, onFieldFocus } = useKeyboardAutoScroll()
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     if (!email.trim() || !password) {
       Alert.alert('Missing details', 'Enter your email address and password to log in.')
       return
     }
 
+    void submit(email.trim(), password)
+  }
+
+  /**
+   * The sign-in path both entries share, taking the credential as arguments rather
+   * than reading the fields: a demo chip supplies its own account and still goes
+   * through the same call, so there is one place where a session is issued.
+   */
+  const submit = async (mail: string, pass: string) => {
     setBusy(true)
     try {
-      await login(email.trim(), password, 'client')
+      await login(mail, pass, 'client')
       router.replace('/')
     } catch (e) {
       Alert.alert('Sign in failed', e instanceof Error ? e.message : 'Something went wrong.')
     } finally {
       setBusy(false)
     }
+  }
+
+  // The chip signs in and leaves the address in the field, so the person can see
+  // which of the two client accounts the home screen belongs to.
+  const handleDemoPick = (mail: string, pass: string) => {
+    setEmail(mail)
+    setPassword(pass)
+    void submit(mail, pass)
   }
 
   return (
@@ -115,6 +133,8 @@ const ClientLoginScreen = () => {
           <TouchableOpacity style={styles.back} onPress={() => router.push('/privacy')}>
             <Text style={styles.back_text}>Privacy notice — what we hold about you</Text>
           </TouchableOpacity>
+
+          <DemoQuickLogin audience="client" onPick={handleDemoPick} disabled={busy} />
 
           <TouchableOpacity style={styles.back} onPress={() => router.back()}>
             <Text style={styles.back_text}>← Back</Text>
