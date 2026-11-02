@@ -20,14 +20,25 @@ namespace VerichatCRM.API.Services
     /// This closes that gap by seeding the accounts rather than by widening the form.
     /// </para>
     /// <para>
-    /// <strong>Two independent conditions must both hold before anything is
-    /// written.</strong> The host has to be running in the Development environment,
-    /// and <c>Bootstrap:DemoUsers</c> has to read <c>true</c>. The key is set only in
-    /// appsettings.Development.json, so a deployment would have to be handed both
-    /// that file and <c>ASPNETCORE_ENVIRONMENT=Development</c> before a single row
-    /// appeared. The passwords below are therefore committed on
-    /// purpose: they belong to accounts that cannot exist on a server, and a
-    /// credential nobody can reproduce is not a test account, it is a locked door.
+    /// <strong>One setting decides whether anything is written.</strong>
+    /// <c>Bootstrap:DemoUsers</c> has to read <c>true</c>, and that is the whole rule.
+    /// It used to demand the Development environment as well, which made the shortcut
+    /// impossible anywhere a reviewer actually goes - a published host is not in
+    /// Development, so the sign-in panel and the accounts behind it could never both
+    /// exist off a developer's machine. The key is now on in the checked-in
+    /// <c>appsettings.json</c>, so a publish carries the accounts with it, and the web
+    /// tier reads the same key name to decide whether to render the buttons - see
+    /// <c>VerichatCRM.Web.Services.DemoAccess</c>. A host that must not be open wins
+    /// the argument: a <c>Bootstrap__DemoUsers=false</c> app setting outranks the file.
+    /// </para>
+    /// <para>
+    /// Setting it is a deliberate act, because it publishes these credentials to
+    /// everyone who can reach the host: the passwords are committed on purpose (a
+    /// credential nobody can reproduce is a locked door, not a test account), one of
+    /// these accounts is a System Administrator, and the addresses end in
+    /// <c>.test.local</c> only so that a mail or reset addressed to them can never
+    /// reach a real mailbox. Turn it on for a demonstration host and off again when
+    /// the demonstration is over.
     /// </para>
     /// </summary>
     public static class DemoUserSeeder
@@ -44,12 +55,10 @@ namespace VerichatCRM.API.Services
             AppDbContext context,
             IMobileService mobile,
             IConfiguration configuration,
-            IWebHostEnvironment environment,
             ILogger logger)
         {
-            if (!environment.IsDevelopment()
-                || !string.Equals(configuration["Bootstrap:DemoUsers"], "true",
-                                   StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(configuration["Bootstrap:DemoUsers"], "true",
+                               StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
@@ -93,9 +102,10 @@ namespace VerichatCRM.API.Services
 
             if (created > 0)
                 logger.LogWarning(
-                    "Seeded {Count} development sign-in accounts, one per role, including {Admin}. " +
-                    "These exist only while Bootstrap:DemoUsers=true in the Development environment - " +
-                    "they are not credentials for any deployed system.",
+                    "Seeded {Count} demo sign-in accounts, one per role, including {Admin}. " +
+                    "They exist because Bootstrap:DemoUsers=true on this host. If this is a " +
+                    "deployed system those credentials are now live for anyone who can reach it, " +
+                    "so unset the setting when the demonstration is over.",
                     created, UserRoles.SystemAdministrator);
         }
     }

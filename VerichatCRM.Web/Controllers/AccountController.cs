@@ -4,6 +4,7 @@ using VerichatCRM.Core.Models;
 using VerichatCRM.Web.Authorization;
 using VerichatCRM.Web.Models;
 using VerichatCRM.Web.Models.Auth;
+using VerichatCRM.Web.Services;
 using VerichatCRM.Web.Services.Interfaces;
 
 namespace VerichatCRM.Web.Controllers
@@ -12,11 +13,13 @@ namespace VerichatCRM.Web.Controllers
     {
         private readonly IWebAuthService _auth;
         private readonly IWebHostEnvironment _env;
+        private readonly IConfiguration _configuration;
 
-        public AccountController(IWebAuthService auth, IWebHostEnvironment env)
+        public AccountController(IWebAuthService auth, IWebHostEnvironment env, IConfiguration configuration)
         {
             _auth = auth;
             _env = env;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -43,15 +46,17 @@ namespace VerichatCRM.Web.Controllers
             // One-click demo sign-in, and the reason the button posts a code rather
             // than an address and password: the credential is read from the same list
             // the API's seeder writes, so it never reaches the page and a caller
-            // cannot post an arbitrary address at this form. Outside Development the
-            // seeded accounts do not exist, so the code is refused here instead of
-            // being handed to the API to fail against.
+            // cannot post an arbitrary address at this form. The switch is DemoAccess,
+            // the same rule the partial uses to decide whether to render the buttons
+            // and the same key the API seeds from, so a host that switched the
+            // shortcut off refuses the code here instead of handing it to the API to
+            // fail against.
             if (!string.IsNullOrWhiteSpace(demoCode))
             {
-                var account = _env.IsDevelopment() ? DemoAccounts.Find(demoCode) : null;
+                var account = DemoAccess.IsEnabled(_configuration, _env) ? DemoAccounts.Find(demoCode) : null;
                 if (account is null)
                 {
-                    ModelState.AddModelError("", "Demo sign-in is only available while the API is seeding development accounts.");
+                    ModelState.AddModelError("", "Demo sign-in is switched off on this host, or its accounts have not been seeded.");
                     return View(request);
                 }
 

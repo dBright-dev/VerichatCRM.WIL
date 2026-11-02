@@ -18,12 +18,16 @@ type Props = {
  * the chip only supplies the credential and the server still decides where the session
  * goes.
  *
- * Dev builds only. `__DEV__` is false in a release bundle, and the accounts themselves
- * exist only while the API runs in Development with `Bootstrap:DemoUsers=true`, so a
- * published app has neither the shortcut nor anything for it to sign in to.
+ * Shown in dev builds and in any release bundle built with
+ * `EXPO_PUBLIC_DEMO_LOGIN=true` — the value `eas.json` puts in the preview and
+ * production profiles for the demonstration build. That variable is inlined at bundle
+ * time, so a build made without it has no way to turn these chips on afterwards.
+ * Whether the tap lands depends on the API: the accounts exist only on a host with
+ * `Bootstrap:DemoUsers=true` (see `DemoUserSeeder`), and a chip pointed at a host that
+ * did not seed them fails at the password the same way a typed one would.
  */
 const DemoQuickLogin = ({ audience, onPick, disabled }: Props) => {
-  if (!__DEV__) return null
+  if (!__DEV__ && process.env.EXPO_PUBLIC_DEMO_LOGIN !== 'true') return null
 
   const accounts = demoAccountsFor(audience)
 
@@ -51,8 +55,8 @@ const DemoQuickLogin = ({ audience, onPick, disabled }: Props) => {
       </View>
 
       <Text style={styles.note}>
-        Seeded development accounts, one per role. They exist only while the API runs in
-        Development with Bootstrap:DemoUsers set.
+        Seeded accounts, one per role. They exist only on an API running with
+        Bootstrap:DemoUsers set.
       </Text>
     </View>
   )

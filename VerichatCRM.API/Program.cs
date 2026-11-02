@@ -249,7 +249,7 @@ if (!app.Environment.IsDevelopment() && allowedOrigins.Length == 0)
 // are entered by a user. The initial System Administrator comes only from
 // configuration (see AdminBootstrapper), because an empty database otherwise has no
 // way to sign anyone in. DemoUserSeeder then adds one account per role, but only on a
-// development host that explicitly asks for it. Each step is guarded so an
+// host that sets Bootstrap:DemoUsers=true. Each step is guarded so an
 // unreachable database degrades the app instead of killing the process (which
 // surfaces as HTTP 500.30 on IIS).
 // ---------------------------------------------------------------------------
@@ -295,20 +295,18 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
-        // Returns immediately unless this is the Development environment with
-        // Bootstrap:DemoUsers=true, so a deployed API never reaches the database
-        // through here at all.
+        // Returns immediately unless Bootstrap:DemoUsers is set to true, so a host
+        // that leaves the setting alone never reaches the database through here.
         await DemoUserSeeder.SeedAsync(
             context,
             scope.ServiceProvider.GetRequiredService<IMobileService>(),
             app.Configuration,
-            app.Environment,
             logger);
     }
     catch (Exception ex)
     {
         logger.LogError(ex,
-            "Development sign-in accounts could not be seeded. The system still runs; " +
+            "Demo sign-in accounts could not be seeded. The system still runs; " +
             "sign up through the UI instead.");
     }
 }
