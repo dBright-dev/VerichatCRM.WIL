@@ -3,7 +3,7 @@
    ----------------------------------------------------------------------------
    WHAT THIS IS
      Every product the public gallery (/gallery), the client portal catalogue
-     and the procurement list can show. 61 rows across the eight categories in
+     and the procurement list can show. 60 rows across the eight categories in
      ProductCategories. Re-runnable: it upserts by SKU.
 
    READ THIS BEFORE RUNNING IT ON ANYTHING THAT MATTERS
@@ -161,7 +161,6 @@ USING (VALUES
     (N'VC-MF-157',  N'Mine Site First Aid Box - 40 Person',            N'Mining & Industrial',       1450.00,   60,    20),
 
     /* ---- Teaching and simulation: what a training laboratory buys ---- */
-    (N'VC-AM-001',  N'Anoscopy Model - Adult Medium',                  N'Teaching & Simulation',    12500.00,   20,     5),
     (N'VC-TS-161',  N'Adult CPR Manikin - With Tracer',                N'Teaching & Simulation',    18500.00,    8,     3),
     (N'VC-TS-162',  N'Child Resuscitation Dummy',                      N'Teaching & Simulation',    12400.00,   10,     3),
     (N'VC-TS-163',  N'Birth Simulator - Delivery Trainer',             N'Teaching & Simulation',    26500.00,    4,     2),

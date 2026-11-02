@@ -783,10 +783,18 @@ and `DeliveryStatusUpdate` went missing for a whole release.
 
 ### 8.3 The catalogue seed
 
-`Database/seed-catalogue.sql` is the 61-line public catalogue behind `/gallery`,
+`Database/seed-catalogue.sql` is the 60-line public catalogue behind `/gallery`,
 the client portal and the procurement list. It is separate from the schema chain
 on purpose — migrations change the shape of `Products`, this changes its contents
 — and it is upsert-by-SKU, so it is re-runnable.
+
+**Upsert does not delete.** `VC-AM-001 Anoscopy Model - Adult Medium` was withdrawn
+from the list on 2 Nov 2026 along with its photograph, and re-running this script leaves
+the row exactly where it was, because the script only touches SKUs it carries. A database
+that already holds a withdrawn product needs the row removed by name:
+`DELETE FROM Products WHERE SKU = N'VC-AM-001';`. Until that happens the gallery keeps
+showing the tile, with the category photograph standing in for the deleted one — see
+`CatalogueArt` and `GalleryViewModel.cs:87`, which fall back per item, then per category.
 
 ```powershell
 sqlcmd -S "(localdb)\MSSQLLocalDB" -d VerichatCRM -b -i Database\seed-catalogue.sql

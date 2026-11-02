@@ -321,7 +321,7 @@ curl http://localhost:5184/api/health
 **What the first run puts in the database** — be aware of it before you train anyone:
 
 - The four `DataSeeder` clients: **Anglo American** (Mining, Active), **Nexam Holdings** (Manufacturing, Prospect), **Siemens Healthineers** (Clinical, Active), **Landfill Solutions SA** (Waste Management, Inactive).
-- A starter product catalogue (`VC-AM-001` Anaesthesia/Anoscopy Model, `VC-CM-003` Crutch – Adjustable Forearm, and the rest of the seed list) so the catalogue and the warehouse-alert screens are not empty.
+- A starter product catalogue (`VC-CM-003` Crutch – Adjustable Forearm, `VC-TB-005` IV Giving Set – Sterile, and the rest of the seed list) so the catalogue and the warehouse-alert screens are not empty.
 - Your one bootstrap administrator. **No** enquiries, tickets, quotations, deliveries, appointments, assets or deals.
 - Both seed blocks are guarded by "any rows exist?", so they run once and never overwrite your data.
 

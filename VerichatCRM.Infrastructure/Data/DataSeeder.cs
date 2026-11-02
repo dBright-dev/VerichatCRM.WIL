@@ -82,7 +82,6 @@ namespace VerichatCRM.Infrastructure.Data
                 // product form without first changing its category.
                 var products = new List<Product>
                 {
-                    new() { SKU = "VC-AM-001", ProductName = "Anoscopy Model - Adult Medium", Category = ProductCategories.TeachingSimulation, Price = 12500m, StockQty = 20, LowStockThreshold = 5 },
                     new() { SKU = "VC-CM-003", ProductName = "Crutch - Adjustable Forearm", Category = ProductCategories.HomeCare, Price = 1100m, StockQty = 8, LowStockThreshold = 10 },
                     new() { SKU = "VC-TB-005", ProductName = "IV Giving Set - Sterile", Category = ProductCategories.ClinicalConsumables, Price = 28m, StockQty = 3500, LowStockThreshold = 2000 },
                     new() { SKU = "VC-LB-006", ProductName = "Lab Coat - White Unisex", Category = ProductCategories.PPE, Price = 380m, StockQty = 24, LowStockThreshold = 15 },
