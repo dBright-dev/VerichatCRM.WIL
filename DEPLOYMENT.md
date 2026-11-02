@@ -9,8 +9,8 @@ Nothing in this file was executed against the hosting provider. The steps that t
 | Piece | Deployed target | Notes |
 | --- | --- | --- |
 | Staff web app (`VerichatCRM.Web`) | `verichat-crm-web.runasp.net` — Monster ASP shared hosting, publish profile `site94515-WebDeploy.pubxml` | Razor MVC. Talks to the API server-side and passes the API base URL to page script. |
-| API (`VerichatCRM.API`) | **`http://api-site.runasp.net/`** — Monster ASP shared hosting, publish profile `site94518-WebDeploy.pubxml` (the duplicate `…WebDeploy1` / `…WebDeploy2` profiles were deleted on 1 Nov; `verichat-crm-api.runasp.net` answers identically, so both names reach either the same site or two copies of the same broken deployment — the panel is the only place that can tell them apart) | REST + SignalR hub at `/hubs/notifications`. **Not serving:** every path returns HTTP 500.30, including `/api/health/live` — see §7.1. `https://` on the same host does not connect at all: no certificate is bound. |
-| Backup API (`VerichatCRM.API`, second deployment) | `https://verichat-api-aqcbgydhhbgbgha5.eastus-01.azurewebsites.net` — Azure App Service, the target of `BackupApiBaseUrl` | **Serving, but `Degraded`:** it starts and has its `Jwt__Key` and connection string set, then fails every data route because it has no database it can reach (§7.2). Not a working safety net yet. |
+| API (`VerichatCRM.API`) | **`http://api-site.runasp.net/`** — Monster ASP shared hosting, publish profile `site94518-WebDeploy.pubxml` (the duplicate `…WebDeploy1` / `…WebDeploy2` profiles were deleted on 1 Nov) | REST + SignalR hub at `/hubs/notifications`. **Serving, and `Degraded`:** it starts, `/health` answers 200 `Alive` and `/api/health` answers 503 with the database check failing (§7.1). The other Monster name, `verichat-crm-api.runasp.net`, is a **separate site** and still returns 500.30 — the two names answer differently, which settles the question the 1 Nov note left open: they were never the same process. `https://` on either name does not connect at all: no certificate is bound. |
+| Second API copy (`VerichatCRM.API`, deployed to Azure — *not* a hot standby: §7.7 switches cross-database failover off, because the two copies now read two different databases) | `https://verichat-api-aqcbgydhhbgbgha5.eastus-01.azurewebsites.net` — Azure App Service, the target of `BackupApiBaseUrl` | **Serving, but `Degraded`:** it starts and has its `Jwt__Key` and connection string set, then fails every data route because it has no database it can reach (§7.2). Not a working safety net yet. Unlike the Monster names, it does serve HTTPS with a real certificate. |
 | Database | `databaseasp.net` (Monster ASP shared SQL Server) | Reached only by the API, and only by an API running *inside* that hosting family: the published name resolves to the private address `10.0.0.23`, so no connection string naming it works from Azure (§7.2). The web app holds no connection string. |
 | Mobile client (`VerichatMobile`) | EAS builds, installed on devices | Reads `EXPO_PUBLIC_API_URL` at bundle time. |
 
@@ -178,16 +178,18 @@ Then: delete the rules file, ask GitHub to clear cached views and detached objec
 
 ### 7.1 The deployed API answers HTTP 500.30
 
-**Status, re-measured 2 November 2026: this one is fixed.** `http://api-site.runasp.net/api/health`
-now returns HTTP 503 with a real JSON body rather than the 500.30 HTML page - the process starts,
-`Jwt:Key` is present, and its database answers in 5 ms. What it reports instead is
-`MigrationsPending`, six of them, so §7.1 below is history and §8.5 is the live problem. Read
-the payload for what it is: a 503 `Degraded` whose database check reports single-digit-ms latency
-**and** names the six migrations still outstanding, because `CheckDatabaseAsync` is followed by
-`GetPendingMigrationsAsync()` at [HealthController.cs:71](VerichatCRM.API/Controllers/HealthController.cs).
-It is a schema probe as well as a connectivity probe, which is exactly why it can prove the
-deployed assembly contains migration 21 — see §8.5, where that fact rules Route A out. Latency
-alone would have proved only that a connection opens.
+**Status, re-measured 2 November 2026 late: the 500.30 is fixed; the database is not reachable again.** `http://api-site.runasp.net/api/health` answers HTTP 503 as a JSON body rather than the 500.30 HTML page, the process starts, and `Jwt:Key` is present — all of which was the failure this section described. What the payload now says is not what it said earlier the same day:
+
+```json
+{"status":"Degraded","service":"VerichatCRM.API","environment":null,
+ "checks":{"database":{"status":"Unhealthy",
+   "detail":"CanConnectAsync returned false. Check connection string / firewall.","latencyMs":1097},
+   "jwt":{"status":"Healthy","detail":"Jwt:Key present."}}}
+```
+
+Earlier on 2 November the same URL reported the database answering in single-digit milliseconds with `MigrationsPending` and six migrations named, because `CheckDatabaseAsync` is followed by `GetPendingMigrationsAsync()` at [HealthController.cs:112](VerichatCRM.API/Controllers/HealthController.cs) — a schema probe as well as a connectivity probe, which is how it could prove the deployed assembly contained migration 21 and rule Route A out in §8.5. **That reading is superseded, not wrong:** it was taken against a working connection, and the connection has since stopped opening. Something changed on the host between the two probes — the credential the panel holds, the SQL server's state, or the settings on a republished build — and none of the three is visible from this repository. Until the connection opens again, §8.5's schema question cannot be answered by the payload at all, because the migration probe only runs when `dbOk` is true.
+
+The sentence "check connection string / firewall" is the last thing the deployed build can say, and it is deliberately uninformative: `CanConnectAsync` swallows the `SqlException` and returns a bool, so 18456 (login rejected), 4060 (this database cannot be opened) and a TCP timeout all printed the same words. `HealthController` now opens the connection itself and classifies the error number, so the next deployed build names which of those the host is actually suffering; that change is on `dev2` and not yet published.
 
 *Counting note:* the six above is the reading from before the approval gate was removed, and the
 hosted database has not run any of them yet. After publishing the build containing
