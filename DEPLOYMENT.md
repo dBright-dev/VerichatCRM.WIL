@@ -475,7 +475,41 @@ Two things this leaves that need attention:
   `README.md`. Those credentials are live the moment the API is reachable from the internet. §8.2
   describes clearing them.
 
-### 7.5 Two APIs, two databases, so failover is switched off (2 November 2026)
+### 7.6 Why signing in returns HTTP 500 on the hosted API (2 November 2026)
+
+Both deployed copies answer `POST /api/auth/login` with an empty **500**, so web and mobile fail at
+the same place — the web tier only proxies the call, and the mobile app calls the same origin. The
+cause is not the connection string and not the password: it is that the deployed assembly is 21
+migrations deep while the Monster database has 15 recorded, and the first thing `LoginAsync` does is
+`GetByEmailAsync`, which materialises a whole `User`. EF therefore names columns the hosted table has
+never had. Measured on a throwaway LocalDB built to exactly the hosted state — 15 rows in
+`__EFMigrationsHistory`, `Users` with 10 columns — the same `SELECT` fails with
+`Msg 207 Invalid column name 'DeviceToken' / 'ApprovalStatus' / 'RejectionReason' / 'ReviewedAt'`,
+and the same build against the same database once the chain is applied returns
+`401 {"success":false,"message":"Invalid credentials."}`. Same code, same endpoint, only the schema
+different: that is the proof, and it is reproducible from this repository without touching production.
+
+`Program.cs:266` calls `MigrateAsync()` at startup and swallows the failure into a log line, so the
+app comes up "running" over a schema it has already outgrown, and `/api/health` is the only thing that
+says so (`MigrationsPending`, latency a few ms because the database is reachable and simply
+incomplete). Two ways out, in this order:
+
+1. **Restart the site.** A restart re-runs startup migration, and that is exactly what closed the gap
+   on the local reproduction without any script being run by hand. Cheapest thing to try, and it is
+   enough if the chain failed for a transient reason.
+2. **If a restart leaves it pending, the chain is failing on the real rows**, which §8.1 predicts. Run
+   `Database/preflight-migration-checks.sql` first — the duplicates it looks for (`Users.Email`,
+   `Tickets.TrackingNumber`, `Assets.SerialNumber`, and the values that would not fit the narrowed
+   columns) are what abort `CREATE UNIQUE INDEX` and roll the whole migration back. Fix or merge those
+   rows, then apply `Database/hosted-migrations/16` → `21` one file at a time in the panel's SQL
+   window and confirm with `verify-migration-state.sql`. §8.5 covers the two failure shapes.
+
+**Expect the sign-in to change character afterwards, not only work.** Migration 21 puts every
+self-claimed Sales Representative, Procurement Manager, Field Support Engineer and Logistics account
+back to `Pending` (§8.4), so the first thing a real staff member sees after the fix is "waiting for a
+Verichat employee to approve it", and the approving administrator has to exist before that clears.
+
+### 7.7 Two APIs, two databases, so failover is switched off (2 November 2026)
 
 The arrangement chosen on 2 Nov is the opposite of §7.3's premise. `api-site.runasp.net` reads the
 Monster database (`db70543`), and the Azure API reads `VerichatDB`. `/api/health` proves the first
