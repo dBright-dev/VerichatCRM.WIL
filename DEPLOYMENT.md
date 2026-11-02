@@ -181,10 +181,13 @@ Then: delete the rules file, ask GitHub to clear cached views and detached objec
 **Status, re-measured 2 November 2026: this one is fixed.** `http://api-site.runasp.net/api/health`
 now returns HTTP 503 with a real JSON body rather than the 500.30 HTML page - the process starts,
 `Jwt:Key` is present, and its database answers in 5 ms. What it reports instead is
-`MigrationsPending`, six of them, so §7.1 below is history and §8 is the live problem. Note that
-`/api/health` proves the panel settings are right and proves nothing about the schema; its
-database check only opens a connection, which is why a reachable-but-unmigrated site still looks
-almost healthy.
+`MigrationsPending`, six of them, so §7.1 below is history and §8.5 is the live problem. Read
+the payload for what it is: a 503 `Degraded` whose database check reports single-digit-ms latency
+**and** names the six migrations still outstanding, because `CheckDatabaseAsync` is followed by
+`GetPendingMigrationsAsync()` at [HealthController.cs:71](VerichatCRM.API/Controllers/HealthController.cs).
+It is a schema probe as well as a connectivity probe, which is exactly why it can prove the
+deployed assembly contains migration 21 — see §8.5, where that fact rules Route A out. Latency
+alone would have proved only that a connection opens.
 
 The original failure, kept because the reasoning is what found it:
 
@@ -485,8 +488,8 @@ SELECT Urgency, COUNT(*) FROM Inquiries WHERE Urgency IS NOT NULL GROUP BY Urgen
    seed rows instead of real ones.
 3. Run `Database/preflight-migration-checks.sql` against the live database (§8.1) and fix
    every row sections 1–4 return. Write down what section 5 counts.
-4. Apply the chain — the idempotent script above, or a deploy that lets the API migrate at
-   startup. Only after step 3.
+4. Apply the chain — see §8.5 for the two ways, and for which of them is actually available on
+   Monster ASP. Only after step 3.
 5. Confirm the schema took: `__EFMigrationsHistory` should hold 21 rows and the database 39
    base tables. Re-running sections 1–4 now proves nothing, because the narrowed columns
    cannot physically hold an over-length value; they were the prediction, not the check.
@@ -681,6 +684,104 @@ Verified end to end on the local deployment, which went through both migrations 
 
 So the procedure in this section is the one that was actually walked, not a reconstruction
 of it. The escape-hatch `UPDATE` was not run.
+
+### 8.5 Applying the chain on Monster ASP: use the files in `Database/hosted-migrations`
+
+**Route A — "deploy and let the API migrate at startup" — is not available as a fix right now,
+and the proof is in the health payload itself.** `/api/health` builds its pending list from
+`GetPendingMigrationsAsync()` ([HealthController.cs:71](VerichatCRM.API/Controllers/HealthController.cs)),
+which compares the **running assembly's** migrations against `__EFMigrationsHistory`. The 2 Nov
+payload named `20261101152359_ReviewSelfClaimedStaffAccounts` as pending, so the assembly serving
+`api-site.runasp.net` already contains migration 21 of 21 — and therefore also `c909aa6`
+(31 Oct 22:22), the commit that downgrades `PendingModelChangesWarning` from fatal to logged.
+`await context.Database.MigrateAsync()` at [Program.cs:266](VerichatCRM.API/Program.cs) already
+runs unconditionally on that host, and the `catch` at :269 logs `"Database migration failed at
+startup"` and lets the app come up degraded. `MigrationsPending` *is* that caught failure.
+Nothing in the working copy is newer than what is deployed, so republishing ships the same six
+migrations into the same swallowed exception.
+
+If you do deploy — to get a fresh stdout log with a clean timestamp, which is the only
+diagnostic value it has — use the profile that actually targets that host. Three of the four
+profiles in `VerichatCRM.API/Properties/PublishProfiles` point somewhere else:
+
+| Profile | Destination | Reachable DB |
+| --- | --- | --- |
+| `site103828-WebDeploy` (MSDeploy) | `site103828.siteasp.net` → **`api-site.runasp.net`** | yes, the `db70543` the health check reaches in single-digit ms |
+| `FTPProfile` (FTP) | same host, `site103828.siteasp.net` | same — the fallback when MSDeploy from Visual Studio faults (§10) |
+| `verichat-api - Web Deploy` | `verichat-api-aqcbgydhhbgbgha5.scm.eastus-01.azurewebsites.net` | **no** — Azure cannot route to `10.0.0.23` (§7.2), so publishing here leaves the hosted schema at 15 forever |
+| `site94518-WebDeploy` | `site94518.siteasp.net` → `verichat-crm-api.runasp.net` | the retired earlier site |
+
+**Route B, and why it is six files instead of one.** `Database/apply-pending-migrations.sql`
+carries 23 `GO` separators, and it genuinely needs them: the generated bodies declare
+`@var` again in later blocks, and `DECLARE` scope is the batch, so the whole script pasted as
+one batch dies with *"The variable name '@var' has already been declared."* `GO` is not T-SQL —
+it is a client-side separator — and a hosting panel's web SQL window submits the text as one
+batch, so the monolithic script cannot run there at all. `Database/hosted-migrations/` holds the
+six pending regions split out, one file per migration, each of them:
+
+- a single legal batch with no `GO`, so it pastes into any client;
+- prefixed with `SET QUOTED_IDENTIFIER ON; SET ANSI_NULLS ON;` rather than trusting the client's
+  default — `sqlcmd` leaves it off without `-I`, and migration 20's five unique filtered indexes
+  are built through `EXEC(N'CREATE UNIQUE INDEX …')`, which fails with Msg 1934 when it is off;
+- wrapped in `BEGIN TRY … BEGIN CATCH` with `IF XACT_STATE() <> 0 ROLLBACK TRANSACTION` and the
+  original message re-raised at severity 16, so a failure rolls that one migration back instead of
+  leaving an open transaction sitting on a pooled panel connection;
+- still guarded per statement by `IF NOT EXISTS (… __EFMigrationsHistory …)`, so re-running a file
+  that already succeeded is a no-op, and each file records its own `MigrationId`.
+
+Splitting also buys attribution: one 2215-line paste gives you one anonymous error, six pastes
+name the migration that failed.
+
+**Measured, on 2 Nov, against a database frozen in exactly the hosted state.** Created with
+`dotnet ef database update 20261025174339_AddAppointmentMeetingLinks` — 15 rows in
+`__EFMigrationsHistory`, max id `…AddAppointmentMeetingLinks`, i.e. migrations 16–21 pending —
+then each file run through `sqlcmd -b` **deliberately without `-I`**, so the batch is single and
+`QUOTED_IDENTIFIER` starts off, which is the worst-case panel behaviour:
+
+- 16 → 21 all succeed. No Msg 1934, so the in-file `SET` does the job the `-I` flag used to do.
+- `__EFMigrationsHistory` goes 15 → 21, `MAX(MigrationId)` = `20261101152359_ReviewSelfClaimedStaffAccounts`.
+- `dotnet ef migrations list` against it reports zero pending.
+- Re-running `16-AddUserDeviceToken.sql` prints `Step 16/21 - AddUserDeviceToken applied (or
+  already recorded).` and changes nothing.
+- The throwaway database was dropped afterwards.
+
+One thing the run produced is worth knowing about rather than panicking at: file 17 emits
+*"Warning! The maximum key length for a nonclustered index is 1700 bytes. The index
+`IX_ClientAssignments_ClientId_SalesRepId_AssignedDate` has maximum length of 1808 bytes."*
+It is a warning, the index is created and the migration commits. The cost is real but deferred —
+`ClientId` and `SalesRepId` are both `nvarchar(450)`, so a row whose two ids are simultaneously
+near the full width cannot be indexed and the `INSERT` fails. No such row exists in practice
+because those are identity-style values, so it is left as a model defect to note rather than fix
+mid-deployment.
+
+**The procedure**, in order — the same seven steps as §8's runbook, with step 4 replaced:
+
+1. §8 step 1: confirm a System Administrator can sign in. Migration 21 will lock every other
+   staff account out (§8.4), so the administrator is the only way in afterwards.
+2. `Database/hosted-migrations/verify-migration-state.sql` — read-only. Expect `AppliedCount 15`,
+   six rows marked `PENDING`, and `ApprovalStatus does not exist yet`. Record the output.
+3. `Database/preflight-migration-checks.sql` (§8.1) and fix every row its sections 1–4 return.
+   This is not optional for Route B either: migration 20's five unique indexes and its narrowed
+   columns fail on the same duplicates and over-length values, and on hosted data they have never
+   been tested against. Section 5 tells you how many staff accounts migration 21 will pend.
+4. Run `16-…sql`, then `17-…`, `18-…`, `19-…`, `20-…`, `21-…` — one file at a time, one paste each.
+   Stop at the first failure; it has rolled itself back.
+5. `verify-migration-state.sql` again. Expect `AppliedCount 21` and no `PENDING` rows.
+6. Restart the site, then `GET /api/health`: `status Healthy`, `database.status Healthy`. If it
+   still says `MigrationsPending` after 21 rows are recorded, the app is pointing at a *different*
+   database — which is a panel configuration problem, not a schema one.
+7. §8 steps 6–8: release the pended staff accounts, seed the catalogue, walk §7.
+
+A failure tells you which problem it is, and only the first two are fixable by hand:
+
+| The panel says | Cause | What to do |
+| --- | --- | --- |
+| `Cannot insert duplicate key row … IX_…` | the hosted rows already violate a uniqueness rule migration 20 formalises | de-duplicate per §8.1 section 3, then re-run that file — the guards make it resumable |
+| `String or binary data would be truncated` / `ALTER TABLE … is not allowed because table … has null` | a value does not fit a narrowed width, or a column has `NULL` where the model says `NOT NULL` | §8.1 sections 1–2 name the rows; fix the data, re-run the file |
+| `There is already an object named …` / `Column already exists` | the hosted schema drifted from migration 15 — someone changed it in the panel | do **not** delete the object. Stop, and treat it as a schema-repair task; the guarded script assumes history matches reality |
+| `Invalid object name …` | a table the chain expects is missing, so the host is not really at 15 | run `verify-migration-state.sql` and read which of 1–15 are missing before touching anything else |
+| `Permission denied` on `ALTER`/`CREATE` | the shared SQL login lacks DDL rights | a hosting-panel job, not a script change |
+| syntax error on a construct LocalDB accepts | the hosted engine is older than the LocalDB the rehearsal used | report the version from `SELECT @@VERSION` with the failing file |
 
 ## 9. Running the EF commands from Visual Studio
 
