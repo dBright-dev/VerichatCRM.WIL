@@ -206,9 +206,16 @@ and tickets hang off — the API opens a `Clients` row keyed to your new user id
 to be typed twice.
 **Note:** The password placeholder reads *At least 8 characters* but **nothing in the web or API code
 enforces a minimum length** (§18) — choose sensibly; the system will not stop you.
-**Note:** The sign-up screen and the API's reply both tell the applicant to expect a link that
-confirms the address is theirs. **No link is sent at registration** — address verification
-exists only as the `/Account/VerifyEmail` route and the token machinery behind it (§18).
+**What the screen promises about a confirmation link is true.** Once the account row is
+committed, the API issues an address-verification token and emails its link to the address just
+typed (`AuthController.Register` -> `AccountRecoveryService.SendConfirmationEmailAsync`), for every
+role including System Administrator. The link opens `/Account/VerifyEmail` (§18), confirms the
+address in one click without a button, and expires after 7 days. It is not the approval itself: an
+unconfirmed address is merely a harder one for a reviewer to approve. When no SMTP host is
+configured the send is logged rather than delivered, so on a local run the link appears in
+`logs/api.log` instead of an inbox — and because the link is built from the configured web origin,
+a local registration writes a `verichat-crm-web.runasp.net` URL that only works once the deployed
+site has the same account.
 
 Rejections you will see: `Email is already registered.` and `Select a valid role.` — the second
 is what stops someone editing the HTML of the form and posting a role string that is not in
